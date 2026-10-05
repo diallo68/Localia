@@ -142,6 +142,7 @@ function fromOpenAlex(work) {
     venue: work.primary_location?.source?.display_name || '',
     doi: work.doi ? work.doi.replace(/^https:\/\/doi\.org\//, '').toLowerCase() : null,
     citedBy: work.cited_by_count ?? null,
+    type: work.type || null,
   };
 }
 // Élément de la bibliothèque Zotero (API locale) : mêmes champs, plus sa clé et son PDF éventuel.
@@ -164,10 +165,35 @@ function fromZotero(item) {
     attachments: item.meta?.numChildren ?? 0,
   };
 }
+// Une notice par œuvre : même titre (versions successives d'un dépôt, doublons d'indexation),
+// la plus citée est gardée, à sa place dans le classement.
+function uniqueWorks(works) {
+  const key = (w) =>
+    String(w.title || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+  const best = new Map();
+  for (const w of works) {
+    const k = key(w) || w.id;
+    const kept = best.get(k);
+    if (!kept || (w.citedBy ?? 0) > (kept.citedBy ?? 0)) best.set(k, w);
+  }
+  const keep = new Set(best.values());
+  return works.filter((w) => keep.has(w));
+}
 // Notice au format des convertisseurs Zotero (pour /connector/saveItems).
+const ZOTERO_TYPES = {
+  dataset: 'dataset',
+  preprint: 'preprint',
+  'book-chapter': 'bookSection',
+  book: 'book',
+  dissertation: 'thesis',
+  'conference-paper': 'conferencePaper',
+};
 function toZoteroItem(work, tags = []) {
   return {
-    itemType: 'journalArticle',
+    itemType: ZOTERO_TYPES[work.type] || 'journalArticle',
     title: work.title,
     creators: work.authors.map((name) => {
       const parts = name.trim().split(/\s+/);
@@ -225,6 +251,7 @@ if (typeof module !== 'undefined')
     fromOpenAlex,
     fromZotero,
     toZoteroItem,
+    uniqueWorks,
     bestMatch,
     formatReference,
   };

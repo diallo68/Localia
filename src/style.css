@@ -1347,3 +1347,121 @@ progress {
     padding-top: 10px;
   }
 }
+#file-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.file-chip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: #f1f6f2;
+  border: 1px solid #dfe7e1;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.file-chip small {
+  flex: 1;
+}
+.file-chip details {
+  width: 100%;
+  order: 3;
+}
+.file-chip pre {
+  max-height: 220px;
+  overflow: auto;
+  background: white;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: pre;
+}
+.file-chip button {
+  padding: 3px 10px;
+  font-size: 11px;
+}
+#skill-suggest {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+  max-height: 220px;
+  overflow: auto;
+}
+#skill-suggest button {
+  text-align: left;
+  border: 0;
+  background: #f1f6f2;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+#skill-suggest button:hover,
+#skill-suggest button:focus-visible {
+  background: #dae8df;
+}
+.skill-tag {
+  font-weight: 400;
+  font-size: 11px;
+  background: #dae8df;
+  color: #1b543f;
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+.skills-help {
+  background: white;
+  border: 1px solid #dfe7e1;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.skill-card {
+  background: white;
+  border: 1px solid #dfe7e1;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+.skill-card.parcours {
+  border-left: 4px solid #226b53;
+}
+.skill-card code {
+  font-size: 12px;
+  color: #1b543f;
+}
+.skill-card p {
+  margin: 0;
+}
+.skill-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.skill-steps button,
+.skill-card .input-row button {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+.skill-errors {
+  background: #fff6ec;
+  border: 1px solid #f0d2b0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+#skills-view .input-row {
+  justify-content: flex-start;
+}

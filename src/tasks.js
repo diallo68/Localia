@@ -46,6 +46,19 @@ const TASKS = [
       'Exécutez le code avant de vous y fier : les tests écrits par les modèles sont souvent faux.',
   },
   {
+    id: 'donnees',
+    label: 'Préparer et analyser des données (Python)',
+    categories: ['Données'],
+    instruction: [
+      'Écris un script Python complet et exécutable (pandas ; matplotlib si un graphique est demandé), que l’utilisateur lancera lui-même sur son ordinateur.',
+      'Lis les fichiers joints par leur nom et utilise exactement les noms de colonnes donnés. Pour chaque étape (lecture, types, dates, valeurs manquantes ou -999, doublons, valeurs aberrantes, tri, agrégation, export), explique en une ligne ce qu’elle fait et pourquoi.',
+      'Statistiques « par mois » ou « par semaine » : par année et par mois (ou semaine), sauf si une moyenne sur plusieurs années (climatologie) est explicitement demandée.',
+      'N’invente ni colonne ni valeur ; signale les choix qui dépendent de l’utilisateur (seuils, traitement des manquants) au lieu de les trancher en silence. Termine par les commandes pour exécuter le script et vérifier le résultat.',
+    ].join('\n'),
+    warning:
+      'Exécutez le script et vérifiez le résultat avant de vous en servir : le modèle ne voit que le portrait de vos données, pas toutes les lignes.',
+  },
+  {
     id: 'fichiers',
     label: 'Organiser des fichiers (onglet Fichiers)',
     files: true, // proposé dans l'onglet Fichiers, pas dans les conversations

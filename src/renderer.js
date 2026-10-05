@@ -9,6 +9,12 @@ let conversations = [],
   importing = false,
   comparing = false,
   settings = { lastModel: null, models: {} };
+// Compétences (fichiers du dossier Compétences), chargées par skills-view.js.
+let skills = [];
+const skillOf = (value) =>
+  String(value || '').startsWith('skill:')
+    ? skills.find((s) => s.id === String(value).slice(6)) || null
+    : null;
 // Fonctions appelées quand la liste des modèles installés change (comparaison, réglages).
 const modelListeners = [];
 // Fonctions appelées quand l'état des boutons doit être recalculé.
@@ -60,6 +66,7 @@ const VIEWS = {
   projects: 'Projets',
   bibliography: 'Bibliographie',
   files: 'Fichiers',
+  skills: 'Compétences',
 };
 function view(name) {
   for (const key of Object.keys(VIEWS)) {
@@ -181,6 +188,13 @@ function messageNode(message, question) {
   const label = document.createElement('strong');
   label.className = 'author';
   label.textContent = message.role === 'user' ? 'Vous' : 'Localia';
+  if (message.skill) {
+    const tag = document.createElement('span');
+    tag.className = 'skill-tag';
+    tag.textContent = `/${message.skill}`;
+    tag.title = 'Compétence appliquée à ce message';
+    label.append(' ', tag);
+  }
   let content;
   if (message.role === 'assistant' && message.content) {
     content = document.createElement('div');
@@ -221,8 +235,43 @@ function renderAttachment() {
         : '');
   }
 }
+// Fichiers texte joints (consignes, code, données) : nom, résumé, aperçu du portrait, retrait.
+function renderFiles() {
+  const files = current?.files || [];
+  const box = $('file-chips');
+  box.hidden = !files.length;
+  box.replaceChildren();
+  for (const f of files) {
+    const chip = element('div', 'file-chip');
+    chip.append(
+      element('strong', '', f.name),
+      element(
+        'small',
+        'muted',
+        f.kind === 'table' ? `tableau · ${f.summary} · portrait transmis` : f.summary,
+      ),
+    );
+    if (f.preview) {
+      const details = element('details', '');
+      details.append(element('summary', '', 'Aperçu'), element('pre', '', f.preview));
+      chip.append(details);
+    }
+    const remove = element('button', '', 'Retirer');
+    remove.type = 'button';
+    remove.setAttribute('aria-label', `Retirer ${f.name}`);
+    remove.onclick = guard(async () => {
+      current.files = current.files.filter((x) => x !== f);
+      await persist();
+      renderFiles();
+      await window.localia.deleteDocument(f.id);
+    });
+    chip.append(remove);
+    box.append(chip);
+  }
+}
 function render() {
   renderAttachment();
+  renderFiles();
   $('delete-conversation').hidden = !current;
   $('rename-conversation').hidden = !current;
   $('messages').replaceChildren();
@@ -237,9 +286,9 @@ function render() {
   history();
 }
 function controls() {
-  $('attach-pdf').disabled = chatting || importing || !historyReady;
+  $('attach').disabled = chatting || importing || !historyReady;
   $('remove-pdf').disabled = chatting || importing;
-  $('attach-pdf').textContent = importing ? 'Lecture…' : '＋ PDF';
+  $('attach').textContent = importing ? 'Lecture…' : '＋ Ajouter';
   $('send').disabled = chatting || importing || !models.length || !historyReady;
   $('model').disabled = chatting;
   $('stop').hidden = !chatting;
@@ -247,7 +296,7 @@ function controls() {
   $('delete-conversation').disabled = chatting || importing || !historyReady;
   $('rename-conversation').disabled = chatting || importing || !historyReady;
   $('send').disabled ||= comparing;
-  $('attach-pdf').disabled ||= comparing;
+  $('attach').disabled ||= comparing;
   for (const listener of controlListeners) listener();
   $('download').disabled = pulling;
   $('custom-form').querySelector('button').disabled = pulling;
@@ -288,19 +337,27 @@ async function refresh() {
   for (const listener of modelListeners) listener();
   controls();
 }
-$('attach-pdf').onclick = guard(async () => {
+// « ＋ Ajouter » : un PDF remplace le document de la conversation ; un autre fichier s'ajoute aux
+// fichiers joints (5 au plus).
+$('attach').onclick = guard(async () => {
   notice('');
   importing = true;
   controls();
   try {
-    const doc = await window.localia.attachPdf();
-    if (!doc) return;
-    const previous = current?.document?.id;
+    const added = await window.localia.attach();
+    if (!added) return;
+    const name = added.kind === 'pdf' ? added.doc.name : added.file.name;
+    if (added.kind === 'file' && (current?.files || []).length >= 5) {
+      await window.localia.deleteDocument(added.file.id);
+      throw new Error('5 fichiers au plus par conversation : retirez-en un d’abord.');
+    }
     if (!current) {
-      current = { id: crypto.randomUUID(), title: doc.name, messages: [] };
+      current = { id: crypto.randomUUID(), title: name, messages: [] };
       conversations.unshift(current);
     }
-    current.document = doc;
+    const previous = added.kind === 'pdf' ? current.document?.id : null;
+    if (added.kind === 'pdf') current.document = added.doc;
+    else current.files = [...(current.files || []), added.file];
     await persist();
     if (previous) await window.localia.deleteDocument(previous);
     render();
@@ -343,6 +400,7 @@ $('delete-conversation').onclick = guard(async () => {
   render();
   view('chat');
   if (conversation.document) await window.localia.deleteDocument(conversation.document.id);
+  for (const f of conversation.files || []) await window.localia.deleteDocument(f.id);
 });
 $('chat-tab').onclick = () => view('chat');
 $('models-tab').onclick = () => view('models');
@@ -369,20 +427,44 @@ $('connect').onclick = guard(async () => {
 });
 $('composer').onsubmit = guard(async (event) => {
   event.preventDefault();
-  const content = $('prompt').value.trim();
+  let content = $('prompt').value.trim();
   if (!content || chatting || importing || comparing || !historyReady) return;
+  // « /appel texte » : compétence pour ce message ; « /competences » : liste des compétences.
+  const invocation = parseInvocation(content, skills);
+  if (invocation?.reserved) {
+    $('prompt').value = '';
+    $('skill-suggest').hidden = true;
+    $('skills-tab').click();
+    return;
+  }
+  if (!invocation && /^\/[a-z0-9-]+(\s|$)/i.test(content)) {
+    notice(
+      `Compétence inconnue : ${content.split(/\s/)[0]}. Tapez /competences pour voir la liste, ou retirez la barre oblique.`,
+    );
+    return;
+  }
   if (!models.length) {
     view('models');
     return;
   }
   notice('');
+  const messageSkill = invocation?.skill || null;
+  // Appel seul (« /donnees-brutes ») : rien d'autre à écrire, la compétence suffit.
+  if (messageSkill)
+    content =
+      invocation.rest ||
+      `Applique la compétence « ${messageSkill.name} »${
+        current?.document || current?.files?.length ? ' aux fichiers joints' : ''
+      }.`;
   if (!current) {
     current = { id: crypto.randomUUID(), title: content.slice(0, 55), messages: [] };
     conversations.unshift(current);
   }
   const userMessage = { role: 'user', content };
+  if (messageSkill) userMessage.skill = messageSkill.id;
   current.messages.push(userMessage);
   $('prompt').value = '';
+  $('skill-suggest').hidden = true;
   chatting = true;
   render();
   controls();
@@ -399,9 +481,12 @@ $('composer').onsubmit = guard(async (event) => {
     await persist();
     const result = await window.localia.run('chat', {
       model: conversation.model,
-      task: conversation.task,
+      // Compétence : celle du message (« /appel »), sinon celle choisie dans le menu Tâche.
+      task: skillOf(conversation.task) ? undefined : conversation.task,
+      skill: messageSkill?.id || skillOf(conversation.task)?.id,
       projectId: conversation.projectId,
       documentId: conversation.document?.id,
+      fileIds: (conversation.files || []).map((f) => f.id),
       messages: conversation.messages
         .filter((m) => !m.interrupted)
         .map(({ role, content }) => ({ role, content })),
@@ -490,6 +575,11 @@ window.localia.onProgress(({ kind, data }) => {
       `Mémoire du projet « ${data.project} » transmise : ${data.notes.length} note(s)${data.partial ? ', les plus proches de la question' : ''} (${data.notes.map((n) => n.title).join(', ')}).`,
     );
   }
+  if (kind === 'skill') runNotice(`Compétence appliquée : ${data.name} (${data.call}).`);
+  if (kind === 'files-context')
+    runNotice(
+      `Fichiers transmis au modèle : ${data.names.join(', ')} (tableaux : portrait seulement).`,
+    );
   if (kind === 'context') {
     runNotice(
       'Conversation longue : le modèle peut ne plus voir les premiers messages. Ouvrez une nouvelle conversation et rappelez les points importants si besoin.',
@@ -541,11 +631,21 @@ function taskAdvice(taskId) {
 }
 // Affiche le conseil ; choisit le modèle conseillé seulement si on le demande (nouvelle tâche).
 function showTaskAdvice(choose) {
-  const advice = taskAdvice($('task').value);
+  const skill = skillOf($('task').value);
+  const advice = taskAdvice(skill ? skill.task : $('task').value);
   const box = $('task-advice');
-  box.hidden = !advice;
-  if (!advice) return;
+  box.hidden = !advice && !skill;
+  if (!advice && !skill) return;
   const parts = [];
+  if (skill) {
+    parts.push(`Compétence ${skill.call} : ${skill.description}`);
+    if (skill.steps.length)
+      parts.push(`Parcours en ${skill.steps.length} étapes : ${skill.steps.join(', ')}.`);
+  }
+  if (!advice) {
+    box.textContent = parts.join(' ');
+    return;
+  }
   if (advice.best) {
     if (choose) selectModel(advice.best.model);
     const b = advice.best;

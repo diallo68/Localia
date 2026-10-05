@@ -154,3 +154,21 @@ test('mots communs ou nom partiel : pas de rapprochement abusif', () => {
   assert.equal(result.authorMatch, false, '« Li » n’est pas « Liu »');
   assert.equal(result.verdict, 'introuvable');
 });
+
+test('résultats de recherche : une notice par œuvre, la plus citée gardée à sa place', () => {
+  const works = [
+    { id: 'a', title: 'Deep Learning Architectures for Late Blight', citedBy: 0 },
+    { id: 'b', title: 'Research and Validation of Potato Late Blight Detection', citedBy: 27 },
+    { id: 'c', title: 'Deep learning architectures for late blight.', citedBy: 3 },
+  ];
+  assert.deepEqual(
+    b.uniqueWorks(works).map((w) => w.id),
+    ['b', 'c'],
+  );
+  const dataset = b.toZoteroItem({ title: 'Images', authors: [], year: 2026, type: 'dataset' });
+  assert.equal(dataset.itemType, 'dataset');
+  assert.equal(
+    b.toZoteroItem({ title: 'T', authors: [], type: 'article' }).itemType,
+    'journalArticle',
+  );
+});

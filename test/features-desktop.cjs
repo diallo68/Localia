@@ -4,6 +4,18 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 
+async function waitForMissing(file, timeout = 5000) {
+  const end = Date.now() + timeout;
+  while (
+    await fs.stat(file).then(
+      () => true,
+      () => false,
+    )
+  ) {
+    if (Date.now() > end) throw new Error(`${file} n'a pas été effacé.`);
+    await new Promise((r) => setTimeout(r, 100));
+  }
+}
 const readJson = async (profile, name) =>
   JSON.parse(await fs.readFile(path.join(profile, name), 'utf8'));
 
@@ -83,7 +95,11 @@ const readJson = async (profile, name) =>
         throw new Error('unexpected endpoint ' + endpoint);
       };
     });
-    const lastRequest = () => app.evaluate(() => global.requests.at(-1));
+    // Dernière requête envoyée au modèle, une fois la réponse en cours terminée (machines lentes).
+    const lastRequest = async () => {
+      await page.waitForFunction(() => document.querySelector('#stop').hidden);
+      return app.evaluate(() => global.requests.at(-1));
+    };
     await page.locator('#refresh').click();
     await page.waitForFunction(() => document.querySelector('#model').options.length === 2);
 
@@ -149,7 +165,12 @@ const readJson = async (profile, name) =>
     await page.locator('#history button').click();
     await page.locator('#prompt').fill('Encore');
     await page.locator('#send').click();
-    await page.waitForFunction(() => document.querySelectorAll('.message.assistant').length === 2);
+    // Réponse terminée (la bulle apparaît avant l'envoi de la requête : machines lentes).
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('.message.assistant').length === 2 &&
+        document.querySelector('#stop').hidden,
+    );
     request = await lastRequest();
     assert.equal(request.options.temperature, 0.3);
     assert.equal(request.options.num_ctx, 16384);
@@ -166,7 +187,12 @@ const readJson = async (profile, name) =>
     );
     await page.locator('#prompt').fill('Combien font 40 × 25 ?');
     await page.locator('#send').click();
-    await page.waitForFunction(() => document.querySelectorAll('.message.assistant').length === 3);
+    // Réponse terminée (la bulle apparaît avant l'envoi de la requête : machines lentes).
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('.message.assistant').length === 3 &&
+        document.querySelector('#stop').hidden,
+    );
     request = await lastRequest();
     assert.match(
       request.messages[0].content,
@@ -187,7 +213,12 @@ const readJson = async (profile, name) =>
     await page.locator('#project').selectOption({ label: 'Thèse' });
     await page.locator('#prompt').fill('Où se situe le site d’étude ?');
     await page.locator('#send').click();
-    await page.waitForFunction(() => document.querySelectorAll('.message.assistant').length === 4);
+    // Réponse terminée (la bulle apparaît avant l'envoi de la requête : machines lentes).
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('.message.assistant').length === 4 &&
+        document.querySelector('#stop').hidden,
+    );
     request = await lastRequest();
     assert.match(request.messages[0].content, /Mémoire du projet « Thèse »/);
     assert.match(request.messages[0].content, /### Site d’étude\nDalaba, Fouta Djalon/);
@@ -684,9 +715,146 @@ const readJson = async (profile, name) =>
     });
     await fs.rm(work, { recursive: true, force: true });
 
+    // Compétences : dossier de départ, menu Tâche, appel « /nom », suggestions, nouvelle compétence.
+    await page.locator('#skills-tab').click();
+    await page.waitForFunction(() => document.querySelectorAll('.skill-card').length === 42);
+    assert.match(
+      await page.locator('#skills-list').textContent(),
+      /Données brutes[\s\S]*\/donnees-manquants/,
+    );
+    await page
+      .locator('.skill-card', { hasText: '5. Valeurs manquantes' })
+      .locator('button', { hasText: 'Utiliser' })
+      .click();
+    await page.waitForFunction(() => !document.querySelector('#chat-view').hidden);
+    assert.equal(await page.locator('#task').inputValue(), 'skill:donnees-manquants');
+    await page.locator('#new').click();
+    await page.locator('#task').selectOption('skill:donnees-manquants');
+    await page.locator('#prompt').fill('Mon fichier a des trous.');
+    await page.locator('#send').click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector('#notice')
+        .textContent.includes('Compétence appliquée : 5. Valeurs manquantes'),
+    );
+    request = await lastRequest();
+    assert.match(
+      request.messages[0].content,
+      /Compétence « 5\. Valeurs manquantes » \(\/donnees-manquants\)/,
+    );
+    assert.match(
+      request.messages[0].content,
+      /pandas/,
+      'consigne de la tâche Données (tache: donnees)',
+    );
+    // Appel en début de message, avec suggestions pendant la saisie.
+    await page.locator('#prompt').fill('/relecture-i');
+    await page.locator('#prompt').dispatchEvent('input');
+    await page.waitForFunction(() => !document.querySelector('#skill-suggest').hidden);
+    await page.locator('#prompt').press('Tab');
+    assert.equal(await page.locator('#prompt').inputValue(), '/relecture-ieee ');
+    await page.locator('#prompt').type('Relis la section 3.');
+    await page.locator('#send').click();
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll('.skill-tag')].some((t) => t.textContent === '/relecture-ieee'),
+    );
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('Compétence appliquée : Relecture'),
+    );
+    request = await lastRequest();
+    assert.match(request.messages[0].content, /Relecture d’un article \(format IEEE\)/);
+    assert.equal(request.messages.at(-1).content, 'Relis la section 3.');
+    // Appel seul, sans texte : la compétence s'applique telle quelle.
+    await page.locator('#prompt').fill('/donnees-brutes');
+    await page.locator('#send').click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector('#notice')
+        .textContent.includes('Compétence appliquée : Traiter des données brutes'),
+    );
+    request = await lastRequest();
+    assert.equal(
+      request.messages.at(-1).content,
+      'Applique la compétence « Traiter des données brutes (parcours complet) ».',
+    );
+    assert.match(request.messages[0].content, /9\. \/donnees-documenter/);
+    await page.locator('#prompt').fill('/inconnue test');
+    await page.locator('#send').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('Compétence inconnue : /inconnue'),
+    );
+    assert.equal(await page.locator('#prompt').inputValue(), '/inconnue test', 'rien envoyé');
+    await page.locator('#prompt').fill('/competences');
+    await page.locator('#send').click();
+    await page.waitForFunction(() => !document.querySelector('#skills-view').hidden);
+    await app.evaluate(({ shell }) => {
+      global.opened = [];
+      shell.openPath = async (p) => {
+        global.opened.push(p);
+        return '';
+      };
+    });
+    await page.locator('#skills-new').click();
+    await page.waitForFunction(() => document.querySelectorAll('.skill-card').length === 43);
+    assert.match(
+      (await app.evaluate(() => global.opened)).at(-1),
+      /Compétences[\\/]ma-competence\.md$/,
+    );
+    assert.match(
+      await fs.readFile(path.join(profile, 'Compétences', 'ma-competence.md'), 'utf8'),
+      /appel: \/ma-competence/,
+    );
+
+    // Fichiers joints : consignes (.md) et données météo (CSV NASA POWER) pour un script Python.
+    const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-donnees-'));
+    const csvFile = path.join(dataDir, 'dalaba.csv');
+    const mdFile = path.join(dataDir, 'consignes.md');
+    await fs.writeFile(
+      csvFile,
+      '-BEGIN HEADER-\nNASA/POWER Daily\n-END HEADER-\nYEAR,DOY,T2M,PRECTOTCORR\n2024,1,23.5,0.0\n2024,2,23.6,-999\n',
+    );
+    await fs.writeFile(mdFile, '# Nettoyage\nRemplacer -999 par NaN puis créer une colonne date.');
+    await app.evaluate(
+      ({ dialog }, files) => {
+        dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [files.shift()] });
+      },
+      [csvFile, mdFile],
+    );
+    await page.locator('#chat-tab').click();
+    await page.locator('#new').click();
+    await page.locator('#attach').click();
+    await page.waitForFunction(() => document.querySelectorAll('.file-chip').length === 1);
+    await page.locator('#attach').click();
+    await page.waitForFunction(() => document.querySelectorAll('.file-chip').length === 2);
+    assert.match(await page.locator('#file-chips').textContent(), /tableau · 2 lignes, 4 colonnes/);
+    await page.locator('#task').selectOption('donnees');
+    await page.locator('#prompt').fill('Écris le script de nettoyage.');
+    await page.locator('#send').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('Fichiers transmis'),
+    );
+    request = await lastRequest();
+    const sentSystem = request.messages[0].content;
+    assert.match(sentSystem, /pandas/, 'consigne de la tâche Données');
+    assert.match(sentSystem, /### Tableau : dalaba\.csv[\s\S]*skiprows=3[\s\S]*1 valeur\(s\) -999/);
+    assert.match(sentSystem, /### Fichier : consignes\.md\n```\n# Nettoyage/);
+    assert.ok(!sentSystem.includes('2024,2,23.6,-999\n2024'), 'portrait, pas le fichier entier');
+    assert.equal(request.messages.at(-1).content, 'Écris le script de nettoyage.');
+    const withFiles = (await readJson(profile, 'conversations.json')).find((c) => c.files);
+    assert.deepEqual(
+      withFiles.files.map((f) => f.name),
+      ['dalaba.csv', 'consignes.md'],
+    );
+    const fileIds = withFiles.files.map((f) => f.id);
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#delete-conversation').click();
+    await page.waitForFunction(() => !document.querySelectorAll('.file-chip').length);
+    for (const id of fileIds) await waitForMissing(path.join(profile, 'documents', id + '.json'));
+    await fs.rm(dataDir, { recursive: true, force: true });
+
     assert.deepEqual(errors, []);
     console.log(
-      'PASS fonctions: modèle mémorisé, contexte du Modelfile, renommage, réglages appliqués, comparaison avec mesures et notes, série de questions, vue d’ensemble, export CSV, ancien format, suppression, benchmark (notation à l’aveugle, import de notes, accord, export SVG, répétitions, conditions), pause et reprise, tâches, mémoire par projet, départ programmé (Mac éveillé, annulation), actions sur fichiers (dossier autorisé, plan vérifié, application, journal, annulation), aucune erreur JS.',
+      'PASS fonctions: modèle mémorisé, contexte du Modelfile, renommage, réglages appliqués, comparaison avec mesures et notes, série de questions, vue d’ensemble, export CSV, ancien format, suppression, benchmark (notation à l’aveugle, import de notes, accord, export SVG, répétitions, conditions), pause et reprise, tâches, mémoire par projet, départ programmé (Mac éveillé, annulation), compétences (menu, appel /nom, suggestions, nouvelle compétence), fichiers joints (consignes, portrait des données, effacement), actions sur fichiers (dossier autorisé, plan vérifié, application, journal, annulation), aucune erreur JS.',
     );
   } finally {
     await app?.close();

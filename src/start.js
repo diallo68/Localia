@@ -26,7 +26,10 @@
   if (historyReady && comparisonsReady)
     await window.localia
       .pruneDocuments(
-        [...conversations, ...comparisons].filter((c) => c.document).map((c) => c.document.id),
+        [...conversations, ...comparisons].flatMap((c) => [
+          ...(c.document ? [c.document.id] : []),
+          ...(c.files || []).map((f) => f.id),
+        ]),
       )
       .catch(() => {});
   render();

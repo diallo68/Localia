@@ -1,0 +1,22 @@
+Compétences de Localia
+======================
+
+Chaque fichier .md de ce dossier est une compétence. Modifiez-les librement, ajoutez-en, partagez-les.
+
+En-tête obligatoire, en haut du fichier :
+
+---
+nom: Nom affiché
+appel: /mon-appel           (« / » puis minuscules, chiffres, tirets)
+description: Une phrase.
+famille: Groupe dans le menu
+tache: donnees              (facultatif : donnees, redaction, relecture, synthese, extraction, calcul, code, question)
+etapes: /a, /b, /c          (facultatif : un parcours qui enchaîne d'autres compétences)
+fichiers: modele.md         (facultatif : fichiers de ce dossier joints au modèle)
+---
+Consignes pour le modèle…
+
+Dans une conversation : choisissez la compétence dans le menu Tâche, ou commencez votre message par son appel,
+par exemple « /donnees-manquants Traite les manquants de mon fichier ». « /competences » ouvre la liste.
+
+Une compétence de départ supprimée n'est pas recréée.

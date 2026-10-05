@@ -154,7 +154,19 @@ $('biblio-search-form').onsubmit = guard(async (event) => {
   const works = await window.localia.biblioSearch(query);
   box.replaceChildren();
   if (!works.length) box.append(element('p', 'muted', 'Aucun résultat.'));
-  for (const work of works) box.append(workCard(work));
+  for (const work of works)
+    box.append(
+      workCard(work, false, [
+        {
+          label: 'Ajouter à Zotero',
+          onclick: async (b) => {
+            await window.localia.zoteroAddWork(work);
+            b.textContent = 'Ajouté à Zotero';
+            b.disabled = true;
+          },
+        },
+      ]),
+    );
 });
 $('zotero-search-form').onsubmit = guard(async (event) => {
   event.preventDefault();
@@ -175,8 +187,25 @@ function workCard(work, zotero = false, extra = []) {
   const card = element('article', 'biblio-card');
   card.append(element('strong', '', work.title || 'Sans titre'));
   card.append(element('p', '', formatReference(work)));
+  const TYPE_LABELS = {
+    dataset: 'Jeu de données',
+    preprint: 'Prépublication (non relue)',
+    dissertation: 'Thèse',
+    book: 'Livre',
+    'book-chapter': 'Chapitre de livre',
+    review: 'Article de synthèse',
+    'conference-paper': 'Communication de conférence',
+  };
   if (work.citedBy != null)
-    card.append(element('small', 'muted', `Cité ${work.citedBy} fois (OpenAlex)`));
+    card.append(
+      element(
+        'small',
+        'muted',
+        [TYPE_LABELS[work.type], `Cité ${work.citedBy} fois (OpenAlex)`]
+          .filter(Boolean)
+          .join(' · '),
+      ),
+    );
   if (zotero && work.itemType === 'attachment')
     card.append(element('small', 'muted', 'PDF sans notice : complétez-la dans Zotero.'));
   const row = element('div', 'input-row');

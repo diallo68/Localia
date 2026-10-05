@@ -25,7 +25,8 @@
       ><button id="benchmark-tab" class="nav">▤ Benchmark</button
       ><button id="projects-tab" class="nav">◧ Projets</button
       ><button id="bibliography-tab" class="nav">❡ Bibliographie</button
-      ><button id="files-tab" class="nav">⧉ Fichiers</button>
+      ><button id="files-tab" class="nav">⧉ Fichiers</button
+      ><button id="skills-tab" class="nav">✦ Compétences</button>
       <div class="section-label">HISTORIQUE LOCAL</div>
       <nav id="history" aria-label="Historique des conversations"></nav>
       <div class="privacy">
@@ -99,10 +100,17 @@
               Retirer
             </button>
           </div>
+          <div id="file-chips" hidden></div>
+          <div id="skill-suggest" hidden role="listbox" aria-label="Compétences"></div>
           <label class="sr-only" for="prompt">Votre message</label
           ><textarea id="prompt" rows="3" placeholder="Posez votre question…"></textarea>
           <div class="composer-footer">
-            <button id="attach-pdf" type="button">＋ PDF</button
+            <button
+              id="attach"
+              type="button"
+              title="PDF, consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json)"
+            >
+              ＋ Ajouter</button
             ><span id="hint">Entrée pour envoyer · Maj + Entrée pour revenir à la ligne</span
             ><button type="button" id="stop" hidden>Arrêter</button
             ><button class="primary" id="send" type="submit">Envoyer ↑</button>
@@ -506,6 +514,35 @@
         <h3>Journal</h3>
         <div id="files-journal"></div>
       </section>
+      <section id="skills-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">RECETTES RÉUTILISABLES</span>
+          <h2>Compétences.</h2>
+          <p>
+            Une compétence donne au modèle des consignes précises pour un type de travail. Un
+            parcours enchaîne plusieurs compétences, étape par étape.
+          </p>
+        </div>
+        <div class="skills-help">
+          <p>
+            <strong>Pour appeler une compétence</strong>, commencez votre message par son appel, par
+            exemple <code>/donnees-manquants Traite les valeurs manquantes de mon fichier</code>, ou
+            choisissez-la dans le menu <em>Tâche</em> d’une conversation. Tapez <code>/</code> pour
+            voir les suggestions, <code>/competences</code> pour revenir ici.
+          </p>
+          <p class="muted">
+            Chaque compétence est un fichier Markdown du dossier <code id="skills-dir"></code> :
+            modifiez-la dans votre éditeur, ajoutez-en, partagez-les. Le fichier LISEZ-MOI.txt du
+            dossier explique le format.
+          </p>
+        </div>
+        <div class="input-row">
+          <button id="skills-new" class="primary" type="button">Nouvelle compétence</button
+          ><button id="skills-folder" type="button">Ouvrir le dossier</button
+          ><button id="skills-reload" type="button">Recharger</button>
+        </div>
+        <div id="skills-list"></div>
+      </section>
       <section id="settings-view" class="page" hidden>
         <div class="library-intro">
           <span class="eyebrow">OPTIMISER VOS MODÈLES</span>
@@ -644,6 +681,7 @@
     <script src="memory.js"></script>
     <script src="bibliography.js"></script>
     <script src="actions.js"></script>
+    <script src="skills.js"></script>
     <script src="benchmark-stats.js"></script>
     <script src="charts.js"></script>
     <script src="renderer.js"></script>
@@ -653,6 +691,7 @@
     <script src="projects.js"></script>
     <script src="bibliography-view.js"></script>
     <script src="files-view.js"></script>
+    <script src="skills-view.js"></script>
     <script src="start.js"></script>
   </body>
 </html>

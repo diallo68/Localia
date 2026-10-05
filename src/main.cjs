@@ -37,6 +37,8 @@ const files = require('./files.cjs');
 const storage = require('./storage.cjs');
 const platform = require('./platform.cjs');
 const watchLogic = require('./watch.js');
+const tables = require('./tables.js');
+const skillsLogic = require('./skills.js');
 const documentsPath = () => path.join(app.getPath('userData'), 'documents');
 if (process.env.LOCALIA_TEST_DATA) app.setPath('userData', process.env.LOCALIA_TEST_DATA);
 let window, service;
@@ -161,6 +163,46 @@ handle('attach-pdf', async () => {
   if (result.canceled || !result.filePaths.length) return null;
   return importPdf(result.filePaths[0], documentsPath(), documentCodec);
 });
+// Fichier texte joint à une conversation (consignes, code, tableau de données) : enregistré comme
+// un document (chiffré si le chiffrement est actif) ; un tableau est résumé en portrait.
+// Un seul bouton « Ajouter » : un PDF devient le document de la conversation (lu page par page),
+// tout autre fichier accepté devient un fichier joint (texte, code, portrait d'un tableau).
+handle('attach', async () => {
+  const result = await dialog.showOpenDialog(window, {
+    title: 'Ajouter à la conversation',
+    properties: ['openFile'],
+    filters: [
+      {
+        name: 'PDF, consignes, code et données',
+        extensions: ['pdf', ...tables.TEXT_EXTENSIONS, ...tables.TABLE_EXTENSIONS],
+      },
+    ],
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+  const file = result.filePaths[0];
+  if (/\.pdf$/i.test(file))
+    return { kind: 'pdf', doc: await importPdf(file, documentsPath(), documentCodec) };
+  return { kind: 'file', file: await saveTextAttachment(file) };
+});
+async function saveTextAttachment(file) {
+  if ((await fs.stat(file)).size > 50_000_000) throw new Error('Fichier limité à 50 Mo.');
+  const name = path.basename(file);
+  const prepared = tables.prepareAttachment(name, await fs.readFile(file));
+  const doc = { id: crypto.randomUUID(), name, file: true, ...prepared };
+  await fs.mkdir(documentsPath(), { recursive: true });
+  await fs.writeFile(
+    path.join(documentsPath(), doc.id + '.json'),
+    documentCodec.encode(JSON.stringify(doc)),
+    { mode: 0o600 },
+  );
+  return {
+    id: doc.id,
+    name,
+    kind: doc.kind,
+    summary: doc.summary,
+    preview: doc.kind === 'table' ? doc.content : null,
+  };
+}
 handle('delete-document', (id) => deleteDocument(documentsPath(), id));
 // Vérifications automatiques d'une réponse (calculs ; avec document : pages, citations, chiffres).
 handle('verify-answer', async (payload) => {
@@ -236,9 +278,16 @@ handle('run', async (kind, payload) => {
     if (chatLike) {
       const info = await showModel(model);
       const modelSettings = (await readSettings()).models[model] || {};
+      // Compétence choisie (menu Tâche ou « /appel ») : sa consigne, ses fichiers, et la tâche de base.
+      const skill =
+        typeof payload.skill === 'string' && payload.skill
+          ? await skillContext(payload.skill)
+          : null;
+      if (skill) send({ kind: 'skill', data: { name: skill.skill.name, call: skill.skill.call } });
       // Consigne de la tâche choisie (assistant de recherche), ajoutée à la consigne permanente.
-      const task = payload.task ? taskById(payload.task) : null;
-      if (payload.task && !task) throw new Error('Type de tâche inconnu.');
+      const taskId = skill?.skill.task || payload.task;
+      const task = taskId ? taskById(taskId) : null;
+      if (taskId && !task) throw new Error('Type de tâche inconnu.');
       // Mémoire du projet de la conversation : notes de l'utilisateur, choisies selon la question.
       let memory = null;
       if (payload.projectId) {
@@ -254,11 +303,30 @@ handle('run', async (kind, payload) => {
             data: { project: project.name, notes: memory.notes, partial: memory.partial },
           });
       }
-      const system = [modelSettings.system, task?.instruction, memory?.text]
+      // Fichiers joints (consignes, code, portrait des tableaux), au plus 5.
+      const fileIds = Array.isArray(payload.fileIds) ? payload.fileIds.slice(0, 5) : [];
+      const files = [...(skill?.files || [])];
+      for (const id of fileIds) {
+        const doc = await loadDocument(documentsPath(), id, documentCodec);
+        if (!doc.file) throw new Error('Fichier joint invalide.');
+        files.push(doc);
+      }
+      if (files.length) send({ kind: 'files-context', data: { names: files.map((f) => f.name) } });
+      const system = [
+        modelSettings.system,
+        task?.instruction,
+        skill?.instruction,
+        memory?.text,
+        tables.attachmentsBlock(files),
+      ]
         .filter(Boolean)
         .join('\n\n');
       const withDocument = Boolean(payload.documentId);
-      const numCtx = contextSize(modelSettings, info, withDocument || kind === 'files');
+      const numCtx = contextSize(
+        modelSettings,
+        info,
+        withDocument || kind === 'files' || files.length > 0,
+      );
       let messages = payload.messages;
       if (withDocument) {
         const doc = await loadDocument(documentsPath(), payload.documentId, documentCodec);
@@ -284,6 +352,8 @@ handle('run', async (kind, payload) => {
       used = { ...body.options, system: Boolean(modelSettings.system) };
       if (task) used.task = task.id;
       if (memory) used.memoryNotes = memory.notes.length;
+      if (files.length) used.files = files.map((f) => f.name);
+      if (skill) used.skill = skill.skill.call;
       if (body.think !== undefined) used.think = body.think;
     }
     const response = await request(chatLike ? '/api/chat' : '/api/pull', body, controller.signal);
@@ -716,6 +786,116 @@ handle('files-undo', async (batchId) => {
   await writeJson('actions-journal.json', journal, 'Journal trop volumineux.');
   return batch;
 });
+// --- Compétences ---------------------------------------------------------------------------------
+// Un fichier Markdown par compétence, dans un dossier visible de l'utilisateur (modifiable, partageable).
+const skillsDir = () =>
+  process.env.LOCALIA_TEST_DATA
+    ? dataPath('Compétences')
+    : path.join(app.getPath('documents'), 'Localia', 'Compétences');
+const STARTER_SKILLS = path.join(__dirname, 'skills');
+// Compétences de départ copiées une seule fois : une compétence supprimée n'est pas recréée, une
+// compétence modifiée n'est jamais écrasée.
+async function installStarterSkills() {
+  const dir = skillsDir();
+  await fs.mkdir(dir, { recursive: true });
+  const record = path.join(dir, '.installees.json');
+  const installed = new Set(await fs.readFile(record, 'utf8').then(JSON.parse, () => []));
+  for (const name of await fs.readdir(STARTER_SKILLS)) {
+    if (installed.has(name)) continue;
+    const target = path.join(dir, name);
+    const exists = await fs.stat(target).then(
+      () => true,
+      () => false,
+    );
+    if (!exists) await fs.writeFile(target, await fs.readFile(path.join(STARTER_SKILLS, name)));
+    installed.add(name);
+  }
+  await fs.writeFile(record, JSON.stringify([...installed].sort(), null, 1));
+}
+let skillsReady = null;
+async function loadSkills() {
+  skillsReady ||= installStarterSkills().catch(() => {});
+  await skillsReady;
+  const dir = skillsDir();
+  const names = (await fs.readdir(dir).catch(() => []))
+    .filter((n) => n.endsWith('.md') && !n.startsWith('.'))
+    .slice(0, 300);
+  const entries = [];
+  for (const name of names) {
+    const file = path.join(dir, name);
+    if ((await fs.stat(file)).size > 60_000) continue;
+    entries.push({ name, text: await fs.readFile(file, 'utf8') });
+  }
+  return { dir, ...skillsLogic.buildCatalog(entries) };
+}
+// Fichier du dossier des compétences seulement (ni sous-dossier, ni chemin qui en sort).
+function skillFile(name) {
+  const dir = skillsDir();
+  const file = path.join(dir, String(name));
+  if (path.dirname(file) !== dir || path.basename(file).startsWith('.'))
+    throw new Error('Fichier de compétence invalide.');
+  return file;
+}
+handle('skills-list', loadSkills);
+handle('skills-open-dir', async () => {
+  await fs.mkdir(skillsDir(), { recursive: true });
+  const error = await shell.openPath(skillsDir());
+  if (error) throw new Error(error);
+});
+handle('skills-open', async (id) => {
+  const skill = (await loadSkills()).skills.find((s) => s.id === id);
+  if (!skill) throw new Error('Compétence introuvable.');
+  const error = await shell.openPath(skillFile(skill.file));
+  if (error) throw new Error(error);
+});
+// Nouvelle compétence : modèle prêt à remplir, ouvert dans l'éditeur de texte du système.
+handle('skills-new', async () => {
+  const dir = skillsDir();
+  await fs.mkdir(dir, { recursive: true });
+  const exists = (name) =>
+    fs.stat(path.join(dir, name)).then(
+      () => true,
+      () => false,
+    );
+  let n = 1;
+  let name = 'ma-competence.md';
+  while (await exists(name)) name = `ma-competence-${++n}.md`;
+  await fs.writeFile(
+    path.join(dir, name),
+    [
+      '---',
+      `nom: Ma compétence ${n}`,
+      `appel: /${name.replace(/\.md$/, '')}`,
+      'description: Ce que fait cette compétence, en une phrase.',
+      'famille: Mes compétences',
+      'tache: redaction',
+      '---',
+      '',
+      'Décrivez ici, pour le modèle, ce qu’il doit faire, dans quel ordre, ce qu’il doit rendre et ce qu’il ne doit pas faire.',
+      '',
+    ].join('\n'),
+  );
+  const error = await shell.openPath(path.join(dir, name));
+  if (error) throw new Error(error);
+  return name;
+});
+// Consigne et fichiers d'une compétence, pour la conversation.
+async function skillContext(id) {
+  const { skills } = await loadSkills();
+  const skill = skills.find((s) => s.id === id);
+  if (!skill)
+    throw new Error(
+      `Compétence introuvable (/${id}) : elle a peut-être été supprimée ou renommée.`,
+    );
+  const files = [];
+  for (const name of skill.files.slice(0, 5)) {
+    const buffer = await fs.readFile(skillFile(name)).catch(() => null);
+    if (!buffer) throw new Error(`Fichier de la compétence introuvable : ${name}.`);
+    files.push({ name, ...tables.prepareAttachment(name, buffer) });
+  }
+  return { skill, instruction: skillsLogic.skillInstruction(skill, skills), files };
+}
+
 // --- Zotero (API locale, lecture seule) ---------------------------------------------------------
 // Zotero tourne sur ce Mac : rien ne sort de l'ordinateur, la recherche en ligne n'est pas requise.
 const ZOTERO_API = 'http://127.0.0.1:23119/api/users/0';
@@ -997,13 +1177,31 @@ handle('biblio-search', async (query) => {
     throw new Error('Recherche vide ou trop longue (300 caractères au plus).');
   const url = new URL('https://api.openalex.org/works');
   url.searchParams.set('search', query.trim());
-  url.searchParams.set('per-page', '15');
+  url.searchParams.set('per-page', '25');
   url.searchParams.set(
     'select',
-    'display_name,publication_year,doi,authorships,primary_location,cited_by_count',
+    'id,type,display_name,publication_year,doi,authorships,primary_location,cited_by_count',
   );
   const data = await onlineJson(url);
-  return (data.results || []).map(bibliography.fromOpenAlex);
+  return bibliography.uniqueWorks((data.results || []).map(bibliography.fromOpenAlex)).slice(0, 15);
+});
+// Notice d'une recherche ajoutée à Zotero, sur clic : champs vérifiés avant l'envoi.
+handle('zotero-add-work', async (work) => {
+  const text = (v, max) => typeof v === 'string' && v.length <= max;
+  if (
+    !work ||
+    !text(work.title, 1000) ||
+    !work.title.trim() ||
+    !Array.isArray(work.authors) ||
+    work.authors.length > 200 ||
+    !work.authors.every((a) => text(a, 300)) ||
+    !(work.year == null || Number.isInteger(work.year)) ||
+    !(work.venue == null || text(work.venue, 500)) ||
+    !(work.doi == null || (text(work.doi, 300) && /^10\.\d{4,9}\/\S+$/.test(work.doi))) ||
+    !(work.type == null || text(work.type, 50))
+  )
+    throw new Error('Notice invalide.');
+  await addToZotero(work, ['Recherche Localia']);
 });
 handle('biblio-verify', async (references) => {
   if (!Array.isArray(references) || !references.length || references.length > 100)
@@ -1082,6 +1280,7 @@ app.whenReady().then(async () => {
     keyError = `Clé de chiffrement illisible (${error.message}).`;
   });
   createWindow();
+  skillsReady = installStarterSkills().catch(() => {});
   // Veille : premier passage peu après l'ouverture, puis toutes les 30 minutes.
   setTimeout(runDueWatch, 20000);
   setInterval(runDueWatch, 30 * 60000);

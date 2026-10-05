@@ -24,6 +24,8 @@ Localia is a desktop application for macOS and Windows for working with local la
 - **Optional encryption** of all Localia data on disk (AES-256-GCM, key in the macOS Keychain, recovery key).
 - **Zotero** (local, read-only): search your library, compare an article's references with it, ask questions about an item's PDF.
 - **Literature watch and scheduled series**: new articles on your topics (OpenAlex, optional), benchmark series started at a set time with the Mac kept awake.
+- **Skills**: reusable Markdown instructions, chosen in the Task menu or called with `/name` at the start of a message; step-by-step paths for raw data, articles, theses and app development.
+- **Data files**: attach instructions, code or a CSV to a conversation; tables are summarized (columns, types, missing values, ranges) instead of being sent in full; you run the generated code yourself.
 - **Bibliography**: author citations (“Name [n]”) checked offline against the article's reference list; optionally (off by default, the only feature that uses the Internet) reference existence checked with Crossref and article search with OpenAlex.
 - **Per-model settings**: temperature, context size, maximum answer length, top P, top K, repeat penalty, seed, CPU threads, keep-alive, thinking mode, permanent system prompt. Empty fields keep the model's own Modelfile values.
 - **Comparison**: send one question, or a series of questions (with an optional PDF), to several models; each model answers every question in turn, then is unloaded. Series can be repeated 1–5 times, paused and resumed.

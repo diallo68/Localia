@@ -74,7 +74,22 @@ async function diskEncryption() {
 }
 
 // Dossiers qui ne peuvent pas être confiés aux actions sur fichiers.
-function forbiddenRoot(root, dataDir, system = platform, home = os.homedir(), env = process.env) {
+// Chemin réel (Windows : noms courts « RUNNER~1 » développés) ; le chemin tel quel s'il n'existe pas.
+const realPath = (p) => {
+  try {
+    return fs.realpathSync.native(p);
+  } catch {
+    return p;
+  }
+};
+function forbiddenRoot(
+  root,
+  dataDir,
+  system = platform,
+  home = os.homedir(),
+  env = process.env,
+  real = realPath,
+) {
   const p = system === 'win32' ? path.win32 : path.posix;
   const norm = (s) => (system === 'win32' ? p.normalize(s).toLowerCase() : s);
   const r = norm(root);
@@ -93,8 +108,8 @@ function forbiddenRoot(root, dataDir, system = platform, home = os.homedir(), en
     ];
     if (systemDirs.some(inside)) return 'dossier système';
     // Dossier temporaire (dans AppData) : ses sous-dossiers restent permis, comme sous macOS.
-    const temp = env.TEMP || os.tmpdir();
-    if (inside(temp) && r !== norm(temp)) return null;
+    const temps = [env.TEMP || os.tmpdir()].flatMap((t) => [t, real(t)]);
+    if (temps.some((t) => inside(t) && r !== norm(t))) return null;
     if (inside(p.join(home, 'AppData'))) return 'dossier de réglages';
     return null;
   }

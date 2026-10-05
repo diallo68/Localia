@@ -48,4 +48,15 @@ test('dossiers interdits sous Windows (sans tenir compte des majuscules)', () =>
     });
   assert.equal(g('C:\\Users\\Ama\\AppData\\Local\\Temp\\localia-x'), null);
   assert.match(g('C:\\Users\\Ama\\AppData\\Local\\Temp'), /réglages/);
+  // Dossier temporaire écrit en nom court (« AMADOU~1 ») : reconnu par son chemin réel.
+  const h = (root) =>
+    platform.forbiddenRoot(
+      root,
+      null,
+      'win32',
+      'C:\\Users\\Amadou Diallo',
+      { TEMP: 'C:\\Users\\AMADOU~1\\AppData\\Local\\Temp' },
+      () => 'C:\\Users\\Amadou Diallo\\AppData\\Local\\Temp',
+    );
+  assert.equal(h('C:\\Users\\Amadou Diallo\\AppData\\Local\\Temp\\localia-x'), null);
 });

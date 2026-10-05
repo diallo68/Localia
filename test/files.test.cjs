@@ -120,7 +120,7 @@ test('corbeille : jamais de suppression définitive ; annulation signalée comme
   assert.equal(trashed.length, 1);
   assert.ok(await exists(path.join(root + '-corbeille', 'Articles', 'vieux.pdf')));
   await files.undoActions(root, results, { trash });
-  assert.match(results[0].undoError, /Corbeille/);
+  assert.match(results[0].undoError, /corbeille/i);
 });
 
 test('une action échoue en cours de route : les suivantes ne sont pas exécutées', async () => {

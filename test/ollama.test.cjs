@@ -33,8 +33,12 @@ test('délai dépassé : message distinct de « Ollama inaccessible »', async (
       options.signal.addEventListener('abort', () => reject(options.signal.reason)),
     );
   try {
+    // Minuteur ordinaire : celui d'AbortSignal.timeout ne garde pas la boucle d'événements active,
+    // et Node peut arrêter le test avant qu'il ne se déclenche (constaté sous Linux).
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(new DOMException('délai', 'TimeoutError')), 20);
     await assert.rejects(
-      request('/api/show', { model: 'm' }, AbortSignal.timeout(20)),
+      request('/api/show', { model: 'm' }, controller.signal),
       /pas répondu à temps/,
     );
     const failure = (code) => async (_url, options) => {

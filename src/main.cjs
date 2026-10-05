@@ -455,6 +455,10 @@ function queueWrite(name, produce) {
   writeQueues.set(name, queue);
   return queue;
 }
+// Tests automatiques : attendre la fin des écritures en cours avant de relire les fichiers.
+if (process.env.LOCALIA_TEST_DATA)
+  global.localiaWritesSettled = () =>
+    Promise.all([...writeQueues.values()].map((q) => q.catch(() => {})));
 function writeJson(name, value, tooLarge) {
   const data = JSON.stringify(value);
   if (data.length > 20_000_000) throw new Error(tooLarge);

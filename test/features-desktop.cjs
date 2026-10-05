@@ -4,6 +4,16 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 
+// Fichier de données écrit (écriture asynchrone) : attend que son contenu vérifie la condition.
+async function waitForJson(profile, name, check, timeout = 5000) {
+  const end = Date.now() + timeout;
+  for (;;) {
+    const data = await readJson(profile, name).catch(() => null);
+    if (data && check(data)) return data;
+    if (Date.now() > end) throw new Error(`${name} : contenu attendu non écrit.`);
+    await new Promise((r) => setTimeout(r, 100));
+  }
+}
 async function waitForMissing(file, timeout = 5000) {
   const end = Date.now() + timeout;
   while (
@@ -16,8 +26,12 @@ async function waitForMissing(file, timeout = 5000) {
     await new Promise((r) => setTimeout(r, 100));
   }
 }
-const readJson = async (profile, name) =>
-  JSON.parse(await fs.readFile(path.join(profile, name), 'utf8'));
+// Avant chaque lecture : écritures de Localia terminées (machines lentes), voir settleWrites.
+let settleWrites = async () => {};
+const readJson = async (profile, name) => {
+  await settleWrites();
+  return JSON.parse(await fs.readFile(path.join(profile, name), 'utf8'));
+};
 
 (async () => {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-features-'));
@@ -41,6 +55,13 @@ const readJson = async (profile, name) =>
       env: { ...process.env, LOCALIA_TEST_DATA: profile },
     });
     const page = await app.firstWindow();
+    settleWrites = async () => {
+      // Deux passages : une sauvegarde demandée pendant le premier est aussi attendue.
+      for (let i = 0; i < 2; i++) {
+        await app.evaluate(() => global.localiaWritesSettled?.());
+        await new Promise((r) => setTimeout(r, 50));
+      }
+    };
     page.setDefaultTimeout(15000);
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
@@ -138,7 +159,7 @@ const readJson = async (profile, name) =>
     await page.waitForFunction(
       () => document.querySelector('#history button').textContent === 'Mon essai',
     );
-    assert.equal((await readJson(profile, 'conversations.json'))[0].title, 'Mon essai');
+    await waitForJson(profile, 'conversations.json', (c) => c[0]?.title === 'Mon essai');
 
     await page.reload();
     await page.waitForFunction(() => document.querySelector('#model').options.length === 2);
@@ -627,8 +648,16 @@ const readJson = async (profile, name) =>
       document.querySelector('#files-folders').textContent.includes('Aucun dossier autorisé'),
     );
     await page.locator('#files-add').click();
-    await page.waitForFunction(() =>
-      document.querySelector('#notice').textContent.includes('ne peut pas être autorisé'),
+    // Message réellement affiché, pour comprendre un échec sur un autre système.
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#notice').textContent ||
+        !document.querySelector('#files-folders').textContent.includes('Aucun dossier'),
+    );
+    assert.match(
+      await page.locator('#notice').textContent(),
+      /ne peut pas être autorisé/,
+      `dossier personnel refusé ; dossiers : ${await page.locator('#files-folders').textContent()}`,
     );
     await page.locator('#files-add').click();
     await page.waitForFunction(() =>

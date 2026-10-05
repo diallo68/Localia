@@ -102,6 +102,19 @@ const readJson = async (profile, name) =>
     assert.equal(request.options.num_ctx, 8192, 'contexte du Modelfile respecté');
     assert.equal((await readJson(profile, 'settings.json')).lastModel, 'grand:8b');
 
+    // Fenêtre à sa taille minimale (petit écran) : l'historique reste cliquable, rien ne le recouvre.
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(740, 560));
+    await page.waitForFunction(() => window.innerHeight < 600);
+    const covered = await page.evaluate(() => {
+      const button = document.querySelector('#history button');
+      button.scrollIntoView({ block: 'nearest' });
+      const box = button.getBoundingClientRect();
+      const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return top === button || button.contains(top) ? null : top?.className || top?.tagName;
+    });
+    assert.equal(covered, null, 'historique recouvert sur petit écran');
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1180, 820));
+
     // Renommer.
     await page.locator('#rename-conversation').click();
     await page.locator('#rename-input').fill('Mon essai');

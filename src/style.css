@@ -57,6 +57,11 @@ aside {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Petit écran : la colonne défile au lieu de faire passer l'historique sous le bas de page. */
+  overflow-y: auto;
+}
+aside > * {
+  flex-shrink: 0;
 }
 .brand {
   display: flex;
@@ -100,7 +105,9 @@ aside {
 }
 #history {
   overflow: auto;
-  flex: 1;
+  flex: 1 1 auto;
+  flex-shrink: 1;
+  min-height: 96px; /* quelques conversations toujours visibles */
 }
 #history button {
   display: block;
@@ -1325,4 +1332,18 @@ progress {
   border: 1px solid #dbe5df;
   border-radius: 8px;
   background: white;
+}
+@media (max-height: 820px) {
+  aside {
+    padding-top: 18px;
+  }
+  .brand {
+    margin-bottom: 12px;
+  }
+  .section-label {
+    margin-top: 14px;
+  }
+  .privacy {
+    padding-top: 10px;
+  }
 }

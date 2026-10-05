@@ -1,0 +1,66 @@
+{
+  "name": "localia-desktop",
+  "version": "0.5.0",
+  "description": "Assistant IA local pour macOS",
+  "main": "src/main.cjs",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.cjs",
+    "package": "electron-builder --mac dir --x64",
+    "test:desktop": "node test/desktop.cjs",
+    "test:pdf": "node test/pdf-desktop.cjs",
+    "format": "prettier --write src test",
+    "format:check": "prettier --check src test",
+    "vendor": "cp node_modules/markdown-it/dist/browser/markdown-it.umd.min.js src/vendor/markdown-it.min.js && cp node_modules/markdown-it/LICENSE src/vendor/markdown-it.LICENSE",
+    "test:features": "node test/features-desktop.cjs",
+    "test:encryption": "node test/encryption-desktop.cjs",
+    "package:mac-arm64": "electron-builder --mac dir --arm64",
+    "package:win": "electron-builder --win dir --x64",
+    "dist:mac": "electron-builder --mac dmg zip --x64 --arm64",
+    "dist:win": "electron-builder --win nsis zip --x64"
+  },
+  "build": {
+    "appId": "fr.localia.desktop",
+    "productName": "Localia",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "identity": "-",
+      "target": [
+        {
+          "target": "dir"
+        }
+      ],
+      "hardenedRuntime": false
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Localia-${version}-Windows-installation.${ext}"
+    },
+    "artifactName": "Localia-${version}-${os}-${arch}.${ext}"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "markdown-it": "15.0.2",
+    "prettier": "3.9.9"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^6.4.299",
+    "undici": "7.29.1"
+  }
+}

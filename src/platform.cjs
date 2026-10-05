@@ -1,0 +1,142 @@
+// Ce qui dépend du système : emplacement d'Ollama, version du système, chiffrement du disque,
+// dossiers interdits aux actions sur fichiers, noms affichés. macOS (Intel et Apple Silicon),
+// Windows ; Linux au mieux.
+const path = require('node:path');
+const fs = require('node:fs');
+const os = require('node:os');
+const { execFile } = require('node:child_process');
+
+const platform = process.platform;
+
+const run = (command, args, timeout = 3000) =>
+  new Promise((resolve) =>
+    execFile(command, args, { timeout, windowsHide: true }, (error, stdout) =>
+      resolve(error ? null : String(stdout).trim()),
+    ),
+  );
+
+// Emplacements usuels d'Ollama ; OLLAMA_PATH l'emporte s'il est défini.
+function ollamaCandidates(env = process.env, system = platform) {
+  if (system === 'win32') {
+    const local = env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+    return [
+      path.win32.join(local, 'Programs', 'Ollama', 'ollama.exe'),
+      path.win32.join(env.ProgramFiles || 'C:\\Program Files', 'Ollama', 'ollama.exe'),
+    ];
+  }
+  if (system === 'darwin')
+    return [
+      '/usr/local/bin/ollama', // Mac Intel, et lien créé par l'application Ollama
+      '/opt/homebrew/bin/ollama', // Homebrew sur Apple Silicon
+      '/Applications/Ollama.app/Contents/Resources/ollama',
+    ];
+  return ['/usr/local/bin/ollama', '/usr/bin/ollama'];
+}
+function ollamaPath() {
+  if (process.env.OLLAMA_PATH && fs.existsSync(process.env.OLLAMA_PATH))
+    return process.env.OLLAMA_PATH;
+  return ollamaCandidates().find((p) => fs.existsSync(p)) || null;
+}
+
+async function systemInfo() {
+  if (platform === 'darwin') {
+    const [version, cores] = await Promise.all([
+      run('/usr/bin/sw_vers', ['-productVersion']),
+      run('/usr/sbin/sysctl', ['-n', 'hw.physicalcpu']),
+    ]);
+    return {
+      os: version ? `macOS ${version}` : null,
+      macos: version,
+      physicalCores: cores ? Number(cores) : null,
+    };
+  }
+  if (platform === 'win32') {
+    const cores = await run(
+      'powershell.exe',
+      [
+        '-NoProfile',
+        '-Command',
+        '(Get-CimInstance Win32_Processor | Measure-Object NumberOfCores -Sum).Sum',
+      ],
+      8000,
+    );
+    return { os: `${os.version()} (${os.release()})`, physicalCores: cores ? Number(cores) : null };
+  }
+  return { os: `${os.version()} ${os.release()}`, physicalCores: null };
+}
+
+// Chiffrement de tout le disque : FileVault sur macOS ; inconnu ailleurs (BitLocker demande les
+// droits administrateur pour être interrogé).
+async function diskEncryption() {
+  if (platform !== 'darwin') return null;
+  const status = await run('/usr/bin/fdesetup', ['status']);
+  return status ? /is On/i.test(status) : null;
+}
+
+// Dossiers qui ne peuvent pas être confiés aux actions sur fichiers.
+function forbiddenRoot(root, dataDir, system = platform, home = os.homedir(), env = process.env) {
+  const p = system === 'win32' ? path.win32 : path.posix;
+  const norm = (s) => (system === 'win32' ? p.normalize(s).toLowerCase() : s);
+  const r = norm(root);
+  const inside = (base) => {
+    const b = norm(base);
+    return r === b || r.startsWith(b.endsWith(p.sep) ? b : b + p.sep);
+  };
+  if (r === norm(p.parse(root).root) || r === norm(home)) return 'dossier trop large';
+  if (dataDir && inside(dataDir)) return 'dossier de réglages';
+  if (system === 'win32') {
+    const systemDirs = [
+      env.SystemRoot || 'C:\\Windows',
+      env.ProgramFiles || 'C:\\Program Files',
+      env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)',
+      env.ProgramData || 'C:\\ProgramData',
+    ];
+    if (systemDirs.some(inside)) return 'dossier système';
+    // Dossier temporaire (dans AppData) : ses sous-dossiers restent permis, comme sous macOS.
+    const temp = env.TEMP || os.tmpdir();
+    if (inside(temp) && r !== norm(temp)) return null;
+    if (inside(p.join(home, 'AppData'))) return 'dossier de réglages';
+    return null;
+  }
+  // Sous macOS, /tmp et les dossiers temporaires de l'utilisateur sont dans /private.
+  const temporary = ['/private/tmp', '/private/var/folders'];
+  const systemDirs = [
+    '/System',
+    '/Library',
+    '/Applications',
+    '/usr',
+    '/bin',
+    '/sbin',
+    '/private',
+    '/etc',
+  ];
+  if (!temporary.some((s) => r.startsWith(s + '/')) && systemDirs.some(inside))
+    return 'dossier système';
+  if (inside(p.join(home, 'Library'))) return 'dossier de réglages';
+  return null;
+}
+
+// Noms affichés dans les messages.
+const NAMES = {
+  darwin: { keystore: 'le trousseau de macOS', fileManager: 'le Finder', trash: 'la Corbeille' },
+  win32: {
+    keystore: 'la protection des données de Windows',
+    fileManager: 'l’Explorateur de fichiers',
+    trash: 'la Corbeille',
+  },
+};
+const names = NAMES[platform] || {
+  keystore: 'le coffre de clés du système',
+  fileManager: 'le gestionnaire de fichiers',
+  trash: 'la corbeille',
+};
+
+module.exports = {
+  platform,
+  ollamaCandidates,
+  ollamaPath,
+  systemInfo,
+  diskEncryption,
+  forbiddenRoot,
+  names,
+};

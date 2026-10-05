@@ -1,0 +1,63 @@
+const { contextBridge, ipcRenderer } = require('electron');
+const invoke = async (name, ...args) => {
+  const result = await ipcRenderer.invoke(name, ...args);
+  if (!result.ok) throw new Error(result.error);
+  return result.data;
+};
+contextBridge.exposeInMainWorld('localia', {
+  platform: process.platform,
+  attachPdf: () => invoke('attach-pdf'),
+  openQuestions: () => invoke('open-questions'),
+  exportFile: (name, extension, content) => invoke('export-file', name, extension, content),
+  openGrades: () => invoke('open-grades'),
+  environment: (names) => invoke('environment', names),
+  deleteDocument: (id) => invoke('delete-document', id),
+  verifyAnswer: (payload) => invoke('verify-answer', payload),
+  biblioCheckDocument: (id) => invoke('biblio-check-document', id),
+  biblioSearch: (query) => invoke('biblio-search', query),
+  biblioVerify: (references) => invoke('biblio-verify', references),
+  filesFolders: () => invoke('files-folders'),
+  filesAddFolder: () => invoke('files-add-folder'),
+  filesRemoveFolder: (id) => invoke('files-remove-folder', id),
+  filesList: (id) => invoke('files-list', id),
+  filesReveal: (id) => invoke('files-reveal', id),
+  filesApply: (payload) => invoke('files-apply', payload),
+  filesJournal: () => invoke('files-journal'),
+  filesUndo: (id) => invoke('files-undo', id),
+  encryptionStatus: () => invoke('encryption-status'),
+  encryptionEnable: () => invoke('encryption-enable'),
+  encryptionDisable: () => invoke('encryption-disable'),
+  encryptionExportKey: () => invoke('encryption-export-key'),
+  encryptionImportKey: () => invoke('encryption-import-key'),
+  zoteroStatus: () => invoke('zotero-status'),
+  zoteroSearch: (query) => invoke('zotero-search', query),
+  zoteroVerify: (references) => invoke('zotero-verify', references),
+  zoteroOpen: (key) => invoke('zotero-open', key),
+  zoteroPdf: (key) => invoke('zotero-pdf', key),
+  watchLoad: () => invoke('watch-load'),
+  watchAdd: (query, frequency) => invoke('watch-add', query, frequency),
+  watchRemove: (id) => invoke('watch-remove', id),
+  watchRun: (id) => invoke('watch-run', id),
+  watchMark: (id, status) => invoke('watch-mark', id, status),
+  watchZotero: (id) => invoke('watch-zotero', id),
+  keepAwake: (on) => invoke('keep-awake', on),
+  pruneDocuments: (ids) => invoke('prune-documents', ids),
+  models: () => invoke('models'),
+  start: () => invoke('start-service'),
+  load: () => invoke('load'),
+  save: (data) => invoke('save', data),
+  loadSettings: () => invoke('load-settings'),
+  saveSettings: (data) => invoke('save-settings', data),
+  loadComparisons: () => invoke('load-comparisons'),
+  loadProjects: () => invoke('load-projects'),
+  saveProjects: (data) => invoke('save-projects', data),
+  saveComparisons: (data) => invoke('save-comparisons', data),
+  modelInfo: (name) => invoke('model-info', name),
+  run: (kind, data) => invoke('run', kind, data),
+  cancel: (kind) => invoke('cancel', kind),
+  onProgress: (fn) => {
+    const listener = (_event, data) => fn(data);
+    ipcRenderer.on('progress', listener);
+    return () => ipcRenderer.removeListener('progress', listener);
+  },
+});

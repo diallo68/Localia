@@ -1,0 +1,82 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  unit:
+    name: Unit tests and formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm test
+
+  desktop:
+    name: Desktop app on ${{ matrix.name }} (Ollama simulated)
+    needs: unit
+    # Dépôt privé : minutes macOS comptées dix fois ; ces tests ne tournent alors que sur demande
+    # (onglet Actions → « Run workflow »). Dépôt public : à chaque envoi.
+    if: github.event_name == 'workflow_dispatch' || github.event.repository.private == false
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS Apple Silicon
+            os: macos-15
+            build: --mac zip --arm64
+          - name: macOS Intel
+            os: macos-15-intel
+            build: --mac zip --x64
+          - name: Windows
+            os: windows-latest
+            build: --win nsis zip --x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: mkdir -p test-results
+      - run: npm run test:features
+      - run: npm run test:pdf
+      - run: npm run test:encryption
+      # Application construite puis testée telle qu'elle sera distribuée.
+      - run: npx electron-builder ${{ matrix.build }} --publish never
+      - run: npm run test:pdf
+        env:
+          LOCALIA_PACKAGED: '1'
+      - name: Keep screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.os }}
+          path: test-results/
+          if-no-files-found: ignore
+      - name: Keep the application
+        uses: actions/upload-artifact@v4
+        with:
+          name: Localia-${{ matrix.os }}
+          path: |
+            dist/*.zip
+            dist/*.exe
+          if-no-files-found: error

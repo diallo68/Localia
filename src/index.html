@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'"
+    />
+    <title>Localia</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <aside>
+      <div class="brand">
+        <span class="logo">L</span>
+        <div>Localia<small>L’IA, chez vous.</small></div>
+      </div>
+      <button id="new" class="primary">＋ Nouvelle conversation</button>
+      <div class="section-label">VOTRE ESPACE</div>
+      <button id="chat-tab" class="nav active">◌ Conversations</button
+      ><button id="models-tab" class="nav">▦ Bibliothèque de modèles</button
+      ><button id="compare-tab" class="nav">⇄ Comparaison</button
+      ><button id="settings-tab" class="nav">⚙ Réglages des modèles</button
+      ><button id="benchmark-tab" class="nav">▤ Benchmark</button
+      ><button id="projects-tab" class="nav">◧ Projets</button
+      ><button id="bibliography-tab" class="nav">❡ Bibliographie</button
+      ><button id="files-tab" class="nav">⧉ Fichiers</button>
+      <div class="section-label">HISTORIQUE LOCAL</div>
+      <nav id="history" aria-label="Historique des conversations"></nav>
+      <div class="privacy">
+        <span>●</span> Sur votre Mac<small>Vos conversations restent ici.</small>
+      </div>
+    </aside>
+    <main>
+      <header>
+        <div>
+          <span class="eyebrow">VOTRE ASSISTANT PERSONNEL</span>
+          <h1 id="heading">Conversations</h1>
+        </div>
+        <div class="connection">
+          <span id="status" role="status">Vérification…</span
+          ><button id="connect">Démarrer Ollama</button
+          ><button id="refresh" aria-label="Actualiser la connexion">↻</button>
+        </div>
+      </header>
+      <div id="notice" role="alert" hidden></div>
+      <section id="chat-view">
+        <div class="toolbar">
+          <label for="project">Projet</label
+          ><select id="project">
+            <option value="">Aucun</option></select
+          ><label for="task">Tâche</label
+          ><select id="task">
+            <option value="">Libre</option></select
+          ><label for="model">Modèle actif</label
+          ><select id="model">
+            <option value="">Aucun modèle installé</option></select
+          ><button id="model-settings" type="button" title="Réglages de ce modèle">
+            ⚙ Réglages</button
+          ><span>Exécution locale</span
+          ><button id="rename-conversation" type="button" hidden>Renommer</button
+          ><button id="delete-conversation" type="button" hidden>Supprimer la conversation</button>
+        </div>
+        <p id="task-advice" class="task-advice" role="status" hidden></p>
+        <form id="rename-form" hidden>
+          <label for="rename-input">Nouveau titre</label
+          ><input id="rename-input" maxlength="120" required /><button
+            class="primary"
+            type="submit"
+          >
+            Enregistrer</button
+          ><button id="rename-cancel" type="button">Annuler</button>
+        </form>
+        <div id="messages" role="log" aria-label="Conversation">
+          <div id="welcome">
+            <div class="hero-icon">✳</div>
+            <span class="eyebrow">UN ESPACE POUR VOS IDÉES</span>
+            <h2>Qu’allez-vous explorer ?</h2>
+            <p>
+              Écrivez, apprenez et imaginez avec votre IA locale.<br />Votre prochaine idée commence
+              ici.
+            </p>
+            <div class="suggestions">
+              <button data-prompt="Aide-moi à rédiger un e-mail professionnel.">
+                ✎<strong>Mieux écrire</strong><span>Trouver les mots justes</span></button
+              ><button data-prompt="Explique-moi simplement comment fonctionne une IA locale.">
+                ◎<strong>Comprendre un sujet</strong><span>Apprendre à votre rythme</span></button
+              ><button data-prompt="Propose-moi cinq idées de projets pour apprendre Python.">
+                ⌘<strong>Créer un projet</strong><span>Passer de l’idée à l’action</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <form id="composer">
+          <div id="attachment" hidden>
+            <div><strong id="attachment-name"></strong><small id="attachment-info"></small></div>
+            <button id="remove-pdf" type="button" aria-label="Retirer le PDF de cette conversation">
+              Retirer
+            </button>
+          </div>
+          <label class="sr-only" for="prompt">Votre message</label
+          ><textarea id="prompt" rows="3" placeholder="Posez votre question…"></textarea>
+          <div class="composer-footer">
+            <button id="attach-pdf" type="button">＋ PDF</button
+            ><span id="hint">Entrée pour envoyer · Maj + Entrée pour revenir à la ligne</span
+            ><button type="button" id="stop" hidden>Arrêter</button
+            ><button class="primary" id="send" type="submit">Envoyer ↑</button>
+          </div>
+        </form>
+        <footer>
+          Les réponses de l’IA peuvent contenir des erreurs. Vérifiez les informations importantes.
+        </footer>
+      </section>
+      <section id="models-view" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">CHOISISSEZ VOTRE INTELLIGENCE</span>
+          <h2>Une IA à votre mesure.</h2>
+          <p>
+            Téléchargez un modèle, puis utilisez-le hors ligne.<br />Sur ce Mac Intel de 16 Go,
+            commencez par un petit modèle.
+          </p>
+        </div>
+        <article class="model-card">
+          <div class="model-icon">Q</div>
+          <div>
+            <span class="badge">POUR COMMENCER</span>
+            <h3>Qwen 2.5 · 1,5B</h3>
+            <p>Un petit modèle multilingue pour découvrir le chat local.</p>
+            <small>qwen2.5:1.5b · Licence Apache 2.0</small>
+          </div>
+          <button class="primary" id="download">Télécharger</button>
+        </article>
+        <form id="custom-form">
+          <label for="custom-model">Télécharger un autre modèle du catalogue Ollama</label>
+          <div class="input-row">
+            <input
+              id="custom-model"
+              placeholder="Ex. qwen2.5:1.5b"
+              required
+              maxlength="150"
+            /><button type="submit">Télécharger</button>
+          </div>
+          <small>Indiquez le nom exact et sa version. La licence dépend du modèle choisi.</small>
+        </form>
+        <div id="transfer" hidden>
+          <div class="input-row">
+            <strong id="transfer-name"></strong><button id="cancel-download">Annuler</button>
+          </div>
+          <progress id="progress" max="100"></progress>
+          <p id="transfer-status" role="status"></p>
+        </div>
+        <h3>Installés sur ce Mac</h3>
+        <div id="installed"></div>
+        <p class="muted">
+          Internet est nécessaire pour télécharger les modèles. Les modèles cloud sont exclus.
+        </p>
+      </section>
+      <section id="compare-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">COMPARER VOS MODÈLES</span>
+          <h2>Même tâche, plusieurs modèles.</h2>
+          <p>
+            Chaque modèle choisi traite toutes les questions à la suite, avec ses réglages, puis il
+            est déchargé pour libérer la mémoire. Son temps de chargement est mesuré à part.
+          </p>
+        </div>
+        <form id="compare-form">
+          <label for="compare-prompt">Tâche à confier aux modèles</label>
+          <textarea
+            id="compare-prompt"
+            rows="5"
+            maxlength="1000000"
+            required
+            placeholder="Ex. Lis ce document et décris son contenu en cinq points."
+          ></textarea>
+          <small class="muted"
+            >Plusieurs questions : séparez-les par une ligne <code>---</code>. Facultatif :
+            <code>## Titre</code> en première ligne d’une question, et <code>Attendu :</code> pour
+            la réponse attendue (jamais envoyée aux modèles).</small
+          >
+          <small id="compare-count" class="muted" role="status"></small>
+          <div class="input-row">
+            <button id="compare-import" type="button">Importer des questions (.txt, .md)</button
+            ><button id="compare-pdf" type="button">＋ PDF</button
+            ><span id="compare-doc" class="muted">Aucun document joint (facultatif).</span
+            ><button id="compare-remove-pdf" type="button" hidden>Retirer</button>
+          </div>
+          <fieldset id="compare-models">
+            <legend>Modèles à comparer</legend>
+          </fieldset>
+          <div class="input-row">
+            <label for="compare-repetitions">Répétitions</label
+            ><input
+              id="compare-repetitions"
+              type="number"
+              min="1"
+              max="5"
+              step="1"
+              value="1"
+              title="Nombre d’exécutions de la série, pour mesurer la variabilité"
+            /><label for="compare-at">Départ</label
+            ><input
+              id="compare-at"
+              type="time"
+              title="Vide : départ immédiat. Une heure : la série démarre à cette heure (le lendemain si elle est passée)."
+            /><button class="primary" id="compare-run" type="submit">Lancer la comparaison</button
+            ><button id="compare-unschedule" type="button" hidden>
+              Annuler le départ programmé</button
+            ><button id="compare-stop" type="button" hidden>Mettre en pause</button
+            ><span id="compare-status" class="muted" role="status"></span>
+          </div>
+        </form>
+        <div id="compare-current"></div>
+        <h3>Comparaisons enregistrées</h3>
+        <div id="compare-history"></div>
+      </section>
+      <section id="benchmark-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">RÉSULTATS À PUBLIER</span>
+          <h2>Benchmark de vos modèles.</h2>
+          <p>
+            Toutes les séries de l’onglet Comparaison, réunies : précision, taux d’invention, notes,
+            durées et vitesses, avec écart-type sur les répétitions. Notez les réponses à l’aveugle,
+            importez les notes d’autres correcteurs, puis exportez données, graphiques et conditions
+            de l’expérience.
+          </p>
+        </div>
+        <div class="bench-toolbar">
+          <label for="bench-grader">Notes de</label
+          ><select id="bench-grader"></select
+          ><label for="bench-grader-name">Correcteur</label
+          ><input id="bench-grader-name" value="Vous" maxlength="40" /><button
+            id="bench-grade"
+            class="primary"
+            type="button"
+          >
+            Noter à l’aveugle</button
+          ><button id="bench-import" type="button">Importer des notes (CSV)</button>
+        </div>
+        <div class="bench-toolbar">
+          <span class="muted">Exporter :</span
+          ><button id="bench-export-csv" type="button">Données (CSV)</button
+          ><button id="bench-export-json" type="button">Données (JSON)</button
+          ><button id="bench-export-md" type="button">Conditions (Markdown)</button
+          ><button id="bench-export-sheet" type="button">Fiche de notation (CSV)</button>
+        </div>
+        <p id="bench-status" class="muted" role="status"></p>
+        <fieldset id="bench-series">
+          <legend>Séries incluses</legend>
+        </fieldset>
+        <div id="bench-blind" hidden>
+          <p id="blind-progress" class="muted"></p>
+          <p id="blind-question" class="task"></p>
+          <details id="blind-expected-box">
+            <summary>Afficher la réponse attendue</summary>
+            <p id="blind-expected"></p>
+          </details>
+          <div id="blind-answer" class="markdown"></div>
+          <form id="blind-form">
+            <fieldset>
+              <legend>Verdict</legend>
+              <label class="check"
+                ><input type="radio" name="verdict" value="correct" /> Correct</label
+              ><label class="check"
+                ><input type="radio" name="verdict" value="partiel" /> Partiel</label
+              ><label class="check"><input type="radio" name="verdict" value="faux" /> Faux</label
+              ><label class="check"
+                ><input type="radio" name="verdict" value="hors-sujet" /> Hors sujet</label
+              >
+            </fieldset>
+            <label class="check"
+              ><input type="checkbox" name="invention" /> Contient une invention (fait faux présenté
+              comme vrai)</label
+            >
+            <fieldset>
+              <legend>Note (facultative)</legend>
+              <label class="check"><input type="radio" name="rating" value="1" /> 1</label
+              ><label class="check"><input type="radio" name="rating" value="2" /> 2</label
+              ><label class="check"><input type="radio" name="rating" value="3" /> 3</label
+              ><label class="check"><input type="radio" name="rating" value="4" /> 4</label
+              ><label class="check"><input type="radio" name="rating" value="5" /> 5</label>
+            </fieldset>
+            <label for="blind-comment">Commentaire</label>
+            <textarea id="blind-comment" name="comment" rows="2" maxlength="2000"></textarea>
+            <div class="input-row">
+              <button class="primary" type="submit">Enregistrer et suivante</button
+              ><button id="blind-skip" type="button">Passer</button
+              ><button id="blind-stop" type="button">Terminer</button>
+            </div>
+          </form>
+        </div>
+        <div id="bench-results"></div>
+      </section>
+      <section id="projects-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">MÉMOIRE DE VOS TRAVAUX</span>
+          <h2>Projets.</h2>
+          <p>
+            Chaque projet garde vos notes : sources, décisions, définitions, résultats. Dans une
+            conversation liée à un projet, ces notes sont envoyées au modèle comme contexte. Seul ce
+            que vous écrivez ou ajoutez vous-même entre dans la mémoire.
+          </p>
+        </div>
+        <form id="project-form" class="input-row">
+          <label class="sr-only" for="project-name">Nom du nouveau projet</label
+          ><input
+            id="project-name"
+            placeholder="Nom du nouveau projet, par exemple Thèse"
+            maxlength="120"
+            required
+          /><button class="primary" type="submit">Créer le projet</button>
+        </form>
+        <div id="projects-list"></div>
+        <section id="project-detail" hidden>
+          <div class="input-row">
+            <label class="sr-only" for="project-title">Nom du projet</label
+            ><input id="project-title" maxlength="120" /><button id="project-save" type="button">
+              Enregistrer</button
+            ><button id="project-delete" type="button">Supprimer le projet</button>
+          </div>
+          <label for="project-description">Description (envoyée avec la mémoire)</label>
+          <textarea id="project-description" rows="2" maxlength="2000"></textarea>
+          <p id="project-budget" class="muted"></p>
+          <h3>Notes</h3>
+          <form id="note-form">
+            <label class="sr-only" for="note-title">Titre de la note</label
+            ><input id="note-title" placeholder="Titre (facultatif)" maxlength="200" />
+            <label class="sr-only" for="note-text">Texte de la note</label>
+            <textarea
+              id="note-text"
+              rows="4"
+              maxlength="20000"
+              required
+              placeholder="Une information à retenir : source, décision, définition, résultat…"
+            ></textarea>
+            <div class="input-row">
+              <button class="primary" type="submit" id="note-submit">Ajouter la note</button
+              ><button id="note-cancel" type="button" hidden>Annuler la modification</button>
+            </div>
+          </form>
+          <div id="notes-list"></div>
+        </section>
+      </section>
+      <section id="bibliography-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">SOURCES FIABLES</span>
+          <h2>Bibliographie.</h2>
+          <p>
+            Vérifiez que les citations d’un article renvoient à la bonne référence, que les
+            références existent vraiment, et trouvez des articles.
+          </p>
+        </div>
+        <div class="online-switch">
+          <label class="check"
+            ><input type="checkbox" id="biblio-online" /> Autoriser la recherche en ligne (Crossref,
+            OpenAlex)</label
+          >
+          <small class="muted"
+            >Désactivée par défaut. Une fois activée, seul le texte de votre recherche ou de la
+            référence à vérifier est envoyé à api.crossref.org et api.openalex.org ; jamais vos
+            documents, notes ni conversations.</small
+          >
+        </div>
+        <h3>Citations d’un PDF (sur votre Mac)</h3>
+        <p class="muted">
+          Chaque citation « Auteur [n] » ou « Auteur et al. [n] » du texte est comparée à la
+          référence [n] de la bibliographie du document.
+        </p>
+        <div class="input-row">
+          <button id="biblio-pdf" class="primary" type="button">Choisir un PDF</button
+          ><span id="biblio-pdf-status" class="muted" role="status"></span>
+        </div>
+        <div id="biblio-citations"></div>
+        <h3>Existence des références (en ligne)</h3>
+        <p class="muted">
+          Une référence par ligne, ou celles du PDF ci-dessus. Chacune est comparée à Crossref :
+          titre, premier auteur, année et DOI.
+        </p>
+        <label class="sr-only" for="biblio-references">Références à vérifier</label>
+        <textarea
+          id="biblio-references"
+          rows="5"
+          maxlength="100000"
+          placeholder="Une référence par ligne"
+        ></textarea>
+        <div class="input-row">
+          <button id="biblio-verify" type="button">Vérifier sur Crossref (en ligne)</button
+          ><button id="zotero-verify" type="button">Comparer à ma bibliothèque Zotero</button
+          ><span id="biblio-verify-status" class="muted" role="status"></span>
+        </div>
+        <div id="biblio-verified"></div>
+        <h3>Veille bibliographique</h3>
+        <p class="muted">
+          Localia cherche les nouveaux articles de vos sujets sur OpenAlex, chaque jour ou chaque
+          semaine, tant qu’elle est ouverte et que la recherche en ligne est autorisée. Seul le
+          texte du sujet est envoyé.
+        </p>
+        <form id="watch-form" class="input-row">
+          <label class="sr-only" for="watch-query">Sujet à suivre</label
+          ><input
+            id="watch-query"
+            maxlength="300"
+            placeholder="Ex. late blight forecasting machine learning"
+            required
+          /><label class="sr-only" for="watch-frequency">Fréquence</label
+          ><select id="watch-frequency">
+            <option value="weekly">Chaque semaine</option>
+            <option value="daily">Chaque jour</option></select
+          ><button type="submit">Suivre ce sujet</button>
+        </form>
+        <p id="watch-offline" class="muted" hidden>
+          ⚠ La recherche en ligne est désactivée : la veille est en attente. Cochez « Autoriser la
+          recherche en ligne » en haut de cet onglet.
+        </p>
+        <div id="watch-topics"></div>
+        <div id="watch-items" class="biblio-results"></div>
+        <h3>Ma bibliothèque Zotero (sur votre Mac)</h3>
+        <p id="zotero-status" class="muted" role="status"></p>
+        <form id="zotero-search-form" class="input-row">
+          <label class="sr-only" for="zotero-query">Recherche dans Zotero</label
+          ><input
+            id="zotero-query"
+            maxlength="300"
+            placeholder="Titre, auteur ou année (ex. mildiou, Mahlein, 2016)"
+            required
+          /><button type="submit">Chercher dans Zotero</button>
+        </form>
+        <div id="zotero-results" class="biblio-results"></div>
+        <h3>Rechercher des articles (en ligne)</h3>
+        <form id="biblio-search-form" class="input-row">
+          <label class="sr-only" for="biblio-query">Recherche</label
+          ><input
+            id="biblio-query"
+            maxlength="300"
+            placeholder="Ex. late blight deep learning forecasting"
+            required
+          /><button type="submit">Rechercher</button
+          ><label for="biblio-project">Ajouter au projet</label
+          ><select id="biblio-project"></select>
+        </form>
+        <div id="biblio-results" class="biblio-results"></div>
+      </section>
+      <section id="files-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">ACTIONS AVEC VOTRE ACCORD</span>
+          <h2>Fichiers.</h2>
+          <p>
+            Décrivez ce que vous voulez faire dans un dossier (classer, renommer, créer des dossiers
+            ou une note). Le modèle propose un plan, Localia vérifie chaque action, et rien n’est
+            modifié avant que vous ne validiez.
+          </p>
+        </div>
+        <ul class="files-rules muted">
+          <li>Seulement dans les dossiers que vous autorisez ci-dessous.</li>
+          <li>
+            Le modèle ne voit que les noms, types et tailles des fichiers, jamais leur contenu.
+          </li>
+          <li>
+            Aucun fichier n’est écrasé ni supprimé définitivement : ce qui est retiré va à la
+            Corbeille.
+          </li>
+          <li>Chaque opération est inscrite au journal et peut être annulée.</li>
+        </ul>
+        <h3>Dossiers autorisés</h3>
+        <div id="files-folders"></div>
+        <div class="input-row">
+          <button id="files-add" type="button">Autoriser un dossier…</button>
+        </div>
+        <form id="files-form" hidden>
+          <h3>Que voulez-vous faire ?</h3>
+          <div class="input-row">
+            <label for="files-folder">Dossier</label
+            ><select id="files-folder"></select
+            ><label for="files-model">Modèle</label
+            ><select id="files-model"></select>
+          </div>
+          <p id="files-advice" class="muted" hidden></p>
+          <details id="files-listing">
+            <summary></summary>
+            <pre></pre>
+          </details>
+          <label class="sr-only" for="files-instruction">Demande</label>
+          <textarea
+            id="files-instruction"
+            rows="3"
+            maxlength="4000"
+            required
+            placeholder="Ex. Classe les PDF dans un dossier par année d’après leur nom, sans toucher aux autres fichiers."
+          ></textarea>
+          <div class="input-row">
+            <button id="files-propose" class="primary" type="submit">Proposer un plan</button
+            ><button id="files-stop" type="button" hidden>Arrêter</button
+            ><span id="files-status" class="muted" role="status"></span>
+          </div>
+        </form>
+        <div id="files-plan" hidden>
+          <h3>Plan proposé</h3>
+          <p id="files-summary"></p>
+          <div id="files-actions"></div>
+          <div class="input-row">
+            <button id="files-apply" class="primary" type="button">Appliquer</button
+            ><button id="files-discard" type="button">Abandonner</button>
+          </div>
+        </div>
+        <h3>Journal</h3>
+        <div id="files-journal"></div>
+      </section>
+      <section id="settings-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">OPTIMISER VOS MODÈLES</span>
+          <h2>Réglages par modèle.</h2>
+          <p>
+            Ces réglages s’appliquent aux conversations et aux comparaisons. Un champ vide garde la
+            valeur prévue par le modèle, affichée en grisé.
+          </p>
+        </div>
+        <div class="input-row">
+          <label for="settings-model">Modèle</label
+          ><select id="settings-model"></select>
+        </div>
+        <p id="model-facts" class="muted"></p>
+        <form id="settings-form">
+          <div class="settings-grid">
+            <label
+              >Température<input
+                name="temperature"
+                type="number"
+                step="any"
+                min="0"
+                max="2"
+              /><small
+                >Plus bas : réponses plus précises et régulières. Plus haut : plus variées et
+                créatives.</small
+              ></label
+            >
+            <label
+              >Contexte (tokens)<input name="num_ctx" type="number" step="1" min="512" /><small
+                id="ctx-help"
+                >Mémoire de travail : historique, document et réponse. Plus grand : plus de mémoire
+                vive utilisée et plus lent.</small
+              ></label
+            >
+            <label
+              >Longueur maximale de réponse (tokens)<input
+                name="num_predict"
+                type="number"
+                step="1"
+                min="16"
+              /><small>Vide : pas de limite fixée par Localia.</small></label
+            >
+            <label
+              >Top P<input name="top_p" type="number" step="any" min="0" max="1" /><small
+                >Ne garde que les mots les plus probables dont la probabilité cumulée atteint cette
+                valeur.</small
+              ></label
+            >
+            <label
+              >Top K<input name="top_k" type="number" step="1" min="1" /><small
+                >Nombre de mots candidats examinés à chaque étape.</small
+              ></label
+            >
+            <label
+              >Pénalité de répétition<input
+                name="repeat_penalty"
+                type="number"
+                step="any"
+                min="0.5"
+                max="2"
+              /><small>Au-dessus de 1 : décourage les répétitions.</small></label
+            >
+            <label
+              >Graine (seed)<input name="seed" type="number" step="1" min="0" /><small
+                >Avec la même graine, la même demande produit le même texte : utile pour
+                comparer.</small
+              ></label
+            >
+            <label
+              >Threads processeur<input name="num_thread" type="number" step="1" min="1" /><small
+                >Vide : choix automatique d’Ollama. Sa documentation recommande le nombre de cœurs
+                physiques.</small
+              ></label
+            >
+            <label
+              >Maintien en mémoire<select name="keepAlive">
+                <option value="">Par défaut (5 minutes)</option>
+                <option value="0">Décharger après chaque réponse</option>
+                <option value="30m">30 minutes</option>
+                <option value="1h">1 heure</option></select
+              ><small
+                >Plus long : réponses suivantes plus rapides, mémoire vive occupée.</small
+              ></label
+            >
+            <label id="think-field" hidden
+              >Réflexion<select name="think">
+                <option value="">Par défaut du modèle</option>
+                <option value="true">Activée</option>
+                <option value="false">Désactivée</option></select
+              ><small>Désactivée : réponses plus rapides, souvent moins raisonnées.</small></label
+            >
+          </div>
+          <label class="wide"
+            >Consigne permanente<textarea
+              name="system"
+              rows="3"
+              maxlength="4000"
+              placeholder="Ex. Réponds toujours en français, de façon concise."
+            ></textarea
+            ><small>Envoyée au modèle avant chaque conversation.</small></label
+          >
+          <div class="input-row">
+            <button class="primary" type="submit">Enregistrer</button
+            ><button id="settings-reset" type="button">Revenir aux valeurs du modèle</button
+            ><span id="settings-status" class="muted" role="status"></span>
+          </div>
+        </form>
+        <section id="privacy" aria-labelledby="privacy-title">
+          <h3 id="privacy-title">Données sur ce Mac</h3>
+          <p class="muted">
+            Conversations, comparaisons, projets, textes extraits des PDF, réglages et journal des
+            actions sont enregistrés dans le dossier de Localia. Chiffrés, ils sont illisibles sans
+            la clé, gardée dans le trousseau de macOS : copie du dossier, sauvegarde, autre compte
+            de l’ordinateur.
+          </p>
+          <p id="privacy-status" role="status"></p>
+          <div class="input-row">
+            <button id="encryption-toggle" type="button"></button
+            ><button id="encryption-export" type="button" hidden>Exporter la clé de secours</button
+            ><button id="encryption-import" type="button" hidden>Importer la clé de secours</button>
+          </div>
+          <p class="muted">
+            Sans le trousseau ni la clé de secours, des données chiffrées sont perdues : exportez la
+            clé de secours et gardez-la hors de ce Mac. Le chiffrement ne protège pas contre un
+            logiciel malveillant qui tourne sur votre session, ni les copies faites avant
+            l’activation (sauvegardes Time Machine) ; FileVault chiffre tout le disque.
+          </p>
+        </section>
+      </section>
+    </main>
+    <script src="vendor/markdown-it.min.js"></script>
+    <script src="markdown.js"></script>
+    <script src="questions.js"></script>
+    <script src="tasks.js"></script>
+    <script src="memory.js"></script>
+    <script src="bibliography.js"></script>
+    <script src="actions.js"></script>
+    <script src="benchmark-stats.js"></script>
+    <script src="charts.js"></script>
+    <script src="renderer.js"></script>
+    <script src="settings-view.js"></script>
+    <script src="compare.js"></script>
+    <script src="benchmark.js"></script>
+    <script src="projects.js"></script>
+    <script src="bibliography-view.js"></script>
+    <script src="files-view.js"></script>
+    <script src="start.js"></script>
+  </body>
+</html>

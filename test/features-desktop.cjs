@@ -1,0 +1,685 @@
+const { _electron: electron } = require('@playwright/test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const os = require('node:os');
+const path = require('node:path');
+
+const readJson = async (profile, name) =>
+  JSON.parse(await fs.readFile(path.join(profile, name), 'utf8'));
+
+(async () => {
+  const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-features-'));
+  let app;
+  try {
+    // Comparaison au format d'avant les séries : doit rester lisible.
+    await fs.writeFile(
+      path.join(profile, 'comparisons.json'),
+      JSON.stringify([
+        {
+          id: 'ancienne',
+          date: '2026-10-04T10:00:00.000Z',
+          prompt: 'Ancienne question',
+          document: null,
+          results: [{ model: 'petit:1b', status: 'done', text: 'Ancienne réponse', rating: 3 }],
+        },
+      ]),
+    );
+    app = await electron.launch({
+      args: [path.resolve('.')],
+      env: { ...process.env, LOCALIA_TEST_DATA: profile },
+    });
+    const page = await app.firstWindow();
+    page.setDefaultTimeout(15000);
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    // Ollama simulé : deux modèles, réponses avec mesures, requêtes capturées.
+    await app.evaluate(() => {
+      global.requests = [];
+      global.fetch = async (url, options) => {
+        const endpoint = new URL(String(url)).pathname;
+        const body = options?.body ? JSON.parse(options.body) : null;
+        if (endpoint === '/api/version') return Response.json({ version: '0.35.0' });
+        if (endpoint === '/api/tags')
+          return Response.json({
+            models: [
+              { name: 'petit:1b', size: 1e9 },
+              { name: 'grand:8b', size: 5e9 },
+            ],
+          });
+        if (endpoint === '/api/show')
+          return Response.json({
+            capabilities: ['completion', 'thinking'],
+            parameters: 'temperature 0.6\nnum_ctx                        8192',
+            model_info: { 'test.context_length': 32768 },
+            details: { family: 'test', parameter_size: '8B', quantization_level: 'Q4_K_M' },
+          });
+        if (endpoint === '/api/chat') {
+          // Réponse lente facultative (test de la pause), interrompue si la requête est annulée.
+          if (global.chatDelay)
+            await new Promise((resolve, reject) => {
+              const timer = setTimeout(resolve, global.chatDelay);
+              options.signal?.addEventListener('abort', () => {
+                clearTimeout(timer);
+                reject(new DOMException('annulée', 'AbortError'));
+              });
+            });
+          global.requests.push(body);
+          const lines = [
+            { message: { thinking: 'Je réfléchis.' } },
+            { message: { content: global.chatReply ?? `Réponse de **${body.model}**` } },
+            {
+              done: true,
+              done_reason: 'stop',
+              total_duration: 3e9,
+              load_duration: 1e9,
+              prompt_eval_count: 40,
+              prompt_eval_duration: 5e8,
+              eval_count: 50,
+              eval_duration: 1e9,
+            },
+          ];
+          return new Response(lines.map((l) => JSON.stringify(l)).join('\n') + '\n');
+        }
+        throw new Error('unexpected endpoint ' + endpoint);
+      };
+    });
+    const lastRequest = () => app.evaluate(() => global.requests.at(-1));
+    await page.locator('#refresh').click();
+    await page.waitForFunction(() => document.querySelector('#model').options.length === 2);
+
+    // Modèle mémorisé : le plus petit par défaut, puis le dernier choisi.
+    assert.equal(await page.locator('#model').inputValue(), 'petit:1b');
+    await page.locator('#model').selectOption('grand:8b');
+    await page.locator('#prompt').fill('Bonjour');
+    await page.locator('#send').click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector('.message.assistant strong:not(.author)')
+        ?.textContent.includes('grand'),
+    );
+    let request = await lastRequest();
+    assert.equal(request.model, 'grand:8b');
+    assert.equal(request.options.num_ctx, 8192, 'contexte du Modelfile respecté');
+    assert.equal((await readJson(profile, 'settings.json')).lastModel, 'grand:8b');
+
+    // Renommer.
+    await page.locator('#rename-conversation').click();
+    await page.locator('#rename-input').fill('Mon essai');
+    await page.locator('#rename-form button[type=submit]').click();
+    await page.waitForFunction(
+      () => document.querySelector('#history button').textContent === 'Mon essai',
+    );
+    assert.equal((await readJson(profile, 'conversations.json'))[0].title, 'Mon essai');
+
+    await page.reload();
+    await page.waitForFunction(() => document.querySelector('#model').options.length === 2);
+    assert.equal(await page.locator('#model').inputValue(), 'grand:8b', 'modèle retrouvé');
+
+    // Réglages du modèle appliqués à la conversation.
+    await page.locator('#model-settings').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#model-facts').textContent.includes('contexte maximal'),
+    );
+    assert.equal(await page.locator('#settings-model').inputValue(), 'grand:8b');
+    assert.equal(await page.locator('[name=num_ctx]').getAttribute('placeholder'), 'Modèle : 8192');
+    assert.equal(await page.locator('#think-field').isVisible(), true);
+    await page.screenshot({ path: 'test-results/settings.png' });
+    await page.locator('[name=temperature]').fill('0.3');
+    await page.locator('[name=num_ctx]').fill('16384');
+    await page.locator('[name=think]').selectOption('false');
+    await page.locator('[name=system]').fill('Réponds brièvement.');
+    await page.locator('#settings-form button[type=submit]').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#settings-status').textContent.includes('enregistrés'),
+    );
+    await page.locator('#chat-tab').click();
+    await page.locator('#history button').click();
+    await page.locator('#prompt').fill('Encore');
+    await page.locator('#send').click();
+    await page.waitForFunction(() => document.querySelectorAll('.message.assistant').length === 2);
+    request = await lastRequest();
+    assert.equal(request.options.temperature, 0.3);
+    assert.equal(request.options.num_ctx, 16384);
+    assert.equal(request.think, false);
+    assert.deepEqual(request.messages[0], { role: 'system', content: 'Réponds brièvement.' });
+    assert.equal(request.keep_alive, '5m');
+
+    // Assistant de recherche : tâche choisie, conseil affiché, consigne de la tâche envoyée.
+    await page.locator('#task').selectOption('calcul');
+    await page.waitForFunction(() => !document.querySelector('#task-advice').hidden);
+    assert.match(
+      await page.locator('#task-advice').textContent(),
+      /Localia refait chaque opération/,
+    );
+    await page.locator('#prompt').fill('Combien font 40 × 25 ?');
+    await page.locator('#send').click();
+    await page.waitForFunction(() => document.querySelectorAll('.message.assistant').length === 3);
+    request = await lastRequest();
+    assert.match(
+      request.messages[0].content,
+      /Réponds brièvement\.\n\nÉcris chaque calcul en entier/,
+    );
+    assert.equal((await readJson(profile, 'conversations.json'))[0].task, 'calcul');
+
+    // Mémoire par projet : note envoyée comme contexte, réponse ajoutée à la mémoire.
+    await page.locator('#projects-tab').click();
+    await page.locator('#project-name').fill('Thèse');
+    await page.locator('#project-form button[type=submit]').click();
+    await page.waitForFunction(() => !document.querySelector('#project-detail').hidden);
+    await page.locator('#note-title').fill('Site d’étude');
+    await page.locator('#note-text').fill('Dalaba, Fouta Djalon, données NASA POWER 2014-2024.');
+    await page.locator('#note-submit').click();
+    await page.waitForFunction(() => document.querySelectorAll('.note-card').length === 1);
+    await page.locator('#chat-tab').click();
+    await page.locator('#project').selectOption({ label: 'Thèse' });
+    await page.locator('#prompt').fill('Où se situe le site d’étude ?');
+    await page.locator('#send').click();
+    await page.waitForFunction(() => document.querySelectorAll('.message.assistant').length === 4);
+    request = await lastRequest();
+    assert.match(request.messages[0].content, /Mémoire du projet « Thèse »/);
+    assert.match(request.messages[0].content, /### Site d’étude\nDalaba, Fouta Djalon/);
+    assert.match(
+      await page.locator('#notice').textContent(),
+      /Mémoire du projet « Thèse » transmise : 1 note\(s\) \(Site d’étude\)/,
+    );
+    const projectId = (await readJson(profile, 'projects.json'))[0].id;
+    assert.equal((await readJson(profile, 'conversations.json'))[0].projectId, projectId);
+    await page.locator('.message.assistant .remember').last().click();
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('ajoutée à la mémoire'),
+    );
+    let savedProjects = await readJson(profile, 'projects.json');
+    assert.equal(savedProjects[0].notes.length, 2);
+    assert.equal(savedProjects[0].notes[1].title, 'Où se situe le site d’étude ?');
+    await page.locator('#projects-tab').click();
+    await page.locator('.project-row').first().click();
+    await page.locator('.note-card').first().locator('button', { hasText: 'Modifier' }).click();
+    await page.locator('#note-text').fill('Réponse relue et corrigée.');
+    await page.locator('#note-submit').click();
+    await page.waitForFunction(() =>
+      document.querySelector('.note-card').textContent.includes('relue et corrigée'),
+    );
+    savedProjects = await readJson(profile, 'projects.json');
+    assert.equal(savedProjects[0].notes[1].text, 'Réponse relue et corrigée.');
+    assert.ok(savedProjects[0].notes[1].updatedAt);
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#project-delete').click();
+    await page.waitForFunction(() => document.querySelector('#project-detail').hidden);
+    assert.deepEqual(await readJson(profile, 'projects.json'), []);
+    assert.equal((await readJson(profile, 'conversations.json'))[0].projectId, undefined);
+    await page.locator('#chat-tab').click();
+
+    // Comparaison de deux modèles.
+    await page.locator('#compare-tab').click();
+    await page.locator('#compare-prompt').fill('Décris le contenu en trois points.');
+    for (const input of await page.locator('#compare-models input').all()) await input.check();
+    await page.locator('#compare-run').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.includes('terminée'),
+    );
+    assert.equal(await page.locator('.compare-card.done').count(), 2);
+    assert.equal(await page.locator('.compare-table tbody tr').count(), 2);
+    assert.match(await page.locator('.compare-table').textContent(), /50,0 tokens\/s/);
+    assert.match(
+      await page.locator('.compare-card').first().textContent(),
+      /Raisonnement du modèle/,
+    );
+    const compareRequests = (await app.evaluate(() => global.requests)).slice(-2);
+    assert.deepEqual(
+      compareRequests.map((r) => [r.model, r.keep_alive]),
+      [
+        ['petit:1b', 0],
+        ['grand:8b', 0],
+      ],
+    );
+    assert.equal(compareRequests[1].options.temperature, 0.3, 'réglages de chaque modèle');
+    await page.locator('.compare-card').first().locator('.stars button').nth(3).click();
+    await page.screenshot({ path: 'test-results/compare.png', fullPage: true });
+    const saved = await readJson(profile, 'comparisons.json');
+    assert.equal(saved[0].results[0].grades.Vous.rating, 4);
+    assert.equal(saved[0].results[0].stats.outputTokens, 50);
+
+    // Série de deux questions, réponse attendue jamais envoyée, export CSV.
+    const csvPath = path.join(profile, 'export.csv');
+    await app.evaluate(({ dialog }, file) => {
+      dialog.showSaveDialog = async () => ({ canceled: false, filePath: file });
+    }, csvPath);
+    const before = await app.evaluate(() => global.requests.length);
+    await page
+      .locator('#compare-prompt')
+      .fill('## A1\nPremière question\nAttendu : SECRET-ATTENDU\n---\n## B1\nSeconde question');
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-count').textContent.includes('2 questions'),
+    );
+    await page.locator('#compare-run').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.includes('terminée'),
+    );
+    const series = (await app.evaluate(() => global.requests)).slice(before);
+    assert.deepEqual(
+      series.map((r) => [r.model, r.messages.at(-1).content, r.keep_alive]),
+      [
+        ['petit:1b', 'Première question', '5m'],
+        ['petit:1b', 'Seconde question', 0],
+        ['grand:8b', 'Première question', '5m'],
+        ['grand:8b', 'Seconde question', 0],
+      ],
+      'chaque modèle traite toutes les questions, puis est déchargé',
+    );
+    assert.ok(!JSON.stringify(series).includes('SECRET-ATTENDU'));
+    assert.equal(await page.locator('.chart').count(), 3);
+    assert.equal(
+      await page.locator('.overview .compare-table').nth(1).locator('tbody tr').count(),
+      2,
+    );
+    assert.match(await page.locator('.expected').textContent(), /SECRET-ATTENDU/);
+    await page.locator('.compare-card').first().locator('.stars button').nth(4).click();
+    await page.waitForFunction(() =>
+      document.querySelector('.overview .compare-table').textContent.includes('5,0 / 5 (1)'),
+    );
+    await page.locator('.overview .compare-table').nth(1).locator('td.clickable').nth(3).click();
+    await page.waitForFunction(
+      () => document.querySelector('.question-detail .task').textContent === 'Seconde question',
+    );
+    await page.screenshot({ path: 'test-results/series.png', fullPage: true });
+    await page.locator('.charts').screenshot({ path: 'test-results/charts.png' });
+    await page.locator('button', { hasText: 'Exporter (CSV)' }).click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.includes('export.csv'),
+    );
+    const csv = await fs.readFile(csvPath, 'utf8');
+    assert.ok(csv.startsWith('\ufeffQuestion;Titre;Modèle'));
+    assert.equal(csv.trim().split('\r\n').length, 5);
+    assert.match(csv, /1;A1;petit:1b;Terminé;5,0;3,0;1,0;40;80,0;50;50,0/);
+
+    // Après redémarrage : l'ancienne comparaison et les notes sont retrouvées.
+    await page.reload();
+    await page.locator('#compare-tab').click();
+    assert.equal(await page.locator('.compare-row').count(), 3);
+    await page.locator('.compare-row .link', { hasText: 'Ancienne question' }).click();
+    assert.match(await page.locator('.compare-card').textContent(), /Ancienne réponse/);
+    assert.equal(await page.locator('.compare-card .stars button.on').count(), 3);
+    await page.locator('.compare-row .link', { hasText: 'Décris le contenu' }).click();
+    assert.equal(await page.locator('.compare-card .stars button.on').count(), 4);
+    page.once('dialog', (dialog) => dialog.accept());
+    await page
+      .locator('.compare-row', { hasText: 'Décris le contenu' })
+      .locator('button', { hasText: 'Supprimer' })
+      .click();
+    await page.waitForFunction(() => document.querySelectorAll('.compare-row').length === 2);
+    const remaining = await readJson(profile, 'comparisons.json');
+    assert.equal(remaining.length, 2);
+    assert.deepEqual(remaining[1].questions, [{ label: 'Q1', prompt: 'Ancienne question' }]);
+
+    // Conditions de l'expérience et messages exacts enregistrés avec la série.
+    const seriesRecord = remaining[0];
+    assert.equal(seriesRecord.env.ollama, '0.35.0');
+    assert.ok(seriesRecord.env.machine.memoryGB > 0);
+    assert.deepEqual(seriesRecord.env.models['petit:1b'] !== undefined, true);
+    assert.equal(seriesRecord.questions[0].sent.messages.at(-1).content, 'Première question');
+    assert.equal(seriesRecord.results[0].grades.Vous.rating, 5);
+
+    // Benchmark : notation à l'aveugle de toutes les réponses.
+    await page.locator('#benchmark-tab').click();
+    await page.waitForFunction(() => document.querySelector('#bench-results h3'));
+    assert.equal(await page.locator('#bench-series input').count(), 2);
+    await page.locator('#bench-grade').click();
+    await page.waitForFunction(() => !document.querySelector('#bench-blind').hidden);
+    const total = Number(
+      (await page.locator('#blind-progress').textContent()).match(/sur (\d+)/)[1],
+    );
+    assert.equal(total, 5, '4 réponses de la série + 1 ancienne, sans verdict');
+    // Le nom du modèle n'apparaît nulle part en dehors du texte de la réponse elle-même.
+    const blindText = await page.evaluate(() =>
+      [...document.querySelectorAll('#bench-blind > :not(#blind-answer)')]
+        .map((n) => n.textContent)
+        .join(' '),
+    );
+    assert.doesNotMatch(blindText, /petit:1b|grand:8b/);
+    for (let i = 0; i < total; i++) {
+      await page
+        .locator(`#blind-form input[name=verdict][value=${i < 3 ? 'correct' : 'faux'}]`)
+        .check();
+      if (i >= 3) await page.locator('#blind-form input[name=invention]').check();
+      await page.locator('#blind-form input[name=rating][value="4"]').check();
+      await page.locator('#blind-form button[type=submit]').click();
+    }
+    await page.waitForFunction(() => document.querySelector('#bench-blind').hidden);
+    const graded = (await readJson(profile, 'comparisons.json')).flatMap((r) => r.results);
+    assert.equal(graded.filter((r) => r.grades?.Vous?.verdict).length, 5);
+    assert.equal(graded.filter((r) => r.grades?.Vous?.invention).length, 2);
+    assert.match(await page.locator('#bench-results').textContent(), /Précision \(correct\)/);
+    assert.match(
+      await page.locator('#bench-results').textContent(),
+      /Quel modèle pour quelle tâche \?/,
+    );
+    assert.equal(
+      await page.locator('#bench-results .chart').count(),
+      7,
+      '6 graphiques + carte de chaleur',
+    );
+
+    // Notes d'un second correcteur importées : accord entre correcteurs.
+    const gradesPath = path.join(profile, 'notes-claude.csv');
+    const firstSeries = (await readJson(profile, 'comparisons.json'))[0];
+    await fs.writeFile(
+      gradesPath,
+      '\ufeffSérie;Question;Modèle;Correcteur;Verdict;Invention;Note;Commentaire\n' +
+        firstSeries.results
+          .map(
+            (r) =>
+              `${firstSeries.id};${firstSeries.questions[r.q].label};${r.model};Claude;correct;non;4;`,
+          )
+          .join('\n') +
+        '\ninconnue;A1;petit:1b;Claude;correct;non;4;',
+    );
+    await app.evaluate(({ dialog }, file) => {
+      dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [file] });
+    }, gradesPath);
+    await page.locator('#bench-import').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#bench-status').textContent.includes('4 note(s) importée(s)'),
+    );
+    assert.match(
+      await page.locator('#bench-status').textContent(),
+      /1 ligne\(s\) refusée\(s\) : ligne 6 : série inconnue/,
+    );
+    assert.match(
+      await page.locator('#bench-results').textContent(),
+      /Accord entre correcteurs.*Claude \/ Vous/s,
+    );
+
+    // Après l'import : graphiques de comparaison des correcteurs, avec légende dans le SVG.
+    assert.match(await page.locator('#bench-results').textContent(), /Comparaison des correcteurs/);
+    assert.equal(
+      await page.locator('#bench-results .chart').count(),
+      10,
+      '7 + 3 graphiques par correcteur',
+    );
+    assert.equal(await page.locator('#bench-results .legend').first().locator('span').count(), 2);
+
+    // Export d'un graphique en SVG autonome.
+    const svgPath = path.join(profile, 'precision.svg');
+    await app.evaluate(({ dialog }, file) => {
+      dialog.showSaveDialog = async () => ({ canceled: false, filePath: file });
+    }, svgPath);
+    await page.locator('.chart-export').first().click();
+    await page.waitForFunction(() =>
+      document.querySelector('#bench-status').textContent.includes('precision.svg'),
+    );
+    const svg = await fs.readFile(svgPath, 'utf8');
+    assert.ok(svg.startsWith('<?xml'));
+    assert.match(svg, /<svg[^>]+xmlns="http:\/\/www.w3.org\/2000\/svg"/);
+    assert.match(svg, /<style>/);
+    assert.match(svg, /Précision \(réponses correctes\)/);
+
+    const groupedSvgPath = path.join(profile, 'precision-correcteurs.svg');
+    await app.evaluate(({ dialog }, file) => {
+      dialog.showSaveDialog = async () => ({ canceled: false, filePath: file });
+    }, groupedSvgPath);
+    await page
+      .locator('.chart', { hasText: 'Précision selon le correcteur' })
+      .locator('.chart-export')
+      .click();
+    await page.waitForFunction(() =>
+      document.querySelector('#bench-status').textContent.includes('precision-correcteurs.svg'),
+    );
+    const groupedSvg = await fs.readFile(groupedSvgPath, 'utf8');
+    assert.match(groupedSvg, />Claude</);
+    assert.match(groupedSvg, />Vous</);
+
+    // Avis des correcteurs affichés sous chaque réponse, dans l'onglet Comparaison.
+    await page.locator('#compare-tab').click();
+    await page.locator('.compare-row .link', { hasText: 'Série' }).first().click();
+    const gradesText = await page.locator('.compare-card .grades').first().textContent();
+    assert.match(gradesText, /Claude : correct · sans invention · 4\/5/);
+    assert.match(gradesText, /Vous : (correct|faux)/);
+
+    // Répétitions : même série lancée deux fois, stabilité mesurée.
+    await page.locator('#compare-tab').click();
+    await page.locator('#compare-prompt').fill('Question répétée');
+    for (const input of await page.locator('#compare-models input').all()) await input.check();
+    await page.locator('#compare-repetitions').fill('2');
+    await page.locator('#compare-run').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.includes('terminée'),
+    );
+    const repeated = (await readJson(profile, 'comparisons.json')).slice(0, 2);
+    assert.deepEqual(
+      repeated.map((r) => [r.repetition, r.repetitions]),
+      [
+        [2, 2],
+        [1, 2],
+      ],
+    );
+    assert.equal(repeated[0].groupId, repeated[1].groupId);
+    await page.locator('#benchmark-tab').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#bench-results').textContent.includes('Réponses identiques'),
+    );
+    assert.equal(await page.locator('#bench-series input').count(), 3, 'répétitions regroupées');
+
+    // Pause au milieu d'une série de 2 répétitions, puis reprise de ce qui manque.
+    await page.locator('#compare-tab').click();
+    await page.locator('#compare-prompt').fill('## P1\nPremière\n---\n## P2\nSeconde');
+    for (const input of await page.locator('#compare-models input').all()) await input.check();
+    await page.locator('#compare-repetitions').fill('2');
+    await app.evaluate(() => {
+      global.chatDelay = 400;
+    });
+    const beforePause = await app.evaluate(() => global.requests.length);
+    await page.locator('#compare-run').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.includes('Modèle 2/2'),
+    );
+    await page.locator('#compare-stop').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.includes('en pause'),
+    );
+    const paused = (await readJson(profile, 'comparisons.json')).filter((r) =>
+      r.questions.some((q) => q.label === 'P1'),
+    );
+    assert.equal(paused.length, 1, 'la répétition 2 n’a pas commencé');
+    const doneBefore = paused[0].results.filter((r) => r.status === 'done').length;
+    assert.ok(
+      doneBefore >= 2 && doneBefore < 4,
+      `réponses terminées avant la pause : ${doneBefore}`,
+    );
+    const resume = page.locator('.compare-row button', { hasText: 'Reprendre' });
+    assert.match(await resume.textContent(), new RegExp(`Reprendre \\(${8 - doneBefore} réponse`));
+    const answeredBefore = (await app.evaluate(() => global.requests.length)) - beforePause;
+    await app.evaluate(() => {
+      global.chatDelay = 0;
+    });
+    await resume.click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.includes('terminée'),
+    );
+    const resumed = (await readJson(profile, 'comparisons.json')).filter((r) =>
+      r.questions.some((q) => q.label === 'P1'),
+    );
+    assert.equal(resumed.length, 2);
+    assert.equal(resumed[0].groupId, resumed[1].groupId);
+    assert.ok(resumed.every((r) => r.results.every((x) => x.status === 'done')));
+    const first = resumed.find((r) => r.repetition === 1);
+    assert.equal(first.resumes.length, 1);
+    assert.equal(first.resumes[0].env.ollama, '0.35.0');
+    const answeredAfter = (await app.evaluate(() => global.requests.length)) - beforePause;
+    assert.equal(answeredAfter - answeredBefore, 8 - doneBefore, 'seules les réponses manquantes');
+    assert.equal(await page.locator('.compare-row button', { hasText: 'Reprendre' }).count(), 0);
+
+    await page.locator('#benchmark-tab').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#bench-results').textContent.includes('Réponses identiques'),
+    );
+    await page.screenshot({ path: 'test-results/benchmark.png', fullPage: true });
+    await page;
+    await page
+      .locator('#bench-results .charts')
+      .first()
+      .screenshot({ path: 'test-results/benchmark-charts.png' });
+    await page
+      .locator('#bench-results .charts')
+      .nth(1)
+      .screenshot({ path: 'test-results/benchmark-correcteurs.png' });
+
+    // Départ programmé d'une série : Mac maintenu éveillé dès la programmation, annulation.
+    await app.evaluate(({ powerSaveBlocker }) => {
+      global.awake = [];
+      const start = powerSaveBlocker.start.bind(powerSaveBlocker);
+      const stop = powerSaveBlocker.stop.bind(powerSaveBlocker);
+      powerSaveBlocker.start = (type) => {
+        global.awake.push('start:' + type);
+        return start(type);
+      };
+      powerSaveBlocker.stop = (id) => {
+        global.awake.push('stop');
+        return stop(id);
+      };
+    });
+    await page.locator('#compare-tab').click();
+    await page.locator('#compare-prompt').fill('Question programmée');
+    await page.locator('#compare-models input').first().check();
+    const soon = new Date(Date.now() - 60000); // heure passée : départ le lendemain
+    await page
+      .locator('#compare-at')
+      .fill(
+        `${String(soon.getHours()).padStart(2, '0')}:${String(soon.getMinutes()).padStart(2, '0')}`,
+      );
+    await page.locator('#compare-run').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.startsWith('Départ programmé'),
+    );
+    assert.match(await page.locator('#compare-status').textContent(), /dans 23 h 5\d/);
+    assert.equal(await page.locator('#compare-run').isDisabled(), true);
+    await page.locator('#compare-unschedule').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.includes('annulé'),
+    );
+    assert.deepEqual(await app.evaluate(() => global.awake), [
+      'start:prevent-app-suspension',
+      'stop',
+    ]);
+    await page.locator('#compare-at').fill('');
+    await page.locator('#compare-prompt').fill('');
+
+    // Actions sur les fichiers : dossier autorisé par la fenêtre système, plan vérifié, coché,
+    // appliqué, inscrit au journal puis annulé. Corbeille simulée (aucun fichier réel touché).
+    const work = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'localia-dossier-')));
+    for (const name of ['mildiou-2019.pdf', 'mildiou-2023.pdf', 'notes.txt'])
+      await fs.writeFile(path.join(work, name), name);
+    await app.evaluate(
+      ({ dialog, shell }, folders) => {
+        global.trashed = [];
+        shell.trashItem = async (file) => {
+          global.trashed.push(file);
+        };
+        dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [folders.shift()] });
+      },
+      [os.homedir(), work],
+    );
+    await page.locator('#files-tab').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#files-folders').textContent.includes('Aucun dossier autorisé'),
+    );
+    await page.locator('#files-add').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('ne peut pas être autorisé'),
+    );
+    await page.locator('#files-add').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#files-listing summary').textContent.startsWith('3 fichier(s)'),
+    );
+    await app.evaluate(() => {
+      global.chatReply =
+        'Je classe les PDF par année.\n```json\n' +
+        JSON.stringify({
+          summary: 'Classement par année',
+          actions: [
+            { type: 'create_folder', path: '2019', reason: 'année du fichier' },
+            { type: 'move', from: 'mildiou-2019.pdf', to: '2019/mildiou-2019.pdf' },
+            { type: 'move', from: 'mildiou-2023.pdf', to: '2023/mildiou-2023.pdf' },
+            { type: 'trash', path: 'notes.txt', reason: 'brouillon' },
+          ],
+        }) +
+        '\n```';
+    });
+    await page.locator('#files-instruction').fill('Classe les PDF par année.');
+    await page.locator('#files-propose').click();
+    await page.waitForFunction(
+      () => document.querySelectorAll('#files-actions tbody tr').length === 4,
+    );
+    request = await lastRequest();
+    assert.match(request.messages[0].content, /plan d’actions/);
+    assert.match(request.messages[1].content, /^- \[fichier\] mildiou-2019\.pdf \(16 o\)$/m);
+    assert.match(request.messages[1].content, /Demande : Classe les PDF par année\./);
+    assert.ok(request.options.num_ctx >= 8192);
+    assert.equal(await page.locator('#files-summary').textContent(), 'Classement par année');
+    assert.match(
+      await page.locator('#files-actions tbody tr').nth(2).textContent(),
+      /le dossier « 2023 » n’existe pas/,
+    );
+    assert.equal(await page.locator('#files-apply').isDisabled(), true);
+    await page.locator('#files-actions tbody tr').nth(2).locator('input').uncheck();
+    assert.equal(await page.locator('#files-apply').textContent(), 'Appliquer 3 action(s)');
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#files-apply').click();
+    await page.waitForFunction(() => document.querySelector('.journal-card'));
+    assert.equal(
+      await fs.readFile(path.join(work, '2019', 'mildiou-2019.pdf'), 'utf8'),
+      'mildiou-2019.pdf',
+    );
+    assert.deepEqual(await app.evaluate(() => global.trashed), [path.join(work, 'notes.txt')]);
+    const [batch] = await readJson(profile, 'actions-journal.json');
+    assert.equal(batch.proposed, 4);
+    assert.deepEqual(
+      batch.results.map((r) => [r.type, r.done]),
+      [
+        ['create_folder', true],
+        ['move', true],
+        ['trash', true],
+      ],
+    );
+    await page.screenshot({ path: 'test-results/files.png', fullPage: true });
+    await page.locator('.journal-card summary').click();
+    await page.locator('.journal-card button', { hasText: 'Annuler cette opération' }).click();
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('à récupérer dans la Corbeille'),
+    );
+    assert.deepEqual((await fs.readdir(work)).sort(), [
+      'mildiou-2019.pdf',
+      'mildiou-2023.pdf',
+      'notes.txt',
+    ]);
+    assert.ok((await readJson(profile, 'actions-journal.json'))[0].undoneAt);
+    // Réponse sans plan : rien à appliquer, la réponse du modèle est montrée.
+    await app.evaluate(() => {
+      global.chatReply = 'Je ne peux pas savoir quelle année correspond à chaque fichier.';
+    });
+    await page.locator('#files-propose').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#files-summary').textContent.includes('Aucun plan lisible'),
+    );
+    assert.equal(await page.locator('#files-apply').isDisabled(), true);
+    await page.locator('.folder-row button', { hasText: 'Retirer' }).click();
+    await page.waitForFunction(() =>
+      document.querySelector('#files-folders').textContent.includes('Aucun dossier autorisé'),
+    );
+    assert.equal(await page.locator('#files-form').isHidden(), true);
+    await app.evaluate(() => {
+      delete global.chatReply;
+    });
+    await fs.rm(work, { recursive: true, force: true });
+
+    assert.deepEqual(errors, []);
+    console.log(
+      'PASS fonctions: modèle mémorisé, contexte du Modelfile, renommage, réglages appliqués, comparaison avec mesures et notes, série de questions, vue d’ensemble, export CSV, ancien format, suppression, benchmark (notation à l’aveugle, import de notes, accord, export SVG, répétitions, conditions), pause et reprise, tâches, mémoire par projet, départ programmé (Mac éveillé, annulation), actions sur fichiers (dossier autorisé, plan vérifié, application, journal, annulation), aucune erreur JS.',
+    );
+  } finally {
+    await app?.close();
+    await fs.rm(profile, { recursive: true, force: true });
+  }
+})().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

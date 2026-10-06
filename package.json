@@ -18,7 +18,9 @@
     "package:mac-arm64": "electron-builder --mac dir --arm64",
     "package:win": "electron-builder --win dir --x64",
     "dist:mac": "electron-builder --mac dmg zip --x64 --arm64",
-    "dist:win": "electron-builder --win nsis zip --x64"
+    "dist:win": "electron-builder --win nsis zip --x64",
+    "package:linux": "electron-builder --linux dir --x64",
+    "dist:linux": "electron-builder --linux AppImage deb --x64"
   },
   "build": {
     "appId": "fr.localia.desktop",
@@ -50,7 +52,17 @@
       "allowToChangeInstallationDirectory": true,
       "artifactName": "Localia-${version}-Windows-installation.${ext}"
     },
-    "artifactName": "Localia-${version}-${os}-${arch}.${ext}"
+    "artifactName": "Localia-${version}-${os}-${arch}.${ext}",
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office",
+      "executableName": "localia",
+      "maintainer": "Mohamed DIALLO <25933263+diallo68@users.noreply.github.com>",
+      "synopsis": "Assistant de recherche local et banc d’essai de modèles (Ollama)"
+    }
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
@@ -62,5 +74,10 @@
   "dependencies": {
     "pdfjs-dist": "^6.4.299",
     "undici": "7.29.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diallo68/Localia.git"
+  },
+  "homepage": "https://github.com/diallo68/Localia"
 }

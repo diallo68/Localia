@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      systemes:
+        description: Systèmes à tester
+        type: choice
+        default: tous
+        options: [tous, linux, windows, macos]
 
 concurrency:
   group: tests-${{ github.ref }}
@@ -39,44 +45,72 @@ jobs:
       matrix:
         include:
           - name: macOS Apple Silicon
+            family: macos
             os: macos-15
             build: --mac zip --arm64
           - name: macOS Intel
+            family: macos
             os: macos-15-intel
             build: --mac zip --x64
           - name: Windows
+            family: windows
             os: windows-latest
             build: --win nsis zip --x64
+          - name: Linux
+            family: linux
+            os: ubuntu-latest
+            build: --linux AppImage deb --x64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        uses: actions/checkout@v5
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm test
-      - run: mkdir -p test-results
-      - run: npm run test:features
-      - run: npm run test:pdf
-      - run: npm run test:encryption
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npm ci
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npm test
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: mkdir -p test-results
+      # Linux : Electron a besoin d'un écran (virtuel, Xvfb) et des espaces de noms utilisateur
+      # que la protection AppArmor d'Ubuntu restreint par défaut.
+      - if: runner.os == 'Linux' && (!inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family)
+        run: |
+          sudo apt-get update -q && sudo apt-get install -yq xvfb
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          Xvfb :99 -screen 0 1280x1024x24 &
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npm run test:features
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npm run test:pdf
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npm run test:encryption
       # Application construite puis testée telle qu'elle sera distribuée.
-      - run: npx electron-builder ${{ matrix.build }} --publish never
-      - run: npm run test:pdf
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npx electron-builder ${{ matrix.build }} --publish never
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npm run test:pdf
         env:
           LOCALIA_PACKAGED: '1'
       - name: Keep screenshots
-        if: always()
+        if: ${{ always() && (!inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family) }}
         uses: actions/upload-artifact@v4
         with:
           name: screenshots-${{ matrix.os }}
           path: test-results/
           if-no-files-found: ignore
-      - name: Keep the application
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        name: Keep the application
         uses: actions/upload-artifact@v4
         with:
           name: Localia-${{ matrix.os }}
           path: |
             dist/*.zip
             dist/*.exe
+            dist/*.AppImage
+            dist/*.deb
           if-no-files-found: error

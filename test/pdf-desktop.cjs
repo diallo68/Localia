@@ -14,6 +14,7 @@ async function waitFor(condition, timeout = 5000) {
 // Application construite par electron-builder, selon le système et le processeur.
 function packagedApp() {
   if (process.platform === 'win32') return path.resolve('dist/win-unpacked/Localia.exe');
+  if (process.platform === 'linux') return path.resolve('dist/linux-unpacked/localia');
   const folder = process.arch === 'arm64' ? 'mac-arm64' : 'mac';
   return path.resolve(`dist/${folder}/Localia.app/Contents/MacOS/Localia`);
 }

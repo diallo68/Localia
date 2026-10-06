@@ -45,7 +45,12 @@ const OTHER_SYSTEM_TEXTS = [
   [/(sur|de|hors de) ce Mac/g, '$1 cet ordinateur'],
   [/ce Mac/g, 'cet ordinateur'],
   [/le trousseau de macOS/g, 'le coffre de clés du système'],
-  [/FileVault chiffre tout le disque/g, 'BitLocker chiffre tout le disque'],
+  [
+    /FileVault chiffre tout le disque/g,
+    window.localia.platform === 'linux'
+      ? 'le chiffrement du disque (LUKS) protège tout le disque'
+      : 'BitLocker chiffre tout le disque',
+  ],
   [/le Finder/g, 'l’Explorateur de fichiers'],
   [/Ouvrir dans le Finder/g, 'Ouvrir dans l’Explorateur'],
 ];

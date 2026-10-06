@@ -25,6 +25,20 @@ test('dossiers interdits sous macOS', () => {
   assert.equal(f('/Systemes-agricoles'), null, 'préfixe de nom, pas un sous-dossier');
 });
 
+test('dossiers interdits sous Linux', () => {
+  const f = (root) =>
+    platform.forbiddenRoot(root, '/home/ama/.config/localia', 'linux', '/home/ama');
+  assert.match(f('/'), /trop large/);
+  assert.match(f('/home/ama'), /trop large/);
+  assert.match(f('/etc/ssh'), /système/);
+  assert.match(f('/proc'), /système/);
+  assert.match(f('/home/ama/.config/autre'), /réglages/);
+  assert.equal(f('/home/ama/Documents/These'), null);
+  assert.equal(f('/tmp/localia-x'), null);
+  assert.equal(f('/media/ama/CLE/Donnees'), null);
+  assert.ok(platform.ollamaCandidates({}, 'linux').includes('/usr/bin/ollama'));
+});
+
 test('dossiers interdits sous Windows (sans tenir compte des majuscules)', () => {
   const env = { SystemRoot: 'C:\\Windows', ProgramFiles: 'C:\\Program Files' };
   const f = (root) =>

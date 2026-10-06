@@ -35,6 +35,7 @@ async function renderGuide() {
   const s = setupStatus;
   showStarterCard(s);
   const windows = s.platform === 'win32';
+  const linux = s.platform === 'linux';
 
   // 1. Ollama
   if (s.running)
@@ -59,9 +60,11 @@ async function renderGuide() {
     guideStep(
       'guide-ollama',
       false,
-      windows
-        ? 'Ollama n’est pas installé. Téléchargez-le, lancez « OllamaSetup.exe » et suivez l’installation, puis revenez ici.'
-        : 'Ollama n’est pas installé. Téléchargez-le, ouvrez le fichier, glissez Ollama dans Applications et lancez-le une fois, puis revenez ici.',
+      linux
+        ? 'Ollama n’est pas installé. Sur ollama.com/download, copiez la commande d’installation pour Linux dans un terminal, puis revenez ici.'
+        : windows
+          ? 'Ollama n’est pas installé. Téléchargez-le, lancez « OllamaSetup.exe » et suivez l’installation, puis revenez ici.'
+          : 'Ollama n’est pas installé. Téléchargez-le, ouvrez le fichier, glissez Ollama dans Applications et lancez-le une fois, puis revenez ici.',
       [
         {
           label: 'Télécharger Ollama (ollama.com)',

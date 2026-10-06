@@ -41,7 +41,7 @@ At first launch, Localia opens a **getting-started guide**: install Ollama (link
 
 ## Requirements
 
-- macOS on Apple Silicon or Intel, or Windows 10/11 (64-bit);
+- macOS on Apple Silicon or Intel, Windows 10/11 (64-bit), or Linux (64-bit; AppImage or .deb);
 - [Ollama](https://ollama.com) with at least one local model (Localia looks for it in the usual places: `/usr/local/bin`, `/opt/homebrew/bin` or the Ollama application on macOS, `%LOCALAPPDATA%\Programs\Ollama` on Windows; `OLLAMA_PATH` overrides);
 - to build from source: [Node.js](https://nodejs.org) 20 or later.
 
@@ -58,6 +58,8 @@ Build the application for local use:
 npm run package            # Mac Intel        → dist/mac/Localia.app
 npm run package:mac-arm64  # Mac Apple Silicon → dist/mac-arm64/Localia.app
 npm run package:win        # Windows          → dist/win-unpacked/Localia.exe
+npm run package:linux      # Linux            → dist/linux-unpacked/localia
+npm run dist:linux         # AppImage and .deb
 npm run dist:mac           # .dmg and .zip for both Mac processors
 npm run dist:win           # Windows installer and .zip
 ```

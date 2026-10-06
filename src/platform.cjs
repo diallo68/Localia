@@ -30,7 +30,7 @@ function ollamaCandidates(env = process.env, system = platform) {
       '/opt/homebrew/bin/ollama', // Homebrew sur Apple Silicon
       '/Applications/Ollama.app/Contents/Resources/ollama',
     ];
-  return ['/usr/local/bin/ollama', '/usr/bin/ollama'];
+  return ['/usr/local/bin/ollama', '/usr/bin/ollama', '/snap/bin/ollama'];
 }
 function ollamaPath() {
   if (process.env.OLLAMA_PATH && fs.existsSync(process.env.OLLAMA_PATH))
@@ -84,6 +84,20 @@ async function graphicsCards() {
     } catch {
       return [];
     }
+  }
+  if (platform === 'linux') {
+    const nvidia = await run(
+      'nvidia-smi',
+      ['--query-gpu=name,memory.total', '--format=csv,noheader,nounits'],
+      5000,
+    );
+    return (nvidia || '')
+      .split('\n')
+      .filter(Boolean)
+      .map((l) => {
+        const [name, mb] = l.split(',').map((x) => x.trim());
+        return { name, vramGB: Math.round(Number(mb) / 1024), shared: false };
+      });
   }
   if (platform === 'win32') {
     // nvidia-smi donne la vraie mémoire des cartes NVIDIA (Windows la plafonne à 4 Go).
@@ -170,6 +184,32 @@ function forbiddenRoot(
     if (inside(p.join(home, 'AppData'))) return 'dossier de réglages';
     return null;
   }
+  if (system === 'linux') {
+    const systemDirs = [
+      '/bin',
+      '/boot',
+      '/dev',
+      '/etc',
+      '/lib',
+      '/lib64',
+      '/opt',
+      '/proc',
+      '/root',
+      '/run',
+      '/sbin',
+      '/snap',
+      '/srv',
+      '/sys',
+      '/usr',
+      '/var',
+    ];
+    const temporary = ['/tmp', '/var/tmp'];
+    if (!temporary.some((s) => r.startsWith(s + '/')) && systemDirs.some(inside))
+      return 'dossier système';
+    if (['.config', '.local', '.cache'].some((d) => inside(p.join(home, d))))
+      return 'dossier de réglages';
+    return null;
+  }
   // Sous macOS, /tmp et les dossiers temporaires de l'utilisateur sont dans /private.
   const temporary = ['/private/tmp', '/private/var/folders'];
   const systemDirs = [
@@ -196,6 +236,11 @@ const NAMES = {
     fileManager: 'l’Explorateur de fichiers',
     trash: 'la Corbeille',
   },
+};
+NAMES.linux = {
+  keystore: 'le trousseau du système (GNOME Keyring ou KWallet)',
+  fileManager: 'le gestionnaire de fichiers',
+  trash: 'la corbeille',
 };
 const names = NAMES[platform] || {
   keystore: 'le coffre de clés du système',

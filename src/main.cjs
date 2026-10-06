@@ -595,7 +595,13 @@ const keychain = testKeychain
       },
     }
   : {
-      available: () => safeStorage.isEncryptionAvailable(),
+      // Linux sans trousseau (GNOME Keyring, KWallet) : Electron « chiffre » avec une clé fixe
+      // connue (« basic_text ») ; Localia refuse plutôt que de donner une fausse sécurité.
+      available: () =>
+        safeStorage.isEncryptionAvailable() &&
+        !(
+          process.platform === 'linux' && safeStorage.getSelectedStorageBackend?.() === 'basic_text'
+        ),
       encrypt: (text) => safeStorage.encryptString(text),
       decrypt: (buffer) => safeStorage.decryptString(buffer),
     };

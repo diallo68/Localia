@@ -174,6 +174,11 @@ const readJson = async (profile, name) => {
     );
     let request = await lastRequest();
     assert.equal(request.model, 'grand:8b');
+    assert.equal(
+      await page.locator('.message.assistant .model-tag').first().textContent(),
+      'grand:8b',
+      'modèle affiché sur la réponse',
+    );
     assert.equal(request.options.num_ctx, 8192, 'contexte du Modelfile respecté');
     assert.equal((await readJson(profile, 'settings.json')).lastModel, 'grand:8b');
 

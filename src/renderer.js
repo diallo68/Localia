@@ -259,6 +259,17 @@ function messageNode(message, question) {
   const label = document.createElement('strong');
   label.className = 'author';
   label.textContent = message.role === 'user' ? 'Vous' : 'Localia';
+  // Réponses anciennes, enregistrées sans leur modèle : celui de la conversation.
+  const model = message.role === 'assistant' && (message.model || current?.model);
+  if (model) {
+    const tag = document.createElement('span');
+    tag.className = 'model-tag';
+    tag.textContent = model;
+    tag.title = message.model
+      ? 'Modèle qui a écrit cette réponse'
+      : 'Modèle de la conversation (réponse enregistrée avant que Localia note son modèle)';
+    label.append(' · ', tag);
+  }
   if (message.remote) {
     const tag = document.createElement('span');
     tag.className = 'skill-tag';
@@ -785,6 +796,8 @@ async function sendPrompt({ remoteId } = {}) {
   conversation.projectId = $('project').value || undefined;
   runNotes = [];
   rememberModel(conversation.model).catch((e) => notice(e.message));
+  // Modèle qui a écrit la réponse, affiché à côté de « Localia » (et conservé avec le message).
+  answer.model = conversation.model;
   reply = messageNode(answer);
   let completed = false;
   let failure = null;

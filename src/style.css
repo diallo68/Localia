@@ -609,6 +609,10 @@ footer {
   display: block;
   margin-bottom: 5px;
 }
+.model-tag {
+  font-weight: 400;
+  color: #6c7d74;
+}
 .message p {
   overflow-wrap: anywhere;
   margin: 0;

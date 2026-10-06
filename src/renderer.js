@@ -11,6 +11,12 @@ let conversations = [],
   settings = { lastModel: null, models: {} };
 // Compétences (fichiers du dossier Compétences), chargées par skills-view.js.
 let skills = [];
+// Tâche et compétence d'une conversation. Avant leur séparation, une compétence était rangée
+// dans « task » (« skill:… ») : elle est relue comme compétence.
+function conversationChoices(c) {
+  const old = String(c?.task || '').startsWith('skill:');
+  return { task: old ? '' : c?.task || '', skill: c?.skill || (old ? c.task : '') };
+}
 const skillOf = (value) =>
   String(value || '').startsWith('skill:')
     ? skills.find((s) => s.id === String(value).slice(6)) || null
@@ -164,7 +170,9 @@ function history() {
     b.onclick = () => {
       current = c;
       selectModel(c.model);
-      $('task').value = c.task || '';
+      const choice = conversationChoices(c);
+      $('task').value = choice.task;
+      $('skill').value = choice.skill;
       $('project').value = c.projectId && projectById(c.projectId) ? c.projectId : '';
       showTaskAdvice(false);
       closeRename();
@@ -718,6 +726,7 @@ $('models-tab').onclick = () => view('models');
 $('new').onclick = () => {
   current = null;
   $('task').value = '';
+  $('skill').value = '';
   showTaskAdvice(false);
   closeRename();
   $('prompt').value = '';
@@ -824,6 +833,7 @@ async function sendPrompt({ remoteId } = {}) {
   const conversation = current;
   conversation.model = $('model').value;
   conversation.task = $('task').value || undefined;
+  conversation.skill = $('skill').value || undefined;
   conversation.projectId = $('project').value || undefined;
   runNotes = [];
   rememberModel(conversation.model).catch((e) => notice(e.message));
@@ -836,9 +846,9 @@ async function sendPrompt({ remoteId } = {}) {
     await persist();
     const result = await window.localia.run('chat', {
       model: conversation.model,
-      // Compétence : celle du message (« /appel »), sinon celle choisie dans le menu Tâche.
-      task: skillOf(conversation.task) ? undefined : conversation.task,
-      skill: messageSkill?.id || skillOf(conversation.task)?.id,
+      // Compétence : celle du message (« /appel »), sinon celle choisie dans le menu Compétence.
+      task: conversation.task,
+      skill: messageSkill?.id || skillOf(conversation.skill)?.id,
       remoteId,
       projectId: conversation.projectId,
       documentId: conversation.document?.id,
@@ -1018,12 +1028,21 @@ function taskAdvice(taskId) {
 }
 // Affiche le conseil ; choisit le modèle conseillé seulement si on le demande (nouvelle tâche).
 function showTaskAdvice(choose) {
-  const skill = skillOf($('task').value);
-  const advice = taskAdvice(skill ? skill.task : $('task').value);
+  const skill = skillOf($('skill').value);
+  const chosenTask = taskById($('task').value);
+  const advice = taskAdvice($('task').value || skill?.task);
   const box = $('task-advice');
-  box.hidden = !advice && !skill;
-  if (!advice && !skill) return;
+  // Suggestion de premier message (Tab pour la reprendre) selon la tâche ou la compétence.
+  $('prompt').placeholder = chosenTask?.example
+    ? `Ex. ${chosenTask.example} (Tab pour l’utiliser)`
+    : skill
+      ? `Décrivez ce que vous attendez : la compétence « ${skill.name} » s’applique.`
+      : 'Posez votre question, ou collez l’adresse d’une page web…';
+  box.hidden = !advice && !skill && !chosenTask;
+  if (box.hidden) return;
   const parts = [];
+  // Ce que le choix change pour les prochains messages.
+  if (chosenTask?.effect) parts.push(`Tâche « ${chosenTask.label} » : ${chosenTask.effect}`);
   if (skill) {
     parts.push(`Compétence ${skill.call} : ${skill.description}`);
     if (skill.steps.length)
@@ -1061,13 +1080,21 @@ $('project').onchange = guard(async () => {
     await persist();
   }
 });
-$('task').onchange = guard(async () => {
-  if (current) {
-    current.task = $('task').value || undefined;
-    await persist();
-  }
-  showTaskAdvice(true);
-  await rememberModel($('model').value);
+for (const id of ['task', 'skill'])
+  $(id).onchange = guard(async () => {
+    if (current) {
+      current[id] = $(id).value || undefined;
+      await persist();
+    }
+    showTaskAdvice(true);
+    await rememberModel($('model').value);
+  });
+// Tab dans une zone de saisie vide : reprend la suggestion de la tâche.
+$('prompt').addEventListener('keydown', (event) => {
+  const example = taskById($('task').value)?.example;
+  if (event.key !== 'Tab' || event.shiftKey || $('prompt').value || !example) return;
+  event.preventDefault();
+  $('prompt').value = example;
 });
 $('model-settings').onclick = () => openSettings($('model').value);
 function closeRename() {

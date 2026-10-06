@@ -1,4 +1,4 @@
-// Onglet « Compétences » : recettes réutilisables (fichiers Markdown), menu Tâche, appel « /nom ».
+// Onglet « Compétences » : recettes réutilisables (fichiers Markdown), menu Compétence, appel « /nom ».
 let skillErrors = [];
 
 async function loadSkillCatalog() {
@@ -14,27 +14,28 @@ async function loadSkillCatalog() {
   renderSkills();
 }
 
-// Menu Tâche : un groupe par famille de compétences, après les tâches de Localia.
+// Menu Compétence : un groupe par famille, séparé des tâches de Localia.
 function fillSkillMenu() {
-  const select = $('task');
+  const select = $('skill');
   for (const group of [...select.querySelectorAll('optgroup[data-skills]')]) group.remove();
   const families = [...new Set(skills.map((s) => s.family))];
   for (const family of families) {
     const group = document.createElement('optgroup');
-    group.label = `Compétences — ${family}`;
+    group.label = family;
     group.dataset.skills = '1';
     for (const s of skills.filter((x) => x.family === family))
       group.append(new Option(`${s.steps.length ? '▸ ' : ''}${s.name}`, `skill:${s.id}`));
     select.append(group);
   }
-  if (current?.task) select.value = current.task;
-  if (select.value !== (current?.task || '')) select.value = '';
+  const chosen = conversationChoices(current).skill;
+  select.value = chosen;
+  if (select.value !== chosen) select.value = '';
 }
 
 function useSkill(skill) {
   view('chat');
-  $('task').value = `skill:${skill.id}`;
-  $('task').dispatchEvent(new Event('change'));
+  $('skill').value = `skill:${skill.id}`;
+  $('skill').dispatchEvent(new Event('change'));
   $('prompt').focus();
 }
 

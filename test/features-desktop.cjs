@@ -249,6 +249,18 @@ const readJson = async (profile, name) => {
       await page.locator('#task-advice').textContent(),
       /Localia refait chaque opération/,
     );
+    // Ce que la tâche change, et sa suggestion de premier message (Tab pour la reprendre).
+    assert.match(
+      await page.locator('#task-advice').textContent(),
+      /Tâche « Calculer ou vérifier un calcul » : le modèle écrit chaque opération/,
+    );
+    assert.match(
+      await page.locator('#prompt').getAttribute('placeholder'),
+      /^Ex\. Vérifie le calcul/,
+    );
+    await page.locator('#prompt').fill('');
+    await page.locator('#prompt').press('Tab');
+    assert.match(await page.locator('#prompt').inputValue(), /^Vérifie le calcul/);
     await page.locator('#prompt').fill('Combien font 40 × 25 ?');
     await page.locator('#send').click();
     // Réponse terminée (la bulle apparaît avant l'envoi de la requête : machines lentes).
@@ -838,7 +850,7 @@ const readJson = async (profile, name) => {
     assert.ok(measuredFile['petit:1b'].loadSeconds === 2);
     assert.match(await page.locator('#pc-suggestions').textContent(), /Gemma 3 · 4B/);
 
-    // Compétences : dossier de départ, menu Tâche, appel « /nom », suggestions, nouvelle compétence.
+    // Compétences : dossier de départ, menu Compétence, appel « /nom », suggestions, nouvelle compétence.
     await page.locator('#skills-tab').click();
     await page.waitForFunction(() => document.querySelectorAll('.skill-card').length === 42);
     assert.match(
@@ -850,9 +862,10 @@ const readJson = async (profile, name) => {
       .locator('button', { hasText: 'Utiliser' })
       .click();
     await page.waitForFunction(() => !document.querySelector('#chat-view').hidden);
-    assert.equal(await page.locator('#task').inputValue(), 'skill:donnees-manquants');
+    assert.equal(await page.locator('#skill').inputValue(), 'skill:donnees-manquants');
+    assert.equal(await page.locator('#task').inputValue(), '', 'tâches et compétences séparées');
     await page.locator('#new').click();
-    await page.locator('#task').selectOption('skill:donnees-manquants');
+    await page.locator('#skill').selectOption('skill:donnees-manquants');
     await page.locator('#prompt').fill('Mon fichier a des trous.');
     await page.locator('#send').click();
     await page.waitForFunction(() =>

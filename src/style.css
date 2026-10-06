@@ -310,8 +310,8 @@ h1 {
 }
 .toolbar {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
   margin: 20px 36px 0;
   padding: 12px;
   background: #fff;
@@ -827,6 +827,17 @@ progress {
 [hidden] {
   display: none !important;
 }
+@media (max-width: 1250px) {
+  .toolbar {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .toolbar > .pick {
+    grid-column: span 2;
+  }
+  .toolbar > .pick:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+}
 @media (max-width: 850px) {
   aside {
     width: 200px;
@@ -841,6 +852,10 @@ progress {
   .toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin: 15px 22px 0;
+  }
+  .toolbar > .pick,
+  .toolbar > .pick:nth-child(n + 4) {
+    grid-column: auto;
   }
   #engine-panel,
   .conversation-actions,

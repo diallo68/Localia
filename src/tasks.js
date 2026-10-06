@@ -3,6 +3,9 @@
 const TASKS = [
   {
     id: 'extraction',
+    effect:
+      'le modèle répond seulement à partir du document joint, cite la page de chaque information et dit quand l’information manque.',
+    example: 'Combien d’images contient le jeu de données, et à quelle page ?',
     label: 'Extraire des informations d’un document',
     categories: ['Extraction', 'Pièges à invention'],
     instruction:
@@ -10,6 +13,9 @@ const TASKS = [
   },
   {
     id: 'relecture',
+    effect:
+      'le modèle compare chiffres, tableaux, citations et références, et liste chaque incohérence avec ses pages.',
+    example: 'Relis ce document et liste les incohérences entre le texte et les tableaux.',
     label: 'Relire un article et repérer les incohérences',
     categories: ['Incohérences'],
     instruction:
@@ -17,12 +23,18 @@ const TASKS = [
   },
   {
     id: 'synthese',
+    effect:
+      'le modèle résume fidèlement, sans ajouter de chiffre ni d’information absents du texte.',
+    example: 'Résume ce document en cinq points.',
     label: 'Résumer',
     categories: ['Synthèse'],
     instruction: 'Résume fidèlement, sans ajouter de chiffre ni d’information absents du texte.',
   },
   {
     id: 'calcul',
+    effect:
+      'le modèle écrit chaque opération en entier ; Localia refait les calculs de la réponse.',
+    example: 'Vérifie le calcul : 1 802 / 38 745 × 100.',
     label: 'Calculer ou vérifier un calcul',
     categories: ['Calcul', 'Raisonnement'],
     instruction:
@@ -32,6 +44,9 @@ const TASKS = [
   },
   {
     id: 'redaction',
+    effect:
+      'le modèle écrit en français clair, avec la terminologie scientifique exacte, sans inventer de données.',
+    example: 'Traduis ce paragraphe en anglais scientifique.',
     label: 'Rédiger ou traduire',
     categories: ['Rédaction'],
     instruction:
@@ -39,6 +54,9 @@ const TASKS = [
   },
   {
     id: 'code',
+    effect:
+      'le modèle donne un code complet et exécutable, puis explique brièvement ce qu’il fait.',
+    example: 'Écris une fonction Python qui lit un fichier CSV et affiche ses colonnes.',
     label: 'Écrire ou corriger du code',
     categories: ['Code'],
     instruction: 'Donne un code complet et exécutable, puis explique brièvement ce qu’il fait.',
@@ -47,6 +65,9 @@ const TASKS = [
   },
   {
     id: 'donnees',
+    effect:
+      'le modèle écrit un script Python (pandas) adapté aux fichiers joints : nettoyage, contrôles, calculs.',
+    example: 'Écris le script de nettoyage de ce fichier de données.',
     label: 'Préparer et analyser des données (Python)',
     categories: ['Données'],
     instruction: [
@@ -80,6 +101,8 @@ const TASKS = [
   },
   {
     id: 'question',
+    effect: 'aucune consigne particulière : le modèle répond librement.',
+    example: 'Explique-moi la différence entre précision et rappel.',
     label: 'Question générale',
     categories: ['Honnêteté', 'Pièges à invention'],
     instruction:

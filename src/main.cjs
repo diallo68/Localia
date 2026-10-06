@@ -1001,14 +1001,14 @@ handle('run', async (kind, payload) => {
     if (chatLike) {
       const info = await showModel(model);
       const modelSettings = (await readSettings()).models[model] || {};
-      // Compétence choisie (menu Tâche ou « /appel ») : sa consigne, ses fichiers, et la tâche de base.
+      // Compétence choisie (menu Compétence ou « /appel ») : sa consigne, ses fichiers, et la tâche de base.
       const skill =
         typeof payload.skill === 'string' && payload.skill
           ? await skillContext(payload.skill)
           : null;
       if (skill) send({ kind: 'skill', data: { name: skill.skill.name, call: skill.skill.call } });
-      // Consigne de la tâche choisie (assistant de recherche), ajoutée à la consigne permanente.
-      const taskId = skill?.skill.task || payload.task;
+      // Consigne de la tâche choisie (menu Tâche), sinon la tâche de base de la compétence.
+      const taskId = payload.task || skill?.skill.task;
       const task = taskId ? taskById(taskId) : null;
       if (taskId && !task) throw new Error('Type de tâche inconnu.');
       // Mémoire du projet de la conversation : notes de l'utilisateur, choisies selon la question.

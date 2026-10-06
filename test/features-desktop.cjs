@@ -38,6 +38,21 @@ const readJson = async (profile, name) => {
   let app;
   try {
     await fs.writeFile(path.join(profile, 'settings.json'), JSON.stringify({ guideDone: true }));
+    // Modèle Ollama simulé sur le disque (manifeste et fichier GGUF) pour le moteur intégré.
+    const ollamaDir = path.join(profile, 'ollama-models');
+    await fs.mkdir(path.join(ollamaDir, 'manifests/registry.ollama.ai/library/petit'), {
+      recursive: true,
+    });
+    await fs.mkdir(path.join(ollamaDir, 'blobs'), { recursive: true });
+    await fs.writeFile(
+      path.join(ollamaDir, 'manifests/registry.ollama.ai/library/petit/1b'),
+      JSON.stringify({
+        layers: [
+          { mediaType: 'application/vnd.ollama.image.model', digest: 'sha256:abc', size: 1000 },
+        ],
+      }),
+    );
+    await fs.writeFile(path.join(ollamaDir, 'blobs/sha256-abc'), 'GGUF-simulé');
     // Comparaison au format d'avant les séries : doit rester lisible.
     await fs.writeFile(
       path.join(profile, 'comparisons.json'),
@@ -53,7 +68,13 @@ const readJson = async (profile, name) => {
     );
     app = await electron.launch({
       args: [path.resolve('.')],
-      env: { ...process.env, LOCALIA_TEST_DATA: profile, LOCALIA_REMOTE_PORT: '47899' },
+      env: {
+        ...process.env,
+        LOCALIA_TEST_DATA: profile,
+        LOCALIA_REMOTE_PORT: '47899',
+        LOCALIA_FAKE_LLAMA: '1',
+        OLLAMA_MODELS: path.join(profile, 'ollama-models'),
+      },
     });
     const page = await app.firstWindow();
     settleWrites = async () => {
@@ -935,6 +956,46 @@ const readJson = async (profile, name) => {
     await page.waitForFunction(() => !document.querySelectorAll('.file-chip').length);
     for (const id of fileIds) await waitForMissing(path.join(profile, 'documents', id + '.json'));
     await fs.rm(dataDir, { recursive: true, force: true });
+
+    // Moteur intégré (simulé) : modèle repris d'Ollama, conversation sans passer par Ollama.
+    await page.locator('#models-tab').click();
+    await page
+      .locator('.installed-row', { hasText: 'petit:1b' })
+      .locator('button', { hasText: 'Utiliser avec le moteur intégré' })
+      .click();
+    await page.waitForFunction(() =>
+      document.querySelector('#installed').textContent.includes('integre/petit:1b'),
+    );
+    assert.match(
+      await page.locator('#installed').textContent(),
+      /integre\/petit:1b moteur intégré/,
+    );
+    const ollamaCalls = await app.evaluate(() => global.requests.length);
+    await page.locator('#chat-tab').click();
+    await page.locator('#new').click();
+    await page.locator('#model').selectOption('integre/petit:1b');
+    await page.locator('#prompt').fill('Question au moteur intégré');
+    await page.locator('#send').click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#stop').hidden &&
+        document
+          .querySelector('.message.assistant:last-of-type')
+          ?.textContent.includes('Réponse du moteur intégré'),
+    );
+    assert.equal(
+      await app.evaluate(() => global.requests.length),
+      ollamaCalls,
+      'aucune requête à Ollama',
+    );
+    const integreConv = (await readJson(profile, 'conversations.json')).find(
+      (c) => c.model === 'integre/petit:1b',
+    );
+    assert.match(integreConv.messages.at(-1).content, /à « Question au moteur intégré »/);
+    assert.deepEqual(
+      (await readJson(profile, 'modeles-integres.json')).map((m) => [m.name, m.origin, m.source]),
+      [['integre/petit:1b', 'petit:1b', 'ollama']],
+    );
 
     // Accès depuis un autre appareil : serveur activé, clé exigée, question posée « depuis le
     // téléphone », réponse reçue au fil de l'écriture, conversation visible sur le Mac.

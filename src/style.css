@@ -1615,3 +1615,15 @@ progress {
   font-size: 12px;
   line-height: 1.6;
 }
+.engine-badge {
+  font-size: 10px;
+  background: #e3efe7;
+  color: #1b543f;
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-weight: 600;
+}
+.installed-row button {
+  padding: 3px 10px;
+  font-size: 11px;
+}

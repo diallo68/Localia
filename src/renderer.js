@@ -330,8 +330,9 @@ function controls() {
 async function refresh() {
   try {
     models = (await window.localia.models()).sort((a, b) => a.size - b.size);
-    $('status').textContent = '● Ollama connecté';
-    $('connect').hidden = true;
+    const ollama = models.some((m) => m.engine !== 'integre');
+    $('status').textContent = ollama ? '● Ollama connecté' : '● Moteur intégré (Ollama arrêté)';
+    $('connect').hidden = ollama;
   } catch (error) {
     models = [];
     $('status').textContent = '○ Ollama arrêté';
@@ -349,14 +350,44 @@ async function refresh() {
   if (!models.length)
     $('installed').textContent =
       'Aucun modèle disponible. Démarrez Ollama, puis téléchargez votre premier modèle.';
+  const localNames = new Set(models.filter((m) => m.engine === 'integre').map((m) => m.name));
   for (const m of models) {
     const row = document.createElement('div');
     row.className = 'installed-row';
     const title = document.createElement('span');
     title.textContent = m.name;
+    if (m.engine === 'integre') {
+      const badge = element('small', 'engine-badge', 'moteur intégré');
+      title.append(' ', badge);
+    }
     const size = document.createElement('small');
     size.textContent = (m.size / 1e9).toFixed(2) + ' Go';
     row.append(title, size);
+    // Moteur intégré : reprendre un modèle d'Ollama sans le retélécharger, ou le retirer.
+    if (m.engine === 'integre') {
+      const remove = element('button', '', 'Retirer');
+      remove.type = 'button';
+      remove.title = 'Retire le modèle du moteur intégré (le fichier d’Ollama n’est pas supprimé)';
+      remove.onclick = guard(async () => {
+        await window.localia.localRemove(m.name);
+        await refresh();
+      });
+      row.append(remove);
+    } else if (!localNames.has('integre/' + m.name)) {
+      const use = element('button', '', 'Utiliser avec le moteur intégré');
+      use.type = 'button';
+      use.onclick = guard(async () => {
+        use.disabled = true;
+        use.textContent = 'Vérification (jusqu’à 30 s)…';
+        try {
+          await window.localia.localImport(m.name);
+          notice(`« integre/${m.name} » est prêt : il fonctionne sans Ollama.`);
+        } finally {
+          await refresh();
+        }
+      });
+      row.append(use);
+    }
     $('installed').append(row);
   }
   for (const listener of modelListeners) listener();

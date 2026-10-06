@@ -8,6 +8,7 @@ const {
   safeStorage,
   powerSaveBlocker,
   Notification,
+  utilityProcess,
 } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs/promises');
@@ -42,6 +43,7 @@ const tables = require('./tables.js');
 const skillsLogic = require('./skills.js');
 const web = require('./web.cjs');
 const remote = require('./remote.cjs');
+const localEngine = require('./local-engine.cjs');
 const QRCode = require('qrcode');
 const { detectInjection } = require('./verify.js');
 const dns = require('node:dns');
@@ -131,6 +133,22 @@ handle('environment', async (names) => {
   const models = {};
   for (const name of names.map(modelName)) {
     const m = (tags.models || []).find((x) => x.name === name);
+    if (localEngine.isLocal(name)) {
+      const entry = (await readRegistry()).find((x) => x.name === name);
+      models[name] = entry
+        ? {
+            engine: 'integre (llama.cpp)',
+            digest: entry.digest,
+            size: entry.size,
+            family: entry.architecture,
+            parameterSize: entry.sizeLabel,
+            quantization: null,
+            source: entry.source,
+            origin: entry.origin,
+          }
+        : null;
+      continue;
+    }
     models[name] = m
       ? {
           digest: m.digest,
@@ -254,7 +272,7 @@ async function remoteApi(route, method, body, res, client) {
       .catch(() => null);
     const settings = await readSettings();
     return client.json(200, {
-      ollama: Boolean(tags),
+      ollama: Boolean(tags) || (await readRegistry()).length > 0,
       models: (tags?.models || [])
         .filter((m) => !m.remote_host && !/cloud/i.test(m.name))
         .map((m) => m.name),
@@ -537,11 +555,91 @@ handle('verify-answer', async (payload) => {
   return report;
 });
 handle('prune-documents', (keepIds) => pruneDocuments(documentsPath(), keepIds));
-handle('models', async () =>
-  (await (await request('/api/tags')).json()).models.filter(
-    (m) => !m.remote_host && !/cloud/i.test(m.name),
-  ),
-);
+// Modèles d'Ollama et du moteur intégré, dans une seule liste ; Ollama arrêté n'empêche pas
+// d'utiliser les modèles du moteur intégré.
+handle('models', async () => {
+  let ollama = null;
+  let ollamaError = null;
+  try {
+    ollama = (await (await request('/api/tags')).json()).models.filter(
+      (m) => !m.remote_host && !/cloud/i.test(m.name),
+    );
+  } catch (error) {
+    ollamaError = error;
+  }
+  const local = (await readRegistry()).map((m) => ({
+    name: m.name,
+    size: m.size,
+    engine: 'integre',
+    details: { family: m.architecture, parameter_size: m.sizeLabel },
+  }));
+  if (!ollama && !local.length) throw ollamaError;
+  return [...(ollama || []).map((m) => ({ ...m, engine: 'ollama' })), ...local];
+});
+
+// --- Moteur intégré (llama.cpp) ------------------------------------------------------------------
+const readRegistry = async () =>
+  localEngine.normalizeRegistry(
+    await readJson('modeles-integres.json', [], 'Liste des modèles du moteur intégré illisible.'),
+  );
+let engineInstance = null;
+const engine = () =>
+  (engineInstance ||= localEngine.createEngine({
+    utilityProcess,
+    workerPath: path.join(__dirname, 'llama-worker.mjs'),
+    env: { ...process.env },
+  }));
+async function localEntry(name) {
+  const entry = (await readRegistry()).find((m) => m.name === name);
+  if (!entry) throw new Error(`Modèle du moteur intégré introuvable : ${name}.`);
+  if (!(await fs.stat(entry.file).catch(() => null)))
+    throw new Error(
+      `Le fichier du modèle ${name} a disparu (supprimé dans Ollama ?). Retirez-le de la liste.`,
+    );
+  return entry;
+}
+// Réglages enregistrés par Ollama (num_ctx, température…) écrits comme dans un Modelfile.
+const modelfileText = (parameters) =>
+  Object.entries(parameters || {})
+    .flatMap(([k, v]) => (Array.isArray(v) ? v.map((x) => `${k} ${x}`) : [`${k} ${v}`]))
+    .join('\n');
+handle('local-models', readRegistry);
+// Modèle déjà téléchargé par Ollama, utilisé tel quel par le moteur intégré (aucune copie).
+handle('local-import', async (name) => {
+  const origin = modelName(name);
+  const { file, digest, size, parameters } = await localEngine.ollamaModelFile(origin);
+  let info;
+  try {
+    info = await engine().check(file);
+  } catch (error) {
+    throw new Error(
+      `Ce modèle n’est pas lisible par le moteur intégré : Ollama l’a converti dans son propre format (${error.message.slice(0, 120)}). Il faudra le télécharger depuis Hugging Face.`,
+    );
+  }
+  const entry = {
+    name: localEngine.PREFIX + origin,
+    file,
+    source: 'ollama',
+    origin,
+    size,
+    digest,
+    architecture: info.architecture,
+    sizeLabel: info.sizeLabel,
+    contextLength: info.contextLength,
+    parameters,
+    addedAt: new Date().toISOString(),
+  };
+  const registry = (await readRegistry()).filter((m) => m.name !== entry.name);
+  await writeJson('modeles-integres.json', [...registry, entry], 'Liste trop volumineuse.');
+  return entry;
+});
+handle('local-remove', async (name) => {
+  await writeJson(
+    'modeles-integres.json',
+    (await readRegistry()).filter((m) => m.name !== name),
+    'Liste trop volumineuse.',
+  );
+});
 // Guide de démarrage : Ollama installé et actif, modèles, mémoire et place libre sur le disque.
 handle('setup-status', async () => {
   const [version, tags, disk] = await Promise.all([
@@ -589,9 +687,20 @@ handle('pc-scan', async () => {
     gpus,
     freeDiskGB: disk ? Math.round((disk.bavail * disk.bsize) / 1e9) : null,
     ollama: Boolean(tags),
-    models: (tags?.models || [])
-      .filter((m) => !m.remote_host && !/cloud/i.test(m.name))
-      .map((m) => ({ name: m.name, size: m.size, parameters: m.details?.parameter_size ?? null })),
+    models: [
+      ...(tags?.models || [])
+        .filter((m) => !m.remote_host && !/cloud/i.test(m.name))
+        .map((m) => ({
+          name: m.name,
+          size: m.size,
+          parameters: m.details?.parameter_size ?? null,
+        })),
+      ...(await readRegistry()).map((m) => ({
+        name: m.name,
+        size: m.size,
+        parameters: m.sizeLabel,
+      })),
+    ],
     loaded: (loaded?.models || []).map((m) => ({ name: m.name, size: m.size, vram: m.size_vram })),
     measured,
   };
@@ -606,18 +715,37 @@ handle('pc-measure', async (name) => {
   const controller = new AbortController();
   tasks.set(key, controller);
   try {
-    const response = await request(
-      '/api/generate',
-      {
-        model,
-        prompt: 'Explique en cinq phrases simples à quoi sert la météo pour un agriculteur.',
-        stream: false,
-        keep_alive: 0,
-        options: { temperature: 0, seed: 42, num_predict: 120 },
-      },
-      controller.signal,
-    );
-    const data = await response.json();
+    const prompt = 'Explique en cinq phrases simples à quoi sert la météo pour un agriculteur.';
+    let data = null;
+    if (localEngine.isLocal(model)) {
+      const entry = await localEntry(model);
+      await engine().chat({
+        file: entry.file,
+        body: {
+          messages: [{ role: 'user', content: prompt }],
+          options: { temperature: 0, seed: 42, num_predict: 120 },
+          keep_alive: 0,
+        },
+        signal: controller.signal,
+        onData: (d) => {
+          if (d.done) data = d;
+        },
+      });
+    }
+    const response = data
+      ? null
+      : await request(
+          '/api/generate',
+          {
+            model,
+            prompt: 'Explique en cinq phrases simples à quoi sert la météo pour un agriculteur.',
+            stream: false,
+            keep_alive: 0,
+            options: { temperature: 0, seed: 42, num_predict: 120 },
+          },
+          controller.signal,
+        );
+    data ||= await response.json();
     const result = {
       tokensPerSecond:
         data.eval_count && data.eval_duration ? data.eval_count / (data.eval_duration / 1e9) : null,
@@ -773,10 +901,9 @@ handle('run', async (kind, payload) => {
       if (skill) used.skill = skill.skill.call;
       if (body.think !== undefined) used.think = body.think;
     }
-    const response = await request(chatLike ? '/api/chat' : '/api/pull', body, controller.signal);
     // Question venue d'un autre appareil : le texte lui est aussi envoyé au fil de l'écriture.
     const remoteEmit = payload?.remoteId ? remoteStreams.get(payload.remoteId) : null;
-    await readStream(response.body, (data) => {
+    const onData = (data) => {
       if (remoteEmit && data.message?.content) remoteEmit('texte', { delta: data.message.content });
       if (chatLike) {
         responseText += data.message?.content || '';
@@ -784,7 +911,17 @@ handle('run', async (kind, payload) => {
         if (data.done) final = data;
       }
       send({ kind, data });
-    });
+    };
+    if (chatLike && localEngine.isLocal(model)) {
+      // Moteur intégré : même format de flux qu'Ollama.
+      const entry = await localEntry(model);
+      used.engine = 'integre';
+      await engine().chat({ file: entry.file, body, signal: controller.signal, onData });
+      if (controller.signal.aborted) throw new Error('annulée');
+    } else {
+      const response = await request(chatLike ? '/api/chat' : '/api/pull', body, controller.signal);
+      await readStream(response.body, onData);
+    }
     if (chatLike && !sent) sent = { messages: body.messages };
     return {
       cancelled: false,
@@ -806,6 +943,16 @@ handle('cancel', (kind) => tasks.get(taskKey(kind))?.abort());
 // Fiche du modèle demandée avant chaque réponse. Ollama peut être lent à répondre pendant qu'un
 // gros modèle travaille : délai long et un second essai.
 async function showModel(model) {
+  // Moteur intégré : fiche équivalente à celle d'Ollama, d'après le registre.
+  if (localEngine.isLocal(model)) {
+    const m = await localEntry(model);
+    return {
+      details: { family: m.architecture, parameter_size: m.sizeLabel, quantization_level: null },
+      capabilities: ['completion'],
+      model_info: m.contextLength ? { [`${m.architecture}.context_length`]: m.contextLength } : {},
+      parameters: modelfileText(m.parameters),
+    };
+  }
   let response;
   try {
     response = await request('/api/show', { model }, AbortSignal.timeout(60000));
@@ -899,6 +1046,7 @@ const DATA_FILES = [
   'watch.json',
   'performance.json',
   'distance.json',
+  'modeles-integres.json',
 ];
 const keyPath = () => dataPath('cle.bin');
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -1727,6 +1875,7 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => app.quit());
 app.on('before-quit', () => {
   remoteServer?.close();
+  engineInstance?.stop();
   for (const task of tasks.values()) task.abort();
   service?.kill();
 });

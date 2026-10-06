@@ -729,7 +729,7 @@ const readJson = async (profile, name) => {
     await page.locator('.journal-card summary').click();
     await page.locator('.journal-card button', { hasText: 'Annuler cette opération' }).click();
     await page.waitForFunction(() =>
-      document.querySelector('#notice').textContent.includes('à récupérer dans la Corbeille'),
+      /à récupérer dans la corbeille/i.test(document.querySelector('#notice').textContent),
     );
     assert.deepEqual((await fs.readdir(work)).sort(), [
       'mildiou-2019.pdf',

@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('localia', {
   attachPdf: () => invoke('attach-pdf'),
   attach: () => invoke('attach'),
   setupStatus: () => invoke('setup-status'),
+  pcScan: () => invoke('pc-scan'),
+  pcMeasure: (model) => invoke('pc-measure', model),
   openOllamaDownload: () => invoke('open-ollama-download'),
   skillsList: () => invoke('skills-list'),
   skillsOpenDir: () => invoke('skills-open-dir'),

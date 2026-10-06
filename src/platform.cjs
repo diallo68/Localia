@@ -65,6 +65,63 @@ async function systemInfo() {
   return { os: `${os.version()} ${os.release()}`, physicalCores: null };
 }
 
+// Cartes graphiques : nom et mémoire dédiée (Go), quand le système la donne.
+async function graphicsCards() {
+  if (platform === 'darwin') {
+    const out = await run('/usr/sbin/system_profiler', ['SPDisplaysDataType', '-json'], 10000);
+    try {
+      return (JSON.parse(out).SPDisplaysDataType || []).map((g) => {
+        const vram = /(\d+(?:\.\d+)?)\s*(GB|MB)/i.exec(
+          g.spdisplays_vram || g._spdisplays_vram || '',
+        );
+        return {
+          name: g.sppci_model || g._name,
+          vramGB: vram ? Number(vram[1]) / (vram[2].toUpperCase() === 'MB' ? 1024 : 1) : null,
+          shared: Boolean(g.spdisplays_vram_shared) || g.sppci_bus === 'spdisplays_builtin',
+          cores: g.sppci_cores ? Number(g.sppci_cores) : null,
+        };
+      });
+    } catch {
+      return [];
+    }
+  }
+  if (platform === 'win32') {
+    // nvidia-smi donne la vraie mémoire des cartes NVIDIA (Windows la plafonne à 4 Go).
+    const nvidia = await run(
+      'nvidia-smi',
+      ['--query-gpu=name,memory.total', '--format=csv,noheader,nounits'],
+      5000,
+    );
+    const cards = (nvidia || '')
+      .split('\n')
+      .filter(Boolean)
+      .map((l) => {
+        const [name, mb] = l.split(',').map((x) => x.trim());
+        return { name, vramGB: Math.round(Number(mb) / 1024), shared: false };
+      });
+    const out = await run(
+      'powershell.exe',
+      [
+        '-NoProfile',
+        '-Command',
+        'Get-CimInstance Win32_VideoController | Select-Object Name,AdapterRAM | ConvertTo-Json',
+      ],
+      8000,
+    );
+    try {
+      for (const g of [].concat(JSON.parse(out) || []))
+        if (!cards.some((c) => c.name === g.Name))
+          cards.push({
+            name: g.Name,
+            vramGB: g.AdapterRAM ? Math.round(g.AdapterRAM / 2 ** 30) : null,
+            shared: false,
+          });
+    } catch {}
+    return cards;
+  }
+  return [];
+}
+
 // Chiffrement de tout le disque : FileVault sur macOS ; inconnu ailleurs (BitLocker demande les
 // droits administrateur pour être interrogé).
 async function diskEncryption() {
@@ -151,6 +208,7 @@ module.exports = {
   ollamaCandidates,
   ollamaPath,
   systemInfo,
+  graphicsCards,
   diskEncryption,
   forbiddenRoot,
   names,

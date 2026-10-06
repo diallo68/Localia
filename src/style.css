@@ -1512,3 +1512,43 @@ progress {
   text-decoration: underline;
   cursor: pointer;
 }
+.pc-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.pc-card {
+  background: white;
+  border: 1px solid #dfe7e1;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+.pc-card p {
+  margin: 4px 0 0;
+  color: #4b5d54;
+}
+.pc-advice {
+  background: #eef5f0;
+  border-left: 4px solid #226b53;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+#performance-view .input-row {
+  justify-content: flex-start;
+}
+.compare-table td.verdict-confortable {
+  color: #1b7a4f;
+  font-weight: 600;
+}
+.compare-table td.verdict-possible {
+  color: #b5581c;
+  font-weight: 600;
+}
+.compare-table td.verdict-trop-gros {
+  color: #b42318;
+  font-weight: 600;
+}

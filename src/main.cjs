@@ -245,6 +245,82 @@ handle('setup-status', async () => {
     platform: process.platform,
   };
 });
+// Onglet Performances : matériel, Ollama, modèles installés et chargés, vitesses déjà mesurées.
+handle('pc-scan', async () => {
+  const [system, gpus, disk, tags, loaded, measured] = await Promise.all([
+    platform.systemInfo(),
+    platform.graphicsCards(),
+    fs.statfs(os.homedir()).catch(() => null),
+    request('/api/tags', null, AbortSignal.timeout(3000))
+      .then((r) => r.json())
+      .catch(() => null),
+    request('/api/ps', null, AbortSignal.timeout(3000))
+      .then((r) => r.json())
+      .catch(() => null),
+    readJson('performance.json', {}, 'Mesures illisibles.').catch(() => ({})),
+  ]);
+  return {
+    platform: process.platform,
+    arch: process.arch,
+    os: system.os,
+    cpu: os.cpus()[0]?.model?.trim() ?? null,
+    physicalCores: system.physicalCores,
+    logicalCores: os.cpus().length,
+    memoryGB: Math.round(os.totalmem() / 2 ** 30),
+    freeMemoryGB: Math.round((os.freemem() / 2 ** 30) * 10) / 10,
+    gpus,
+    freeDiskGB: disk ? Math.round((disk.bavail * disk.bsize) / 1e9) : null,
+    ollama: Boolean(tags),
+    models: (tags?.models || [])
+      .filter((m) => !m.remote_host && !/cloud/i.test(m.name))
+      .map((m) => ({ name: m.name, size: m.size, parameters: m.details?.parameter_size ?? null })),
+    loaded: (loaded?.models || []).map((m) => ({ name: m.name, size: m.size, vram: m.size_vram })),
+    measured,
+  };
+});
+// Mesure rapide de la vitesse d'un modèle : une courte réponse, puis le modèle est déchargé.
+// Même verrou que les conversations et les comparaisons : jamais pendant une série du Benchmark.
+handle('pc-measure', async (name) => {
+  const model = modelName(name);
+  const key = taskKey('chat');
+  if (tasks.has(key))
+    throw new Error('Une conversation ou une comparaison est en cours : réessayez après.');
+  const controller = new AbortController();
+  tasks.set(key, controller);
+  try {
+    const response = await request(
+      '/api/generate',
+      {
+        model,
+        prompt: 'Explique en cinq phrases simples à quoi sert la météo pour un agriculteur.',
+        stream: false,
+        keep_alive: 0,
+        options: { temperature: 0, seed: 42, num_predict: 120 },
+      },
+      controller.signal,
+    );
+    const data = await response.json();
+    const result = {
+      tokensPerSecond:
+        data.eval_count && data.eval_duration ? data.eval_count / (data.eval_duration / 1e9) : null,
+      promptPerSecond:
+        data.prompt_eval_count && data.prompt_eval_duration
+          ? data.prompt_eval_count / (data.prompt_eval_duration / 1e9)
+          : null,
+      loadSeconds: data.load_duration ? data.load_duration / 1e9 : null,
+      tokens: data.eval_count ?? null,
+      measuredAt: new Date().toISOString(),
+    };
+    const measured = await readJson('performance.json', {}, 'Mesures illisibles.').catch(
+      () => ({}),
+    );
+    measured[model] = result;
+    await writeJson('performance.json', measured, 'Mesures trop volumineuses.');
+    return result;
+  } finally {
+    tasks.delete(key);
+  }
+});
 // Seule adresse ouverte dans le navigateur par le guide.
 handle('open-ollama-download', () => shell.openExternal('https://ollama.com/download'));
 handle('start-service', async () => {
@@ -500,6 +576,7 @@ const DATA_FILES = [
   'folders.json',
   'actions-journal.json',
   'watch.json',
+  'performance.json',
 ];
 const keyPath = () => dataPath('cle.bin');
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);

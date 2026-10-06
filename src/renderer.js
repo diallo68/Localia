@@ -70,6 +70,7 @@ const VIEWS = {
   files: 'Fichiers',
   skills: 'Compétences',
   guide: 'Guide de démarrage',
+  performance: 'Performances de votre ordinateur',
 };
 function view(name) {
   for (const key of Object.keys(VIEWS)) {

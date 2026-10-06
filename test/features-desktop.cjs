@@ -87,6 +87,17 @@ const readJson = async (profile, name) => {
             model_info: { 'test.context_length': 32768 },
             details: { family: 'test', parameter_size: '8B', quantization_level: 'Q4_K_M' },
           });
+        if (endpoint === '/api/ps') return Response.json({ models: [] });
+        if (endpoint === '/api/generate')
+          return Response.json({
+            response: 'La météo aide à décider.',
+            eval_count: 60,
+            eval_duration: 1e10,
+            prompt_eval_count: 30,
+            prompt_eval_duration: 1e9,
+            load_duration: 2e9,
+            done: true,
+          });
         if (endpoint === '/api/chat') {
           // Réponse lente facultative (test de la pause), interrompue si la requête est annulée.
           if (global.chatDelay)
@@ -765,6 +776,26 @@ const readJson = async (profile, name) => {
     assert.match(await page.locator('#prompt').inputValue(), /^Présente-toi en trois phrases/);
     await page.locator('#prompt').fill('');
     assert.equal((await readJson(profile, 'settings.json')).guideDone, true);
+
+    // Performances de l'ordinateur : matériel, verdict des modèles installés, mesure de vitesse.
+    await page.locator('#performance-tab').click();
+    await page.waitForFunction(() => document.querySelectorAll('.pc-card').length === 6);
+    assert.match(await page.locator('#pc-cards').textContent(), /Mémoire vive\d+ Go au total/);
+    assert.match(
+      await page.locator('#pc-advice').textContent(),
+      /le modèle idéal pour commencer est/,
+    );
+    const petit = page.locator('#pc-models tr', { hasText: 'petit:1b' });
+    assert.match(await petit.textContent(), /Confortable/);
+    await petit.locator('button', { hasText: 'Mesurer' }).click();
+    await page.waitForFunction(() =>
+      document.querySelector('#pc-models').textContent.includes('6 tokens/s — confortable'),
+    );
+    assert.match(await petit.textContent(), /\(test rapide\)/);
+    const measuredFile = await readJson(profile, 'performance.json');
+    assert.equal(measuredFile['petit:1b'].tokensPerSecond, 6);
+    assert.ok(measuredFile['petit:1b'].loadSeconds === 2);
+    assert.match(await page.locator('#pc-suggestions').textContent(), /Gemma 3 · 4B/);
 
     // Compétences : dossier de départ, menu Tâche, appel « /nom », suggestions, nouvelle compétence.
     await page.locator('#skills-tab').click();

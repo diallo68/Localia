@@ -21,6 +21,7 @@
       <button id="chat-tab" class="nav active">◌ Conversations</button
       ><button id="models-tab" class="nav">▦ Bibliothèque de modèles</button
       ><button id="compare-tab" class="nav">⇄ Comparaison</button
+      ><button id="performance-tab" class="nav">⌁ Performances de votre PC</button
       ><button id="settings-tab" class="nav">⚙ Réglages des modèles</button
       ><button id="benchmark-tab" class="nav">▤ Benchmark</button
       ><button id="projects-tab" class="nav">◧ Projets</button
@@ -516,6 +517,32 @@
         <h3>Journal</h3>
         <div id="files-journal"></div>
       </section>
+      <section id="performance-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">CHOISIR LE BON MODÈLE</span>
+          <h2>Performances de votre ordinateur.</h2>
+          <p>
+            Localia analyse le processeur, la mémoire et la carte graphique, puis indique quels
+            modèles tiennent dans la mémoire et à quelle vitesse ils répondent.
+          </p>
+        </div>
+        <div class="input-row">
+          <button id="pc-rescan" type="button">Analyser à nouveau</button
+          ><span id="pc-status" class="muted" role="status"></span>
+        </div>
+        <div id="pc-cards" class="pc-cards"></div>
+        <p id="pc-advice" class="pc-advice"></p>
+        <h3>Vos modèles</h3>
+        <p class="muted">
+          Le verdict est une estimation à partir de la taille du modèle et de la mémoire. La vitesse
+          vient de vos séries du Benchmark (usage réel, avec documents), ou d’un test rapide («
+          Mesurer » : une courte réponse, puis le modèle est déchargé). Le test rapide donne la
+          meilleure vitesse ; avec un long document ou une longue réponse, elle baisse.
+        </p>
+        <div id="pc-models"></div>
+        <h3>Modèles conseillés à télécharger</h3>
+        <div id="pc-suggestions"></div>
+      </section>
       <section id="guide-view" class="page" hidden>
         <div class="library-intro">
           <span class="eyebrow">BIENVENUE</span>
@@ -745,6 +772,7 @@
     <script src="actions.js"></script>
     <script src="skills.js"></script>
     <script src="setup.js"></script>
+    <script src="performance.js"></script>
     <script src="benchmark-stats.js"></script>
     <script src="charts.js"></script>
     <script src="renderer.js"></script>
@@ -756,6 +784,7 @@
     <script src="files-view.js"></script>
     <script src="skills-view.js"></script>
     <script src="guide-view.js"></script>
+    <script src="performance-view.js"></script>
     <script src="start.js"></script>
   </body>
 </html>

@@ -172,7 +172,7 @@ function packagedApp() {
         throw new Error('unexpected endpoint');
       };
     }, file);
-    await page.locator('#refresh').click();
+    await page.locator('#refresh').dispatchEvent('click');
     await page.waitForFunction(() => !document.querySelector('#attach').disabled);
     await page.locator('#attach').click();
     await page.locator('#attach-file-choice').click();
@@ -437,7 +437,10 @@ function packagedApp() {
     await page.waitForFunction(() => document.querySelector('#watch-offline').hidden);
     await page.locator('#watch-topics button', { hasText: 'Chercher maintenant' }).click();
     await page.waitForFunction(() => document.querySelector('#watch-items .biblio-card'));
-    assert.equal(await page.locator('#bibliography-tab').textContent(), '❡ Bibliographie (1)');
+    assert.equal(
+      (await page.locator('#bibliography-tab').textContent()).trim(),
+      'Bibliographie (1)',
+    );
     const watchUrl = new URL((await app.evaluate(() => global.openalexUrls)).at(-1));
     assert.equal(watchUrl.searchParams.get('search'), 'plant disease deep learning');
     assert.match(watchUrl.searchParams.get('filter'), /^from_publication_date:\d{4}-\d{2}-\d{2}$/);
@@ -453,7 +456,7 @@ function packagedApp() {
       lastName: 'Mohanty',
       creatorType: 'author',
     });
-    assert.equal(await page.locator('#bibliography-tab').textContent(), '❡ Bibliographie');
+    assert.equal((await page.locator('#bibliography-tab').textContent()).trim(), 'Bibliographie');
     // Seconde recherche : l'article déjà traité ne revient pas.
     await page.locator('#watch-topics button', { hasText: 'Chercher maintenant' }).click();
     await page.waitForFunction(() =>

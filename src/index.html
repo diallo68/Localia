@@ -10,26 +10,53 @@
     <title>Localia</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
+  <body data-view="chat">
     <aside>
       <div class="brand">
         <span class="logo">L</span>
         <div>Localia<small>L’IA, chez vous.</small></div>
       </div>
-      <button id="new" class="primary">＋ Nouvelle conversation</button>
-      <div class="section-label">VOTRE ESPACE</div>
-      <button id="chat-tab" class="nav active">◌ Conversations</button
-      ><button id="models-tab" class="nav">▦ Bibliothèque de modèles</button
-      ><button id="compare-tab" class="nav">⇄ Comparaison</button
-      ><button id="performance-tab" class="nav">⌁ Performances de votre PC</button
-      ><button id="settings-tab" class="nav">⚙ Réglages des modèles</button
-      ><button id="benchmark-tab" class="nav">▤ Benchmark</button
-      ><button id="projects-tab" class="nav">◧ Projets</button
-      ><button id="bibliography-tab" class="nav">❡ Bibliographie</button
-      ><button id="files-tab" class="nav">⧉ Fichiers</button
-      ><button id="skills-tab" class="nav">✦ Compétences</button>
-      <div class="section-label">HISTORIQUE LOCAL</div>
-      <nav id="history" aria-label="Historique des conversations"></nav>
+      <button id="new" class="primary"><i data-icon="plus"></i>Nouvelle conversation</button>
+      <div class="nav-section" data-section="travail">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          ESPACE DE TRAVAIL<i data-icon="chevron"></i>
+        </button>
+        <div class="nav-group">
+          <button id="chat-tab" class="nav active"><i data-icon="message"></i>Conversations</button
+          ><button id="compare-tab" class="nav"><i data-icon="compare"></i>Comparaison</button
+          ><button id="benchmark-tab" class="nav"><i data-icon="chart"></i>Benchmark</button>
+        </div>
+      </div>
+      <div class="nav-section" data-section="ressources">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          RESSOURCES<i data-icon="chevron"></i>
+        </button>
+        <div class="nav-group">
+          <button id="models-tab" class="nav">
+            <i data-icon="library"></i>Bibliothèque de modèles</button
+          ><button id="bibliography-tab" class="nav"><i data-icon="book"></i>Bibliographie</button
+          ><button id="files-tab" class="nav"><i data-icon="file"></i>Fichiers</button
+          ><button id="skills-tab" class="nav"><i data-icon="bulb"></i>Compétences</button>
+        </div>
+      </div>
+      <div class="nav-section" data-section="systeme">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          SYSTÈME<i data-icon="chevron"></i>
+        </button>
+        <div class="nav-group">
+          <button id="performance-tab" class="nav">
+            <i data-icon="monitor"></i>Performances de votre PC</button
+          ><button id="settings-tab" class="nav">
+            <i data-icon="settings"></i>Réglages des modèles</button
+          ><button id="projects-tab" class="nav"><i data-icon="folder"></i>Projets</button>
+        </div>
+      </div>
+      <div class="nav-section history-section" data-section="historique">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <i data-icon="clock"></i>Historique local<i data-icon="chevron"></i>
+        </button>
+        <nav id="history" class="nav-group" aria-label="Historique des conversations"></nav>
+      </div>
       <div class="privacy">
         <span>●</span> Sur votre Mac<small>Vos conversations restent ici.</small
         ><button id="guide-tab" class="link-button" type="button">Guide de démarrage</button>
@@ -50,20 +77,51 @@
       <div id="notice" role="alert" hidden></div>
       <section id="chat-view">
         <div class="toolbar">
-          <label for="project">Projet</label
-          ><select id="project">
-            <option value="">Aucun</option></select
-          ><label for="task">Tâche</label
-          ><select id="task">
-            <option value="">Libre</option></select
-          ><label for="model">Modèle actif</label
-          ><select id="model">
-            <option value="">Aucun modèle installé</option></select
-          ><button id="model-settings" type="button" title="Réglages de ce modèle">
-            ⚙ Réglages</button
-          ><span>Exécution locale</span
-          ><button id="rename-conversation" type="button" hidden>Renommer</button
-          ><button id="delete-conversation" type="button" hidden>Supprimer la conversation</button>
+          <label class="pick" for="project"
+            ><i data-icon="folder"></i
+            ><span class="pick-text"
+              ><small>Projet</small
+              ><select id="project">
+                <option value="">Aucun</option>
+              </select></span
+            ><i data-icon="chevron"></i></label
+          ><label class="pick" for="task"
+            ><i data-icon="file"></i
+            ><span class="pick-text"
+              ><small>Tâche</small
+              ><select id="task">
+                <option value="">Libre</option>
+              </select></span
+            ><i data-icon="chevron"></i></label
+          ><label class="pick" for="model"
+            ><i data-icon="cube"></i
+            ><span class="pick-text"
+              ><small>Modèle actif</small
+              ><select id="model">
+                <option value="">Aucun modèle installé</option>
+              </select></span
+            ><i data-icon="chevron"></i></label
+          ><button id="engine-card" class="pick" type="button" aria-expanded="false">
+            <i data-icon="cpu"></i
+            ><span class="pick-text"
+              ><small>Exécution locale</small><span id="engine-state">Vérification…</span></span
+            ><i data-icon="chevron"></i>
+          </button>
+        </div>
+        <div id="engine-panel" hidden>
+          <p id="engine-detail"></p>
+          <button id="engine-refresh" type="button"><i data-icon="refresh"></i>Actualiser</button
+          ><button id="engine-connect" type="button" hidden>Démarrer Ollama</button
+          ><button id="engine-library" type="button">Bibliothèque de modèles</button>
+        </div>
+        <div class="conversation-actions">
+          <button id="model-settings" type="button" title="Réglages de ce modèle">
+            <i data-icon="settings"></i>Réglages du modèle</button
+          ><button id="rename-conversation" type="button" hidden>
+            <i data-icon="edit"></i>Renommer</button
+          ><button id="delete-conversation" type="button" hidden>
+            <i data-icon="trash"></i>Supprimer la conversation
+          </button>
         </div>
         <p id="task-advice" class="task-advice" role="status" hidden></p>
         <form id="rename-form" hidden>
@@ -77,20 +135,24 @@
         </form>
         <div id="messages" role="log" aria-label="Conversation">
           <div id="welcome">
-            <div class="hero-icon">✳</div>
-            <span class="eyebrow">UN ESPACE POUR VOS IDÉES</span>
-            <h2>Qu’allez-vous explorer ?</h2>
+            <button id="drop-zone" type="button" aria-label="Ajouter un document">
+              <span><i data-icon="file-plus"></i></span>
+            </button>
+            <h2>Déposez vos documents ici</h2>
             <p>
-              Écrivez, apprenez et imaginez avec votre IA locale.<br />Votre prochaine idée commence
-              ici.
+              Ajoutez des fichiers pour les analyser, ou commencez simplement une conversation avec
+              votre assistant.
             </p>
             <div class="suggestions">
               <button data-prompt="Aide-moi à rédiger un e-mail professionnel.">
-                ✎<strong>Mieux écrire</strong><span>Trouver les mots justes</span></button
+                <span class="suggestion-icon"><i data-icon="pencil"></i></span
+                ><strong>Mieux écrire</strong><span>Trouver les mots justes</span></button
               ><button data-prompt="Explique-moi simplement comment fonctionne une IA locale.">
-                ◎<strong>Comprendre un sujet</strong><span>Apprendre à votre rythme</span></button
+                <span class="suggestion-icon"><i data-icon="bulb"></i></span
+                ><strong>Comprendre un sujet</strong><span>Apprendre à votre rythme</span></button
               ><button data-prompt="Propose-moi cinq idées de projets pour apprendre Python.">
-                ⌘<strong>Créer un projet</strong><span>Passer de l’idée à l’action</span>
+                <span class="suggestion-icon"><i data-icon="grid"></i></span
+                ><strong>Créer un projet</strong><span>Passer de l’idée à l’action</span>
               </button>
             </div>
           </div>
@@ -130,13 +192,25 @@
           <div class="composer-footer">
             <button
               id="attach"
+              class="round"
               type="button"
+              aria-label="Ajouter : fichier ou page web"
+              title="Ajouter : fichier ou page web"
+            >
+              <i data-icon="plus"></i></button
+            ><button
+              id="attach-quick"
+              class="round"
+              type="button"
+              aria-label="Joindre un fichier"
               title="PDF, consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json)"
             >
-              ＋ Ajouter</button
+              <i data-icon="paperclip"></i></button
             ><span id="hint">Entrée pour envoyer · Maj + Entrée pour revenir à la ligne</span
             ><button type="button" id="stop" hidden>Arrêter</button
-            ><button class="primary" id="send" type="submit">Envoyer ↑</button>
+            ><button class="primary" id="send" type="submit">
+              Envoyer<i data-icon="send"></i>
+            </button>
           </div>
         </form>
         <footer>
@@ -854,6 +928,7 @@
         </section>
       </section>
     </main>
+    <script src="icons.js"></script>
     <script src="vendor/markdown-it.min.js"></script>
     <script src="markdown.js"></script>
     <script src="questions.js"></script>

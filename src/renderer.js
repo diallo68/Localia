@@ -19,6 +19,8 @@ const skillOf = (value) =>
 const modelListeners = [];
 // Fonctions appelées quand l'état des boutons doit être recalculé.
 const controlListeners = [];
+// Zone de dépôt de l'accueil : retirée de la page pendant une conversation, d'où la référence gardée.
+const dropZone = $('drop-zone');
 const notice = (message) => {
   $('notice').textContent = message;
   $('notice').hidden = !message;
@@ -33,7 +35,9 @@ const guard =
     }
   };
 const persist = async () => {
-  if (historyReady) await window.localia.save(conversations);
+  if (!historyReady) return;
+  if (current) current.updatedAt = new Date().toISOString();
+  await window.localia.save(conversations);
 };
 // Textes écrits pour macOS, adaptés sur les autres systèmes.
 const ON_MAC = window.localia.platform === 'darwin';
@@ -83,6 +87,48 @@ function view(name) {
     $(key + '-tab').classList.toggle('active', key === name);
   }
   $('heading').textContent = VIEWS[name];
+  // La conversation a sa propre barre (projet, tâche, modèle, exécution) : pas d'en-tête.
+  document.body.dataset.view = name;
+}
+// Groupes de la colonne de gauche repliables ; l'état est retenu sur cet ordinateur.
+for (const section of document.querySelectorAll('.nav-section')) {
+  const toggle = section.querySelector('.section-toggle');
+  const key = 'localia.section.' + section.dataset.section;
+  const apply = (open) => {
+    toggle.setAttribute('aria-expanded', String(open));
+    section.classList.toggle('collapsed', !open);
+  };
+  try {
+    apply(localStorage.getItem(key) !== 'closed');
+  } catch {
+    apply(true);
+  }
+  toggle.onclick = () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    apply(open);
+    try {
+      localStorage.setItem(key, open ? 'open' : 'closed');
+    } catch {
+      // Stockage indisponible : le groupe reste dans cet état jusqu'à la fermeture.
+    }
+  };
+}
+// Date de la dernière activité d'une conversation, pour l'historique.
+const DAY = 24 * 3600 * 1000;
+function shortDate(iso) {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const time = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (date >= today) return 'Aujourd’hui, ' + time;
+  if (date >= today - DAY) return 'Hier, ' + time;
+  return date.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    year: date.getFullYear() === today.getFullYear() ? undefined : 'numeric',
+  });
 }
 const installed = (name) => models.some((m) => m.name === name);
 function selectModel(name) {
@@ -96,7 +142,17 @@ function history() {
   $('history').replaceChildren();
   for (const c of conversations) {
     const b = document.createElement('button');
-    b.textContent = c.title;
+    const title = document.createElement('span');
+    title.className = 'history-title';
+    title.textContent = c.title;
+    b.append(title);
+    const when = shortDate(c.updatedAt);
+    if (when) {
+      const date = document.createElement('small');
+      date.textContent = when;
+      b.append(date);
+    }
+    b.title = c.title;
     b.classList.toggle('selected', c === current);
     b.disabled = chatting || importing;
     b.onclick = () => {
@@ -313,7 +369,8 @@ function render() {
 function controls() {
   $('attach').disabled = chatting || importing || !historyReady;
   $('remove-pdf').disabled = chatting || importing;
-  $('attach').textContent = importing ? 'Lecture…' : '＋ Ajouter';
+  $('attach').classList.toggle('busy', importing);
+  $('attach').title = importing ? 'Lecture du fichier…' : 'Ajouter : fichier ou page web';
   $('send').disabled = chatting || importing || !models.length || !historyReady;
   $('model').disabled = chatting;
   $('stop').hidden = !chatting;
@@ -322,11 +379,40 @@ function controls() {
   $('rename-conversation').disabled = chatting || importing || !historyReady;
   $('send').disabled ||= comparing;
   $('attach').disabled ||= comparing;
+  $('attach-quick').disabled = $('attach').disabled;
+  dropZone.disabled = $('attach').disabled;
   for (const listener of controlListeners) listener();
   $('download').disabled = pulling;
   $('custom-form').querySelector('button').disabled = pulling;
   history();
 }
+// Carte « Exécution locale » : résumé de l'état affiché dans l'en-tête des autres pages.
+function engineCard() {
+  const text = $('status').textContent;
+  const ready = text.startsWith('●');
+  $('engine-state').textContent = ready
+    ? 'Activée'
+    : /Aucun modèle/.test(text)
+      ? 'Aucun modèle'
+      : /arrêté/.test(text)
+        ? 'Ollama arrêté'
+        : 'Vérification…';
+  $('engine-state').classList.toggle('ready', ready);
+  $('engine-detail').textContent =
+    text.replace(/^[●○]\s*/, '') +
+    (ready ? ' — les réponses sont calculées sur ce Mac, sans Internet.' : '');
+  $('engine-connect').hidden = $('connect').hidden;
+}
+new MutationObserver(engineCard).observe($('status'), { childList: true, characterData: true });
+$('engine-card').onclick = () => {
+  const open = $('engine-panel').hidden;
+  $('engine-panel').hidden = !open;
+  $('engine-card').setAttribute('aria-expanded', String(open));
+  engineCard();
+};
+$('engine-refresh').onclick = () => $('refresh').click();
+$('engine-connect').onclick = () => $('connect').click();
+$('engine-library').onclick = () => $('models-tab').click();
 async function refresh() {
   try {
     models = (await window.localia.models()).sort((a, b) => a.size - b.size);
@@ -340,6 +426,7 @@ async function refresh() {
     $('status').textContent = setup?.ollamaPath ? '○ Ollama arrêté' : '○ Aucun modèle installé';
     $('connect').hidden = !setup?.ollamaPath;
   }
+  engineCard();
   const selected = $('model').value || current?.model || settings.lastModel;
   $('model').replaceChildren();
   if (!models.length) {
@@ -490,13 +577,13 @@ async function readWebPage(address) {
 
 // Fichier choisi dans le menu « ＋ Ajouter » : un PDF remplace le document de la conversation ;
 // un autre fichier s'ajoute aux fichiers joints (5 au plus).
-$('attach-file-choice').onclick = guard(async () => {
-  $('attach-menu').hidden = true;
+// Même traitement pour un fichier choisi et un fichier déposé dans la fenêtre.
+async function addAttachment(read) {
   notice('');
   importing = true;
   controls();
   try {
-    const added = await window.localia.attach();
+    const added = await read();
     if (!added) return;
     const name = added.kind === 'pdf' ? added.doc.name : added.file.name;
     if (added.kind === 'file' && (current?.files || []).length >= 5) {
@@ -518,7 +605,51 @@ $('attach-file-choice').onclick = guard(async () => {
     importing = false;
     controls();
   }
+}
+$('attach-file-choice').onclick = guard(async () => {
+  $('attach-menu').hidden = true;
+  await addAttachment(() => window.localia.attach());
 });
+$('attach-quick').onclick = () => $('attach-file-choice').click();
+dropZone.onclick = () => $('attach-file-choice').click();
+// Dépôt de fichiers sur la conversation : le contenu est lu ici puis transmis, jamais le chemin.
+const chatView = $('chat-view');
+let dragDepth = 0;
+const dropAllowed = () => !$('attach').disabled && $('chat-view').hidden === false;
+chatView.addEventListener('dragenter', (event) => {
+  if (!event.dataTransfer?.types.includes('Files') || !dropAllowed()) return;
+  event.preventDefault();
+  dragDepth++;
+  chatView.classList.add('dragging');
+});
+chatView.addEventListener('dragover', (event) => {
+  if (!event.dataTransfer?.types.includes('Files') || !dropAllowed()) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'copy';
+});
+chatView.addEventListener('dragleave', () => {
+  dragDepth = Math.max(0, dragDepth - 1);
+  if (!dragDepth) chatView.classList.remove('dragging');
+});
+chatView.addEventListener(
+  'drop',
+  guard(async (event) => {
+    event.preventDefault();
+    dragDepth = 0;
+    chatView.classList.remove('dragging');
+    if (!dropAllowed()) return;
+    const files = [...(event.dataTransfer?.files || [])];
+    if (files.length > 1) notice('Un fichier à la fois : seul le premier est ajouté.');
+    const [file] = files;
+    if (!file) return;
+    if (file.size > 50_000_000) throw new Error('Fichier limité à 50 Mo.');
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    await addAttachment(() => window.localia.attachData(file.name, bytes));
+  }),
+);
+// Hors de la conversation, un fichier lâché ne doit pas remplacer la page.
+window.addEventListener('dragover', (event) => event.preventDefault());
+window.addEventListener('drop', (event) => event.preventDefault());
 // Nouvelle conversation sur un document déjà importé (PDF d'un élément Zotero).
 async function openDocumentConversation(doc) {
   const { title, ...document } = doc;

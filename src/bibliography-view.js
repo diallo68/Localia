@@ -333,7 +333,11 @@ async function renderWatch() {
   showWatchBadge(fresh.length);
 }
 function showWatchBadge(count) {
-  $('bibliography-tab').textContent = count ? `❡ Bibliographie (${count})` : '❡ Bibliographie';
+  // Le libellé seul change : l'icône de l'onglet est conservée.
+  const label = [...$('bibliography-tab').childNodes].find(
+    (n) => n.nodeType === Node.TEXT_NODE && n.nodeValue.trim(),
+  );
+  label.nodeValue = count ? `Bibliographie (${count})` : 'Bibliographie';
 }
 $('watch-form').onsubmit = guard(async (event) => {
   event.preventDefault();

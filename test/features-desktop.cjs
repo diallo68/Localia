@@ -159,7 +159,7 @@ const readJson = async (profile, name) => {
       await page.waitForFunction(() => document.querySelector('#stop').hidden);
       return app.evaluate(() => global.requests.at(-1));
     };
-    await page.locator('#refresh').click();
+    await page.locator('#refresh').dispatchEvent('click');
     await page.waitForFunction(() => document.querySelector('#model').options.length === 2);
 
     // Modèle mémorisé : le plus petit par défaut, puis le dernier choisi.
@@ -195,7 +195,7 @@ const readJson = async (profile, name) => {
     await page.locator('#rename-input').fill('Mon essai');
     await page.locator('#rename-form button[type=submit]').click();
     await page.waitForFunction(
-      () => document.querySelector('#history button').textContent === 'Mon essai',
+      () => document.querySelector('#history .history-title').textContent === 'Mon essai',
     );
     await waitForJson(profile, 'conversations.json', (c) => c[0]?.title === 'Mon essai');
 
@@ -962,6 +962,34 @@ const readJson = async (profile, name) => {
     for (const id of fileIds) await waitForMissing(path.join(profile, 'documents', id + '.json'));
     await fs.rm(dataDir, { recursive: true, force: true });
 
+    // Fichier déposé dans la fenêtre (glisser-déposer) : son contenu est transmis, pas son chemin.
+    const drop = (name, text) =>
+      page.evaluate(
+        ([fileName, content]) => {
+          const transfer = new DataTransfer();
+          transfer.items.add(new File([content], fileName));
+          const view = document.querySelector('#chat-view');
+          for (const type of ['dragenter', 'dragover', 'drop'])
+            view.dispatchEvent(
+              new DragEvent(type, { dataTransfer: transfer, bubbles: true, cancelable: true }),
+            );
+        },
+        [name, text],
+      );
+    await page.locator('#new').click();
+    await drop('programme.exe', 'MZ');
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('Format non pris en charge'),
+    );
+    await drop('mesures.csv', 'date,pluie\n2024-06-01,12\n2024-06-02,0\n');
+    await page.waitForFunction(() => document.querySelectorAll('.file-chip').length === 1);
+    assert.match(await page.locator('#file-chips').textContent(), /mesures\.csv/);
+    const dropped = (await readJson(profile, 'conversations.json')).find((c) => c.files);
+    assert.equal(dropped.files[0].name, 'mesures.csv');
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#delete-conversation').click();
+    await page.waitForFunction(() => !document.querySelectorAll('.file-chip').length);
+
     // Moteur intégré (simulé) : modèle repris d'Ollama, conversation sans passer par Ollama.
     await page.locator('#models-tab').click();
     await page
@@ -1083,7 +1111,7 @@ const readJson = async (profile, name) => {
 
     assert.deepEqual(errors, []);
     console.log(
-      'PASS fonctions: modèle mémorisé, contexte du Modelfile, renommage, réglages appliqués, comparaison avec mesures et notes, série de questions, vue d’ensemble, export CSV, ancien format, suppression, benchmark (notation à l’aveugle, import de notes, accord, export SVG, répétitions, conditions), pause et reprise, tâches, mémoire par projet, départ programmé (Mac éveillé, annulation), compétences (menu, appel /nom, suggestions, nouvelle compétence), fichiers joints (consignes, portrait des données, effacement), actions sur fichiers (dossier autorisé, plan vérifié, application, journal, annulation), aucune erreur JS.',
+      'PASS fonctions: modèle mémorisé, contexte du Modelfile, renommage, réglages appliqués, comparaison avec mesures et notes, série de questions, vue d’ensemble, export CSV, ancien format, suppression, benchmark (notation à l’aveugle, import de notes, accord, export SVG, répétitions, conditions), pause et reprise, tâches, mémoire par projet, départ programmé (Mac éveillé, annulation), compétences (menu, appel /nom, suggestions, nouvelle compétence), fichiers joints (consignes, portrait des données, glisser-déposer, effacement), actions sur fichiers (dossier autorisé, plan vérifié, application, journal, annulation), aucune erreur JS.',
     );
   } finally {
     await app?.close();

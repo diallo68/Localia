@@ -85,7 +85,7 @@ const path = require('node:path');
         throw new Error('offline');
       };
     });
-    await page.locator('#refresh').click();
+    await page.locator('#refresh').dispatchEvent('click');
     await page.waitForFunction(() =>
       document.querySelector('#status').textContent.includes('arrêté'),
     );

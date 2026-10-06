@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('localia', {
   platform: process.platform,
   attachPdf: () => invoke('attach-pdf'),
   attach: () => invoke('attach'),
+  attachData: (name, bytes) => invoke('attach-data', name, bytes),
   webFetch: (url) => invoke('web-fetch', url),
   remoteStatus: () => invoke('remote-status'),
   remoteEnable: (on) => invoke('remote-enable', on),

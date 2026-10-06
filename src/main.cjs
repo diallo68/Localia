@@ -210,6 +210,30 @@ handle('attach', async () => {
     return { kind: 'pdf', doc: await importPdf(file, documentsPath(), documentCodec) };
   return { kind: 'file', file: await saveTextAttachment(file) };
 });
+// Fichier déposé dans la fenêtre : la page transmet son nom et son contenu (jamais un chemin, que
+// l'on ne pourrait pas vérifier) ; mêmes formats et mêmes limites que le choix par la boîte de dialogue.
+handle('attach-data', async (name, bytes) => {
+  const base = path.basename(String(name || '')).slice(0, 200);
+  const extension = path.extname(base).slice(1).toLowerCase();
+  const allowed = ['pdf', ...tables.TEXT_EXTENSIONS, ...tables.TABLE_EXTENSIONS];
+  if (!base || !allowed.includes(extension))
+    throw new Error('Format non pris en charge : PDF, consignes, code ou données (.csv, .json…).');
+  if (!(bytes instanceof Uint8Array)) throw new Error('Fichier illisible.');
+  if (bytes.length > (extension === 'pdf' ? 25 : 50) * 1024 * 1024)
+    throw new Error(
+      extension === 'pdf' ? 'Choisissez un PDF de moins de 25 Mo.' : 'Fichier limité à 50 Mo.',
+    );
+  const dir = await fs.mkdtemp(path.join(app.getPath('temp'), 'localia-depot-'));
+  const file = path.join(dir, base);
+  try {
+    await fs.writeFile(file, bytes, { mode: 0o600 });
+    if (extension === 'pdf')
+      return { kind: 'pdf', doc: await importPdf(file, documentsPath(), documentCodec) };
+    return { kind: 'file', file: await saveTextAttachment(file) };
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
 async function saveTextAttachment(file) {
   if ((await fs.stat(file)).size > 50_000_000) throw new Error('Fichier limité à 50 Mo.');
   const name = path.basename(file);

@@ -89,11 +89,23 @@ jobs:
         run: npm run test:pdf
       - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
         run: npm run test:encryption
+      # Moteur intégré réel : petit modèle de test (105 Mo, gardé en cache entre les passages).
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/localia-test-models
+          key: modele-test-smollm2-135m-q4km
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npm run test:engine
       # Application construite puis testée telle qu'elle sera distribuée.
       - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
         run: npx electron-builder ${{ matrix.build }} --publish never
       - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
         run: npm run test:pdf
+        env:
+          LOCALIA_PACKAGED: '1'
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npm run test:engine
         env:
           LOCALIA_PACKAGED: '1'
       - name: Keep screenshots

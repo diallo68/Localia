@@ -153,6 +153,38 @@
             >
           </p>
         </div>
+        <section id="hf-section">
+          <h3>Moteur intégré : télécharger depuis Hugging Face</h3>
+          <p class="muted">
+            Ces modèles fonctionnent sans Ollama. Le téléchargement reprend là où il s’est arrêté si
+            la connexion coupe, et le fichier est vérifié (empreinte SHA-256) avant d’être utilisé.
+            Chaque modèle a sa licence : lisez-la avant un usage commercial.
+          </p>
+          <div id="hf-download" hidden>
+            <div class="input-row">
+              <strong id="hf-name"></strong
+              ><button id="hf-cancel" type="button">Mettre en pause</button>
+            </div>
+            <progress id="hf-progress" max="100"></progress>
+            <p id="hf-status" class="muted" role="status"></p>
+          </div>
+          <div id="hf-catalog" class="hf-catalog"></div>
+          <form id="hf-form">
+            <label for="hf-url">Autre fichier GGUF de Hugging Face (adresse du fichier)</label>
+            <div class="input-row">
+              <input
+                id="hf-url"
+                type="url"
+                placeholder="https://huggingface.co/auteur/depot/blob/main/modele-Q4_K_M.gguf"
+                required
+              /><button type="submit">Télécharger</button>
+            </div>
+          </form>
+        </section>
+        <h3>Avec Ollama (facultatif)</h3>
+        <p class="muted">
+          Si Ollama est installé, Localia utilise aussi ses modèles. Téléchargement par Ollama :
+        </p>
         <article class="model-card">
           <div class="model-icon">Q</div>
           <div>
@@ -182,34 +214,6 @@
           <progress id="progress" max="100"></progress>
           <p id="transfer-status" role="status"></p>
         </div>
-        <section id="hf-section">
-          <h3>Moteur intégré : télécharger depuis Hugging Face</h3>
-          <p class="muted">
-            Ces modèles fonctionnent sans Ollama. Le téléchargement reprend là où il s’est arrêté si
-            la connexion coupe, et le fichier est vérifié (empreinte SHA-256) avant d’être utilisé.
-            Chaque modèle a sa licence : lisez-la avant un usage commercial.
-          </p>
-          <div id="hf-download" hidden>
-            <div class="input-row">
-              <strong id="hf-name"></strong
-              ><button id="hf-cancel" type="button">Mettre en pause</button>
-            </div>
-            <progress id="hf-progress" max="100"></progress>
-            <p id="hf-status" class="muted" role="status"></p>
-          </div>
-          <div id="hf-catalog" class="hf-catalog"></div>
-          <form id="hf-form">
-            <label for="hf-url">Autre fichier GGUF de Hugging Face (adresse du fichier)</label>
-            <div class="input-row">
-              <input
-                id="hf-url"
-                type="url"
-                placeholder="https://huggingface.co/auteur/depot/blob/main/modele-Q4_K_M.gguf"
-                required
-              /><button type="submit">Télécharger</button>
-            </div>
-          </form>
-        </section>
         <h3>Installés sur ce Mac</h3>
         <div id="installed"></div>
         <p class="muted">
@@ -597,31 +601,33 @@
           <span class="eyebrow">BIENVENUE</span>
           <h2>Guide de démarrage.</h2>
           <p>
-            Localia fait tourner des modèles d’IA sur votre ordinateur, sans Internet une fois
-            installée. Trois étapes suffisent.
+            Localia fait tourner des modèles d’IA sur votre ordinateur, sans Internet une fois le
+            modèle téléchargé. Deux étapes suffisent, sans rien installer d’autre.
           </p>
         </div>
         <ol id="guide-steps">
-          <li id="guide-ollama" class="guide-step">
-            <h3>1. Installer Ollama</h3>
-            <p class="muted">
-              Ollama est le moteur gratuit qui fait tourner les modèles. Localia le démarre ensuite
-              toute seule.
-            </p>
-            <p class="guide-state" role="status"></p>
-            <div class="guide-actions"></div>
-          </li>
           <li id="guide-model" class="guide-step">
-            <h3>2. Télécharger un modèle</h3>
+            <h3>1. Télécharger un modèle</h3>
             <p class="muted">
-              Un seul téléchargement (Internet nécessaire), ensuite le modèle fonctionne hors ligne.
+              Un seul téléchargement depuis Hugging Face (Internet nécessaire, reprise possible si
+              la connexion coupe) ; ensuite le modèle fonctionne hors ligne, avec le moteur intégré
+              de Localia.
             </p>
             <p class="guide-state" role="status"></p>
             <div class="guide-actions"></div>
             <p id="guide-progress" class="muted" role="status"></p>
           </li>
           <li id="guide-try" class="guide-step">
-            <h3>3. Poser une première question</h3>
+            <h3>2. Poser une première question</h3>
+            <p class="guide-state" role="status"></p>
+            <div class="guide-actions"></div>
+          </li>
+          <li id="guide-ollama" class="guide-step">
+            <h3>Vous utilisez déjà Ollama ? (facultatif)</h3>
+            <p class="muted">
+              Localia sait aussi utiliser les modèles d’Ollama ; ceux au format standard peuvent
+              même passer au moteur intégré sans nouveau téléchargement (Bibliothèque de modèles).
+            </p>
             <p class="guide-state" role="status"></p>
             <div class="guide-actions"></div>
           </li>

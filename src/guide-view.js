@@ -33,22 +33,85 @@ function showStarterCard(status) {
 async function renderGuide() {
   setupStatus = await window.localia.setupStatus();
   const s = setupStatus;
+  const catalog = await window.localia.catalogStatus();
   showStarterCard(s);
   const windows = s.platform === 'win32';
   const linux = s.platform === 'linux';
+  const installed = models.length;
 
-  // 1. Ollama
+  // 1. Modèle du catalogue conseillé selon la mémoire, téléchargé pour le moteur intégré.
+  const { best, alternatives } = recommendCatalog(catalog.memoryGB);
+  if (installed)
+    guideStep(
+      'guide-model',
+      true,
+      `${installed} modèle(s) disponible(s). Vous pouvez en ajouter dans la Bibliothèque de modèles.`,
+    );
+  else {
+    const disk =
+      catalog.freeDiskGB != null
+        ? ` Place libre sur le disque : ${formatGB(catalog.freeDiskGB)}.`
+        : '';
+    guideStep(
+      'guide-model',
+      false,
+      localText(
+        `Ce Mac a ${catalog.memoryGB} Go de mémoire : nous conseillons ${best.label} (${formatGB(Math.round(best.size / 1e8) / 10)}). ${best.note}${disk}`,
+      ),
+      [best, ...alternatives].map((m, i) => ({
+        label: `Télécharger ${m.label} (${formatGB(Math.round(m.size / 1e8) / 10)})${i ? '' : ' — conseillé'}`,
+        primary: i === 0,
+        disabled:
+          Boolean(catalog.downloading) || !enoughDisk({ sizeGB: m.size / 1e9 }, catalog.freeDiskGB),
+        onclick: async () => {
+          $('guide-progress').textContent = 'Connexion à Hugging Face…';
+          try {
+            const result = await window.localia.catalogDownload(m.id);
+            $('guide-progress').textContent = result?.cancelled
+              ? 'En pause : cliquez à nouveau pour reprendre.'
+              : `${result.name} est prêt.`;
+          } catch (error) {
+            $('guide-progress').textContent = error.message;
+          }
+          await refresh();
+          await renderGuide();
+        },
+      })),
+    );
+  }
+
+  // 2. Première question
+  guideStep(
+    'guide-try',
+    false,
+    installed ? 'Tout est prêt.' : 'Disponible une fois un modèle installé.',
+    [
+      {
+        label: 'Poser une première question',
+        primary: installed > 0,
+        disabled: !installed,
+        onclick: () => {
+          $('new').click();
+          view('chat');
+          $('prompt').value =
+            'Présente-toi en trois phrases et dis-moi ce que tu peux faire pour moi sans connexion Internet.';
+          $('prompt').focus();
+        },
+      },
+    ],
+  );
+
+  // Ollama : facultatif.
   if (s.running)
     guideStep(
       'guide-ollama',
       true,
-      `Ollama est installé et actif${s.version ? ` (version ${s.version})` : ''}.`,
+      `Ollama est actif${s.version ? ` (version ${s.version})` : ''} : ses modèles apparaissent aussi dans Localia.`,
     );
   else if (s.ollamaPath)
     guideStep('guide-ollama', false, 'Ollama est installé mais arrêté.', [
       {
         label: 'Démarrer Ollama',
-        primary: true,
         onclick: async () => {
           await window.localia.start();
           await refresh();
@@ -60,79 +123,25 @@ async function renderGuide() {
     guideStep(
       'guide-ollama',
       false,
-      linux
-        ? 'Ollama n’est pas installé. Sur ollama.com/download, copiez la commande d’installation pour Linux dans un terminal, puis revenez ici.'
-        : windows
-          ? 'Ollama n’est pas installé. Téléchargez-le, lancez « OllamaSetup.exe » et suivez l’installation, puis revenez ici.'
-          : 'Ollama n’est pas installé. Téléchargez-le, ouvrez le fichier, glissez Ollama dans Applications et lancez-le une fois, puis revenez ici.',
-      [
-        {
-          label: 'Télécharger Ollama (ollama.com)',
-          primary: true,
-          onclick: () => window.localia.openOllamaDownload(),
-        },
-        { label: 'J’ai installé Ollama : vérifier', onclick: renderGuide },
-      ],
+      linux || windows
+        ? 'Ollama n’est pas installé : ce n’est pas nécessaire, Localia a son propre moteur.'
+        : 'Ollama n’est pas installé : ce n’est pas nécessaire, Localia a son propre moteur.',
     );
-
-  // 2. Modèle conseillé selon la mémoire
-  const { best, alternatives } = recommendStarter(s.memoryGB);
-  if (s.models > 0)
-    guideStep(
-      'guide-model',
-      true,
-      `${s.models} modèle(s) installé(s). Vous pouvez en ajouter dans la Bibliothèque de modèles.`,
-    );
-  else {
-    const disk =
-      s.freeDiskGB != null ? ` Place libre sur le disque : ${formatGB(s.freeDiskGB)}.` : '';
-    guideStep(
-      'guide-model',
-      false,
-      localText(
-        `Ce Mac a ${s.memoryGB} Go de mémoire : nous conseillons ${best.label} (${formatGB(best.sizeGB)}). ${best.note}${disk}`,
-      ),
-      [best, ...alternatives].map((m, i) => ({
-        label: `Télécharger ${m.label} (${formatGB(m.sizeGB)})${i ? '' : ' — conseillé'}`,
-        primary: i === 0,
-        disabled: !s.running || pulling || !enoughDisk(m, s.freeDiskGB),
-        onclick: async () => {
-          $('guide-progress').textContent = 'Connexion au catalogue…';
-          await download(m.name);
-          await renderGuide();
-        },
-      })),
-    );
-    if (!s.running) $('guide-progress').textContent = 'Démarrez d’abord Ollama (étape 1).';
-    else if (!enoughDisk(best, s.freeDiskGB))
-      $('guide-progress').textContent =
-        'Place insuffisante sur le disque pour le modèle conseillé.';
-  }
-
-  // 3. Première question
-  guideStep(
-    'guide-try',
-    false,
-    s.models > 0 ? 'Tout est prêt.' : 'Disponible une fois un modèle installé.',
-    [
-      {
-        label: 'Poser une première question',
-        primary: s.models > 0,
-        disabled: !s.models,
-        onclick: () => {
-          $('new').click();
-          view('chat');
-          $('prompt').value =
-            'Présente-toi en trois phrases et dis-moi ce que tu peux faire pour moi sans connexion Internet.';
-          $('prompt').focus();
-        },
-      },
-    ],
-  );
   $('guide-done').checked = settings.guideDone === true;
 }
 
 window.localia.onProgress(({ kind, data }) => {
+  if (kind === 'download' && !$('guide-view').hidden) {
+    $('guide-progress').textContent =
+      data.phase === 'téléchargement'
+        ? `Téléchargement : ${Math.round((100 * data.received) / data.total)} %`
+        : data.phase === 'vérification'
+          ? 'Vérification du fichier…'
+          : data.phase === 'reprise'
+            ? 'Reprise du téléchargement…'
+            : 'Essai du modèle…';
+    return;
+  }
   if (kind !== 'pull' || $('guide-view').hidden) return;
   const percent = data.total ? ` ${Math.round((100 * (data.completed || 0)) / data.total)} %` : '';
   $('guide-progress').textContent = `${data.status || 'Téléchargement…'}${percent}`;

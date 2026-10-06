@@ -787,11 +787,11 @@ const readJson = async (profile, name) => {
     await page.waitForFunction(() =>
       document
         .querySelector('#guide-ollama .guide-state')
-        .textContent.includes('Ollama est installé et actif (version 0.35.0)'),
+        .textContent.includes('Ollama est actif (version 0.35.0)'),
     );
     assert.match(
       await page.locator('#guide-model .guide-state').textContent(),
-      /2 modèle\(s\) installé\(s\)/,
+      /2 modèle\(s\) disponible\(s\)/,
     );
     assert.match(
       await page.locator('#starter-advice').textContent(),

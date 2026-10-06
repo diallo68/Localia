@@ -4,7 +4,7 @@
 
 *[English version](README.md)*
 
-Localia est une application de bureau pour macOS et Windows, pour utiliser des modèles de langage locaux avec [Ollama](https://ollama.com), et surtout pour **les comparer de façon mesurable sur vos propres tâches**. Tout reste sur votre machine : aucun modèle cloud, aucune télémétrie.
+Localia est une application de bureau pour macOS, Windows et Linux, pour utiliser des modèles de langage locaux — avec son **moteur intégré** (llama.cpp, modèles téléchargés depuis Hugging Face) ou avec [Ollama](https://ollama.com) — et surtout pour **les comparer de façon mesurable sur vos propres tâches**. Tout reste sur votre machine : aucun modèle cloud, aucune télémétrie.
 
 | Conversation | Benchmark |
 |---|---|
@@ -37,12 +37,12 @@ Localia est une application de bureau pour macOS et Windows, pour utiliser des m
 
 ## Premiers pas
 
-Au premier lancement, Localia ouvre un **guide de démarrage** : installer Ollama (lien vers ollama.com), télécharger le modèle conseillé pour la mémoire de l'ordinateur, poser une première question. Il se rouvre depuis la colonne de gauche.
+Au premier lancement, Localia ouvre un **guide de démarrage** : télécharger le modèle conseillé pour la mémoire de l'ordinateur (moteur intégré, rien d'autre à installer), poser une première question. Ollama est facultatif. Il se rouvre depuis la colonne de gauche.
 
 ## Prérequis
 
 - macOS sur Apple Silicon ou Intel, Windows 10/11 (64 bits), ou Linux (64 bits ; AppImage ou .deb) ;
-- [Ollama](https://ollama.com) avec au moins un modèle local (Localia le cherche aux emplacements habituels : `/usr/local/bin`, `/opt/homebrew/bin` ou l'application Ollama sur macOS, `%LOCALAPPDATA%\Programs\Ollama` sous Windows ; `OLLAMA_PATH` l'emporte) ;
+- facultatif : [Ollama](https://ollama.com) (Localia le cherche aux emplacements habituels : `/usr/local/bin`, `/opt/homebrew/bin` ou l'application Ollama sur macOS, `%LOCALAPPDATA%\Programs\Ollama` sous Windows ; `OLLAMA_PATH` l'emporte) ;
 - pour construire depuis le code : [Node.js](https://nodejs.org) 20 ou plus récent.
 
 ## Lancer depuis le code
@@ -73,6 +73,7 @@ npm test                 # tests unitaires (sans Electron ni Ollama)
 npm run test:features    # application de bureau, Ollama simulé
 npm run test:pdf         # application de bureau, import réel d'un PDF, réponses et services simulés
 npm run test:encryption  # chiffrement des données, coffre de clés simulé
+npm run test:engine      # moteur intégré réel (llama.cpp) avec un modèle de test de 105 Mo (téléchargé une fois)
 npm run test:desktop     # application de bureau, nécessite Ollama actif avec un modèle
 ```
 
@@ -84,7 +85,7 @@ Une série est un fichier `.txt` ou `.md`. Les questions sont séparées par une
 
 ## Données et confidentialité
 
-- Les modèles tournent par Ollama sur `127.0.0.1:11434` ; les modèles cloud sont exclus.
+- Les modèles tournent avec le moteur intégré (dans un processus séparé) ou par Ollama sur `127.0.0.1:11434` ; les modèles cloud sont exclus. Les fichiers de modèles ne viennent de Hugging Face que sur un clic « Télécharger », et sont vérifiés par leur empreinte SHA-256.
 - Zotero est lu par son API locale (`127.0.0.1:23119`) ; un élément n'est écrit dans Zotero que sur un clic « Ajouter à Zotero ».
 - **L'accès depuis vos autres appareils est désactivé par défaut.** Une fois activé (Réglages), un petit serveur web permet à un téléphone ou un ordinateur d'utiliser Localia après avoir scanné un QR code qui contient une clé secrète ; sans la clé, tout est refusé, les essais répétés sont bloqués, les en-têtes Host étrangers rejetés. Sur le réseau local, les échanges ne sont pas chiffrés (Wi-Fi de confiance) ; depuis l'extérieur, passez par Tailscale (réseau privé chiffré) plutôt que d'ouvrir l'ordinateur à Internet.
 - **Une page web n'est téléchargée que si vous collez son adresse** (« ＋ Ajouter → Page web », ou `/web adresse`) : les adresses du réseau local ou privées sont refusées, redirections comprises ; seul le texte de la page est gardé, rien n'est affiché ni exécuté.

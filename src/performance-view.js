@@ -49,13 +49,13 @@ async function renderPerformance() {
   );
 
   // Conseil général : modèle de départ et vitesse à attendre.
-  const { best } = recommendStarter(hw.memoryGB);
+  const { best } = recommendCatalog(hw.memoryGB);
   const speeds = benchmarkSpeeds(typeof comparisons === 'undefined' ? [] : comparisons);
   const measured = { ...speeds };
   for (const [name, m] of Object.entries(hw.measured || {}))
     if (m.tokensPerSecond) measured[name] = { tokensPerSecond: m.tokensPerSecond, test: true };
   $('pc-advice').textContent = localText(
-    `Pour ce Mac (${hw.memoryGB} Go, ${accel.kind === 'cpu' ? 'calcul sur le processeur' : 'accélération graphique'}), le modèle idéal pour commencer est ${best.label} (${gb(best.sizeGB)}). ` +
+    `Pour ce Mac (${hw.memoryGB} Go, ${accel.kind === 'cpu' ? 'calcul sur le processeur' : 'accélération graphique'}), le modèle idéal pour commencer est ${best.label} (${gb(best.size / 1e9)}). ` +
       (accel.kind === 'cpu'
         ? 'Sans accélération graphique, un modèle plus petit répond plus vite mais se trompe plus souvent ; le Benchmark vous dira lequel est le meilleur compromis pour vos tâches.'
         : 'Les modèles qui tiennent dans la mémoire graphique répondent nettement plus vite.'),
@@ -97,20 +97,22 @@ async function renderPerformance() {
       : element('p', 'muted', 'Aucun modèle installé.'),
   );
 
-  // Modèles conseillés pas encore installés.
+  // Modèles du catalogue (moteur intégré) pas encore installés.
   const installedNames = new Set(hw.models.map((m) => m.name));
-  const suggestions = STARTER_MODELS.filter((m) => !installedNames.has(m.name)).map((m) => {
-    const verdict = assessModel(m.sizeGB * 1e9, hw);
-    const button = element('button', m.name === best.name ? 'primary' : '', 'Télécharger');
+  const suggestions = CATALOG.filter((m) => !installedNames.has('integre/' + m.id)).map((m) => {
+    const verdict = assessModel(m.size, hw);
+    const button = element('button', m.id === best.id ? 'primary' : '', 'Télécharger');
     button.type = 'button';
-    button.disabled = !hw.ollama || verdict.level === 'trop-gros' || !enoughDisk(m, hw.freeDiskGB);
+    button.disabled =
+      verdict.level === 'trop-gros' || !enoughDisk({ sizeGB: m.size / 1e9 }, hw.freeDiskGB);
     button.onclick = guard(async () => {
       view('models');
-      await download(m.name);
+      await renderCatalog();
+      await startDownload(() => window.localia.catalogDownload(m.id), m.label);
     });
     return [
-      `${m.label}${m.name === best.name ? ' — conseillé' : ''}`,
-      gb(m.sizeGB),
+      `${m.label}${m.id === best.id ? ' — conseillé' : ''}`,
+      gb(m.size / 1e9),
       { text: verdict.label, className: `verdict-${verdict.level}`, title: verdict.detail },
       m.note,
       button,

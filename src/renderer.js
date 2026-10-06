@@ -335,8 +335,10 @@ async function refresh() {
     $('connect').hidden = ollama;
   } catch (error) {
     models = [];
-    $('status').textContent = '○ Ollama arrêté';
-    $('connect').hidden = false;
+    // Ni modèle intégré ni Ollama actif : « Démarrer Ollama » seulement s'il est installé.
+    const setup = await window.localia.setupStatus().catch(() => null);
+    $('status').textContent = setup?.ollamaPath ? '○ Ollama arrêté' : '○ Aucun modèle installé';
+    $('connect').hidden = !setup?.ollamaPath;
   }
   const selected = $('model').value || current?.model || settings.lastModel;
   $('model').replaceChildren();

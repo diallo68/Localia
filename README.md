@@ -4,7 +4,7 @@
 
 *[Version française](README.fr.md)*
 
-Localia is a desktop application for macOS and Windows for working with local language models through [Ollama](https://ollama.com), and for **benchmarking those models on your own tasks**. Everything runs on your machine: no cloud model, no telemetry.
+Localia is a desktop application for macOS, Windows and Linux for working with local language models — with its **integrated engine** (llama.cpp, models downloaded from Hugging Face) or with [Ollama](https://ollama.com) — and for **benchmarking those models on your own tasks**. Everything runs on your machine: no cloud model, no telemetry.
 
 | Chat | Benchmark |
 |---|---|
@@ -37,12 +37,12 @@ Localia is a desktop application for macOS and Windows for working with local la
 
 ## Getting started
 
-At first launch, Localia opens a **getting-started guide**: install Ollama (link to ollama.com), download the model recommended for your computer's memory, ask a first question. It can be reopened from the sidebar.
+At first launch, Localia opens a **getting-started guide**: download the model recommended for your computer's memory (integrated engine, nothing else to install), ask a first question. Ollama is optional. It can be reopened from the sidebar.
 
 ## Requirements
 
 - macOS on Apple Silicon or Intel, Windows 10/11 (64-bit), or Linux (64-bit; AppImage or .deb);
-- [Ollama](https://ollama.com) with at least one local model (Localia looks for it in the usual places: `/usr/local/bin`, `/opt/homebrew/bin` or the Ollama application on macOS, `%LOCALAPPDATA%\Programs\Ollama` on Windows; `OLLAMA_PATH` overrides);
+- optional: [Ollama](https://ollama.com) (Localia looks for it in the usual places: `/usr/local/bin`, `/opt/homebrew/bin` or the Ollama application on macOS, `%LOCALAPPDATA%\Programs\Ollama` on Windows; `OLLAMA_PATH` overrides);
 - to build from source: [Node.js](https://nodejs.org) 20 or later.
 
 ## Run from source
@@ -73,6 +73,7 @@ npm test                 # unit tests (no Electron, no Ollama)
 npm run test:features    # desktop app, Ollama simulated
 npm run test:pdf         # desktop app, real PDF import, simulated answers and services
 npm run test:encryption  # data encryption, simulated key store
+npm run test:engine      # integrated engine, real llama.cpp with a 105 MB test model (downloaded once)
 npm run test:desktop     # desktop app, requires a running Ollama with one model
 ```
 
@@ -84,7 +85,7 @@ A series is a `.txt` or `.md` file. Questions are separated by a line containing
 
 ## Data and privacy
 
-- Models run through Ollama on `127.0.0.1:11434`; cloud models are excluded.
+- Models run with the integrated engine (in a separate process) or through Ollama on `127.0.0.1:11434`; cloud models are excluded. Model files come from Hugging Face only when you click Download, and are checked against their SHA-256 fingerprint.
 - Zotero is read through its local API (`127.0.0.1:23119`); an item is written to Zotero only when you click “Add to Zotero”.
 - **Access from your other devices is off by default.** When enabled (Settings), a small web server lets a phone or computer use Localia after scanning a QR code that carries a secret key; requests without the key are refused, repeated wrong keys are blocked, foreign Host headers are rejected. On the local network the traffic is not encrypted (use a trusted Wi-Fi); from outside, use Tailscale (encrypted private network) rather than opening the computer to the Internet.
 - **Web pages are fetched only when you paste an address** (“＋ Add → Web page”, or `/web address`): local and private network addresses are refused, redirects included; only the page's text is kept, nothing is displayed or executed.

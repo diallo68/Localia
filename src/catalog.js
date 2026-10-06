@@ -116,6 +116,20 @@ const CATALOG = [
 ];
 
 const catalogEntry = (id) => CATALOG.find((m) => m.id === id) || null;
+// Modèle conseillé selon la mémoire, puis deux autres plus légers. Au-delà de 16 Go, Gemma 3 12B :
+// le plus fiable dans le Benchmark de l'auteur.
+const RECOMMENDED = [
+  [16, 'gemma-3-12b'],
+  [12, 'qwen3-8b'],
+  [8, 'gemma-3-4b'],
+  [0, 'gemma-3-1b'],
+];
+function recommendCatalog(memoryGB) {
+  const ids = RECOMMENDED.filter(([min]) => (memoryGB ?? 0) >= min).map(([, id]) => id);
+  const [best, ...rest] = ids.map(catalogEntry);
+  return { best, alternatives: rest.slice(0, 2) };
+}
 const downloadUrl = (m) => `https://huggingface.co/${m.repo}/resolve/main/${m.file}`;
 
-if (typeof module !== 'undefined') module.exports = { CATALOG, catalogEntry, downloadUrl };
+if (typeof module !== 'undefined')
+  module.exports = { CATALOG, catalogEntry, downloadUrl, recommendCatalog };

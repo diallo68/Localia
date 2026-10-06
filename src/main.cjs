@@ -628,6 +628,7 @@ handle('local-import', async (name) => {
     architecture: info.architecture,
     sizeLabel: info.sizeLabel,
     contextLength: info.contextLength,
+    thinking: Boolean(info.thinking),
     parameters,
     addedAt: new Date().toISOString(),
   };
@@ -773,6 +774,7 @@ async function registerModel(model, dest, source) {
     architecture: info.architecture,
     sizeLabel: info.sizeLabel,
     contextLength: info.contextLength,
+    thinking: Boolean(info.thinking),
     license: model.license,
     addedAt: new Date().toISOString(),
   };
@@ -1093,9 +1095,23 @@ async function showModel(model) {
   // Moteur intégré : fiche équivalente à celle d'Ollama, d'après le registre.
   if (localEngine.isLocal(model)) {
     const m = await localEntry(model);
+    // Modèles enregistrés avant la détection de la réflexion : lue une fois dans le fichier.
+    if (m.thinking === undefined) {
+      m.thinking = Boolean(
+        (
+          await engine()
+            .capabilities(m.file)
+            .catch(() => ({}))
+        ).thinking,
+      );
+      const registry = (await readRegistry()).map((r) =>
+        r.name === m.name ? { ...r, thinking: m.thinking } : r,
+      );
+      await writeJson('modeles-integres.json', registry, 'Liste trop volumineuse.');
+    }
     return {
       details: { family: m.architecture, parameter_size: m.sizeLabel, quantization_level: null },
-      capabilities: ['completion'],
+      capabilities: m.thinking ? ['completion', 'thinking'] : ['completion'],
       model_info: m.contextLength ? { [`${m.architecture}.context_length`]: m.contextLength } : {},
       parameters: modelfileText(m.parameters),
     };

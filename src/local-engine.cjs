@@ -160,6 +160,7 @@ function createEngine({ utilityProcess, workerPath, env }) {
       }
     },
     check: (file) => send({ type: 'check', path: file }),
+    capabilities: (file) => send({ type: 'capabilities', path: file }),
     unload: () => child?.postMessage({ type: 'unload' }),
     stop: () => child?.kill(),
   };

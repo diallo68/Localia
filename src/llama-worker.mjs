@@ -49,6 +49,24 @@ async function prepare(path, contextSize) {
   return loadNs;
 }
 
+// Format de conversation du modèle. Réflexion désactivée (think === false) : Gemma 4 sans la
+// consigne <|think|>, Qwen découragé de réfléchir ; le budget de réflexion nul (plus bas) coupe
+// court à ce qui resterait.
+function chatWrapper(model, think) {
+  const { resolveChatWrapper } = llamaModule;
+  if (think !== false) return resolveChatWrapper(model);
+  return resolveChatWrapper(model, {
+    customWrapperSettings: { gemma4: { reasoning: false }, qwen: { thoughts: 'discourage' } },
+  });
+}
+
+// Le modèle sait-il réfléchir (segments de raisonnement prévus par son format de conversation) ?
+async function canThink(path, fileInfo) {
+  const { resolveChatWrapper } = await import('node-llama-cpp');
+  const wrapper = resolveChatWrapper({ fileInfo, filename: path, warningLogs: false });
+  return Boolean(wrapper?.settings?.segments?.thought);
+}
+
 // Historique d'Ollama (system, user, assistant) → historique de node-llama-cpp.
 function history(messages) {
   const system = messages
@@ -109,7 +127,11 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
       input: sequence.tokenMeter.usedInputTokens,
       output: sequence.tokenMeter.usedOutputTokens,
     };
-    const session = new LlamaChatSession({ contextSequence: sequence, autoDisposeSequence: false });
+    const session = new LlamaChatSession({
+      contextSequence: sequence,
+      autoDisposeSequence: false,
+      chatWrapper: chatWrapper(loaded.model, think),
+    });
     const { items, question } = history(messages);
     session.setChatHistory(items);
     let firstToken = null;
@@ -163,11 +185,27 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
   }
 }
 
+// Capacités d'un modèle déjà enregistré, d'après l'en-tête du fichier (sans le charger).
+async function capabilities({ id, path }) {
+  try {
+    if (fake) return post({ type: 'checked', id, info: { thinking: true } });
+    const { readGgufFileInfo } = await import('node-llama-cpp');
+    const info = await readGgufFileInfo(path, { readTensorInfo: false });
+    post({ type: 'checked', id, info: { thinking: await canThink(path, info) } });
+  } catch (error) {
+    post({ type: 'error', id, message: error?.message || String(error) });
+  }
+}
+
 // Vérifie qu'un fichier GGUF est utilisable par ce moteur : il est réellement chargé puis libéré.
 async function check({ id, path }) {
   try {
     if (fake)
-      return post({ type: 'checked', id, info: { architecture: 'qwen3', contextLength: 32768 } });
+      return post({
+        type: 'checked',
+        id,
+        info: { architecture: 'qwen3', contextLength: 32768, thinking: true },
+      });
     const { readGgufFileInfo } = await import('node-llama-cpp');
     const info = await readGgufFileInfo(path, { readTensorInfo: false });
     // Chargement complet (sans contexte) : une lecture partielle ne voit pas toutes les
@@ -184,6 +222,7 @@ async function check({ id, path }) {
         architecture: arch || null,
         sizeLabel: info.metadata?.general?.size_label || null,
         contextLength: arch ? (info.metadata?.[arch]?.context_length ?? null) : null,
+        thinking: await canThink(path, info),
       },
     });
   } catch (error) {
@@ -194,6 +233,7 @@ async function check({ id, path }) {
 process.parentPort.on('message', ({ data }) => {
   if (data.type === 'chat') chat(data);
   else if (data.type === 'check') check(data);
+  else if (data.type === 'capabilities') capabilities(data);
   else if (data.type === 'abort') running.get(data.id)?.abort();
   else if (data.type === 'unload') unload();
 });

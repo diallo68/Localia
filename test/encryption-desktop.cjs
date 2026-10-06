@@ -48,7 +48,7 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
     );
     // Sans modèle installé (machine de test sans Ollama) : le guide s'ouvre au premier lancement.
     await page.waitForFunction(() =>
-      document.querySelector('#status').textContent.includes('Ollama'),
+      /Ollama|Aucun modèle|Moteur/.test(document.querySelector('#status').textContent),
     );
     if (!(await page.evaluate(() => models.length))) {
       await page.waitForFunction(() => !document.querySelector('#guide-view').hidden);

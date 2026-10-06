@@ -387,7 +387,7 @@ function controls() {
   $('attach').disabled = chatting || importing || !historyReady;
   $('remove-pdf').disabled = chatting || importing;
   $('attach').classList.toggle('busy', importing);
-  $('attach').title = importing ? 'Lecture du fichier…' : 'Ajouter : fichier ou page web';
+  $('attach').setAttribute('aria-label', importing ? 'Lecture en cours…' : 'Joindre un fichier');
   $('send').disabled = chatting || importing || !models.length || !historyReady;
   $('model').disabled = chatting;
   $('stop').hidden = !chatting;
@@ -396,7 +396,6 @@ function controls() {
   $('rename-conversation').disabled = chatting || importing || !historyReady;
   $('send').disabled ||= comparing;
   $('attach').disabled ||= comparing;
-  $('attach-quick').disabled = $('attach').disabled;
   dropZone.disabled = $('attach').disabled;
   for (const listener of controlListeners) listener();
   $('download').disabled = pulling;
@@ -541,28 +540,6 @@ async function refresh() {
   for (const listener of modelListeners) listener();
   controls();
 }
-// « ＋ Ajouter » : menu (fichier ou page web).
-$('attach').onclick = () => {
-  $('attach-menu').hidden = !$('attach-menu').hidden;
-  $('web-form').hidden = true;
-};
-$('attach-web-choice').onclick = () => {
-  $('attach-menu').hidden = true;
-  $('web-form').hidden = false;
-  $('web-url').focus();
-};
-$('web-cancel').onclick = () => {
-  $('web-form').hidden = true;
-  $('web-url').value = '';
-};
-$('web-read').onclick = guard(() => readWebPage($('web-url').value));
-$('web-url').addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    $('web-read').click();
-  }
-});
-
 // Texte lisible d'une page HTML : analysée sans être affichée (DOMParser n'exécute rien et ne
 // charge rien) ; navigation, menus, pieds de page et scripts retirés ; article ou contenu principal.
 function pageText(html) {
@@ -605,7 +582,6 @@ async function readWebPage(address) {
   notice('');
   importing = true;
   controls();
-  $('web-read').textContent = 'Lecture…';
   try {
     const fetched = await window.localia.webFetch(value);
     let doc;
@@ -623,20 +599,16 @@ async function readWebPage(address) {
     current.document = doc;
     await persist();
     if (previous) await window.localia.deleteDocument(previous);
-    $('web-form').hidden = true;
-    $('web-url').value = '';
     render();
     $('prompt').focus();
   } finally {
     importing = false;
-    $('web-read').textContent = 'Lire la page';
     controls();
   }
 }
 
-// Fichier choisi dans le menu « ＋ Ajouter » : un PDF remplace le document de la conversation ;
-// un autre fichier s'ajoute aux fichiers joints (5 au plus).
-// Même traitement pour un fichier choisi et un fichier déposé dans la fenêtre.
+// Fichier joint (trombone ou dépôt) : un PDF remplace le document de la conversation ;
+// un autre fichier s'ajoute aux fichiers joints (5 au plus). Même traitement pour un fichier choisi et un fichier déposé dans la fenêtre.
 async function addAttachment(read) {
   notice('');
   importing = true;
@@ -665,12 +637,8 @@ async function addAttachment(read) {
     controls();
   }
 }
-$('attach-file-choice').onclick = guard(async () => {
-  $('attach-menu').hidden = true;
-  await addAttachment(() => window.localia.attach());
-});
-$('attach-quick').onclick = () => $('attach-file-choice').click();
-dropZone.onclick = () => $('attach-file-choice').click();
+$('attach').onclick = guard(() => addAttachment(() => window.localia.attach()));
+dropZone.onclick = () => $('attach').click();
 // Dépôt de fichiers sur la conversation : le contenu est lu ici puis transmis, jamais le chemin.
 const chatView = $('chat-view');
 let dragDepth = 0;
@@ -773,6 +741,16 @@ $('composer').onsubmit = guard(async (event) => {
   const result = await sendPrompt();
   if (result?.error) notice(result.error);
 });
+// Première adresse web d'un message (ponctuation finale retirée) et le texte qui l'entoure.
+function linkIn(text) {
+  const match = /\bhttps?:\/\/[^\s<>"'«»]+/i.exec(text || '');
+  if (!match) return null;
+  const address = match[0].replace(/[.,;:!?)\]]+$/, '');
+  const rest = (text.slice(0, match.index) + text.slice(match.index + address.length))
+    .replace(/\s+/g, ' ')
+    .trim();
+  return { address, rest };
+}
 // Envoi du message de la zone de saisie, depuis le Mac ou depuis un autre appareil (remoteId).
 // Renvoie { ok, error, conversationId, text } pour l'appareil distant.
 async function sendPrompt({ remoteId } = {}) {
@@ -784,12 +762,11 @@ async function sendPrompt({ remoteId } = {}) {
   const invocation = parseInvocation(content, skills);
   if (invocation?.reserved === '/web') {
     $('skill-suggest').hidden = true;
-    if (!invocation.rest) {
-      $('prompt').value = '';
-      $('web-form').hidden = false;
-      $('web-url').focus();
-      return { ok: true, text: 'Formulaire « Page web » ouvert sur le Mac.' };
-    }
+    if (!invocation.rest)
+      return {
+        ok: false,
+        error: 'Collez l’adresse de la page après /web, ou simplement dans votre message.',
+      };
     await readWebPage(invocation.rest);
     $('prompt').value = '';
     return { ok: true, conversationId: current?.id, text: 'Page web ajoutée à la conversation.' };
@@ -808,6 +785,18 @@ async function sendPrompt({ remoteId } = {}) {
   if (!models.length) {
     view('models');
     return { ok: false, error: 'Aucun modèle installé sur le Mac.' };
+  }
+  // Adresse https://… dans le message : la page est lue et devient le document de la
+  // conversation ; le reste du message est la question (seule, l'adresse ajoute la page).
+  const link = linkIn(invocation ? invocation.rest : content);
+  if (link) {
+    if (current?.document?.source !== link.address) await readWebPage(link.address);
+    if (invocation) invocation.rest = link.rest;
+    else if (!link.rest) {
+      $('prompt').value = '';
+      notice('Page web ajoutée à la conversation : posez votre question.');
+      return { ok: true, conversationId: current?.id, text: 'Page web ajoutée à la conversation.' };
+    } else content = link.rest;
   }
   notice('');
   const messageSkill = invocation?.skill || null;

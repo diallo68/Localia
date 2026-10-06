@@ -176,47 +176,24 @@
           </div>
           <div id="file-chips" hidden></div>
           <div id="skill-suggest" hidden role="listbox" aria-label="Compétences"></div>
-          <div id="attach-menu" hidden role="menu">
-            <button id="attach-file-choice" type="button" role="menuitem">
-              Fichier : PDF, consignes, code ou données…</button
-            ><button id="attach-web-choice" type="button" role="menuitem">
-              Page web : coller une adresse…
-            </button>
-          </div>
-          <div id="web-form" hidden>
-            <label class="sr-only" for="web-url">Adresse de la page web</label
-            ><input id="web-url" type="url" placeholder="https://…" maxlength="2000" /><button
-              id="web-read"
-              class="primary"
-              type="button"
-            >
-              Lire la page</button
-            ><button id="web-cancel" type="button">Annuler</button>
-            <small class="muted"
-              >La page est téléchargée sur votre demande, sans être affichée ni exécutée ; seul son
-              texte est gardé.</small
-            >
-          </div>
           <label class="sr-only" for="prompt">Votre message</label
-          ><textarea id="prompt" rows="3" placeholder="Posez votre question…"></textarea>
+          ><textarea
+            id="prompt"
+            rows="3"
+            placeholder="Posez votre question, ou collez l’adresse d’une page web…"
+          ></textarea>
           <div class="composer-footer">
             <button
               id="attach"
               class="round"
               type="button"
-              aria-label="Ajouter : fichier ou page web"
-              title="Ajouter : fichier ou page web"
-            >
-              <i data-icon="plus"></i></button
-            ><button
-              id="attach-quick"
-              class="round"
-              type="button"
               aria-label="Joindre un fichier"
-              title="PDF, consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json)"
+              title="Joindre un fichier : PDF, consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message."
             >
               <i data-icon="paperclip"></i></button
-            ><span id="hint">Entrée pour envoyer · Maj + Entrée pour revenir à la ligne</span
+            ><span id="hint"
+              >Entrée pour envoyer · Maj + Entrée pour revenir à la ligne · une adresse https://…
+              collée est lue comme page web</span
             ><button type="button" id="stop" hidden>Arrêter</button
             ><button class="primary" id="send" type="submit">
               Envoyer<i data-icon="send"></i>
@@ -720,8 +697,9 @@
             <h3>Et ensuite</h3>
             <ul class="muted">
               <li>
-                « ＋ Ajouter » sous la zone de message : un PDF, des consignes (.md, .txt) ou des
-                données (.csv) à joindre à la conversation.
+                Le trombone sous la zone de message (ou un fichier glissé dans la fenêtre) : un PDF,
+                des consignes (.md, .txt) ou des données (.csv) à joindre à la conversation. Pour
+                une page web, collez son adresse dans le message.
               </li>
               <li>
                 Compétences : tapez <code>/</code> au début d’un message, par exemple

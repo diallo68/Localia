@@ -1465,3 +1465,50 @@ progress {
 #skills-view .input-row {
   justify-content: flex-start;
 }
+#guide-steps {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.guide-step {
+  background: white;
+  border: 1px solid #dfe7e1;
+  border-left: 4px solid #c9d6cd;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.guide-step.done {
+  border-left-color: #226b53;
+}
+.guide-step h3 {
+  margin: 0 0 4px;
+}
+.guide-state {
+  font-weight: 600;
+}
+.guide-step.done .guide-state {
+  color: #1b7a4f;
+}
+.guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#guide-view .input-row {
+  justify-content: space-between;
+}
+.link-button {
+  display: block;
+  margin: 8px 0 0 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #226b53;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}

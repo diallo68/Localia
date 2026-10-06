@@ -39,6 +39,8 @@ const persist = async () => {
 const ON_MAC = window.localia.platform === 'darwin';
 const OTHER_SYSTEM_TEXTS = [
   [/Sur votre Mac/g, 'Sur votre ordinateur'],
+  [/Sur ce Mac/g, 'Sur cet ordinateur'],
+  [/Ce Mac/g, 'Cet ordinateur'],
   [/sur ce Mac Intel de 16 Go/g, 'sur un ordinateur de 16 Go'],
   [/(sur|de|hors de) ce Mac/g, '$1 cet ordinateur'],
   [/ce Mac/g, 'cet ordinateur'],
@@ -67,6 +69,7 @@ const VIEWS = {
   bibliography: 'Bibliographie',
   files: 'Fichiers',
   skills: 'Compétences',
+  guide: 'Guide de démarrage',
 };
 function view(name) {
   for (const key of Object.keys(VIEWS)) {
@@ -550,7 +553,8 @@ async function download(model) {
     await refresh();
   }
 }
-$('download').onclick = () => download('qwen2.5:1.5b');
+// Modèle de départ choisi selon la mémoire de l'ordinateur (guide-view.js).
+$('download').onclick = () => download($('download').dataset.model || 'gemma3:4b');
 $('custom-form').onsubmit = (event) => {
   event.preventDefault();
   download($('custom-model').value.trim());

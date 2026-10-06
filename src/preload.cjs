@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('localia', {
   platform: process.platform,
   attachPdf: () => invoke('attach-pdf'),
   attach: () => invoke('attach'),
+  setupStatus: () => invoke('setup-status'),
+  openOllamaDownload: () => invoke('open-ollama-download'),
   skillsList: () => invoke('skills-list'),
   skillsOpenDir: () => invoke('skills-open-dir'),
   skillsOpen: (id) => invoke('skills-open', id),

@@ -30,7 +30,8 @@
       <div class="section-label">HISTORIQUE LOCAL</div>
       <nav id="history" aria-label="Historique des conversations"></nav>
       <div class="privacy">
-        <span>●</span> Sur votre Mac<small>Vos conversations restent ici.</small>
+        <span>●</span> Sur votre Mac<small>Vos conversations restent ici.</small
+        ><button id="guide-tab" class="link-button" type="button">Guide de démarrage</button>
       </div>
     </aside>
     <main>
@@ -125,17 +126,18 @@
           <span class="eyebrow">CHOISISSEZ VOTRE INTELLIGENCE</span>
           <h2>Une IA à votre mesure.</h2>
           <p>
-            Téléchargez un modèle, puis utilisez-le hors ligne.<br />Sur ce Mac Intel de 16 Go,
-            commencez par un petit modèle.
+            Téléchargez un modèle, puis utilisez-le hors ligne.<br /><span id="starter-advice"
+              >Commencez par un petit modèle.</span
+            >
           </p>
         </div>
         <article class="model-card">
           <div class="model-icon">Q</div>
           <div>
             <span class="badge">POUR COMMENCER</span>
-            <h3>Qwen 2.5 · 1,5B</h3>
-            <p>Un petit modèle multilingue pour découvrir le chat local.</p>
-            <small>qwen2.5:1.5b · Licence Apache 2.0</small>
+            <h3 id="starter-label">Gemma 3 · 4B</h3>
+            <p id="starter-note">Léger et multilingue : un bon début sur un ordinateur de 8 Go.</p>
+            <small id="starter-meta">gemma3:4b · 3,3 Go · Gemma Terms of Use</small>
           </div>
           <button class="primary" id="download">Télécharger</button>
         </article>
@@ -514,6 +516,66 @@
         <h3>Journal</h3>
         <div id="files-journal"></div>
       </section>
+      <section id="guide-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">BIENVENUE</span>
+          <h2>Guide de démarrage.</h2>
+          <p>
+            Localia fait tourner des modèles d’IA sur votre ordinateur, sans Internet une fois
+            installée. Trois étapes suffisent.
+          </p>
+        </div>
+        <ol id="guide-steps">
+          <li id="guide-ollama" class="guide-step">
+            <h3>1. Installer Ollama</h3>
+            <p class="muted">
+              Ollama est le moteur gratuit qui fait tourner les modèles. Localia le démarre ensuite
+              toute seule.
+            </p>
+            <p class="guide-state" role="status"></p>
+            <div class="guide-actions"></div>
+          </li>
+          <li id="guide-model" class="guide-step">
+            <h3>2. Télécharger un modèle</h3>
+            <p class="muted">
+              Un seul téléchargement (Internet nécessaire), ensuite le modèle fonctionne hors ligne.
+            </p>
+            <p class="guide-state" role="status"></p>
+            <div class="guide-actions"></div>
+            <p id="guide-progress" class="muted" role="status"></p>
+          </li>
+          <li id="guide-try" class="guide-step">
+            <h3>3. Poser une première question</h3>
+            <p class="guide-state" role="status"></p>
+            <div class="guide-actions"></div>
+          </li>
+          <li class="guide-step">
+            <h3>Et ensuite</h3>
+            <ul class="muted">
+              <li>
+                « ＋ Ajouter » sous la zone de message : un PDF, des consignes (.md, .txt) ou des
+                données (.csv) à joindre à la conversation.
+              </li>
+              <li>
+                Compétences : tapez <code>/</code> au début d’un message, par exemple
+                <code>/article-plan</code> ou <code>/donnees-brutes</code>.
+              </li>
+              <li>
+                Benchmark : comparez vos modèles sur vos propres questions ; Localia conseille
+                ensuite le meilleur modèle pour chaque tâche.
+              </li>
+              <li>
+                Vos données restent sur cet ordinateur ; elles peuvent être chiffrées (Réglages).
+              </li>
+            </ul>
+          </li>
+        </ol>
+        <div class="input-row">
+          <label class="check"
+            ><input type="checkbox" id="guide-done" /> Ne plus afficher ce guide au démarrage</label
+          ><button id="guide-close" type="button">Fermer</button>
+        </div>
+      </section>
       <section id="skills-view" class="page" hidden>
         <div class="library-intro">
           <span class="eyebrow">RECETTES RÉUTILISABLES</span>
@@ -682,6 +744,7 @@
     <script src="bibliography.js"></script>
     <script src="actions.js"></script>
     <script src="skills.js"></script>
+    <script src="setup.js"></script>
     <script src="benchmark-stats.js"></script>
     <script src="charts.js"></script>
     <script src="renderer.js"></script>
@@ -692,6 +755,7 @@
     <script src="bibliography-view.js"></script>
     <script src="files-view.js"></script>
     <script src="skills-view.js"></script>
+    <script src="guide-view.js"></script>
     <script src="start.js"></script>
   </body>
 </html>

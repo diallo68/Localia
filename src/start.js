@@ -40,5 +40,7 @@
     notice(privacy.error);
     view('settings');
     await showPrivacy(privacy);
-  }
+  } else if (!settings.guideDone && !models.length) await openGuide().catch(() => {});
+  // Carte « Pour commencer » de la Bibliothèque : modèle adapté à cet ordinateur.
+  else window.localia.setupStatus().then(showStarterCard, () => {});
 })();

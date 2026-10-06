@@ -224,6 +224,29 @@ handle('models', async () =>
     (m) => !m.remote_host && !/cloud/i.test(m.name),
   ),
 );
+// Guide de démarrage : Ollama installé et actif, modèles, mémoire et place libre sur le disque.
+handle('setup-status', async () => {
+  const [version, tags, disk] = await Promise.all([
+    request('/api/version', null, AbortSignal.timeout(3000))
+      .then((r) => r.json())
+      .catch(() => null),
+    request('/api/tags', null, AbortSignal.timeout(3000))
+      .then((r) => r.json())
+      .catch(() => null),
+    fs.statfs(os.homedir()).catch(() => null),
+  ]);
+  return {
+    ollamaPath: platform.ollamaPath(),
+    running: Boolean(version || tags),
+    version: version?.version ?? null,
+    models: tags?.models?.length ?? 0,
+    memoryGB: Math.round(os.totalmem() / 2 ** 30),
+    freeDiskGB: disk ? Math.round((disk.bavail * disk.bsize) / 1e9) : null,
+    platform: process.platform,
+  };
+});
+// Seule adresse ouverte dans le navigateur par le guide.
+handle('open-ollama-download', () => shell.openExternal('https://ollama.com/download'));
 handle('start-service', async () => {
   try {
     await request('/api/tags');

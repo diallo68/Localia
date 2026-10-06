@@ -35,6 +35,10 @@ Localia est une application de bureau pour macOS et Windows, pour utiliser des m
   - notation à l'aveugle (ordre aléatoire, nom du modèle masqué), import des notes d'autres correcteurs (CSV) ;
   - exports : données brutes (CSV, JSON), graphiques (SVG autonomes), conditions de l'expérience (Markdown : machine, version d'Ollama, empreinte et quantification des modèles, réglages utilisés, messages exacts envoyés).
 
+## Premiers pas
+
+Au premier lancement, Localia ouvre un **guide de démarrage** : installer Ollama (lien vers ollama.com), télécharger le modèle conseillé pour la mémoire de l'ordinateur, poser une première question. Il se rouvre depuis la colonne de gauche.
+
 ## Prérequis
 
 - macOS sur Apple Silicon ou Intel, ou Windows 10/11 (64 bits) ;

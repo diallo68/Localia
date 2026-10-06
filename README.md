@@ -35,6 +35,10 @@ Localia is a desktop application for macOS and Windows for working with local la
   - blind grading (random order, model name hidden), import of grades from other graders (CSV);
   - exports: raw data (CSV, JSON), charts (standalone SVG), experiment conditions (Markdown: machine, Ollama version, model digests and quantization, settings used, exact messages sent).
 
+## Getting started
+
+At first launch, Localia opens a **getting-started guide**: install Ollama (link to ollama.com), download the model recommended for your computer's memory, ask a first question. It can be reopened from the sidebar.
+
 ## Requirements
 
 - macOS on Apple Silicon or Intel, or Windows 10/11 (64-bit);

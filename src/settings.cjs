@@ -51,6 +51,8 @@ function normalizeSettings(raw) {
   // Fonctions en ligne : désactivées tant que l'utilisateur ne les active pas explicitement.
   const settings = { lastModel: null, models: {}, online: { bibliography: false } };
   if (!raw || typeof raw !== 'object') return settings;
+  // Guide de démarrage : ne plus l'ouvrir au lancement une fois que l'utilisateur l'a demandé.
+  if (raw.guideDone === true) settings.guideDone = true;
   settings.online.bibliography = raw.online?.bibliography === true;
   if (raw.lastModel) settings.lastModel = modelName(raw.lastModel);
   const entries = Object.entries(raw.models && typeof raw.models === 'object' ? raw.models : {});

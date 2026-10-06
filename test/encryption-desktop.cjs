@@ -46,6 +46,17 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
     await page.waitForFunction(() =>
       document.querySelector('#history').textContent.includes('Mildiou à Dalaba'),
     );
+    // Sans modèle installé (machine de test sans Ollama) : le guide s'ouvre au premier lancement.
+    await page.waitForFunction(() =>
+      document.querySelector('#status').textContent.includes('Ollama'),
+    );
+    if (!(await page.evaluate(() => models.length))) {
+      await page.waitForFunction(() => !document.querySelector('#guide-view').hidden);
+      assert.match(
+        await page.locator('#guide-model .guide-state').textContent(),
+        /Go de mémoire : nous conseillons/,
+      );
+    }
     await page.locator('#settings-tab').click();
     await page.waitForFunction(() =>
       document.querySelector('#privacy-status').textContent.includes('Chiffrement désactivé'),

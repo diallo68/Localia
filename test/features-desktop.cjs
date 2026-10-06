@@ -37,6 +37,7 @@ const readJson = async (profile, name) => {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-features-'));
   let app;
   try {
+    await fs.writeFile(path.join(profile, 'settings.json'), JSON.stringify({ guideDone: true }));
     // Comparaison au format d'avant les séries : doit rester lisible.
     await fs.writeFile(
       path.join(profile, 'comparisons.json'),
@@ -743,6 +744,27 @@ const readJson = async (profile, name) => {
       delete global.chatReply;
     });
     await fs.rm(work, { recursive: true, force: true });
+
+    // Guide de démarrage : Ollama actif et modèles installés (simulés), première question.
+    await page.locator('#guide-tab').click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector('#guide-ollama .guide-state')
+        .textContent.includes('Ollama est installé et actif (version 0.35.0)'),
+    );
+    assert.match(
+      await page.locator('#guide-model .guide-state').textContent(),
+      /2 modèle\(s\) installé\(s\)/,
+    );
+    assert.match(
+      await page.locator('#starter-advice').textContent(),
+      /Go de mémoire, nous conseillons/,
+    );
+    await page.locator('#guide-try button').click();
+    await page.waitForFunction(() => !document.querySelector('#chat-view').hidden);
+    assert.match(await page.locator('#prompt').inputValue(), /^Présente-toi en trois phrases/);
+    await page.locator('#prompt').fill('');
+    assert.equal((await readJson(profile, 'settings.json')).guideDone, true);
 
     // Compétences : dossier de départ, menu Tâche, appel « /nom », suggestions, nouvelle compétence.
     await page.locator('#skills-tab').click();

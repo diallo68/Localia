@@ -5,6 +5,7 @@ const {
   taskKey,
   validateMessages,
   documentMessages,
+  documentBudget,
   withSystem,
   contextSize,
   exceedsContext,
@@ -55,6 +56,14 @@ test('avec un PDF : consigne système, source puis historique récent limité à
   assert.match(result.messages[1].content, /110 EUR/);
   // Le message de 3 000 caractères le plus récent tient, le précédent dépasserait 5 000.
   assert.deepEqual(result.messages.slice(2), messages.slice(1));
+});
+
+test('avec un PDF : extraits proportionnés au contexte choisi', () => {
+  assert.equal(documentBudget(4096, 2048), 10000);
+  assert.equal(documentBudget(16384, 2048), 32731);
+  // Réponse longue demandée : moins de place pour le document.
+  assert.ok(documentBudget(16384, 8000) < documentBudget(16384, 2048));
+  assert.equal(documentBudget(1000000), 200000);
 });
 
 test('avec un PDF : question de plus de 5 000 caractères refusée', () => {

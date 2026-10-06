@@ -1024,7 +1024,10 @@ handle('run', async (kind, payload) => {
       let messages = payload.messages;
       if (withDocument) {
         const doc = await loadDocument(documentsPath(), payload.documentId, documentCodec);
-        const context = documentMessages(doc, messages, system);
+        const context = documentMessages(doc, messages, system, {
+          numCtx,
+          numPredict: modelSettings.options?.num_predict,
+        });
         messages = context.messages;
         // Messages exacts envoyés (consigne, extraits, question) : conservés pour la reproductibilité.
         sent = { pages: context.pages, partial: context.partial, messages };

@@ -36,8 +36,19 @@ function taskKey(kind) {
   return kind === 'pull' ? 'pull' : 'chat';
 }
 
-function documentMessages(doc, messages, system) {
-  const context = documentContext(doc, messages.at(-1).content);
+// Place laissée aux extraits du document : le contexte choisi, moins la réponse (raisonnement
+// compris), la consigne, la question et une marge, l'estimation en caractères restant approximative.
+const DOCUMENT_MIN_CHARS = 10000;
+const DOCUMENT_MAX_CHARS = 200000;
+function documentBudget(numCtx = DOCUMENT_CONTEXT_TOKENS, numPredict) {
+  const answer = Math.max(numPredict > 0 ? numPredict : 0, 2048);
+  const tokens = numCtx - answer - 1500;
+  const chars = Math.floor(tokens * CHARS_PER_TOKEN * 0.85);
+  return Math.min(DOCUMENT_MAX_CHARS, Math.max(DOCUMENT_MIN_CHARS, chars));
+}
+
+function documentMessages(doc, messages, system, { numCtx, numPredict } = {}) {
+  const context = documentContext(doc, messages.at(-1).content, documentBudget(numCtx, numPredict));
   const recent = [];
   let remaining = DOCUMENT_HISTORY_BUDGET;
   for (const message of [...messages].reverse()) {
@@ -121,6 +132,7 @@ module.exports = {
   taskKey,
   validateMessages,
   documentMessages,
+  documentBudget,
   withSystem,
   contextSize,
   exceedsContext,

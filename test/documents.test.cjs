@@ -10,6 +10,7 @@ const {
   deleteDocument,
   pruneDocuments,
   documentContext,
+  printedPages,
 } = require('../src/documents.cjs');
 const { pdfFixture } = require('./pdf-fixture.cjs');
 test('PDF réel : extraction de chaque page, persistance et contexte sourcé', async () => {
@@ -55,6 +56,38 @@ test('document long : extrait pertinent de fin et limite explicite', () => {
   assert.ok(context.pages.includes(40));
   assert.match(context.text, /EXTRAITS SEULEMENT/);
   assert.match(context.text, /400 euros/);
+});
+test('numéros imprimés : décalage majoritaire, chiffres romains, jamais devinés', () => {
+  const footer = (n) => `Auteur (2024)   ${n}   Thèse de doctorat`;
+  const pages = [{ number: 1, text: 'COUVERTURE\nUniversité' }];
+  for (let n = 2; n <= 6; n++)
+    pages.push({
+      number: n,
+      text: `Remerciements\n${footer(['i', 'ii', 'iii', 'iv', 'v'][n - 2])}`,
+    });
+  for (let n = 7; n <= 30; n++)
+    pages.push({ number: n, text: `Chapitre\nEn 2022, 862 images.\n${footer(n - 6)}` });
+  pages.push({ number: 31, text: 'Annexe sans numéro\n12' });
+  const doc = { name: 'these.pdf', emptyPages: [], pages };
+  const labels = printedPages(doc);
+  assert.equal(labels.get(1), undefined);
+  assert.equal(labels.get(2), 'i');
+  assert.equal(labels.get(6), 'v');
+  assert.equal(labels.get(7), '1');
+  assert.equal(labels.get(30), '24');
+  // « 12 » ne suit pas le décalage (31 − 6 = 25) : pas de numéro imprimé inventé.
+  assert.equal(labels.get(31), undefined);
+  const context = documentContext(doc, 'Combien d’images en 2022 ?', 100000);
+  assert.match(context.text, /\[Page 7, extrait 1 — page imprimée 1\]/);
+  assert.match(context.text, /position dans le fichier PDF/);
+  // Numérotation identique à la position : rien n'est ajouté.
+  const plain = {
+    name: 'article.pdf',
+    emptyPages: [],
+    pages: Array.from({ length: 6 }, (_, i) => ({ number: i + 1, text: `Texte\n${i + 1}` })),
+  };
+  assert.equal(printedPages(plain).size, 0);
+  assert.doesNotMatch(documentContext(plain, 'Texte').text, /imprimée/);
 });
 test('identifiant de document ne permet pas de parcourir le disque', async () => {
   await assert.rejects(loadDocument('/tmp', '../../etc/passwd'), /invalide/);

@@ -71,16 +71,75 @@ async function loadDocument(directory, id, codec = PLAIN) {
     throw new Error('Document illisible. Joignez à nouveau le PDF.');
   }
 }
+// Numéros imprimés des pages (en-tête ou pied de page), quand ils diffèrent de la position dans le
+// fichier : thèse ou livre dont la page « 1 » est la 20e du PDF, pages liminaires en chiffres romains.
+// Un numéro n'est retenu que s'il suit le même décalage que la majorité des pages : jamais deviné.
+const ROMAN = /^(?=[ivxlc]+$)c{0,3}(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$/;
+function romanValue(text) {
+  const values = { i: 1, v: 5, x: 10, l: 50, c: 100 };
+  let total = 0;
+  for (let i = 0; i < text.length; i++) {
+    const v = values[text[i]];
+    total += v < (values[text[i + 1]] || 0) ? -v : v;
+  }
+  return total;
+}
+function printedPages(doc) {
+  const candidates = doc.pages.map((page) => {
+    const lines = page.text
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const edge = [...lines.slice(0, 2), ...lines.slice(-2)].join(' ');
+    const tokens = edge.toLowerCase().split(/[\s|–—-]+/);
+    return {
+      number: page.number,
+      arabic: tokens.filter((t) => /^\d{1,4}$/.test(t)).map(Number),
+      roman: tokens.filter((t) => t && ROMAN.test(t)),
+    };
+  });
+  const best = (offsets, pages) => {
+    const counts = new Map();
+    for (const o of offsets) counts.set(o, (counts.get(o) || 0) + 1);
+    let top = null;
+    for (const [o, n] of counts) if (!top || n > top[1]) top = [o, n];
+    return top && top[1] >= Math.max(3, pages * 0.2) ? top[0] : null;
+  };
+  const arabic = best(
+    candidates.flatMap((c) => [...new Set(c.arabic.map((n) => c.number - n))]),
+    candidates.length,
+  );
+  // Chiffres romains : cherchés parmi les pages sans numéro arabe (pages liminaires).
+  const rest = candidates.filter((c) => arabic === null || !c.arabic.includes(c.number - arabic));
+  const roman = best(
+    rest.flatMap((c) => [...new Set(c.roman.map((r) => c.number - romanValue(r)))]),
+    rest.length,
+  );
+  const labels = new Map();
+  for (const c of candidates) {
+    if (arabic !== null && arabic !== 0 && c.arabic.includes(c.number - arabic))
+      labels.set(c.number, String(c.number - arabic));
+    else if (roman !== null) {
+      const r = c.roman.find((x) => romanValue(x) === c.number - roman);
+      if (r) labels.set(c.number, r);
+    }
+  }
+  return labels;
+}
+
+function terms(text) {
+  return (
+    text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .match(/[a-z0-9]{4,}/g) || []
+  );
+}
+
+// Extraits les plus pertinents pour la question, dans la limite de « budget » caractères.
 function documentContext(doc, question, budget = 10000) {
-  const words = [
-    ...new Set(
-      question
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .match(/[a-z0-9]{4,}/g) || [],
-    ),
-  ];
+  const words = [...new Set(terms(question))];
   const chunks = [];
   for (const page of doc.pages)
     for (let offset = 0; offset < page.text.length; offset += 1400) {
@@ -108,14 +167,19 @@ function documentContext(doc, question, budget = 10000) {
   }
   selected.sort((a, b) => a.page - b.page || a.offset - b.offset);
   const partial = selected.length < chunks.length;
+  const printed = doc.web ? new Map() : printedPages(doc);
+  const label = (c) =>
+    `[Page ${c.page}, extrait ${Math.floor(c.offset / 1400) + 1}` +
+    (printed.has(c.page) ? ` — page imprimée ${printed.get(c.page)}]` : ']');
   return {
     partial,
     pages: [...new Set(selected.map((c) => c.page))],
     text:
       `Document : ${doc.name}\nCouverture : ${partial ? 'EXTRAITS SEULEMENT — aucune vérification exhaustive possible' : 'tout le texte extractible'}. ${doc.emptyPages.length ? 'Pages sans texte : ' + doc.emptyPages.join(', ') + '.' : ''}\n` +
-      selected
-        .map((c) => `[Page ${c.page}, extrait ${Math.floor(c.offset / 1400) + 1}]\n${c.text}`)
-        .join('\n\n'),
+      (printed.size
+        ? '« Page N » = position dans le fichier PDF (couverture = page 1) ; « page imprimée » = numéro inscrit sur la page.\n'
+        : '') +
+      selected.map((c) => `${label(c)}\n${c.text}`).join('\n\n'),
   };
 }
 async function deleteDocument(directory, id) {
@@ -143,6 +207,7 @@ async function pruneDocuments(directory, keepIds) {
   return removed;
 }
 module.exports = {
+  printedPages,
   extractPdf,
   importPdf,
   loadDocument,

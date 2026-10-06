@@ -71,7 +71,7 @@ if (!ON_MAC) {
 const VIEWS = {
   chat: 'Conversations',
   models: 'Bibliothèque',
-  compare: 'Comparaison',
+  compare: 'Benchmark',
   settings: 'Réglages des modèles',
   benchmark: 'Benchmark',
   projects: 'Projets',
@@ -81,12 +81,18 @@ const VIEWS = {
   guide: 'Guide de démarrage',
   performance: 'Performances de votre ordinateur',
 };
+let lastBenchStep = 'compare';
 function view(name) {
   for (const key of Object.keys(VIEWS)) {
     $(key + '-view').hidden = key !== name;
     $(key + '-tab').classList.toggle('active', key === name);
   }
   $('heading').textContent = VIEWS[name];
+  // Benchmark : une entrée dans la colonne, deux étapes (lancer une série, résultats et notation).
+  const bench = name === 'compare' || name === 'benchmark';
+  $('bench-steps').hidden = !bench;
+  $('bench-nav').classList.toggle('active', bench);
+  if (bench) lastBenchStep = name;
   // La conversation a sa propre barre (projet, tâche, modèle, exécution) : pas d'en-tête.
   document.body.dataset.view = name;
 }
@@ -686,6 +692,7 @@ $('delete-conversation').onclick = guard(async () => {
   for (const f of conversation.files || []) await window.localia.deleteDocument(f.id);
 });
 $('chat-tab').onclick = () => view('chat');
+$('bench-nav').onclick = () => $(lastBenchStep + '-tab').click();
 $('models-tab').onclick = () => view('models');
 $('new').onclick = () => {
   current = null;

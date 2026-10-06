@@ -233,6 +233,47 @@ header {
   border-bottom: 1px solid #e5ebe7;
   gap: 15px;
 }
+#bench-steps {
+  display: flex;
+  gap: 6px;
+  margin: 16px 36px 0;
+  padding: 5px;
+  width: fit-content;
+  background: #eef3f0;
+  border-radius: 12px;
+}
+#bench-steps[hidden] {
+  display: none;
+}
+#bench-steps button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  background: transparent;
+  padding: 9px 16px;
+  color: #4b5d55;
+}
+#bench-steps button.active {
+  background: #fff;
+  color: #1b543f;
+  font-weight: 600;
+  box-shadow: 0 1px 4px #183d2314;
+}
+.step-number {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #dbe7e0;
+  font-size: 12px;
+  font-weight: 600;
+}
+#bench-steps button.active .step-number {
+  background: #226b53;
+  color: #fff;
+}
 body[data-view='chat'] header {
   display: none;
 }

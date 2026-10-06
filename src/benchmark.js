@@ -316,7 +316,7 @@ function renderBenchmark() {
       element(
         'p',
         'muted',
-        'Calculs refaits, références de pages, citations et chiffres comparés au document, sans modèle. Lancez « Vérifier les réponses » dans l’onglet Comparaison pour les séries plus anciennes.',
+        'Calculs refaits, références de pages, citations et chiffres comparés au document, sans modèle. Lancez « Vérifier les réponses » à l’étape 1 (Lancer une série) pour les séries plus anciennes.',
       ),
     );
     box.append(
@@ -366,7 +366,7 @@ function renderBenchmark() {
       element(
         'p',
         'muted',
-        'Aucune série répétée. Choisissez 2 ou 3 répétitions dans l’onglet Comparaison.',
+        'Aucune série répétée. Choisissez 2 ou 3 répétitions à l’étape 1 (Lancer une série).',
       ),
     );
   else

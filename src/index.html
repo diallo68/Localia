@@ -23,8 +23,7 @@
         </button>
         <div class="nav-group">
           <button id="chat-tab" class="nav active"><i data-icon="message"></i>Conversations</button
-          ><button id="compare-tab" class="nav"><i data-icon="compare"></i>Comparaison</button
-          ><button id="benchmark-tab" class="nav"><i data-icon="chart"></i>Benchmark</button>
+          ><button id="bench-nav" class="nav"><i data-icon="chart"></i>Benchmark</button>
         </div>
       </div>
       <div class="nav-section" data-section="ressources">
@@ -74,6 +73,13 @@
           ><button id="refresh" aria-label="Actualiser la connexion">↻</button>
         </div>
       </header>
+      <nav id="bench-steps" aria-label="Étapes du Benchmark" hidden>
+        <button id="compare-tab" type="button">
+          <span class="step-number">1</span>Lancer une série</button
+        ><button id="benchmark-tab" type="button">
+          <span class="step-number">2</span>Résultats et notation
+        </button>
+      </nav>
       <div id="notice" role="alert" hidden></div>
       <section id="chat-view">
         <div class="toolbar">
@@ -296,11 +302,12 @@
       </section>
       <section id="compare-view" class="page" hidden>
         <div class="library-intro">
-          <span class="eyebrow">COMPARER VOS MODÈLES</span>
-          <h2>Même tâche, plusieurs modèles.</h2>
+          <span class="eyebrow">BENCHMARK · ÉTAPE 1</span>
+          <h2>Lancer une série.</h2>
           <p>
-            Chaque modèle choisi traite toutes les questions à la suite, avec ses réglages, puis il
-            est déchargé pour libérer la mémoire. Son temps de chargement est mesuré à part.
+            Même tâche, plusieurs modèles : chaque modèle choisi traite toutes les questions à la
+            suite, avec ses réglages, puis il est déchargé pour libérer la mémoire. Son temps de
+            chargement est mesuré à part. Les résultats se notent et s’analysent à l’étape 2.
           </p>
         </div>
         <form id="compare-form">
@@ -342,7 +349,7 @@
               id="compare-at"
               type="time"
               title="Vide : départ immédiat. Une heure : la série démarre à cette heure (le lendemain si elle est passée)."
-            /><button class="primary" id="compare-run" type="submit">Lancer la comparaison</button
+            /><button class="primary" id="compare-run" type="submit">Lancer la série</button
             ><button id="compare-unschedule" type="button" hidden>
               Annuler le départ programmé</button
             ><button id="compare-stop" type="button" hidden>Mettre en pause</button
@@ -350,15 +357,15 @@
           </div>
         </form>
         <div id="compare-current"></div>
-        <h3>Comparaisons enregistrées</h3>
+        <h3>Séries enregistrées</h3>
         <div id="compare-history"></div>
       </section>
       <section id="benchmark-view" class="page" hidden>
         <div class="library-intro">
-          <span class="eyebrow">RÉSULTATS À PUBLIER</span>
-          <h2>Benchmark de vos modèles.</h2>
+          <span class="eyebrow">BENCHMARK · ÉTAPE 2</span>
+          <h2>Résultats et notation.</h2>
           <p>
-            Toutes les séries de l’onglet Comparaison, réunies : précision, taux d’invention, notes,
+            Toutes les séries lancées à l’étape 1, réunies : précision, taux d’invention, notes,
             durées et vitesses, avec écart-type sur les répétitions. Notez les réponses à l’aveugle,
             importez les notes d’autres correcteurs, puis exportez données, graphiques et conditions
             de l’expérience.

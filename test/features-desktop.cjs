@@ -313,6 +313,7 @@ const readJson = async (profile, name) => {
     await page.locator('#chat-tab').click();
 
     // Comparaison de deux modèles.
+    await page.locator('#bench-nav').click();
     await page.locator('#compare-tab').click();
     await page.locator('#compare-prompt').fill('Décris le contenu en trois points.');
     for (const input of await page.locator('#compare-models input').all()) await input.check();
@@ -397,6 +398,7 @@ const readJson = async (profile, name) => {
 
     // Après redémarrage : l'ancienne comparaison et les notes sont retrouvées.
     await page.reload();
+    await page.locator('#bench-nav').click();
     await page.locator('#compare-tab').click();
     assert.equal(await page.locator('.compare-row').count(), 3);
     await page.locator('.compare-row .link', { hasText: 'Ancienne question' }).click();
@@ -423,6 +425,7 @@ const readJson = async (profile, name) => {
     assert.equal(seriesRecord.results[0].grades.Vous.rating, 5);
 
     // Benchmark : notation à l'aveugle de toutes les réponses.
+    await page.locator('#bench-nav').click();
     await page.locator('#benchmark-tab').click();
     await page.waitForFunction(() => document.querySelector('#bench-results h3'));
     assert.equal(await page.locator('#bench-series input').count(), 2);
@@ -532,6 +535,7 @@ const readJson = async (profile, name) => {
     assert.match(groupedSvg, />Vous</);
 
     // Avis des correcteurs affichés sous chaque réponse, dans l'onglet Comparaison.
+    await page.locator('#bench-nav').click();
     await page.locator('#compare-tab').click();
     await page.locator('.compare-row .link', { hasText: 'Série' }).first().click();
     const gradesText = await page.locator('.compare-card .grades').first().textContent();
@@ -539,6 +543,7 @@ const readJson = async (profile, name) => {
     assert.match(gradesText, /Vous : (correct|faux)/);
 
     // Répétitions : même série lancée deux fois, stabilité mesurée.
+    await page.locator('#bench-nav').click();
     await page.locator('#compare-tab').click();
     await page.locator('#compare-prompt').fill('Question répétée');
     for (const input of await page.locator('#compare-models input').all()) await input.check();
@@ -556,6 +561,7 @@ const readJson = async (profile, name) => {
       ],
     );
     assert.equal(repeated[0].groupId, repeated[1].groupId);
+    await page.locator('#bench-nav').click();
     await page.locator('#benchmark-tab').click();
     await page.waitForFunction(() =>
       document.querySelector('#bench-results').textContent.includes('Réponses identiques'),
@@ -563,6 +569,7 @@ const readJson = async (profile, name) => {
     assert.equal(await page.locator('#bench-series input').count(), 3, 'répétitions regroupées');
 
     // Pause au milieu d'une série de 2 répétitions, puis reprise de ce qui manque.
+    await page.locator('#bench-nav').click();
     await page.locator('#compare-tab').click();
     await page.locator('#compare-prompt').fill('## P1\nPremière\n---\n## P2\nSeconde');
     for (const input of await page.locator('#compare-models input').all()) await input.check();
@@ -611,6 +618,8 @@ const readJson = async (profile, name) => {
     assert.equal(answeredAfter - answeredBefore, 8 - doneBefore, 'seules les réponses manquantes');
     assert.equal(await page.locator('.compare-row button', { hasText: 'Reprendre' }).count(), 0);
 
+    await page.locator('#bench-nav').click();
+
     await page.locator('#benchmark-tab').click();
     await page.waitForFunction(() =>
       document.querySelector('#bench-results').textContent.includes('Réponses identiques'),
@@ -640,6 +649,7 @@ const readJson = async (profile, name) => {
         return stop(id);
       };
     });
+    await page.locator('#bench-nav').click();
     await page.locator('#compare-tab').click();
     await page.locator('#compare-prompt').fill('Question programmée');
     await page.locator('#compare-models input').first().check();

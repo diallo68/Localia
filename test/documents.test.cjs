@@ -110,3 +110,25 @@ test('suppression d’un document et nettoyage des textes non référencés', as
     await fs.rm(dir, { recursive: true, force: true });
   }
 });
+test('demande de résumé : résumé et conclusions avant le reste, ni sommaire ni bibliographie', () => {
+  const filler = 'Méthode expérimentale détaillée sur les images de mangues. '.repeat(25);
+  const pages = [
+    {
+      number: 1,
+      text: 'Table des matières\nRésumé . . . . . . . . 2\nConclusion générale . . . . . . 9',
+    },
+    { number: 2, text: 'Résumé\nCette thèse propose un jeu de données de 862 images.' },
+    ...Array.from({ length: 6 }, (_, i) => ({ number: i + 3, text: filler })),
+    { number: 9, text: 'Conclusion générale\nLes résultats montrent une précision de 98 %.' },
+    {
+      number: 10,
+      text: '[1] Auteur A. (2020). Une conclusion.\n[2] Auteur B. (2021). Introduction.\n[3] Auteur C. (2019). Résumé.',
+    },
+  ];
+  const doc = { name: 'these.pdf', emptyPages: [], pages };
+  const question = 'Résume ce document en cinq points.';
+  const plain = documentContext(doc, question, 250);
+  const summary = documentContext(doc, question, 250, { summary: true });
+  assert.ok(!plain.pages.includes(9), 'sans le mode résumé, la conclusion n’est pas choisie');
+  assert.deepEqual(summary.pages, [2, 9], 'résumé et conclusion, sans sommaire ni bibliographie');
+});

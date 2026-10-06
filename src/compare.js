@@ -116,6 +116,19 @@ function fillCompareModels() {
     input.value = m.name;
     input.checked = checked.has(m.name);
     label.append(input, ` ${m.name} · ${(m.size / 1e9).toFixed(1)} Go`);
+    // Réglage de réflexion qui s'appliquera à la série (réglages par modèle).
+    const think = settings.models?.[m.name]?.think;
+    label.append(
+      element(
+        'small',
+        'think-tag' + (think === 'true' ? ' on' : ''),
+        think === 'true'
+          ? 'réflexion activée'
+          : think === 'false'
+            ? 'réflexion désactivée'
+            : 'réflexion par défaut',
+      ),
+    );
     box.append(label);
   }
   compareControls();
@@ -136,13 +149,31 @@ function compareControls() {
 }
 controlListeners.push(compareControls);
 
-// Nombre de questions détectées, affiché sous la tâche.
+// Aperçu des questions détectées, affiché sous la tâche, avec les erreurs probables.
 function questionHint() {
   try {
-    const n = parseQuestions($('compare-prompt').value).length;
-    $('compare-count').textContent =
-      n > 1 ? `${n} questions détectées : elles seront traitées à la suite.` : '';
-    $('compare-count').classList.remove('error');
+    const text = $('compare-prompt').value;
+    const questions = parseQuestions(text);
+    const n = questions.length;
+    const labels = questions.map((q) => q.label);
+    const list = labels.length > 8 ? [...labels.slice(0, 6), '…', labels.at(-1)] : labels;
+    // Plusieurs « Q01 », « ## Q02 »… sans ligne « --- » : sans doute une seule question par erreur.
+    const marks = text.match(/^\s*#{0,4}\s*Q\d{1,3}\b/gim) || [];
+    const tooLong = compareDocument && questions.some((q) => q.prompt.length > 5000);
+    let message = n > 1 ? `${n} questions détectées : ${list.join(', ')}.` : '';
+    let error = false;
+    if (n === 1 && marks.length > 1) {
+      message = `Une seule question détectée, alors que le texte en annonce ${marks.length} (${marks
+        .slice(0, 3)
+        .map((m) => m.replace(/[#\s]/g, ''))
+        .join(', ')}…) : séparez les questions par une ligne « --- ».`;
+      error = true;
+    } else if (tooLong) {
+      message += ' Avec un PDF, chaque question est limitée à 5 000 caractères.';
+      error = true;
+    }
+    $('compare-count').textContent = message.trim();
+    $('compare-count').classList.toggle('error', error);
   } catch (error) {
     $('compare-count').textContent = error.message;
     $('compare-count').classList.add('error');
@@ -164,6 +195,7 @@ $('compare-import').onclick = guard(async () => {
 });
 
 function showCompareDocument() {
+  questionHint(); // limite de 5 000 caractères par question avec un PDF
   $('compare-doc').textContent = compareDocument
     ? `${compareDocument.name} · ${compareDocument.pageCount} page(s). Les documents longs sont transmis par extraits.` +
       (compareDocument.alerts?.length
@@ -492,6 +524,15 @@ function questionDetail(record, q) {
     box.append(nav);
   }
   box.append(element('p', 'task', question.prompt));
+  const sent = question.sent || record.results.find((r) => r.q === q && r.sent)?.sent;
+  if (sent?.pages?.length)
+    box.append(
+      element(
+        'p',
+        'muted sent-pages',
+        `${sent.partial ? 'Extraits transmis' : 'Texte transmis'} : pages ${sent.pages.join(', ')}.`,
+      ),
+    );
   if (question.expected) {
     const expected = element('div', 'expected');
     expected.append(element('strong', '', 'Réponse attendue (non envoyée aux modèles)'));
@@ -676,7 +717,10 @@ function renderCompareHistory() {
   compareControls();
 }
 
-$('compare-tab').onclick = () => view('compare');
+$('compare-tab').onclick = () => {
+  view('compare');
+  fillCompareModels(); // réglages (réflexion) peut-être changés entre-temps
+};
 const isPending = (result) => result.status !== 'done';
 const groupOf = (record) => record.groupId || record.id;
 
@@ -730,6 +774,8 @@ async function runRecord(record, prefix) {
           : '');
       Object.assign(result, { status: 'running', text: '', thinking: '' });
       for (const key of ['stats', 'used', 'error', 'sent']) delete result[key];
+      // Bandeau : ce qui est transmis pour la question en cours seulement.
+      startRunNotes(record.questions.length > 1 ? `${question.label} —` : '');
       compareTarget = result;
       shownQuestion = q;
       renderComparison();

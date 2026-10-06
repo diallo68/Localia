@@ -2025,3 +2025,17 @@ progress {
 #hf-progress {
   width: 100%;
 }
+
+/* Étape 1 du Benchmark : réglage de réflexion de chaque modèle */
+.think-tag {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 8px;
+  background: #eef3f0;
+  color: #5d7066;
+  font-size: 10px;
+}
+.think-tag.on {
+  background: #fff1dd;
+  color: #8a5212;
+}

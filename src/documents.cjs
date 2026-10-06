@@ -137,8 +137,33 @@ function terms(text) {
   );
 }
 
+// Passages qui résument un document (résumé, introduction, conclusions), pour les demandes de
+// résumé : une question comme « Résume ce document » ne désigne aucun passage par ses mots.
+const SUMMARY_SECTIONS = [
+  [/\b(resume|abstract|conclusion generale|general conclusion)\b/, 6],
+  [/\b(introduction generale|conclusions?|perspectives|summary|introduction)\b/, 3],
+];
+// Sommaire ou liste de figures : titres suivis de numéros de page, à ne pas prendre pour le texte.
+function looksLikeContents(text) {
+  if (/(\.\s?){6,}/.test(text)) return true;
+  const lines = text.split('\n').filter((l) => l.trim());
+  return (
+    lines.length >= 6 && lines.filter((l) => /\s\d{1,3}\s*$/.test(l)).length / lines.length > 0.5
+  );
+}
+// Bibliographie : références numérotées ou datées, dont les titres contiennent ces mots.
+const looksLikeReferences = (text) =>
+  (text.match(/\[\d{1,3}\]/g) || []).length >= 3 ||
+  (text.match(/\(\d{4}[a-z]?\)\./g) || []).length >= 3;
+function summaryBonus(normalized, text) {
+  if (looksLikeContents(text) || looksLikeReferences(text)) return 0;
+  for (const [pattern, bonus] of SUMMARY_SECTIONS) if (pattern.test(normalized)) return bonus;
+  return 0;
+}
+
 // Extraits les plus pertinents pour la question, dans la limite de « budget » caractères.
-function documentContext(doc, question, budget = 10000) {
+// summary : demande de résumé, les passages de résumé et de conclusion passent en premier.
+function documentContext(doc, question, budget = 10000, { summary = false } = {}) {
   const words = [...new Set(terms(question))];
   const chunks = [];
   for (const page of doc.pages)
@@ -152,7 +177,9 @@ function documentContext(doc, question, budget = 10000) {
         page: page.number,
         offset,
         text,
-        score: words.reduce((n, w) => n + (normalized.includes(w) ? 1 : 0), 0),
+        score:
+          words.reduce((n, w) => n + (normalized.includes(w) ? 1 : 0), 0) +
+          (summary ? summaryBonus(normalized, text) : 0),
       });
     }
   const selected = [];

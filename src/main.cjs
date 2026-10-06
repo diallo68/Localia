@@ -1056,6 +1056,10 @@ handle('run', async (kind, payload) => {
         const context = documentMessages(doc, messages, system, {
           numCtx,
           numPredict: modelSettings.options?.num_predict,
+          // Demande de résumé : résumé, introduction et conclusions du document en priorité.
+          summary:
+            task?.id === 'synthese' ||
+            /\b(r[ée]sum|synth[eè]s)/i.test(String(messages.at(-1)?.content || '')),
         });
         messages = context.messages;
         // Messages exacts envoyés (consigne, extraits, question) : conservés pour la reproductibilité.

@@ -149,3 +149,11 @@ test('conversation et comparaison partagent le même verrou', () => {
   assert.notEqual(taskKey('chat'), taskKey('pull'));
   checkKind('compare');
 });
+
+test('avec un PDF : pages citées dans une seule numérotation (position, puis page imprimée)', () => {
+  const result = documentMessages(doc, [{ role: 'user', content: 'Vérifie le total' }]);
+  assert.match(
+    result.messages[0].content,
+    /« Page N » de l’extrait[\s\S]*« p\. 65 \(impr\. 46\) »/,
+  );
+});

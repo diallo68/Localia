@@ -332,6 +332,18 @@ const readJson = async (profile, name) => {
     // Comparaison de deux modèles.
     await page.locator('#bench-nav').click();
     await page.locator('#compare-tab').click();
+    // Réglage de réflexion de chaque modèle visible avant de lancer (désactivée pour grand:8b).
+    assert.match(
+      await page.locator('#compare-models label', { hasText: 'grand:8b' }).textContent(),
+      /réflexion désactivée/,
+    );
+    // Questions collées sans ligne « --- » : une seule question détectée, signalée.
+    await page.locator('#compare-prompt').fill('## Q01\nPremière ?\n## Q02\nSeconde ?');
+    await page.locator('#compare-prompt').dispatchEvent('input');
+    assert.match(
+      await page.locator('#compare-count').textContent(),
+      /Une seule question détectée, alors que le texte en annonce 2 \(Q01, Q02…\)/,
+    );
     await page.locator('#compare-prompt').fill('Décris le contenu en trois points.');
     for (const input of await page.locator('#compare-models input').all()) await input.check();
     await page.locator('#compare-run').click();
@@ -372,6 +384,7 @@ const readJson = async (profile, name) => {
     await page.waitForFunction(() =>
       document.querySelector('#compare-count').textContent.includes('2 questions'),
     );
+    assert.match(await page.locator('#compare-count').textContent(), /: A1, B1\./);
     await page.locator('#compare-run').click();
     await page.waitForFunction(() =>
       document.querySelector('#compare-status').textContent.includes('terminée'),
@@ -866,6 +879,13 @@ const readJson = async (profile, name) => {
     assert.equal(await page.locator('#task').inputValue(), '', 'tâches et compétences séparées');
     await page.locator('#new').click();
     await page.locator('#skill').selectOption('skill:donnees-manquants');
+    // Tâche incompatible avec la compétence : signalé ; puis tâche retirée.
+    await page.locator('#task').selectOption('synthese');
+    assert.match(
+      await page.locator('#task-advice').textContent(),
+      /Attention : cette compétence est prévue pour la tâche « Préparer et analyser des données/,
+    );
+    await page.locator('#task').selectOption('');
     await page.locator('#prompt').fill('Mon fichier a des trous.');
     await page.locator('#send').click();
     await page.waitForFunction(() =>

@@ -835,7 +835,7 @@ async function sendPrompt({ remoteId } = {}) {
   conversation.task = $('task').value || undefined;
   conversation.skill = $('skill').value || undefined;
   conversation.projectId = $('project').value || undefined;
-  runNotes = [];
+  startRunNotes();
   rememberModel(conversation.model).catch((e) => notice(e.message));
   // Modèle qui a écrit la réponse, affiché à côté de « Localia » (et conservé avec le message).
   answer.model = conversation.model;
@@ -955,6 +955,11 @@ $('custom-form').onsubmit = (event) => {
 $('cancel-download').onclick = guard(() => window.localia.cancel('pull'));
 // Informations sur ce qui a été transmis au modèle pour la dernière question.
 let runNotes = [];
+// Nouvelle demande : le bandeau repart de zéro (préfixe : question d'une série, ex. « Q07 — »).
+function startRunNotes(prefix = '') {
+  runNotes = prefix ? [prefix] : [];
+  notice('');
+}
 const runNotice = (text) => {
   if (!runNotes.includes(text)) runNotes.push(text);
   notice(runNotes.join(' '));
@@ -1045,6 +1050,12 @@ function showTaskAdvice(choose) {
   if (chosenTask?.effect) parts.push(`Tâche « ${chosenTask.label} » : ${chosenTask.effect}`);
   if (skill) {
     parts.push(`Compétence ${skill.call} : ${skill.description}`);
+    // Compétence prévue pour une autre tâche : les deux consignes risquent de se contredire.
+    const planned = skill.task && taskById(skill.task);
+    if (chosenTask && planned && planned.id !== chosenTask.id)
+      parts.push(
+        `Attention : cette compétence est prévue pour la tâche « ${planned.label} », pas « ${chosenTask.label} » ; les deux consignes peuvent se contredire. Choisissez la tâche « ${planned.label} », ou retirez la compétence.`,
+      );
     if (skill.steps.length)
       parts.push(`Parcours en ${skill.steps.length} étapes : ${skill.steps.join(', ')}.`);
   }

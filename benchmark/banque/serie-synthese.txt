@@ -1,0 +1,44 @@
+## S01 Résumer un paragraphe de méthode
+Catégorie : Synthèse
+Résume en une phrase : « Les données météorologiques journalières ont été extraites de NASA POWER pour le point 10,70° N, 12,27° O, sur la période 1995–2024. Après remplacement des valeurs -999 par des valeurs manquantes, aucune donnée manquante n’a été trouvée. Une valeur de pluie de 586,7 mm a été jugée aberrante et retirée. »
+Attendu : une phrase fidèle : données journalières NASA POWER de 1995 à 2024 au point de Dalaba (coordonnées optionnelles), sans manquants, une valeur de pluie aberrante (586,7 mm) retirée. Aucun ajout.
+---
+## S02 Points clés d’une discussion
+Catégorie : Synthèse
+Donne les trois points clés : « Nos résultats confirment que l’humidité prolongée est le principal déclencheur. Contrairement aux attentes, la température n’a pas d’effet significatif dans la plage observée (19–24 °C). Ces conclusions restent limitées à une seule saison. »
+Attendu : 1) l’humidité prolongée est le principal déclencheur ; 2) pas d’effet significatif de la température entre 19 et 24 °C (contrairement aux attentes) ; 3) limite : une seule saison. Ne pas généraliser l’absence d’effet de la température hors de la plage observée.
+---
+## S03 Synthèse de deux sources
+Catégorie : Synthèse
+Source 1 : « En 2024, la station a enregistré 1 612 mm de pluie de juin à septembre. » Source 2 : « Selon NASA POWER, il est tombé 1 498 mm sur la même période. » Fais une synthèse en deux phrases.
+Attendu : les deux valeurs avec leur source, écart de 114 mm (environ 7 %) ; pas de choix arbitraire de la « bonne » valeur ; mention possible d’une vérification.
+---
+## S04 Résumé structuré
+Catégorie : Synthèse
+Transforme ce texte en résumé structuré (Contexte, Méthode, Résultats, Conclusion) : « Les pertes dues au mildiou sont fortes à Dalaba. Nous avons suivi 5 parcelles en 2025 avec deux variétés et trois niveaux de protection. L’incidence finale va de 15 % (Pamina protégée) à 61 % (Spunta non protégée). La protection régulière et la variété Pamina réduisent la maladie. »
+Attendu : 4 rubriques fidèles avec les chiffres exacts (15 % et 61 %, 5 parcelles, 2025) ; aucun résultat ajouté.
+---
+## S05 Résumé pour un public non spécialiste
+Catégorie : Synthèse
+Explique en trois phrases, à un élu local sans formation scientifique, ce qu’apporte un système d’alerte au mildiou fondé sur la météo.
+Attendu : prévenir les producteurs avant l’apparition de la maladie ; traiter au bon moment, donc moins de pertes et moins de produits ; reposer sur des mesures météo locales. Langage simple, pas de chiffres inventés.
+---
+## S06 Synthèse d’un tableau
+Catégorie : Synthèse
+Résume en deux phrases ce que montre ce tableau : Juin : 6 jours favorables, 241 mm ; Juillet : 14 jours, 389 mm ; Août : 19 jours, 455 mm ; Septembre : 11 jours, 302 mm.
+Attendu : les jours favorables et la pluie augmentent de juin à août (maximum en août : 19 jours, 455 mm) puis diminuent en septembre ; les deux évoluent ensemble. Total possible : 50 jours, 1 387 mm. Aucune cause inventée.
+---
+## S07 Fusionner des notes
+Catégorie : Synthèse
+Fais une synthèse cohérente de ces trois notes de terrain, sans perdre d’information : « 8 juillet : premières taches sur P2. » « 15 juillet : symptômes sur P4 et P5. » « 29 juillet : P1 touchée à son tour, P3 encore saine. »
+Attendu : chronologie : P2 le 8 juillet, P4 et P5 le 15 juillet, P1 le 29 juillet ; P3 encore saine au 29 juillet. Aucune date ni parcelle ajoutée.
+---
+## S08 Résumé d’un échange
+Catégorie : Synthèse
+Résume la position de chacun : « A : il faut traiter toutes les semaines pour être sûr. B : c’est trop cher, il vaut mieux traiter seulement après une alerte météo. A : mais une alerte manquée peut tout détruire. B : alors utilisons un seuil d’alerte plus bas. »
+Attendu : A privilégie la sécurité (traitement hebdomadaire, peur de l’alerte manquée) ; B privilégie le coût (traitement sur alerte) et propose un compromis (seuil plus bas). Pas de jugement ajouté sur qui a raison.
+---
+## S09 Abstract en français
+Catégorie : Synthèse
+Résume ce résumé en anglais en deux phrases en français : « We assessed three machine-learning models for three-day late blight risk forecasting in Guinea. Random forest offered the best trade-off between recall and simplicity, while LSTM achieved the highest precision. »
+Attendu : trois modèles d’apprentissage automatique évalués pour prévoir le risque de mildiou à trois jours en Guinée ; la forêt aléatoire offre le meilleur compromis (rappel et simplicité), le LSTM la meilleure précision.

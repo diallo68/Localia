@@ -1,0 +1,74 @@
+## K01 Rendement à l’hectare
+Catégorie : Calcul
+Une parcelle de 400 m² a produit 412 kg de tubercules. Quel est le rendement en tonnes par hectare ? Écris chaque calcul.
+Attendu : 412 kg / 400 m² = 1,03 kg/m² ; × 10 000 m²/ha = 10 300 kg/ha = 10,3 t/ha.
+---
+## K02 Incidence
+Catégorie : Calcul
+Sur 120 plants examinés, 23 présentent des symptômes. Quelle est l’incidence en pourcentage, arrondie au dixième ?
+Attendu : 23 / 120 × 100 = 19,2 %.
+---
+## K03 Dose de fongicide
+Catégorie : Calcul
+La dose recommandée est de 2,5 L par hectare. Quelle quantité faut-il pour une parcelle de 400 m², en millilitres ?
+Attendu : 400 m² = 0,04 ha ; 2,5 × 0,04 = 0,1 L = 100 mL.
+---
+## K04 Pluviomètre à auget
+Catégorie : Calcul
+Un pluviomètre à auget bascule tous les 0,2 mm de pluie. Il a basculé 347 fois dans la journée. Quelle est la pluie de la journée ?
+Attendu : 347 × 0,2 = 69,4 mm.
+---
+## K05 Moyenne de températures
+Catégorie : Calcul
+Températures moyennes de cinq jours : 21,4 ; 22,8 ; 20,9 ; 23,5 ; 22,1 °C. Quelle est la moyenne ?
+Attendu : somme 110,7 ; 110,7 / 5 = 22,14 °C.
+---
+## K06 Variation relative
+Catégorie : Calcul
+Le rendement passe de 9,7 t/ha à 12,5 t/ha. Quelle est la hausse en pourcentage, arrondie au dixième ?
+Attendu : (12,5 − 9,7) / 9,7 × 100 = 2,8 / 9,7 × 100 = 28,9 %.
+---
+## K07 Nombre de jours
+Catégorie : Calcul
+Combien de jours séparent le 2 juin 2025 du 29 septembre 2025 ?
+Attendu : 28 (juin) + 31 (juillet) + 31 (août) + 29 (septembre) = 119 jours.
+---
+## K08 Heures d’humidité
+Catégorie : Calcul
+Un capteur mesure l’humidité toutes les 30 minutes. Sur une journée, 23 mesures dépassent 90 %. Combien d’heures d’humidité supérieure à 90 % cela représente-t-il ?
+Attendu : 23 × 0,5 h = 11,5 heures.
+---
+## K09 Coût des traitements
+Catégorie : Calcul
+Trois traitements à 2 kg/ha sont prévus sur 0,6 ha. Le produit coûte 85 000 GNF le kilogramme. Quel est le coût total ?
+Attendu : 3 × 2 × 0,6 = 3,6 kg ; 3,6 × 85 000 = 306 000 GNF.
+---
+## K10 Score F1
+Catégorie : Calcul
+Un modèle a une précision de 0,80 et un rappel de 0,60. Quel est son score F1, arrondi au centième ?
+Attendu : 2 × 0,80 × 0,60 / (0,80 + 0,60) = 0,96 / 1,40 = 0,686 → 0,69.
+---
+## K11 Écart-type
+Catégorie : Calcul
+Calcule l’écart-type de l’échantillon (division par n − 1) des valeurs 2, 4, 4, 4, 5, 5, 7, 9, arrondi au centième.
+Attendu : moyenne 5 ; somme des carrés des écarts 32 ; 32 / 7 = 4,571 ; racine = 2,14. (Écart-type de la population : 2 — accepté seulement s’il est présenté comme tel.)
+---
+## K12 Jours à risque
+Catégorie : Calcul
+Sur une période de test de 1 095 jours, 18 % des jours sont à risque. Combien de jours cela fait-il environ ?
+Attendu : 1 095 × 0,18 = 197,1 ≈ 197 jours.
+---
+## K13 Raisonnement sur des parcelles
+Catégorie : Raisonnement
+Toutes les parcelles traitées tous les 10 jours ont une incidence finale inférieure à 30 %. La parcelle P5 a une incidence finale de 60 %. Que peut-on en conclure sur P5 ?
+Attendu : P5 n’a pas été traitée tous les 10 jours (contraposée). On ne peut pas conclure qu’elle n’a pas été traitée du tout.
+---
+## K14 Raisonnement sur une alerte
+Catégorie : Raisonnement
+Règle : une alerte est envoyée après 3 jours favorables consécutifs. Jours de la semaine : lundi favorable, mardi favorable, mercredi défavorable, jeudi favorable, vendredi favorable, samedi favorable, dimanche défavorable. Quel jour l’alerte est-elle envoyée ?
+Attendu : samedi (jeudi, vendredi, samedi consécutifs) ; aucune alerte avant, car la série lundi-mardi est interrompue mercredi.
+---
+## K15 Raisonnement sur un pourcentage
+Catégorie : Raisonnement
+Le taux d’infection passe de 20 % à 30 %. Un collègue dit qu’il a augmenté de 10 %. A-t-il raison ?
+Attendu : il a augmenté de 10 points de pourcentage, soit une hausse relative de 50 % ((30 − 20) / 20). Les deux formulations doivent être distinguées.

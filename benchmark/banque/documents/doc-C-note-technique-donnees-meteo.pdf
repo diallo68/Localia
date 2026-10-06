@@ -1,0 +1,80 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 1804 >>
+stream
+BT /F2 14 Tf 56 742 Td (Note technique : chaîne de traitement des données météorologiques de la) Tj ET
+BT /F2 14 Tf 56 715.1 Td (station de Dalaba) Tj ET
+BT /F1 10.5 Tf 56 690.2 Td (Station expérimentale fictive de Dalaba \(SEFD\) — note no NT-03, mars 2025.) Tj ET
+BT /F2 12 Tf 56 668.0250000000001 Td (1. Objet) Tj ET
+BT /F1 10.5 Tf 56 645.825 Td (Cette note décrit comment les mesures de la station sont collectées, contrôlées et mises à) Tj ET
+BT /F1 10.5 Tf 56 631.6500000000001 Td (disposition des équipes. Elle s’adresse aux techniciens et aux chercheurs qui utilisent les) Tj ET
+BT /F1 10.5 Tf 56 617.4750000000001 Td (fichiers produits.) Tj ET
+BT /F2 12 Tf 56 595.3000000000002 Td (2. Capteurs) Tj ET
+BT /F1 10.5 Tf 56 573.1000000000001 Td (Température et humidité relative : capteur SHT31 sous abri ventilé, à 2 m du sol ; précision) Tj ET
+BT /F1 10.5 Tf 56 558.9250000000002 Td (annoncée ±0,3 °C et ±2 % d’humidité relative. Pluie : pluviomètre à auget de 0,2 mm par) Tj ET
+BT /F1 10.5 Tf 56 544.7500000000002 Td (basculement. Vent : anémomètre à coupelles à 2 m. Les mesures sont enregistrées toutes les 30) Tj ET
+BT /F1 10.5 Tf 56 530.5750000000003 Td (minutes par un enregistreur alimenté par un panneau solaire de 20 W et une batterie de 12 V.) Tj ET
+BT /F2 12 Tf 56 508.4000000000003 Td (3. Collecte) Tj ET
+BT /F1 10.5 Tf 56 486.20000000000033 Td (Les données sont transmises chaque nuit à 2 h par le réseau mobile vers un serveur de la) Tj ET
+BT /F1 10.5 Tf 56 472.0250000000003 Td (station. En cas d’échec, l’enregistreur garde jusqu’à 60 jours de mesures. Un technicien) Tj ET
+BT /F1 10.5 Tf 56 457.8500000000003 Td (vérifie chaque lundi l’état des capteurs et nettoie le pluviomètre.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 1 sur 2) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 2068 >>
+stream
+BT /F2 12 Tf 56 742 Td (4. Contrôles de qualité) Tj ET
+BT /F1 10.5 Tf 56 719.8 Td (Quatre contrôles automatiques sont appliqués : \(1\) bornes physiques \(température entre 0 et 45) Tj ET
+BT /F1 10.5 Tf 56 705.625 Td (°C, humidité entre 0 et 100 %, pluie entre 0 et 80 mm par demi-heure\) ; \(2\) variation maximale) Tj ET
+BT /F1 10.5 Tf 56 691.45 Td (de 5 °C entre deux mesures successives de température ; \(3\) valeur constante pendant plus de 6) Tj ET
+BT /F1 10.5 Tf 56 677.2750000000001 Td (heures, signe d’un capteur bloqué ; \(4\) cohérence entre pluie et humidité \(pluie sans hausse) Tj ET
+BT /F1 10.5 Tf 56 663.1000000000001 Td (d’humidité signalée\). Les valeurs rejetées sont remplacées par une valeur manquante et listées) Tj ET
+BT /F1 10.5 Tf 56 648.9250000000002 Td (dans un journal ; elles ne sont jamais corrigées automatiquement.) Tj ET
+BT /F2 12 Tf 56 626.7500000000002 Td (5. Fichiers produits) Tj ET
+BT /F1 10.5 Tf 56 604.5500000000002 Td (Deux fichiers CSV sont produits chaque jour : les mesures à 30 minutes \(colonnes date_heure,) Tj ET
+BT /F1 10.5 Tf 56 590.3750000000002 Td (temperature, humidite, pluie, vent\) et les valeurs journalières \(moyenne, minimum et maximum de) Tj ET
+BT /F1 10.5 Tf 56 576.2000000000003 Td (température et d’humidité, cumul de pluie, nombre d’heures d’humidité supérieure à 90 %\). Une) Tj ET
+BT /F1 10.5 Tf 56 562.0250000000003 Td (journée n’est calculée que si au moins 40 des 48 mesures sont valides ; sinon ses valeurs sont) Tj ET
+BT /F1 10.5 Tf 56 547.8500000000004 Td (manquantes.) Tj ET
+BT /F2 12 Tf 56 525.6750000000004 Td (6. Limites connues) Tj ET
+BT /F1 10.5 Tf 56 503.4750000000004 Td (Le pluviomètre sous-estime les pluies très intenses \(au-delà de 50 mm par heure\). Le capteur) Tj ET
+BT /F1 10.5 Tf 56 489.3000000000004 Td (d’humidité dérive avec le temps : il doit être comparé chaque année à un capteur de référence) Tj ET
+BT /F1 10.5 Tf 56 475.1250000000004 Td (et remplacé tous les deux ans.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 2 sur 2) Tj ET
+endstream
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000218 00000 n 
+0000000320 00000 n 
+0000000456 00000 n 
+0000002312 00000 n 
+0000002448 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+4568
+%%EOF

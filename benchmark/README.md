@@ -23,3 +23,7 @@ Attendu : expected answer, shown to graders only (never sent to the models).
 ```
 
 Grading scale used with these series (1–5): 5 all expected elements, no error; 4 almost everything, one minor inaccuracy; 3 half of the expected elements, no invention; 2 few correct elements, an important error, or a correct answer with a false added detail; 1 wrong, off-topic, or invented requested information.
+
+## Extended question bank (`banque/`)
+
+147 additional questions (French) with an expected answer each, so that every task type has at least 15 questions: three short **fictional** documents (field report, article, technical note; every page says so) with deliberately planted inconsistencies listed in `banque/PROTOCOLE.md` (answer key), plus series without documents for calculation, reasoning (15 MGSM-fr problems, CC BY-SA 4.0), writing, synthesis, code, data, honesty and file actions. `banque/PROTOCOLE.md` gives the models (Gemma 4, Ministral 3, official Qwen3.5 against its “abliterated” variant), the settings, time estimates and grading. Documents can be rebuilt with `node benchmark/banque/outils/creer-documents.cjs`.

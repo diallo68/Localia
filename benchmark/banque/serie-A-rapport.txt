@@ -1,0 +1,79 @@
+## A01 Parcelles et variétés
+Catégorie : Extraction
+Combien de parcelles ont été suivies pendant la campagne, et quelles variétés ont été cultivées sur chacune ? Cite la page.
+Attendu : 5 parcelles (P1 à P5), page 2 : Spunta sur P1, P2 et P5 ; Pamina sur P3 et P4. Bonus : signaler que le résumé (page 1) parle de 4 parcelles.
+---
+## A02 Jour favorable
+Catégorie : Extraction
+Selon le rapport, à quelles conditions un jour est-il considéré comme favorable au mildiou ?
+Attendu : humidité relative supérieure à 90 % pendant au moins 10 heures ET température moyenne comprise entre 10 et 25 °C (page 2).
+---
+## A03 Premier symptôme
+Catégorie : Extraction
+Sur quelle parcelle le premier symptôme est-il apparu, à quelle date, et combien de jours après la plantation ?
+Attendu : P2, le 8 juillet 2025, 36 jours après la plantation du 2 juin (tableau 2 page 4, discussion page 5).
+---
+## A04 Parcelle P3
+Catégorie : Extraction
+Donne l’incidence finale et le rendement de la parcelle P3, avec sa variété et sa protection.
+Attendu : P3, Pamina, protection complète : incidence finale 15 %, rendement 21,2 t/ha (tableau 2, page 4).
+---
+## A05 Mois le plus pluvieux
+Catégorie : Extraction
+Quel mois a été le plus pluvieux, avec combien de millimètres, et combien de jours favorables a-t-il compté ?
+Attendu : août : 455 mm et 19 jours favorables (tableau 1, page 3).
+---
+## A06 Protocole d’observation
+Catégorie : Extraction
+Combien de plants par parcelle ont été examinés à chaque passage, à quelle fréquence, et combien de passages au total ?
+Attendu : 100 plants par parcelle, chaque semaine, 18 passages du 2 juin au 29 septembre (page 2).
+---
+## A07 Recommandations
+Catégorie : Extraction
+Quelles sont les recommandations du rapport pour 2026 ?
+Attendu : 4 recommandations (page 5) : protéger dès la plantation pendant la saison des pluies ; préférer la variété Pamina ; décider des traitements avec l’indicateur de jours favorables (alerte dès 3 jours favorables consécutifs) ; ajouter une seconde station météorologique pour vérifier la pluie. Ajout d’une recommandation absente = invention.
+---
+## A08 Incidence moyenne
+Catégorie : Calcul
+À partir du tableau 2, calcule l’incidence finale moyenne des cinq parcelles. Écris le calcul.
+Attendu : (22 + 61 + 15 + 47 + 60) / 5 = 205 / 5 = 41 %. Bonus : noter que le résumé annonce 38 %.
+---
+## A09 Résumé et résultats
+Catégorie : Incohérences
+Le résumé (page 1) est-il cohérent avec la méthode et les résultats ? Liste chaque écart avec les pages concernées.
+Attendu : 3 écarts : (1) 4 parcelles dans le résumé contre 5 dans la méthode (page 2) ; (2) incidence moyenne finale 38 % contre 41 % d’après le tableau 2 (page 4) ; (3) 19,8 t/ha pour les « parcelles protégées » exclut P5 (protection réduite) ; avec P5, la moyenne est 17,9 t/ha. Les 50 jours favorables et 11,1 t/ha (P2, P4) sont justes.
+---
+## A10 Cumul de pluie
+Catégorie : Incohérences
+Vérifie le cumul de pluie de la saison annoncé page 3 à partir du tableau 1.
+Attendu : 241 + 389 + 455 + 302 = 1 387 mm, et non 1 487 mm comme écrit dans le texte (page 3).
+---
+## A11 Unités
+Catégorie : Incohérences
+Vérifie les unités utilisées dans la discussion (page 5) par rapport aux tableaux.
+Attendu : « La parcelle P1 a produit 18,4 kg/ha » : erreur d’unité, le tableau 2 donne 18,4 t/ha.
+---
+## A12 Deux tiers
+Catégorie : Incohérences
+Le rapport affirme que plus des deux tiers des jours favorables ont eu lieu en juillet et en août. Est-ce exact ?
+Attendu : inexact, de peu : 14 + 19 = 33 jours sur 50, soit 66 %, légèrement moins de deux tiers (66,7 %).
+---
+## A13 Rendement des parcelles traitées
+Catégorie : Incohérences
+Le rapport indique un rendement moyen de 19,8 t/ha pour les parcelles traitées (page 4). Vérifie ce chiffre.
+Attendu : 19,8 t/ha est la moyenne de P1 et P3 (protection complète) ; P5 est aussi traitée (protection réduite) mais exclue sans le dire ; avec P5 : (18,4 + 21,2 + 14,0) / 3 = 17,9 t/ha.
+---
+## A14 Fongicide utilisé
+Catégorie : Pièges à invention
+Quel fongicide a été utilisé, et à quelle dose ?
+Attendu : le document ne le précise pas (seule la fréquence est donnée : tous les 10 jours pour P1 et P3, tous les 20 jours pour P5). Nommer un produit ou une dose = invention.
+---
+## A15 Rendement 2024
+Catégorie : Pièges à invention
+Quel était le rendement de ces parcelles lors de la campagne 2024 ?
+Attendu : le document ne le précise pas ; 2025 est présentée comme la première année du programme. Donner un chiffre = invention.
+---
+## A16 Coût de la protection
+Catégorie : Pièges à invention
+Combien coûte la protection fongicide par hectare selon ce rapport ?
+Attendu : le document ne donne aucun coût. Donner un montant = invention.

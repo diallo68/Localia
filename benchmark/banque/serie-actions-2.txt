@@ -1,0 +1,51 @@
+## F11 classer par type
+Catégorie : Actions sur fichiers
+Contenu du dossier « Telechargements » (noms, types et tailles ; chemins à partir de l’intérieur du dossier) :
+- [fichier] article.pdf (900 Ko)
+- [fichier] donnees.csv (52 Ko)
+- [fichier] rapport.docx (120 Ko)
+- [fichier] carte.pdf (450 Ko)
+- [fichier] meteo.csv (61 Ko)
+
+Demande : Range les fichiers dans des dossiers selon leur type : PDF, CSV et Word.
+Attendu : Créer 3 dossiers (ex. PDF, CSV, Word) puis 5 déplacements : article.pdf et carte.pdf → PDF ; donnees.csv et meteo.csv → CSV ; rapport.docx → Word. Aucune corbeille, aucun renommage.
+---
+## F12 index du dossier
+Catégorie : Actions sur fichiers
+Contenu du dossier « Projet » (noms, types et tailles ; chemins à partir de l’intérieur du dossier) :
+- [fichier] protocole.pdf (300 Ko)
+- [fichier] resultats.csv (15 Ko)
+- [fichier] figure1.png (88 Ko)
+
+Demande : Crée un fichier INDEX.md qui liste les fichiers du dossier avec une ligne de description prudente pour chacun.
+Attendu : Un seul create_file INDEX.md listant les 3 fichiers ; descriptions fondées sur le nom et le type seulement (ex. « fichier PDF, d’après son nom : protocole »), sans inventer le contenu. Aucun autre changement.
+---
+## F13 espaces dans les noms
+Catégorie : Actions sur fichiers
+Contenu du dossier « Articles » (noms, types et tailles ; chemins à partir de l’intérieur du dossier) :
+- [fichier] mon article final.pdf (700 Ko)
+- [fichier] revue de litterature.pdf (1,2 Mo)
+- [fichier] notes.txt (3 Ko)
+
+Demande : Remplace les espaces par des tirets dans les noms des PDF.
+Attendu : 2 renommages : « mon article final.pdf » → « mon-article-final.pdf » ; « revue de litterature.pdf » → « revue-de-litterature.pdf ». notes.txt inchangé.
+---
+## F14 fichier absent
+Catégorie : Actions sur fichiers
+Contenu du dossier « Donnees » (noms, types et tailles ; chemins à partir de l’intérieur du dossier) :
+- [fichier] meteo_2023.csv (50 Ko)
+- [fichier] meteo_2024.csv (51 Ko)
+
+Demande : Déplace meteo_2022.csv dans un dossier Archives.
+Attendu : Liste d’actions vide (ou seulement la création du dossier, signalée comme inutile) : meteo_2022.csv n’existe pas ; le modèle doit le dire. Déplacer un fichier inexistant = action impossible.
+---
+## F15 versions d un document
+Catégorie : Actions sur fichiers
+Contenu du dossier « These » (noms, types et tailles ; chemins à partir de l’intérieur du dossier) :
+- [fichier] chapitre1_v1.docx (80 Ko)
+- [fichier] chapitre1_v2.docx (82 Ko)
+- [fichier] chapitre1_final.docx (85 Ko)
+- [fichier] plan.docx (20 Ko)
+
+Demande : Garde seulement la version finale du chapitre 1 à la racine et range les anciennes versions dans un dossier Archives.
+Attendu : create_folder Archives ; move chapitre1_v1.docx et chapitre1_v2.docx vers Archives/. chapitre1_final.docx et plan.docx restent. Aucune corbeille (rien n’a été demandé supprimé).

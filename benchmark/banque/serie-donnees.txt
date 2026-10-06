@@ -1,0 +1,81 @@
+## D01 Problèmes d’un fichier
+Catégorie : Données
+Voici un extrait de fichier météo journalier. Liste tous les problèmes de qualité, sans les corriger.
+date,T2M,RH2M,PRECTOTCORR
+2025-06-01,22.4,84,3.2
+2025-06-02,22.9,-999,0.0
+2025-06-03,23.1,88,12.4
+2025-06-03,23.1,88,12.4
+2025-06-05,21.8,104,7.0
+2025-06-06,22.0,91,-2.0
+Attendu : 5 problèmes : RH2M = -999 (valeur manquante) le 2 juin ; ligne du 3 juin en double ; date du 4 juin absente ; RH2M = 104 % impossible le 5 juin ; pluie négative (-2,0 mm) le 6 juin. Aucun problème inventé.
+---
+## D02 Traiter les manquants
+Catégorie : Données
+Dans ce fichier, la température du 3 juin manque. Propose une règle de traitement et applique-la : 2 juin 22,0 °C ; 3 juin manquant ; 4 juin 23,0 °C ; pluie du 3 juin manquante.
+Attendu : température : interpolation linéaire possible pour un trou d’un jour → 22,5 °C (en le signalant) ; pluie : ne pas interpoler ni mettre 0, laisser manquant. Justification courte.
+---
+## D03 Valeur aberrante de pluie
+Catégorie : Données
+Dans une série de pluie journalière de Dalaba (moyenne 6,6 mm, 2e valeur la plus forte 262 mm), une journée affiche 586,7 mm. Que faire de cette valeur ?
+Attendu : la signaler comme suspecte (plus du double de la 2e valeur) ; vérifier avec une autre source (CHIRPS, station voisine, cahier de terrain) ; décider ensuite (garder, NaN, corriger) et documenter ; ne pas la supprimer ni la corriger en silence.
+---
+## D04 Moyenne mensuelle
+Catégorie : Données
+Calcule la température moyenne et le cumul de pluie de juin à partir de ces valeurs : T = 22,0 ; 23,0 ; 21,5 ; 22,5 et pluie = 0,0 ; 12,4 ; 3,2 ; 8,0 (quatre jours de juin seulement ont été mesurés). Que faut-il préciser dans le résultat ?
+Attendu : T moyenne = 89,0 / 4 = 22,25 °C ; pluie = 23,6 mm ; préciser que seuls 4 jours sur 30 sont mesurés : ce n’est pas un cumul mensuel représentatif.
+---
+## D05 Dates en jour de l’année
+Catégorie : Données
+Un fichier donne YEAR = 2024 et DOY = 60. Quelle est la date ? Et pour YEAR = 2025, DOY = 60 ?
+Attendu : 2024 (bissextile) : 29 février 2024 ; 2025 : 1er mars 2025.
+---
+## D06 Fusionner deux sources
+Catégorie : Données
+Tu as un fichier de la station (une ligne toutes les 30 minutes) et un fichier NASA POWER (une ligne par jour). Comment les combiner pour comparer la température journalière ?
+Attendu : agréger la station par jour (moyenne, avec un seuil de mesures valides, ex. ≥ 40/48) ; harmoniser le fuseau horaire (UTC pour NASA POWER) ; joindre sur la date ; comparer (différence, corrélation) ; ne pas comparer des pas de temps différents.
+---
+## D07 Découpage pour un modèle
+Catégorie : Données
+Tu as des données journalières de 2014 à 2023 pour entraîner un modèle de prévision. Propose un découpage entraînement, validation, test, et explique pourquoi.
+Attendu : découpage chronologique (ex. 2014–2019 entraînement, 2020–2021 validation, 2022–2023 test) ; jamais aléatoire pour une série temporelle (fuite d’information) ; normalisation calculée sur l’entraînement seul.
+---
+## D08 Déséquilibre des classes
+Catégorie : Données
+Dans un jeu de données, 18 % des jours sont « à risque ». Un modèle obtient 82 % d’exactitude (accuracy). Est-ce un bon modèle ?
+Attendu : pas forcément : un modèle qui répond toujours « pas à risque » obtient 82 % ; il faut regarder rappel, précision, F1 sur la classe « à risque ».
+---
+## D09 Variables décalées
+Catégorie : Données
+Explique comment créer, avec pandas, les variables « humidité des 3 jours précédents » pour prévoir le risque du jour, sans fuite d’information.
+Attendu : df["RH_j1"] = df["RH2M"].shift(1), shift(2), shift(3) (décalage vers le passé) ; supprimer les premières lignes incomplètes ; ne jamais utiliser shift(-1) (valeurs futures) pour une variable d’entrée.
+---
+## D10 Documenter un nettoyage
+Catégorie : Données
+Rédige le paragraphe « Données » d’un article à partir de ces faits : NASA POWER, Dalaba, 1995–2024, 10 958 jours ; 0 valeur -999 ; 1 valeur suspecte de pluie (586,7 mm le 20 août 2022), mise en valeur manquante après comparaison avec CHIRPS.
+Attendu : paragraphe au passé, reprenant tous les faits (source, lieu, période, nombre de jours, absence de -999, valeur suspecte et décision) ; aucun chiffre ajouté.
+---
+## D11 Unités
+Catégorie : Données
+Une colonne de pluie est en mètres par jour (ex. 0,0124) et l’autre source en mm par jour. Comment harmoniser, et que vaut 0,0124 m ?
+Attendu : multiplier par 1 000 ; 0,0124 m = 12,4 mm.
+---
+## D12 Contrôle de cohérence
+Catégorie : Données
+Pour des colonnes T2M_MIN, T2M et T2M_MAX, quelles règles de cohérence vérifier, et comment le coder en pandas ?
+Attendu : T2M_MIN ≤ T2M ≤ T2M_MAX ; masque = (df.T2M_MIN > df.T2M) | (df.T2M > df.T2M_MAX) ; lister les lignes en défaut sans les supprimer automatiquement.
+---
+## D13 Choisir un seuil
+Catégorie : Données
+Le seuil « humidité supérieure à 90 % pendant au moins 10 heures » vient-il d’une règle universelle ? Comment le justifier dans une thèse ?
+Attendu : ce n’est pas une loi universelle : les seuils varient selon les règles (ex. critères de Smith, Hutton) et le climat ; il faut citer la règle utilisée, et idéalement tester la sensibilité des résultats à d’autres seuils. Aucune référence inventée.
+---
+## D14 Données journalières ou horaires
+Catégorie : Données
+Avec des données NASA POWER journalières, peut-on calculer exactement le nombre d’heures d’humidité supérieure à 90 % ? Que faire ?
+Attendu : non : les données journalières donnent une moyenne, pas la durée ; utiliser des données horaires (NASA POWER horaire ou station) ou une approximation clairement présentée comme telle.
+---
+## D15 Rapport qualité
+Catégorie : Données
+Quelles informations doit contenir un rapport qualité après le nettoyage d’un fichier de données ?
+Attendu : source et période ; nombre de lignes avant/après ; manquants par variable et période ; valeurs aberrantes détectées et décisions ; règles et seuils appliqués ; valeurs interpolées ; version des outils ; fichiers produits.

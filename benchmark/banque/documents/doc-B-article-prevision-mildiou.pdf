@@ -1,0 +1,145 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R 11 0 R 13 0 R] /Count 5 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 2168 >>
+stream
+BT /F2 14 Tf 56 742 Td (Prévision du risque de mildiou à partir de données météorologiques) Tj ET
+BT /F2 14 Tf 56 715.1 Td (journalières : comparaison de trois modèles) Tj ET
+BT /F1 10.5 Tf 56 690.2 Td (K. Diakité, R. Sow et L. Bah — Institut fictif d’agronomie numérique de Labé. Article de) Tj ET
+BT /F1 10.5 Tf 56 676.0250000000001 Td (démonstration.) Tj ET
+BT /F2 12 Tf 56 653.8500000000001 Td (Résumé) Tj ET
+BT /F1 10.5 Tf 56 631.6500000000001 Td (Nous comparons trois modèles de prévision du risque de mildiou à J+3 à partir de données) Tj ET
+BT /F1 10.5 Tf 56 617.4750000000001 Td (météorologiques journalières de Dalaba \(Guinée\) couvrant la période 2013 à 2023 : une) Tj ET
+BT /F1 10.5 Tf 56 603.3000000000002 Td (régression logistique, une forêt aléatoire et un réseau LSTM. Le LSTM obtient la meilleure) Tj ET
+BT /F1 10.5 Tf 56 589.1250000000002 Td (précision, mais la forêt aléatoire offre le meilleur compromis entre performance et simplicité.) Tj ET
+BT /F1 10.5 Tf 56 574.9500000000003 Td (Les modèles pourraient alimenter un service d’alerte par SMS pour les producteurs.) Tj ET
+BT /F2 12 Tf 56 552.7750000000003 Td (1. Introduction) Tj ET
+BT /F1 10.5 Tf 56 530.5750000000003 Td (Le mildiou de la pomme de terre provoque des pertes importantes dans les zones humides) Tj ET
+BT /F1 10.5 Tf 56 516.4000000000003 Td (d’altitude [1]. Les premiers systèmes d’alerte reposaient sur des règles fixées à partir de la) Tj ET
+BT /F1 10.5 Tf 56 502.2250000000003 Td (température et de l’humidité, comme celles proposées par Camara [2] ou par Diallo et Baldé [3].) Tj ET
+BT /F1 10.5 Tf 56 488.0500000000003 Td (Plus récemment, des méthodes d’apprentissage automatique ont été appliquées à des données) Tj ET
+BT /F1 10.5 Tf 56 473.8750000000003 Td (météorologiques [4, 5] et à des images de feuilles [6]. Traoré [7] a montré l’intérêt des) Tj ET
+BT /F1 10.5 Tf 56 459.7000000000003 Td (réseaux récurrents pour des séries météorologiques courtes. En Guinée, aucune comparaison de) Tj ET
+BT /F1 10.5 Tf 56 445.52500000000026 Td (ces approches n’a encore été publiée.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 1 sur 5) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 1438 >>
+stream
+BT /F2 12 Tf 56 742 Td (2. Données et méthodes) Tj ET
+BT /F1 10.5 Tf 56 719.8 Td (Les données journalières \(température moyenne, minimale et maximale, humidité relative,) Tj ET
+BT /F1 10.5 Tf 56 705.625 Td (précipitations\) proviennent d’une station de Dalaba et couvrent du 1er janvier 2014 au 31) Tj ET
+BT /F1 10.5 Tf 56 691.45 Td (décembre 2023, soit 3 652 jours. Un jour est dit « à risque » si au moins un nouveau foyer de) Tj ET
+BT /F1 10.5 Tf 56 677.2750000000001 Td (mildiou a été observé dans les trois jours suivants dans le réseau de parcelles de suivi ; 18 %) Tj ET
+BT /F1 10.5 Tf 56 663.1000000000001 Td (des jours sont à risque.) Tj ET
+BT /F1 10.5 Tf 56 642.9250000000002 Td (Les modèles ont été entraînés sur 2014 à 2020 \(2 557 jours\) et évalués sur 2021 à 2023 \(1 095) Tj ET
+BT /F1 10.5 Tf 56 628.7500000000002 Td (jours\). Les variables d’entrée sont les valeurs des 7 derniers jours. Le LSTM comporte une) Tj ET
+BT /F1 10.5 Tf 56 614.5750000000003 Td (couche de 64 unités ; la forêt aléatoire compte 300 arbres. Les performances sont mesurées par) Tj ET
+BT /F1 10.5 Tf 56 600.4000000000003 Td (la précision, le rappel et le score F1 sur la classe « à risque ». La figure 1 montre la série) Tj ET
+BT /F1 10.5 Tf 56 586.2250000000004 Td (d’humidité relative et la figure 2 la répartition mensuelle des jours à risque.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 2 sur 5) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 1097 >>
+stream
+BT /F2 12 Tf 56 742 Td (3. Résultats) Tj ET
+BT /F1 10.5 Tf 56 719.8 Td (Tableau 1. Performances sur la période de test \(2021–2023\), classe « à risque ».) Tj ET
+BT /F2 9.5 Tf 56 699.625 Td (Modèle                 Précision  Rappel  F1    ) Tj ET
+BT /F1 9.5 Tf 56 686.8 Td (Régression logistique  0,71       0,64    0,67  ) Tj ET
+BT /F1 9.5 Tf 56 673.9749999999999 Td (Forêt aléatoire        0,78       0,70    0,74  ) Tj ET
+BT /F1 9.5 Tf 56 661.1499999999999 Td (LSTM                   0,82       0,69    0,75  ) Tj ET
+BT /F1 10.5 Tf 56 642.3249999999998 Td (Le LSTM obtient le meilleur F1 \(0,79\) et la meilleure précision. La forêt aléatoire a le) Tj ET
+BT /F1 10.5 Tf 56 628.1499999999999 Td (meilleur rappel. Les erreurs du LSTM se concentrent en début de saison des pluies \(voir figure) Tj ET
+BT /F1 10.5 Tf 56 613.9749999999999 Td (4\). L’entraînement du LSTM dure 14 minutes contre 40 secondes pour la forêt aléatoire, sur le) Tj ET
+BT /F1 10.5 Tf 56 599.8 Td (même ordinateur portable.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 3 sur 5) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 1294 >>
+stream
+BT /F2 12 Tf 56 742 Td (4. Discussion) Tj ET
+BT /F1 10.5 Tf 56 719.8 Td (L’écart de F1 entre le LSTM et la forêt aléatoire est faible au regard de la différence de) Tj ET
+BT /F1 10.5 Tf 56 705.625 Td (complexité et de temps d’entraînement. Pour un service d’alerte, un rappel élevé importe) Tj ET
+BT /F1 10.5 Tf 56 691.45 Td (davantage, car une alerte manquée coûte plus cher qu’une fausse alerte. Comme le soulignent Bah) Tj ET
+BT /F1 10.5 Tf 56 677.2750000000001 Td (et Kouyaté [7], la qualité des observations de terrain limite la performance de tous les) Tj ET
+BT /F1 10.5 Tf 56 663.1000000000001 Td (modèles.) Tj ET
+BT /F1 10.5 Tf 56 642.9250000000002 Td (Limites : un seul site, une seule source de données météorologiques, et une définition du «) Tj ET
+BT /F1 10.5 Tf 56 628.7500000000002 Td (jour à risque » qui dépend de l’effort d’observation sur le terrain.) Tj ET
+BT /F2 12 Tf 56 606.5750000000003 Td (5. Conclusion) Tj ET
+BT /F1 10.5 Tf 56 584.3750000000002 Td (Les trois modèles prévoient le risque de mildiou avec une performance utile ; la forêt) Tj ET
+BT /F1 10.5 Tf 56 570.2000000000003 Td (aléatoire est recommandée pour un premier service d’alerte, plus simple à maintenir.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 4 sur 5) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 14 0 R >>
+endobj
+14 0 obj
+<< /Length 1609 >>
+stream
+BT /F2 12 Tf 56 742 Td (Références) Tj ET
+BT /F1 10.5 Tf 56 719.8 Td ([1] A. Keïta, « Le mildiou en Afrique de l’Ouest », Revue fictive d’agronomie, vol. 3, pp.) Tj ET
+BT /F1 10.5 Tf 56 705.625 Td (1–12, 2015.) Tj ET
+BT /F1 10.5 Tf 56 685.45 Td ([2] S. Camara, « Règles d’alerte pour le mildiou en altitude », Bulletin fictif de) Tj ET
+BT /F1 10.5 Tf 56 671.2750000000001 Td (phytopathologie, vol. 8, pp. 44–51, 2009.) Tj ET
+BT /F1 10.5 Tf 56 651.1000000000001 Td ([3] M. Diallo et T. Baldé, « Un indice climatique du mildiou », Cahiers fictifs du Fouta, vol.) Tj ET
+BT /F1 10.5 Tf 56 636.9250000000002 Td (2, pp. 17–25, 2012.) Tj ET
+BT /F1 10.5 Tf 56 616.7500000000002 Td ([4] F. Sylla et al., « Apprentissage automatique et maladies des cultures », Journal fictif des) Tj ET
+BT /F1 10.5 Tf 56 602.5750000000003 Td (données agricoles, vol. 5, pp. 101–118, 2019.) Tj ET
+BT /F1 10.5 Tf 56 582.4000000000003 Td ([5] H. Condé, « Forêts aléatoires pour la prévision des épidémies », Actes fictifs du colloque) Tj ET
+BT /F1 10.5 Tf 56 568.2250000000004 Td (de Conakry, pp. 33–40, 2020.) Tj ET
+BT /F1 10.5 Tf 56 548.0500000000004 Td ([6] N. Barry, « Reconnaissance d’images de feuilles malades », Revue fictive de vision) Tj ET
+BT /F1 10.5 Tf 56 533.8750000000005 Td (numérique, vol. 1, pp. 9–20, 2021.) Tj ET
+BT /F1 10.5 Tf 56 513.7000000000005 Td ([7] L. Bah et D. Kouyaté, « Qualité des observations de terrain », Notes fictives de l’IFAN,) Tj ET
+BT /F1 10.5 Tf 56 499.5250000000005 Td (vol. 4, pp. 60–66, 2022.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 5 sur 5) Tj ET
+endstream
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000141 00000 n 
+0000000238 00000 n 
+0000000340 00000 n 
+0000000476 00000 n 
+0000002696 00000 n 
+0000002832 00000 n 
+0000004322 00000 n 
+0000004459 00000 n 
+0000005609 00000 n 
+0000005747 00000 n 
+0000007094 00000 n 
+0000007232 00000 n 
+trailer
+<< /Size 15 /Root 1 0 R >>
+startxref
+8894
+%%EOF

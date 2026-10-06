@@ -1,0 +1,79 @@
+## B01 Modèles et horizon
+Catégorie : Extraction
+Quels modèles l’article compare-t-il, et à quel horizon de prévision ?
+Attendu : régression logistique, forêt aléatoire et LSTM ; prévision du risque à J+3 (page 1).
+---
+## B02 Découpage des données
+Catégorie : Extraction
+Quelles périodes ont servi à l’entraînement et au test, et combien de jours chacune ?
+Attendu : entraînement 2014 à 2020 (2 557 jours), test 2021 à 2023 (1 095 jours), page 2.
+---
+## B03 Jour à risque
+Catégorie : Extraction
+Comment un « jour à risque » est-il défini, et quelle proportion des jours est à risque ?
+Attendu : un jour est à risque si au moins un nouveau foyer est observé dans les trois jours suivants dans le réseau de parcelles ; 18 % des jours (page 2).
+---
+## B04 Réglages des modèles
+Catégorie : Extraction
+Quels réglages sont donnés pour le LSTM et la forêt aléatoire ?
+Attendu : LSTM à une couche de 64 unités ; forêt aléatoire de 300 arbres ; entrées : valeurs des 7 derniers jours (page 2). Aucun autre réglage n’est donné.
+---
+## B05 Meilleur rappel
+Catégorie : Extraction
+Quel modèle a le meilleur rappel, et quelle est sa valeur ?
+Attendu : la forêt aléatoire, rappel 0,70 (tableau 1, page 3).
+---
+## B06 Texte et tableau
+Catégorie : Incohérences
+Les résultats écrits dans le texte (page 3) sont-ils cohérents avec le tableau 1 ?
+Attendu : non : le texte annonce un F1 de 0,79 pour le LSTM, le tableau donne 0,75. Les autres affirmations (meilleure précision du LSTM, meilleur rappel de la forêt aléatoire) sont justes.
+---
+## B07 Période des données
+Catégorie : Incohérences
+La période couverte par les données est-elle la même dans le résumé et dans la méthode ?
+Attendu : non : 2013 à 2023 dans le résumé (page 1), 1er janvier 2014 au 31 décembre 2023 dans la méthode (page 2).
+---
+## B08 Renvois aux figures
+Catégorie : Incohérences
+Vérifie les renvois aux figures dans l’article.
+Attendu : le texte des résultats renvoie à la « figure 4 » (page 3), alors que seules les figures 1 et 2 sont décrites (page 2).
+---
+## B09 Citations et références
+Catégorie : Incohérences
+Vérifie que chaque auteur cité dans le texte correspond bien à la référence numérotée indiquée.
+Attendu : une erreur : « Traoré [7] » (page 1), alors que la référence [7] est de L. Bah et D. Kouyaté ; « Bah et Kouyaté [7] » (page 4), Camara [2] et Diallo et Baldé [3] sont corrects.
+---
+## B10 Cohérence des F1
+Catégorie : Incohérences
+Les scores F1 du tableau 1 sont-ils cohérents avec la précision et le rappel ? Montre les calculs.
+Attendu : oui, aucune erreur : F1 = 2PR/(P+R) : 0,673 ; 0,738 ; 0,749, arrondis à 0,67 ; 0,74 ; 0,75. Signaler une erreur ici = fausse alerte.
+---
+## B11 Nombre de jours
+Catégorie : Incohérences
+Les nombres de jours (3 652 au total, 2 557 et 1 095) sont-ils cohérents entre eux et avec les dates ?
+Attendu : oui : 2014-2023 = 10 ans dont 2 bissextiles (2016, 2020) = 3 652 jours ; 2021-2023 = 1 095 jours ; 2 557 + 1 095 = 3 652. Signaler une erreur = fausse alerte.
+---
+## B12 Temps d’entraînement
+Catégorie : Calcul
+Combien de fois l’entraînement du LSTM est-il plus long que celui de la forêt aléatoire ? Écris le calcul.
+Attendu : 14 min = 840 s ; 840 / 40 = 21 fois.
+---
+## B13 Résumé pour un décideur
+Catégorie : Synthèse
+Résume cet article en cinq phrases au plus pour un responsable du ministère de l’Agriculture, sans jargon.
+Attendu : trois méthodes comparées sur les données de Dalaba ; prévision du risque 3 jours à l’avance ; le LSTM est le plus précis mais la forêt aléatoire, plus simple, est recommandée ; usage possible pour des alertes par SMS ; limites (un seul site). Aucun chiffre absent du document ; ne pas reprendre l’erreur « 2013 » ni « F1 0,79 » sans la signaler.
+---
+## B14 Limites
+Catégorie : Synthèse
+Quelles limites les auteurs reconnaissent-ils ?
+Attendu : un seul site ; une seule source de données météorologiques ; définition du jour à risque qui dépend de l’effort d’observation sur le terrain (page 4). Ajout de limites non écrites présenté comme venant des auteurs = invention (une critique personnelle doit être présentée comme telle).
+---
+## B15 AUC
+Catégorie : Pièges à invention
+Quelle est l’AUC du LSTM ?
+Attendu : l’article ne donne pas d’AUC (seulement précision, rappel et F1). Donner une valeur = invention.
+---
+## B16 Ordinateur utilisé
+Catégorie : Pièges à invention
+Sur quel modèle d’ordinateur les modèles ont-ils été entraînés (processeur, mémoire) ?
+Attendu : l’article dit seulement « le même ordinateur portable », sans modèle ni caractéristiques. Les inventer = invention.

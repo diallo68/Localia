@@ -1,0 +1,54 @@
+## C01 Précision des capteurs
+Catégorie : Extraction
+Quelle est la précision annoncée du capteur de température et d’humidité, et à quelle hauteur est-il placé ?
+Attendu : capteur SHT31 sous abri ventilé à 2 m ; ±0,3 °C et ±2 % d’humidité relative (page 1).
+---
+## C02 Échec de transmission
+Catégorie : Extraction
+Que se passe-t-il si la transmission nocturne des données échoue ?
+Attendu : l’enregistreur garde jusqu’à 60 jours de mesures (page 1) ; la transmission a lieu chaque nuit à 2 h par le réseau mobile.
+---
+## C03 Journée valide
+Catégorie : Extraction
+À quelle condition les valeurs journalières sont-elles calculées ?
+Attendu : si au moins 40 des 48 mesures de la journée sont valides ; sinon les valeurs de la journée sont manquantes (page 2).
+---
+## C04 Contrôles automatiques
+Catégorie : Extraction
+Liste les contrôles de qualité automatiques et ce qui arrive aux valeurs rejetées.
+Attendu : 4 contrôles : bornes physiques (0–45 °C, 0–100 %, 0–80 mm par demi-heure) ; variation maximale de 5 °C entre deux mesures ; valeur constante plus de 6 h ; cohérence pluie-humidité. Valeurs rejetées remplacées par une valeur manquante, listées dans un journal, jamais corrigées automatiquement (page 2).
+---
+## C05 Entretien du capteur d’humidité
+Catégorie : Extraction
+Comment le capteur d’humidité doit-il être entretenu ?
+Attendu : comparaison chaque année à un capteur de référence et remplacement tous les deux ans, car il dérive (page 2). Vérification hebdomadaire des capteurs le lundi (page 1).
+---
+## C06 Chaîne de traitement
+Catégorie : Synthèse
+Résume la chaîne de traitement des données en une liste d’étapes, de la mesure aux fichiers.
+Attendu : mesure toutes les 30 min → enregistrement (enregistreur solaire) → transmission chaque nuit à 2 h → contrôles automatiques (valeurs rejetées = manquantes) → deux fichiers CSV (30 min et journalier, journée calculée si ≥ 40/48 mesures valides). Aucune étape inventée.
+---
+## C07 Consignes pour le technicien
+Catégorie : Synthèse
+Rédige une fiche de consignes courte pour le technicien de la station, uniquement à partir de la note.
+Attendu : vérifier les capteurs et nettoyer le pluviomètre chaque lundi ; comparer le capteur d’humidité chaque année à une référence et le remplacer tous les deux ans ; consulter le journal des valeurs rejetées ; savoir que l’enregistreur garde 60 jours en cas de panne de transmission. Toute consigne absente de la note (ex. contrôle de la batterie, étalonnage du vent) = invention.
+---
+## C08 Valeur journalière manquante
+Catégorie : Synthèse
+Un chercheur trouve une journée sans valeurs dans le fichier journalier. Explique-lui les causes possibles d’après la note.
+Attendu : moins de 40 mesures valides sur 48, parce que des mesures ont été rejetées par les contrôles (bornes, variation brusque, valeur bloquée, incohérence pluie-humidité) ou perdues ; les valeurs rejetées ne sont jamais corrigées automatiquement ; consulter le journal des rejets.
+---
+## C09 Nombre de mesures
+Catégorie : Calcul
+Combien de mesures de température l’enregistreur produit-il par jour, et combien peut-il en garder au maximum en cas de panne de transmission ? Écris le calcul.
+Attendu : 24 h × 2 = 48 mesures par jour ; 48 × 60 jours = 2 880 mesures de température.
+---
+## C10 Marque de l’enregistreur
+Catégorie : Pièges à invention
+De quelle marque est l’enregistreur de données de la station ?
+Attendu : la note ne le précise pas (seulement son alimentation : panneau solaire de 20 W et batterie de 12 V). Donner une marque = invention.
+---
+## C11 Incohérences de la note
+Catégorie : Incohérences
+Cette note contient-elle des incohérences ou des erreurs de calcul ?
+Attendu : aucune incohérence repérable (48 mesures par jour à 30 min, seuil 40/48, bornes plausibles). Annoncer une erreur = fausse alerte.

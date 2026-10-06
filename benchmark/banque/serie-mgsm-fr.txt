@@ -1,0 +1,89 @@
+## M01 MGSM-fr 6
+Catégorie : Raisonnement
+Toulouse a deux fois plus de moutons que Charleston. Charleston en a 4 fois plus que Seattle. Si Seattle a 20 moutons, combien de moutons Toulouse, Charleston et Seattle ont-ils au total ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 260 (MGSM-fr, question 6 ; licence CC BY-SA 4.0).
+---
+## M02 MGSM-fr 22
+Catégorie : Raisonnement
+Billy vend des DVD. Ce mardi, il a 8clients. Ses 3 premiers clients achètent chacun un DVD. Les 2 clients suivants en achètent chacun 2. Les 3 derniers n'en achètent aucun. Combien de DVD Billy a-t-il vendus mardi ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 7 (MGSM-fr, question 22 ; licence CC BY-SA 4.0).
+---
+## M03 MGSM-fr 26
+Catégorie : Raisonnement
+Mishka a acheté 3 shorts, 3 pantalons et 3 paires de chaussures. Un short coûte 16,50 $, un pantalon 22,50 $ et une paire de chaussures 42 $. Combien d'argent Mishka a-t-elle dépensé en tout pour l'achat de ces vêtements ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 243 (MGSM-fr, question 26 ; licence CC BY-SA 4.0).
+---
+## M04 MGSM-fr 28
+Catégorie : Raisonnement
+Henri a fait deux arrêts pendant son voyage de 60 miles à vélo. Il a marqué son premier arrêt après 20 miles. Il s'est de nouveau arrêté 15 miles avant la fin du voyage. Combien de miles a-t-il parcourus entre les deux arrêts ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 25 (MGSM-fr, question 28 ; licence CC BY-SA 4.0).
+---
+## M05 MGSM-fr 35
+Catégorie : Raisonnement
+Mike joue au ping-pong pendant 40 minutes. Durant les 20 premières minutes, il marque 4 points. Il marque 25 % de points supplémentaires pendant les 20 minutes suivantes. Combien de points a-t-il marqués au total ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 9 (MGSM-fr, question 35 ; licence CC BY-SA 4.0).
+---
+## M06 MGSM-fr 57
+Catégorie : Raisonnement
+Un camion de livraison est sur le point de traverser un pont en bois qui ne peut pas supporter une charge de plus de 5 000 livres. Le camion est rempli de boîtes identiques, d'un poids de 15 livres chacune. Le poids combiné du conducteur et du camion vide est de 3 755 livres. Combien de boîtes peuvent être chargées sur le camion sans dépasser la limite de poids du pont ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 83 (MGSM-fr, question 57 ; licence CC BY-SA 4.0).
+---
+## M07 MGSM-fr 62
+Catégorie : Raisonnement
+Si Marcy travaille pour la même entreprise pendant 40 ans, elle reçoit une pension de 50 000 $ par an. À partir de 20 ans de travail, elle a droit à 5 % de ce montant par an. En admettant qu'elle démissionne après 30 ans de service, quelle sera sa pension annuelle ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 25000 (MGSM-fr, question 62 ; licence CC BY-SA 4.0).
+---
+## M08 MGSM-fr 70
+Catégorie : Raisonnement
+En semaine, Judy donne 5 cours de danse tous les jours et 8 cours le samedi. Si chaque cours compte 15 élèves et qu'elle facture 15,00 $ par élève, combien d'argent gagne-t-elle en une semaine ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 7425 (MGSM-fr, question 70 ; licence CC BY-SA 4.0).
+---
+## M09 MGSM-fr 139
+Catégorie : Raisonnement
+Dans un distributeur de bonbons, il y a 22 fois plus de boules de gommes bleues que quatre fois la quantité de boules de gommes roses. S'il y a 12 boules de gommes de bleues, combien y en a-t-il de roses ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 70 (MGSM-fr, question 139 ; licence CC BY-SA 4.0).
+---
+## M10 MGSM-fr 151
+Catégorie : Raisonnement
+Shawnda pense qu'un service de gonflage de vélos serait très utile aux enfants de son quartier. Elle choisit de facturer au pneu. Le gonflage de chaque pneu coûte 25 cents. Le premier jour, 5 personnes sont venues faire gonfler les deux pneus de chacun de leurs vélos. 3 personnes sont venues faire gonfler tous les pneus de leurs tricycles. Enfin, une personne est venue en monocycle. Combien d'argent a-t-elle gagné ce jour-là ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 5 (MGSM-fr, question 151 ; licence CC BY-SA 4.0).
+---
+## M11 MGSM-fr 163
+Catégorie : Raisonnement
+Plusieurs jouets sont disposés dans une chambre : 5 voitures rouges, 3 figurines et une poupée. La poupée coûte le prix des 3 figurines, et une voiture rouge coûte 4 $. Sachant qu'une figurine coûte 5 $, quelle est la valeur totale des jouets ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 50 (MGSM-fr, question 163 ; licence CC BY-SA 4.0).
+---
+## M12 MGSM-fr 173
+Catégorie : Raisonnement
+Jessica se demande combien d'argent elle doit payer chaque mois pour couvrir toutes ses dettes. Le paiement minimum de son prêt étudiant est de 300 $ par mois, celui de sa carte de crédit est de 200 $ par mois et celui de son prêt hypothécaire est de 500 $ par mois. Si Jessica veut payer 50 % de plus que le minimum, combien doit-elle payer en un an ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 18000 (MGSM-fr, question 173 ; licence CC BY-SA 4.0).
+---
+## M13 MGSM-fr 188
+Catégorie : Raisonnement
+Un commerçant achète quelques sacs de blé à un agriculteur au prix de 20 $ le sac. Sachant que le transport d'un sac de la ferme à l'entrepôt coûte 2 $ et que tous les sacs ont été vendus à 30 $ le sac pour un bénéfice total de 400 $, combien de sacs a-t-il vendus ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 50 (MGSM-fr, question 188 ; licence CC BY-SA 4.0).
+---
+## M14 MGSM-fr 189
+Catégorie : Raisonnement
+Trois amis ont dépensé 20,25 $ pour 3 billets d'entrée à la foire. Ils ont également dépensé 4,50 $ de moins pour la nourriture qu'ils n'en ont dépensé pour les billets. Ils ont également fait 2 tours de manège à 33 $ le tour. S'ils ont convenu de partager les frais équitablement, combien chacun a-t-il payé ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 34 (MGSM-fr, question 189 ; licence CC BY-SA 4.0).
+---
+## M15 MGSM-fr 228
+Catégorie : Raisonnement
+Kalinda tente de réaliser un puzzle de 360 pièces avec sa mère. Elle est capable de placer 4 pièces par minute. Sa mère en place deux fois moins par minute. Combien d'heures leur faudra-t-il pour terminer ce puzzle ?
+Donne le résultat final sous la forme « Réponse : nombre ».
+Attendu : 1 (MGSM-fr, question 228 ; licence CC BY-SA 4.0).

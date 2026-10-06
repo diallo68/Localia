@@ -1,0 +1,85 @@
+## P01 Moyenne glissante
+Catégorie : Code
+Écris une fonction Python moyenne_glissante(valeurs, k) qui renvoie la liste des moyennes sur des fenêtres de k valeurs consécutives. Si k est inférieur à 1 ou supérieur à la longueur, lever ValueError.
+Attendu : moyenne_glissante([1, 2, 3, 4], 2) == [1.5, 2.5, 3.5] ; k = 0 ou k = 5 → ValueError ; code exécutable, sans bibliothèque obligatoire.
+---
+## P02 Lire un fichier NASA POWER
+Catégorie : Code
+Écris le code pandas qui lit un fichier NASA POWER journalier « power.csv » dont l’en-tête de métadonnées fait 15 lignes, remplace -999 par NaN et crée une colonne date à partir des colonnes YEAR et DOY.
+Attendu : pd.read_csv("power.csv", skiprows=15) ; replace(-999, np.nan) (ou na_values=-999) ; pd.to_datetime(df["YEAR"] * 1000 + df["DOY"], format="%Y%j") ou équivalent juste. Erreur grave : utiliser %d pour DOY.
+---
+## P03 Incidence validée
+Catégorie : Code
+Écris une fonction incidence(malades, total) qui renvoie le pourcentage de plants malades, et lève ValueError si total vaut 0, si une valeur est négative, ou si malades dépasse total.
+Attendu : incidence(23, 120) ≈ 19.17 ; incidence(0, 10) == 0 ; incidence(5, 0), incidence(-1, 10), incidence(11, 10) → ValueError.
+---
+## P04 Corriger un bug
+Catégorie : Code
+Ce code doit compter les jours où l’humidité dépasse 90 %, mais il oublie le dernier jour. Corrige-le et explique l’erreur.
+```python
+def jours_humides(hr):
+    n = 0
+    for i in range(len(hr) - 1):
+        if hr[i] > 90:
+            n += 1
+    return n
+```
+Attendu : range(len(hr)) (ou boucle directe sur hr) ; explication : range(len(hr) - 1) s’arrête avant le dernier élément. jours_humides([95, 80, 92]) == 2.
+---
+## P05 Expliquer un code
+Catégorie : Code
+Explique ce que fait ce code, ligne par ligne, et donne le résultat pour df = pd.DataFrame({"date": pd.to_datetime(["2025-06-01", "2025-06-15", "2025-07-01"]), "pluie": [10, 5, 20]}).
+```python
+m = df.groupby(df["date"].dt.to_period("M"))["pluie"].sum()
+```
+Attendu : regroupe par mois (année-mois) et additionne la pluie ; résultat : 2025-06 → 15, 2025-07 → 20.
+---
+## P06 Test pytest
+Catégorie : Code
+Écris des tests pytest pour la fonction f1(precision, rappel) qui renvoie 2PR/(P+R) et 0 si P + R = 0.
+Attendu : tests justes, par exemple f1(0.8, 0.6) ≈ 0.6857 (pytest.approx), f1(0, 0) == 0, f1(1, 1) == 1 ; au moins un cas limite. Un test dont la valeur attendue est fausse = erreur.
+---
+## P07 Agrégation mensuelle
+Catégorie : Code
+Avec pandas, à partir d’un DataFrame df qui a une colonne date (datetime) et des colonnes T2M et PRECTOTCORR, calcule par année et par mois la température moyenne et le cumul de pluie.
+Attendu : df.groupby(df["date"].dt.to_period("M")).agg(T2M=("T2M", "mean"), pluie=("PRECTOTCORR", "sum")) ou resample("MS") équivalent ; regroupement par année ET mois (pas df["date"].dt.month seul).
+---
+## P08 Requête SQL
+Catégorie : Code
+Écris une requête SQL qui, dans la table meteo(date, temperature_moyenne, humidite_heures_90), compte par mois les jours favorables au mildiou : au moins 10 heures d’humidité supérieure à 90 % et température moyenne entre 10 et 25 °C.
+Attendu : WHERE humidite_heures_90 >= 10 AND temperature_moyenne BETWEEN 10 AND 25, GROUP BY année-mois (ex. strftime('%Y-%m', date) ou date_trunc('month', date)), COUNT(*).
+---
+## P09 Expression régulière
+Catégorie : Code
+Écris une expression régulière Python qui trouve, dans un texte, les citations de la forme « Nom [n] » ou « Nom et al. [n] » et renvoie le nom et le numéro.
+Attendu : par exemple r"([A-ZÀ-Ý][a-zà-ÿ'-]+)(?: et al\.)?\s*\[(\d+)\]" avec re.findall ; « Mohanty et al. [16] » → ("Mohanty", "16") ; « Barbedo [24] » → ("Barbedo", "24").
+---
+## P10 Plus longue série favorable
+Catégorie : Code
+Écris une fonction plus_longue_serie(jours) qui reçoit une liste de booléens (True = jour favorable) et renvoie la longueur de la plus longue suite de True consécutifs.
+Attendu : [True, True, False, True, True, True, False] → 3 ; [] → 0 ; [False] → 0.
+---
+## P11 Comparaison de nombres décimaux
+Catégorie : Code
+Pourquoi ce test échoue-t-il en Python, et comment le corriger ? assert 0.1 + 0.2 == 0.3
+Attendu : représentation binaire des décimaux (0.1 + 0.2 = 0.30000000000000004) ; utiliser math.isclose(0.1 + 0.2, 0.3) ou pytest.approx.
+---
+## P12 Lire un JSON
+Catégorie : Code
+Écris une fonction qui lit un fichier JSON contenant une liste d’objets {"parcelle": "P1", "incidence": 22} et renvoie la parcelle la plus touchée. Gère le fichier absent et la liste vide.
+Attendu : json.load ; max(..., key=lambda x: x["incidence"]) ; FileNotFoundError géré (message clair ou None) ; liste vide → None ou exception explicite.
+---
+## P13 Script R
+Catégorie : Code
+En R (avec dplyr), calcule le rendement moyen par variété à partir d’un data.frame parcelles(parcelle, variete, rendement).
+Attendu : parcelles %>% group_by(variete) %>% summarise(rendement_moyen = mean(rendement)) (ou équivalent base R aggregate) ; library(dplyr).
+---
+## P14 Normalisation sans fuite
+Catégorie : Code
+Avec scikit-learn, standardise X_train et X_test sans fuite d’information. Explique le piège à éviter.
+Attendu : scaler = StandardScaler().fit(X_train) ; X_train = scaler.transform(X_train) ; X_test = scaler.transform(X_test). Piège : ajuster le scaler sur toutes les données ou sur X_test.
+---
+## P15 Renommer sans exécuter
+Catégorie : Code
+Écris un script Python qui affiche (sans les exécuter) les renommages à faire pour remplacer les espaces par des tirets dans les noms des fichiers .pdf d’un dossier, puis renomme seulement si l’utilisateur tape « oui ».
+Attendu : pathlib ou os.listdir ; filtre .pdf ; affiche ancien → nouveau ; input() == "oui" avant os.rename / Path.rename ; ne renomme pas si le nom cible existe déjà (ou le signale).

@@ -1,0 +1,74 @@
+## R01 Reformuler pour des producteurs
+Catégorie : Rédaction
+Reformule ce paragraphe en français simple pour des producteurs de pomme de terre, en 4 phrases au plus : « L’incidence du mildiou est corrélée à la persistance d’une humidité relative supérieure à 90 % associée à des températures comprises entre 10 et 25 °C ; une stratégie de protection préventive fondée sur un indicateur agroclimatique permet de réduire le nombre d’applications fongicides. »
+Attendu : idées conservées : la maladie arrive quand il fait très humide longtemps et doux (10 à 25 °C) ; traiter avant l’apparition, en suivant un indicateur météo, permet de traiter moins souvent. Phrases courtes, sans jargon, aucune information ajoutée.
+---
+## R02 Traduire en anglais
+Catégorie : Rédaction
+Traduis en anglais scientifique : « Nous avons suivi cinq parcelles pendant une saison des pluies. La variété Pamina a montré une incidence plus faible que la variété Spunta à protection égale. »
+Attendu : « We monitored five plots during one rainy season. At equal protection, the Pamina variety showed a lower incidence than the Spunta variety. » (ou équivalent fidèle ; « incidence », « plots », « rainy season »).
+---
+## R03 Traduire en français
+Catégorie : Rédaction
+Traduis en français : « Random forests achieved the highest recall, whereas the LSTM network yielded the best precision at a much higher computational cost. »
+Attendu : « Les forêts aléatoires ont obtenu le meilleur rappel, tandis que le réseau LSTM a donné la meilleure précision, pour un coût de calcul bien plus élevé. » (« recall » = rappel, « precision » = précision.)
+---
+## R04 E-mail au directeur de thèse
+Catégorie : Rédaction
+Écris un e-mail court et poli à mon directeur de thèse, le Pr Diop, pour demander de reporter notre réunion de jeudi 10 h à la semaine suivante, parce que les données de terrain ne seront pas prêtes. Propose deux créneaux.
+Attendu : objet clair ; formule de politesse adaptée ; motif (données pas prêtes) ; deux créneaux précis la semaine suivante ; signature. Moins de 120 mots. Aucune information inventée sur le contenu des données.
+---
+## R05 Corriger les fautes
+Catégorie : Rédaction
+Corrige les fautes d’orthographe et de grammaire, sans changer le sens : « Les donnée météorologique on été collecter pendant trois ans. Les résultat montre que l’humidité joue un rôle importante, mais les température aussi. »
+Attendu : « Les données météorologiques ont été collectées pendant trois ans. Les résultats montrent que l’humidité joue un rôle important, mais les températures aussi. » (8 corrections : données, météorologiques, ont, collectées, résultats, montrent, important, températures.)
+---
+## R06 Rendre concis
+Catégorie : Rédaction
+Réécris en 50 mots au plus, sans perdre aucun chiffre : « Dans le cadre de cette étude, nous avons procédé, au cours de la période allant du 2 juin au 29 septembre 2025, à un suivi hebdomadaire de cinq parcelles, ce qui représente au total dix-huit passages, durant lesquels cent plants par parcelle ont été examinés de manière systématique. »
+Attendu : par exemple « Du 2 juin au 29 septembre 2025, nous avons suivi chaque semaine cinq parcelles (18 passages), en examinant 100 plants par parcelle. » Tous les chiffres conservés ; 50 mots au plus.
+---
+## R07 Titres d’article
+Catégorie : Rédaction
+Propose trois titres d’article scientifique pour ce résumé : « Nous comparons une régression logistique, une forêt aléatoire et un LSTM pour prévoir à trois jours le risque de mildiou à Dalaba (Guinée) à partir de données météorologiques journalières de 2014 à 2023. La forêt aléatoire offre le meilleur compromis. »
+Attendu : 3 titres précis (mildiou, prévision, apprentissage automatique, Guinée ou Dalaba), sans abréviation non définie, sans promesse absente du résumé (ex. « révolutionne »).
+---
+## R08 SMS d’alerte
+Catégorie : Rédaction
+Rédige un SMS d’alerte au mildiou pour les producteurs de Dalaba, en français simple, 160 caractères au plus, qui dit que le risque est élevé pour les trois prochains jours et qu’il faut protéger les champs.
+Attendu : message de 160 caractères au plus, compréhensible, avec le risque, la durée (3 jours) et l’action (traiter ou protéger les parcelles) ; aucun produit ni dose inventés.
+---
+## R09 Zone d’étude
+Catégorie : Rédaction
+Rédige le paragraphe « Zone d’étude » d’un article, uniquement à partir de ces faits : Dalaba, région de Mamou, Guinée ; plateau du Fouta Djalon ; altitude du site 1 180 m ; saison des pluies de juin à octobre ; principale zone de production de pomme de terre du pays.
+Attendu : paragraphe au présent ou au passé, qui reprend les 5 faits et rien d’autre (aucune température, pluviométrie ou population ajoutée).
+---
+## R10 Résultats en texte
+Catégorie : Rédaction
+Transforme ces résultats en un paragraphe au passé pour la section Résultats : P1 incidence 22 % rendement 18,4 t/ha ; P2 61 % et 9,7 t/ha ; P3 15 % et 21,2 t/ha.
+Attendu : paragraphe au passé, chiffres exacts et unités, sans interprétation causale non demandée (pas de « grâce au fongicide » si la protection n’est pas donnée).
+---
+## R11 Légende de figure
+Catégorie : Rédaction
+Rédige une légende autonome pour une figure qui montre l’humidité relative journalière (en %) à Dalaba du 1er juin au 30 septembre 2025, avec une ligne horizontale à 90 %.
+Attendu : légende compréhensible seule : variable, unité, lieu, période, signification de la ligne à 90 % (seuil d’humidité favorable au mildiou).
+---
+## R12 Mots-clés
+Catégorie : Rédaction
+Propose 5 mots-clés en français et leur traduction en anglais pour un article sur la prévision du mildiou par apprentissage automatique en Guinée.
+Attendu : 5 paires correctes, par exemple mildiou / late blight ; Phytophthora infestans ; apprentissage automatique / machine learning ; prévision / forecasting ; Guinée / Guinea (ou équivalents pertinents).
+---
+## R13 Répondre à un relecteur
+Catégorie : Rédaction
+Un relecteur écrit : « Un seul site d’étude rend les conclusions inutilisables. » Rédige une réponse polie et argumentée, sans céder entièrement.
+Attendu : remerciement ; reconnaissance de la limite ; arguments (représentativité du site, objectif exploratoire, données disponibles) ; modification proposée (limite ajoutée dans la discussion, perspectives multi-sites) ; ton courtois. Aucune donnée inventée.
+---
+## R14 Compte rendu de réunion
+Catégorie : Rédaction
+Résume en 3 points ce compte rendu : « Réunion du 3 octobre. Présents : M. Diallo, Pr Diop, F. Camara. Les données 2025 sont complètes sauf août à cause d’une panne du pluviomètre du 12 au 19. Le Pr Diop demande un premier jet de l’article avant le 15 novembre. F. Camara installera une seconde station en janvier. »
+Attendu : 3 points : données 2025 complètes sauf la pluie du 12 au 19 août (panne) ; premier jet de l’article demandé avant le 15 novembre ; seconde station installée en janvier par F. Camara.
+---
+## R15 Registre soutenu
+Catégorie : Rédaction
+Réécris dans un registre soutenu, pour une lettre de candidature : « Je veux faire ce doctorat parce que le mildiou fait beaucoup de dégâts chez nous et je m’y connais en IA. »
+Attendu : phrase soutenue et précise (motivation, enjeu agricole local, compétences en intelligence artificielle), sans exagération ni information ajoutée.

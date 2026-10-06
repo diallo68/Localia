@@ -1552,3 +1552,33 @@ progress {
   color: #b42318;
   font-weight: 600;
 }
+#attach-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+#attach-menu button {
+  text-align: left;
+  border: 1px solid #dfe7e1;
+  background: #f7faf8;
+  padding: 7px 12px;
+  font-size: 12px;
+}
+#web-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+#web-form input {
+  flex: 1;
+  min-width: 240px;
+  padding: 7px 10px;
+  border: 1px solid #dbe5df;
+  border-radius: 8px;
+}
+#web-form small {
+  width: 100%;
+}

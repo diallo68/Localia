@@ -237,11 +237,21 @@ function renderAttachment() {
   $('attachment').hidden = !doc;
   if (doc) {
     $('attachment-name').textContent = doc.name;
+    if (doc.web) {
+      $('attachment-info').textContent =
+        `Page web · ${new URL(doc.source).hostname} · ${doc.pageCount} section(s) · lue le ${new Date(doc.fetchedAt).toLocaleDateString('fr-FR')}. Seul le texte est gardé.` +
+        (doc.alerts?.length
+          ? ` ⚠ Cette page contient une instruction adressée à l’IA (section ${doc.alerts.map((a) => a.page).join(', ')}) : elle ne doit pas être suivie.`
+          : '');
+      return;
+    }
     $('attachment-info').textContent =
       `${doc.pageCount} page(s) · Texte lu localement. ${doc.characters > 9500 ? 'Document long : seuls des extraits seront transmis selon la question.' : ''} ${doc.emptyPages.length ? 'Pages sans texte non analysées : ' + doc.emptyPages.join(', ') : ''} Images et mise en page non analysées.` +
       (doc.alerts?.length
         ? ` ⚠ Ce document contient une instruction adressée à l’IA (page ${doc.alerts.map((a) => a.page).join(', ')}) : elle ne doit pas être suivie.`
         : '');
+    if (doc.source)
+      $('attachment-info').textContent += ` Source : ${new URL(doc.source).hostname}.`;
   }
 }
 // Fichiers texte joints (consignes, code, données) : nom, résumé, aperçu du portrait, retrait.
@@ -346,9 +356,103 @@ async function refresh() {
   for (const listener of modelListeners) listener();
   controls();
 }
-// « ＋ Ajouter » : un PDF remplace le document de la conversation ; un autre fichier s'ajoute aux
-// fichiers joints (5 au plus).
-$('attach').onclick = guard(async () => {
+// « ＋ Ajouter » : menu (fichier ou page web).
+$('attach').onclick = () => {
+  $('attach-menu').hidden = !$('attach-menu').hidden;
+  $('web-form').hidden = true;
+};
+$('attach-web-choice').onclick = () => {
+  $('attach-menu').hidden = true;
+  $('web-form').hidden = false;
+  $('web-url').focus();
+};
+$('web-cancel').onclick = () => {
+  $('web-form').hidden = true;
+  $('web-url').value = '';
+};
+$('web-read').onclick = guard(() => readWebPage($('web-url').value));
+$('web-url').addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    $('web-read').click();
+  }
+});
+
+// Texte lisible d'une page HTML : analysée sans être affichée (DOMParser n'exécute rien et ne
+// charge rien) ; navigation, menus, pieds de page et scripts retirés ; article ou contenu principal.
+function pageText(html) {
+  const page = new DOMParser().parseFromString(html, 'text/html');
+  page
+    .querySelectorAll(
+      'script, style, noscript, template, svg, canvas, iframe, object, form, nav, header, footer, aside, button, select, [hidden], [aria-hidden="true"]',
+    )
+    .forEach((el) => el.remove());
+  const candidates = [
+    page.querySelector('article'),
+    page.querySelector('main'),
+    page.querySelector('[role="main"]'),
+  ];
+  let root = candidates.find((el) => el && el.textContent.trim().length > 500) || page.body;
+  if (!root) return { title: page.title, text: '' };
+  for (const el of root.querySelectorAll('li')) el.prepend('• ');
+  for (const el of root.querySelectorAll('td, th')) el.append(' | ');
+  for (const el of root.querySelectorAll('br')) el.replaceWith('\n');
+  for (const el of root.querySelectorAll(
+    'p, div, section, li, h1, h2, h3, h4, h5, h6, tr, blockquote, pre, table, figcaption, dt, dd',
+  ))
+    el.after('\n\n');
+  const title =
+    page.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
+    page.querySelector('h1')?.textContent ||
+    page.title;
+  const text = root.textContent
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return { title: (title || '').replace(/\s+/g, ' ').trim(), text };
+}
+
+// Page web lue (sur demande) : elle devient le document de la conversation, comme un PDF.
+async function readWebPage(address) {
+  const value = String(address || '').trim();
+  if (!value) throw new Error('Collez l’adresse de la page (https://…).');
+  notice('');
+  importing = true;
+  controls();
+  $('web-read').textContent = 'Lecture…';
+  try {
+    const fetched = await window.localia.webFetch(value);
+    let doc;
+    if (fetched.kind === 'pdf') doc = fetched.doc;
+    else {
+      const { title, text } =
+        fetched.kind === 'text' ? { title: '', text: fetched.html } : pageText(fetched.html);
+      doc = await window.localia.webSave({ url: fetched.url, title, text });
+    }
+    const previous = current?.document?.id;
+    if (!current) {
+      current = { id: crypto.randomUUID(), title: doc.name.slice(0, 120), messages: [] };
+      conversations.unshift(current);
+    }
+    current.document = doc;
+    await persist();
+    if (previous) await window.localia.deleteDocument(previous);
+    $('web-form').hidden = true;
+    $('web-url').value = '';
+    render();
+    $('prompt').focus();
+  } finally {
+    importing = false;
+    $('web-read').textContent = 'Lire la page';
+    controls();
+  }
+}
+
+// Fichier choisi dans le menu « ＋ Ajouter » : un PDF remplace le document de la conversation ;
+// un autre fichier s'ajoute aux fichiers joints (5 au plus).
+$('attach-file-choice').onclick = guard(async () => {
+  $('attach-menu').hidden = true;
   notice('');
   importing = true;
   controls();
@@ -440,6 +544,18 @@ $('composer').onsubmit = guard(async (event) => {
   if (!content || chatting || importing || comparing || !historyReady) return;
   // « /appel texte » : compétence pour ce message ; « /competences » : liste des compétences.
   const invocation = parseInvocation(content, skills);
+  if (invocation?.reserved === '/web') {
+    $('skill-suggest').hidden = true;
+    if (!invocation.rest) {
+      $('prompt').value = '';
+      $('web-form').hidden = false;
+      $('web-url').focus();
+      return;
+    }
+    await readWebPage(invocation.rest);
+    $('prompt').value = '';
+    return;
+  }
   if (invocation?.reserved) {
     $('prompt').value = '';
     $('skill-suggest').hidden = true;

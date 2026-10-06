@@ -13,6 +13,7 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const { spawn, execFile } = require('node:child_process');
 const os = require('node:os');
+const net = require('node:net');
 const { pathToFileURL, fileURLToPath } = require('node:url');
 const { modelName, request, readStream } = require('./ollama.cjs');
 const { importPdf, loadDocument, deleteDocument, pruneDocuments } = require('./documents.cjs');
@@ -39,6 +40,9 @@ const platform = require('./platform.cjs');
 const watchLogic = require('./watch.js');
 const tables = require('./tables.js');
 const skillsLogic = require('./skills.js');
+const web = require('./web.cjs');
+const { detectInjection } = require('./verify.js');
+const dns = require('node:dns');
 const documentsPath = () => path.join(app.getPath('userData'), 'documents');
 if (process.env.LOCALIA_TEST_DATA) app.setPath('userData', process.env.LOCALIA_TEST_DATA);
 let window, service;
@@ -203,6 +207,118 @@ async function saveTextAttachment(file) {
     preview: doc.kind === 'table' ? doc.content : null,
   };
 }
+// --- Lire une page web ----------------------------------------------------------------------------
+// Sur demande explicite (adresse donnée par l'utilisateur). Chaque adresse, redirections comprises,
+// est vérifiée : jamais d'adresse privée ou locale (Ollama, routeur, autres machines du réseau).
+const lookupAll = (host) =>
+  (process.env.LOCALIA_TEST_DATA && global.localiaLookup
+    ? global.localiaLookup(host)
+    : dns.promises.lookup(host, { all: true })
+  ).then((list) => list.map((a) => a.address));
+async function publicUrl(value) {
+  const url = web.checkUrl(value);
+  const host = url.hostname.replace(/^\[|\]$/g, '');
+  const addresses = net.isIP(host) ? [host] : await lookupAll(host).catch(() => []);
+  if (!addresses.length) throw new Error(`Site introuvable : ${url.hostname}.`);
+  if (addresses.some(web.isPrivateAddress))
+    throw new Error('Adresse du réseau local ou réservée : refusée.');
+  return url;
+}
+handle('web-fetch', async (value) => {
+  let url = await publicUrl(value);
+  let response;
+  for (let hop = 0; ; hop++) {
+    try {
+      response = await fetch(url, {
+        redirect: 'manual',
+        headers: {
+          'User-Agent': `Localia/${app.getVersion()} (lecture de page)`,
+          Accept: 'text/html, text/plain, application/pdf;q=0.9',
+        },
+        signal: AbortSignal.timeout(20000),
+      });
+    } catch {
+      throw new Error(
+        `${url.hostname} ne répond pas : vérifiez l’adresse et la connexion Internet.`,
+      );
+    }
+    const location = response.headers.get('location');
+    if (response.status >= 300 && response.status < 400 && location) {
+      if (hop >= web.MAX_REDIRECTS) throw new Error('Trop de redirections.');
+      url = await publicUrl(new URL(location, url).href);
+      continue;
+    }
+    break;
+  }
+  if (!response.ok) throw new Error(`${url.hostname} : erreur ${response.status}.`);
+  // Taille limitée, lue par morceaux : une page énorme est interrompue.
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of response.body) {
+    size += chunk.length;
+    if (size > web.MAX_BYTES) throw new Error('Page trop volumineuse (5 Mo au plus).');
+    chunks.push(chunk);
+  }
+  const bytes = Buffer.concat(chunks);
+  const type = (response.headers.get('content-type') || '').toLowerCase();
+  if (type.includes('application/pdf') || bytes.subarray(0, 5).toString() === '%PDF-') {
+    const temp = path.join(os.tmpdir(), `localia-web-${crypto.randomUUID()}.pdf`);
+    await fs.writeFile(temp, bytes, { mode: 0o600 });
+    try {
+      const doc = await importPdf(temp, documentsPath(), documentCodec);
+      return {
+        kind: 'pdf',
+        doc: { ...doc, name: path.basename(url.pathname) || doc.name, source: url.href },
+      };
+    } finally {
+      await fs.rm(temp, { force: true });
+    }
+  }
+  if (!/text\/(html|plain)|application\/xhtml/.test(type))
+    throw new Error(
+      `Type de contenu non pris en charge (${type || 'inconnu'}) : seulement des pages web, du texte ou des PDF.`,
+    );
+  return {
+    kind: type.includes('text/plain') ? 'text' : 'html',
+    url: url.href,
+    html: web.decodeHtml(bytes, type),
+  };
+});
+// Texte extrait de la page (dans l'interface, sans rien exécuter) enregistré comme un document.
+handle('web-save', async (payload) => {
+  const url = web.checkUrl(payload?.url).href;
+  const title = typeof payload.title === 'string' ? payload.title.trim().slice(0, 200) : '';
+  if (typeof payload.text !== 'string' || payload.text.length > 1_000_000)
+    throw new Error('Texte de page invalide.');
+  const pages = web.splitSections(payload.text);
+  const characters = pages.reduce((n, p) => n + p.text.length, 0);
+  if (characters < 200)
+    throw new Error(
+      'Presque aucun texte lisible sur cette page (contenu chargé par JavaScript, ou page de connexion). Essayez la version PDF ou une autre adresse.',
+    );
+  const doc = {
+    id: crypto.randomUUID(),
+    name: title || new URL(url).hostname,
+    source: url,
+    web: true,
+    fetchedAt: new Date().toISOString(),
+    pageCount: pages.length,
+    emptyPages: [],
+    pages,
+  };
+  await fs.mkdir(documentsPath(), { recursive: true });
+  await fs.writeFile(
+    path.join(documentsPath(), doc.id + '.json'),
+    documentCodec.encode(JSON.stringify(doc)),
+    { mode: 0o600 },
+  );
+  const { pages: _, ...summary } = doc;
+  return { ...summary, characters, alerts: detectInjection(pages) };
+});
+handle('open-source', async (value) => {
+  const url = web.checkUrl(value);
+  await shell.openExternal(url.href);
+});
 handle('delete-document', (id) => deleteDocument(documentsPath(), id));
 // Vérifications automatiques d'une réponse (calculs ; avec document : pages, citations, chiffres).
 handle('verify-answer', async (payload) => {

@@ -104,6 +104,27 @@
           </div>
           <div id="file-chips" hidden></div>
           <div id="skill-suggest" hidden role="listbox" aria-label="Compétences"></div>
+          <div id="attach-menu" hidden role="menu">
+            <button id="attach-file-choice" type="button" role="menuitem">
+              Fichier : PDF, consignes, code ou données…</button
+            ><button id="attach-web-choice" type="button" role="menuitem">
+              Page web : coller une adresse…
+            </button>
+          </div>
+          <div id="web-form" hidden>
+            <label class="sr-only" for="web-url">Adresse de la page web</label
+            ><input id="web-url" type="url" placeholder="https://…" maxlength="2000" /><button
+              id="web-read"
+              class="primary"
+              type="button"
+            >
+              Lire la page</button
+            ><button id="web-cancel" type="button">Annuler</button>
+            <small class="muted"
+              >La page est téléchargée sur votre demande, sans être affichée ni exécutée ; seul son
+              texte est gardé.</small
+            >
+          </div>
           <label class="sr-only" for="prompt">Votre message</label
           ><textarea id="prompt" rows="3" placeholder="Posez votre question…"></textarea>
           <div class="composer-footer">

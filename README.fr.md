@@ -86,6 +86,7 @@ Une série est un fichier `.txt` ou `.md`. Les questions sont séparées par une
 
 - Les modèles tournent par Ollama sur `127.0.0.1:11434` ; les modèles cloud sont exclus.
 - Zotero est lu par son API locale (`127.0.0.1:23119`) ; un élément n'est écrit dans Zotero que sur un clic « Ajouter à Zotero ».
+- **Une page web n'est téléchargée que si vous collez son adresse** (« ＋ Ajouter → Page web », ou `/web adresse`) : les adresses du réseau local ou privées sont refusées, redirections comprises ; seul le texte de la page est gardé, rien n'est affiché ni exécuté.
 - **Les services en ligne sont désactivés par défaut.** Une fois autorisés dans l'onglet Bibliographie, seul le texte d'une recherche, d'une référence à vérifier ou d'un sujet suivi est envoyé, et uniquement à `api.openalex.org` et `api.crossref.org`. Documents, notes et conversations ne quittent jamais l'ordinateur.
 - Les données (historique, réglages, comparaisons, projets, texte extrait des PDF, journal des actions, veille) sont enregistrées dans le dossier de données d'Electron. Elles peuvent être **chiffrées** (AES-256-GCM, clé protégée par le trousseau de macOS ou la protection des données de Windows, clé de secours exportable).
 - Les actions sur les fichiers ne touchent que les dossiers autorisés, après validation de chaque action ; rien n'est écrasé ni supprimé définitivement.

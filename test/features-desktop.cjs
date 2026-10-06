@@ -905,8 +905,10 @@ const readJson = async (profile, name) => {
     await page.locator('#chat-tab').click();
     await page.locator('#new').click();
     await page.locator('#attach').click();
+    await page.locator('#attach-file-choice').click();
     await page.waitForFunction(() => document.querySelectorAll('.file-chip').length === 1);
     await page.locator('#attach').click();
+    await page.locator('#attach-file-choice').click();
     await page.waitForFunction(() => document.querySelectorAll('.file-chip').length === 2);
     assert.match(await page.locator('#file-chips').textContent(), /tableau · 2 lignes, 4 colonnes/);
     await page.locator('#task').selectOption('donnees');

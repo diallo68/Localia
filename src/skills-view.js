@@ -113,10 +113,10 @@ function skillSuggestions() {
   const matches = typing
     ? [
         ...skills.filter((s) => s.call.startsWith(value.toLowerCase())),
-        ...(('/competences'.startsWith(value.toLowerCase()) && [
+        ...[
           { call: '/competences', name: 'Voir toutes les compétences' },
-        ]) ||
-          []),
+          { call: '/web', name: 'Lire une page web (coller l’adresse après /web)' },
+        ].filter((c) => c.call.startsWith(value.toLowerCase())),
       ].slice(0, 8)
     : [];
   box.hidden = !matches.length;

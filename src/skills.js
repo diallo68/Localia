@@ -14,7 +14,7 @@
 // Chargé par le processus principal, l'interface et les tests.
 const CALL = /^\/[a-z0-9][a-z0-9-]{0,39}$/;
 const MAX_SKILL = 20000;
-const RESERVED = ['/competences', '/aide'];
+const RESERVED = ['/competences', '/aide', '/web'];
 
 function frontMatter(text) {
   const match = /^---\s*\n([\s\S]*?)\n---\s*\n?/.exec(text);

@@ -86,6 +86,7 @@ A series is a `.txt` or `.md` file. Questions are separated by a line containing
 
 - Models run through Ollama on `127.0.0.1:11434`; cloud models are excluded.
 - Zotero is read through its local API (`127.0.0.1:23119`); an item is written to Zotero only when you click “Add to Zotero”.
+- **Web pages are fetched only when you paste an address** (“＋ Add → Web page”, or `/web address`): local and private network addresses are refused, redirects included; only the page's text is kept, nothing is displayed or executed.
 - **Online services are off by default.** Once allowed in the Bibliography tab, only the text of a search, a reference to check or a watched topic is sent, and only to `api.openalex.org` and `api.crossref.org`. Documents, notes and conversations never leave the computer.
 - Data (history, settings, comparisons, projects, extracted PDF text, action log, literature watch) is stored in Electron's user data folder. It can be **encrypted** (AES-256-GCM, key protected by the macOS Keychain or Windows data protection, exportable recovery key).
 - File actions only touch folders you authorize, after you approve each action; nothing is overwritten or permanently deleted.

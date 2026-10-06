@@ -630,6 +630,8 @@ const modelfileText = (parameters) =>
     .flatMap(([k, v]) => (Array.isArray(v) ? v.map((x) => `${k} ${x}`) : [`${k} ${v}`]))
     .join('\n');
 handle('local-models', readRegistry);
+// Erreurs du processus du moteur lui-même (arrêté, pas démarré) : sans rapport avec le modèle.
+const ENGINE_DOWN = /moteur intégré (s’est arrêté|ne démarre pas)/;
 // Modèle déjà téléchargé par Ollama, utilisé tel quel par le moteur intégré (aucune copie).
 handle('local-import', async (name) => {
   const origin = modelName(name);
@@ -638,6 +640,8 @@ handle('local-import', async (name) => {
   try {
     info = await engine().check(file);
   } catch (error) {
+    // Moteur arrêté ou pas démarré : le modèle n'y est pour rien, le dire tel quel.
+    if (ENGINE_DOWN.test(error.message)) throw error;
     throw new Error(
       `Ce modèle n’est pas lisible par le moteur intégré : Ollama l’a converti dans son propre format (${error.message.slice(0, 120)}). Il faudra le télécharger depuis Hugging Face.`,
     );
@@ -784,6 +788,7 @@ async function registerModel(model, dest, source) {
   try {
     info = await engine().check(dest);
   } catch (error) {
+    if (ENGINE_DOWN.test(error.message)) throw error;
     throw new Error(
       `Fichier téléchargé et vérifié, mais le moteur intégré ne sait pas encore le faire tourner (${error.message.slice(0, 100)}). Une mise à jour de Localia sera nécessaire.`,
     );

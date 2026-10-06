@@ -115,6 +115,8 @@ function createEngine({ utilityProcess, workerPath, env }) {
         }
       });
       child.on('exit', (code) => {
+        clearTimeout(timer);
+        reject(new Error(`Le moteur intégré s’est arrêté au démarrage (code ${code}).`));
         child = null;
         ready = null;
         for (const job of pending.values())

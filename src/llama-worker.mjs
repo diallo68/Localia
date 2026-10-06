@@ -230,6 +230,9 @@ async function check({ id, path }) {
   }
 }
 
+// Le processus reste actif tant que Localia ne l'arrête pas : l'écoute des messages et le travail
+// natif de llama.cpp ne le retiennent pas toujours, et il se terminait parfois en plein travail.
+setInterval(() => {}, 1 << 30);
 process.parentPort.on('message', ({ data }) => {
   if (data.type === 'chat') chat(data);
   else if (data.type === 'check') check(data);

@@ -1582,3 +1582,36 @@ progress {
 #web-form small {
   width: 100%;
 }
+#remote {
+  margin-top: 28px;
+  padding-top: 8px;
+  border-top: 1px solid #dfe7e1;
+}
+#remote-status {
+  font-weight: 600;
+}
+.remote-addresses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 8px 0;
+}
+.remote-card {
+  margin: 0;
+  background: white;
+  border: 1px solid #dfe7e1;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  max-width: 240px;
+}
+.remote-card img {
+  width: 200px;
+  height: 200px;
+  image-rendering: pixelated;
+}
+.remote-help {
+  font-size: 12px;
+  line-height: 1.6;
+}

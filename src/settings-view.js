@@ -92,6 +92,7 @@ async function saveModelSettings(name, value) {
 $('settings-tab').onclick = () => {
   openSettings($('settings-model').value || $('model').value);
   showPrivacy().catch((error) => notice(error.message));
+  showRemote().catch((error) => notice(error.message));
 };
 $('settings-model').onchange = showSettings;
 $('settings-form').onsubmit = guard(async (event) => {
@@ -173,4 +174,78 @@ $('encryption-import').onclick = guard(async () => {
   if (!status) return;
   await showPrivacy(status);
   notice('Clé de secours acceptée : rechargement de vos données…');
+});
+
+// « Accès depuis vos autres appareils » : serveur, adresses et QR codes, appareils connectés.
+async function showRemote(status) {
+  status ||= await window.localia.remoteStatus();
+  $('remote-enabled').checked = status.enabled;
+  $('remote-reset').hidden = !status.running;
+  $('remote-status').textContent = status.error
+    ? `⚠ ${status.error}`
+    : !status.enabled
+      ? 'Désactivé : aucun autre appareil ne peut se connecter.'
+      : !status.running
+        ? 'Démarrage…'
+        : status.addresses.length
+          ? `Actif sur le port ${status.port}. Scannez un QR code avec l’appareil à connecter.`
+          : 'Actif, mais ce Mac n’est relié à aucun réseau local ni à Tailscale.';
+  const box = $('remote-addresses');
+  box.replaceChildren();
+  for (const a of status.addresses) {
+    const card = element('figure', 'remote-card');
+    const img = document.createElement('img');
+    img.src = a.qr;
+    img.alt = `QR code de connexion (${a.kind === 'tailscale' ? 'Tailscale' : 'réseau local'})`;
+    card.append(
+      img,
+      element(
+        'figcaption',
+        '',
+        `${a.kind === 'tailscale' ? 'Tailscale (depuis l’extérieur)' : 'Réseau local (même Wi-Fi)'} · ${a.url}`,
+      ),
+    );
+    box.append(card);
+  }
+  const devices = $('remote-devices');
+  devices.replaceChildren();
+  if (status.running && status.devices.length) {
+    devices.append(element('strong', '', 'Appareils connectés récemment'));
+    const list = element('ul', 'muted');
+    for (const d of status.devices)
+      list.append(
+        element(
+          'li',
+          '',
+          `${d.ip.replace(/^::ffff:/, '')} · ${deviceName(d.userAgent)} · ${new Date(d.lastSeen).toLocaleString('fr-FR')}`,
+        ),
+      );
+    devices.append(list);
+  }
+}
+const deviceName = (agent) =>
+  /iphone/i.test(agent)
+    ? 'iPhone'
+    : /ipad/i.test(agent)
+      ? 'iPad'
+      : /android/i.test(agent)
+        ? 'Android'
+        : /windows/i.test(agent)
+          ? 'Windows'
+          : /mac os/i.test(agent)
+            ? 'Mac'
+            : /linux/i.test(agent)
+              ? 'Linux'
+              : 'navigateur';
+$('remote-enabled').onchange = guard(async () => {
+  $('remote-status').textContent = $('remote-enabled').checked ? 'Démarrage…' : 'Arrêt…';
+  const status = await window.localia.remoteEnable($('remote-enabled').checked);
+  // Réglages relus : l'option est enregistrée par le processus principal.
+  settings = await window.localia.loadSettings();
+  await showRemote(status);
+});
+$('remote-reset').onclick = guard(async () => {
+  if (!confirm('Changer la clé ? Tous les appareils connectés devront scanner le nouveau QR code.'))
+    return;
+  await showRemote(await window.localia.remoteReset());
 });

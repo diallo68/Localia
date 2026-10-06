@@ -197,6 +197,12 @@ function messageNode(message, question) {
   const label = document.createElement('strong');
   label.className = 'author';
   label.textContent = message.role === 'user' ? 'Vous' : 'Localia';
+  if (message.remote) {
+    const tag = document.createElement('span');
+    tag.className = 'skill-tag';
+    tag.textContent = 'depuis un autre appareil';
+    label.append(' ', tag);
+  }
   if (message.skill) {
     const tag = document.createElement('span');
     tag.className = 'skill-tag';
@@ -540,8 +546,16 @@ $('connect').onclick = guard(async () => {
 });
 $('composer').onsubmit = guard(async (event) => {
   event.preventDefault();
+  const result = await sendPrompt();
+  if (result?.error) notice(result.error);
+});
+// Envoi du message de la zone de saisie, depuis le Mac ou depuis un autre appareil (remoteId).
+// Renvoie { ok, error, conversationId, text } pour l'appareil distant.
+async function sendPrompt({ remoteId } = {}) {
   let content = $('prompt').value.trim();
-  if (!content || chatting || importing || comparing || !historyReady) return;
+  if (!content) return { ok: false, error: null };
+  if (chatting || importing || comparing || !historyReady)
+    return { ok: false, error: 'Localia est occupée sur le Mac : réessayez dans un moment.' };
   // « /appel texte » : compétence pour ce message ; « /competences » : liste des compétences.
   const invocation = parseInvocation(content, skills);
   if (invocation?.reserved === '/web') {
@@ -550,27 +564,26 @@ $('composer').onsubmit = guard(async (event) => {
       $('prompt').value = '';
       $('web-form').hidden = false;
       $('web-url').focus();
-      return;
+      return { ok: true, text: 'Formulaire « Page web » ouvert sur le Mac.' };
     }
     await readWebPage(invocation.rest);
     $('prompt').value = '';
-    return;
+    return { ok: true, conversationId: current?.id, text: 'Page web ajoutée à la conversation.' };
   }
   if (invocation?.reserved) {
     $('prompt').value = '';
     $('skill-suggest').hidden = true;
     $('skills-tab').click();
-    return;
+    return { ok: true, text: 'Liste des compétences ouverte sur le Mac.' };
   }
-  if (!invocation && /^\/[a-z0-9-]+(\s|$)/i.test(content)) {
-    notice(
-      `Compétence inconnue : ${content.split(/\s/)[0]}. Tapez /competences pour voir la liste, ou retirez la barre oblique.`,
-    );
-    return;
-  }
+  if (!invocation && /^\/[a-z0-9-]+(\s|$)/i.test(content))
+    return {
+      ok: false,
+      error: `Compétence inconnue : ${content.split(/\s/)[0]}. Tapez /competences pour voir la liste, ou retirez la barre oblique.`,
+    };
   if (!models.length) {
     view('models');
-    return;
+    return { ok: false, error: 'Aucun modèle installé sur le Mac.' };
   }
   notice('');
   const messageSkill = invocation?.skill || null;
@@ -587,6 +600,7 @@ $('composer').onsubmit = guard(async (event) => {
   }
   const userMessage = { role: 'user', content };
   if (messageSkill) userMessage.skill = messageSkill.id;
+  if (remoteId) userMessage.remote = true;
   current.messages.push(userMessage);
   $('prompt').value = '';
   $('skill-suggest').hidden = true;
@@ -602,6 +616,7 @@ $('composer').onsubmit = guard(async (event) => {
   rememberModel(conversation.model).catch((e) => notice(e.message));
   reply = messageNode(answer);
   let completed = false;
+  let failure = null;
   try {
     await persist();
     const result = await window.localia.run('chat', {
@@ -609,6 +624,7 @@ $('composer').onsubmit = guard(async (event) => {
       // Compétence : celle du message (« /appel »), sinon celle choisie dans le menu Tâche.
       task: skillOf(conversation.task) ? undefined : conversation.task,
       skill: messageSkill?.id || skillOf(conversation.task)?.id,
+      remoteId,
       projectId: conversation.projectId,
       documentId: conversation.document?.id,
       fileIds: (conversation.files || []).map((f) => f.id),
@@ -619,7 +635,7 @@ $('composer').onsubmit = guard(async (event) => {
     answer.content = result.text || '';
     completed = !result.cancelled;
   } catch (error) {
-    notice(error.message);
+    failure = error.message;
   } finally {
     answer.content = answer.content || reply.dataset.answer || '';
     if (answer.content) {
@@ -644,6 +660,36 @@ $('composer').onsubmit = guard(async (event) => {
     controls();
     $('prompt').focus();
   }
+  return {
+    ok: completed,
+    error: failure || (completed ? null : 'Réponse interrompue.'),
+    conversationId: conversation.id,
+    text: answer.content,
+  };
+}
+
+// Question envoyée depuis un autre appareil : traitée comme un message tapé sur le Mac.
+window.localia.onProgress(({ kind, data }) => {
+  if (kind !== 'remote') return;
+  (async () => {
+    if (chatting || importing || comparing || !historyReady)
+      return {
+        ok: false,
+        error: 'Localia est occupée sur le Mac (conversation, lecture ou comparaison en cours).',
+      };
+    if (data.conversationId) {
+      const found = conversations.find((c) => c.id === data.conversationId);
+      if (!found) return { ok: false, error: 'Conversation introuvable sur le Mac.' };
+      current = found;
+    } else current = null;
+    view('chat');
+    render();
+    if (data.model && installed(data.model)) $('model').value = data.model;
+    $('prompt').value = data.text;
+    return sendPrompt({ remoteId: data.requestId });
+  })()
+    .catch((error) => ({ ok: false, error: error.message }))
+    .then((result) => window.localia.remoteDone(data.requestId, result));
 });
 $('prompt').onkeydown = (event) => {
   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {

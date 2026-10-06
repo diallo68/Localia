@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Localia</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span class="logo">L</span> Localia</div>
+      <span id="status" role="status">Connexion…</span>
+    </header>
+    <main>
+      <p id="error" role="alert" hidden></p>
+      <section id="list-view">
+        <div class="row">
+          <label for="model">Modèle</label
+          ><select id="model"></select>
+        </div>
+        <button id="new" class="primary" type="button">＋ Nouvelle conversation</button>
+        <h2>Conversations</h2>
+        <nav id="conversations" aria-label="Conversations"></nav>
+      </section>
+      <section id="chat-view" hidden>
+        <button id="back" type="button">‹ Conversations</button>
+        <h2 id="chat-title">Nouvelle conversation</h2>
+        <p id="chat-document" class="muted" hidden></p>
+        <div id="messages" aria-live="polite"></div>
+        <form id="composer">
+          <label class="sr-only" for="prompt">Votre message</label>
+          <textarea
+            id="prompt"
+            rows="3"
+            maxlength="20000"
+            placeholder="Posez votre question… (/competences, /web adresse, /nom-de-compétence)"
+          ></textarea>
+          <button id="send" class="primary" type="submit">Envoyer</button>
+        </form>
+        <p class="muted small">
+          Les calculs se font sur votre Mac : la réponse peut prendre plusieurs minutes.
+        </p>
+      </section>
+    </main>
+    <script src="/markdown-it.min.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

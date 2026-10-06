@@ -73,6 +73,7 @@
   },
   "dependencies": {
     "pdfjs-dist": "^6.4.299",
+    "qrcode": "^1.5.4",
     "undici": "7.29.1"
   },
   "repository": {

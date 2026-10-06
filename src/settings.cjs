@@ -49,8 +49,15 @@ function normalizeModel(raw) {
 
 function normalizeSettings(raw) {
   // Fonctions en ligne : désactivées tant que l'utilisateur ne les active pas explicitement.
-  const settings = { lastModel: null, models: {}, online: { bibliography: false } };
+  const settings = {
+    lastModel: null,
+    models: {},
+    online: { bibliography: false },
+    remote: { enabled: false },
+  };
   if (!raw || typeof raw !== 'object') return settings;
+  // Accès depuis les autres appareils : désactivé tant que l'utilisateur ne l'active pas.
+  settings.remote.enabled = raw.remote?.enabled === true;
   // Guide de démarrage : ne plus l'ouvrir au lancement une fois que l'utilisateur l'a demandé.
   if (raw.guideDone === true) settings.guideDone = true;
   settings.online.bibliography = raw.online?.bibliography === true;

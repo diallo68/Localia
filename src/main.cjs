@@ -41,6 +41,8 @@ const watchLogic = require('./watch.js');
 const tables = require('./tables.js');
 const skillsLogic = require('./skills.js');
 const web = require('./web.cjs');
+const remote = require('./remote.cjs');
+const QRCode = require('qrcode');
 const { detectInjection } = require('./verify.js');
 const dns = require('node:dns');
 const documentsPath = () => path.join(app.getPath('userData'), 'documents');
@@ -207,6 +209,206 @@ async function saveTextAttachment(file) {
     preview: doc.kind === 'table' ? doc.content : null,
   };
 }
+// --- Accès depuis les autres appareils -----------------------------------------------------------
+const remotePort = () => Number(process.env.LOCALIA_REMOTE_PORT) || remote.DEFAULT_PORT;
+let remoteServer = null;
+let remoteError = null;
+let remoteState = null; // { token, devices }
+const remoteStreams = new Map(); // requestId → fonction d'envoi au téléphone
+const remotePending = new Map(); // requestId → fin de la réponse
+const remoteHosts = () => [
+  '127.0.0.1',
+  'localhost',
+  ...remote.addresses(os.networkInterfaces()).map((a) => a.address),
+];
+async function loadRemoteState() {
+  remoteState = await readJson('distance.json', null, 'Accès à distance illisible.');
+  if (!remoteState?.token) {
+    remoteState = { token: remote.newToken(), devices: [] };
+    await writeJson('distance.json', remoteState, 'Accès à distance trop volumineux.');
+  }
+  return remoteState;
+}
+let devicesSavedAt = 0;
+function rememberDevice(client) {
+  const devices = remoteState.devices || [];
+  const known = devices.find((d) => d.ip === client.ip && d.userAgent === client.userAgent);
+  if (known) known.lastSeen = new Date().toISOString();
+  else
+    devices.unshift({
+      ip: client.ip,
+      userAgent: client.userAgent,
+      lastSeen: new Date().toISOString(),
+    });
+  remoteState.devices = devices.slice(0, 20);
+  if (Date.now() - devicesSavedAt > 60000) {
+    devicesSavedAt = Date.now();
+    writeJson('distance.json', remoteState, 'Accès à distance trop volumineux.').catch(() => {});
+  }
+}
+async function remoteApi(route, method, body, res, client) {
+  rememberDevice(client);
+  if (route === 'etat' && method === 'GET') {
+    const tags = await request('/api/tags', null, AbortSignal.timeout(3000))
+      .then((r) => r.json())
+      .catch(() => null);
+    const settings = await readSettings();
+    return client.json(200, {
+      ollama: Boolean(tags),
+      models: (tags?.models || [])
+        .filter((m) => !m.remote_host && !/cloud/i.test(m.name))
+        .map((m) => m.name),
+      lastModel: settings.lastModel,
+      occupe: tasks.has(taskKey('chat')),
+    });
+  }
+  if (route === 'conversations' && method === 'GET') {
+    const list = await readJson('conversations.json', [], 'Historique illisible.');
+    return client.json(
+      200,
+      list.slice(0, 50).map((c) => ({
+        id: c.id,
+        title: c.title,
+        messages: c.messages.length,
+        document: c.document?.name || null,
+      })),
+    );
+  }
+  const one = /^conversations\/([\w-]{1,80})$/.exec(route);
+  if (one && method === 'GET') {
+    const c = (await readJson('conversations.json', [], 'Historique illisible.')).find(
+      (x) => x.id === one[1],
+    );
+    if (!c) return client.json(404, { erreur: 'Conversation introuvable.' });
+    return client.json(200, {
+      id: c.id,
+      title: c.title,
+      document: c.document?.name || null,
+      messages: c.messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+        skill: m.skill || null,
+      })),
+    });
+  }
+  if (route === 'question' && method === 'POST') {
+    const text = typeof body?.text === 'string' ? body.text.trim() : '';
+    if (!text || text.length > 20000)
+      return client.json(400, { erreur: 'Question vide ou trop longue.' });
+    if (!window || window.isDestroyed())
+      return client.json(503, { erreur: 'Localia n’est pas ouverte sur le Mac.' });
+    const requestId = crypto.randomUUID();
+    const emit = client.stream();
+    remoteStreams.set(requestId, emit);
+    const done = new Promise((resolve) => {
+      remotePending.set(requestId, resolve);
+      setTimeout(
+        () => resolve({ ok: false, error: 'Pas de réponse de Localia à temps.' }),
+        30 * 60000,
+      );
+    });
+    res.on('close', () => remoteStreams.delete(requestId));
+    emit('debut', {});
+    send({
+      kind: 'remote',
+      data: {
+        requestId,
+        text,
+        conversationId: typeof body.conversationId === 'string' ? body.conversationId : null,
+        model: typeof body.model === 'string' ? body.model : null,
+      },
+    });
+    const result = await done;
+    remotePending.delete(requestId);
+    remoteStreams.delete(requestId);
+    emit('fin', result);
+    return res.end();
+  }
+  return client.json(404, { erreur: 'Introuvable.' });
+}
+async function startRemote() {
+  if (remoteServer) return;
+  await loadRemoteState();
+  remoteError = null;
+  const server = remote.createServer({
+    token: () => remoteState.token,
+    allowedHosts: remoteHosts,
+    api: remoteApi,
+  });
+  await new Promise((resolve) => {
+    server.once('error', (error) => {
+      remoteError =
+        error.code === 'EADDRINUSE'
+          ? `Le port ${remotePort()} est déjà utilisé par un autre programme.`
+          : error.message;
+      resolve();
+    });
+    server.listen(remotePort(), '0.0.0.0', () => {
+      remoteServer = server;
+      resolve();
+    });
+  });
+}
+async function stopRemote() {
+  const server = remoteServer;
+  remoteServer = null;
+  for (const resolve of remotePending.values())
+    resolve({ ok: false, error: 'Accès à distance coupé sur le Mac.' });
+  if (server)
+    await new Promise((resolve) => server.close(resolve) || server.closeAllConnections?.());
+}
+async function remoteStatus() {
+  const enabled = (await readSettings()).remote.enabled;
+  const port = remoteServer?.address()?.port ?? remotePort();
+  const list = [];
+  if (remoteServer && remoteState)
+    for (const a of remote.addresses(os.networkInterfaces())) {
+      const url = `http://${a.address}:${port}/#cle=${remoteState.token}`;
+      const svg = await QRCode.toString(url, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' });
+      list.push({
+        ...a,
+        url: `http://${a.address}:${port}/`,
+        qr: 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64'),
+      });
+    }
+  return {
+    enabled,
+    running: Boolean(remoteServer),
+    port,
+    error: remoteError,
+    addresses: list,
+    devices: (remoteState?.devices || []).slice(0, 10),
+  };
+}
+handle('remote-status', remoteStatus);
+handle('remote-enable', async (on) => {
+  const settings = await readSettings();
+  await writeJson(
+    'settings.json',
+    { ...settings, remote: { enabled: on === true } },
+    'Réglages trop volumineux.',
+  );
+  if (on === true) await startRemote();
+  else await stopRemote();
+  return remoteStatus();
+});
+// Nouvelle clé : tous les appareils doivent scanner le nouveau QR code.
+handle('remote-reset', async () => {
+  remoteState = { token: remote.newToken(), devices: [] };
+  await writeJson('distance.json', remoteState, 'Accès à distance trop volumineux.');
+  return remoteStatus();
+});
+handle('remote-done', (requestId, info) => {
+  const resolve = remotePending.get(requestId);
+  if (resolve)
+    resolve({
+      ok: info?.ok === true,
+      error: typeof info?.error === 'string' ? info.error : null,
+      conversationId: typeof info?.conversationId === 'string' ? info.conversationId : null,
+      text: typeof info?.text === 'string' ? info.text : null,
+    });
+});
+
 // --- Lire une page web ----------------------------------------------------------------------------
 // Sur demande explicite (adresse donnée par l'utilisateur). Chaque adresse, redirections comprises,
 // est vérifiée : jamais d'adresse privée ou locale (Ollama, routeur, autres machines du réseau).
@@ -572,7 +774,10 @@ handle('run', async (kind, payload) => {
       if (body.think !== undefined) used.think = body.think;
     }
     const response = await request(chatLike ? '/api/chat' : '/api/pull', body, controller.signal);
+    // Question venue d'un autre appareil : le texte lui est aussi envoyé au fil de l'écriture.
+    const remoteEmit = payload?.remoteId ? remoteStreams.get(payload.remoteId) : null;
     await readStream(response.body, (data) => {
+      if (remoteEmit && data.message?.content) remoteEmit('texte', { delta: data.message.content });
       if (chatLike) {
         responseText += data.message?.content || '';
         thinking += data.message?.thinking || '';
@@ -693,6 +898,7 @@ const DATA_FILES = [
   'actions-journal.json',
   'watch.json',
   'performance.json',
+  'distance.json',
 ];
 const keyPath = () => dataPath('cle.bin');
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -1507,6 +1713,10 @@ app.whenReady().then(async () => {
   });
   createWindow();
   skillsReady = installStarterSkills().catch(() => {});
+  // Accès à distance : relancé au démarrage s'il était activé.
+  readSettings()
+    .then((s) => s.remote.enabled && startRemote())
+    .catch(() => {});
   // Veille : premier passage peu après l'ouverture, puis toutes les 30 minutes.
   setTimeout(runDueWatch, 20000);
   setInterval(runDueWatch, 30 * 60000);
@@ -1516,6 +1726,7 @@ app.whenReady().then(async () => {
 });
 app.on('window-all-closed', () => app.quit());
 app.on('before-quit', () => {
+  remoteServer?.close();
   for (const task of tasks.values()) task.abort();
   service?.kill();
 });

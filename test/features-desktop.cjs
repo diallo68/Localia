@@ -53,7 +53,7 @@ const readJson = async (profile, name) => {
     );
     app = await electron.launch({
       args: [path.resolve('.')],
-      env: { ...process.env, LOCALIA_TEST_DATA: profile },
+      env: { ...process.env, LOCALIA_TEST_DATA: profile, LOCALIA_REMOTE_PORT: '47899' },
     });
     const page = await app.firstWindow();
     settleWrites = async () => {
@@ -935,6 +935,64 @@ const readJson = async (profile, name) => {
     await page.waitForFunction(() => !document.querySelectorAll('.file-chip').length);
     for (const id of fileIds) await waitForMissing(path.join(profile, 'documents', id + '.json'));
     await fs.rm(dataDir, { recursive: true, force: true });
+
+    // Accès depuis un autre appareil : serveur activé, clé exigée, question posée « depuis le
+    // téléphone », réponse reçue au fil de l'écriture, conversation visible sur le Mac.
+    const base = 'http://127.0.0.1:47899';
+    await page.locator('#settings-tab').click();
+    await page.locator('#remote-enabled').check();
+    await page.waitForFunction(() =>
+      document.querySelector('#remote-status').textContent.includes('47899'),
+    );
+    assert.equal((await readJson(profile, 'settings.json')).remote.enabled, true);
+    const remoteKey = (await readJson(profile, 'distance.json')).token;
+    const home = await fetch(base + '/');
+    assert.equal(home.status, 200);
+    assert.match(home.headers.get('content-security-policy'), /default-src 'self'/);
+    assert.equal((await fetch(base + '/api/etat')).status, 401, 'sans clé');
+    const auth = { Authorization: `Bearer ${remoteKey}` };
+    const etat = await (await fetch(base + '/api/etat', { headers: auth })).json();
+    assert.deepEqual(etat.models, ['petit:1b', 'grand:8b']);
+    const http = require('node:http');
+    const rebinding = await new Promise((resolve) =>
+      http.get(
+        `${base}/api/etat`,
+        { headers: { ...auth, Host: 'site-malveillant.com:47899' } },
+        (res) => resolve(res.statusCode),
+      ),
+    );
+    assert.equal(rebinding, 421, 'en-tête Host étranger refusé');
+    const asked = await fetch(base + '/api/question', {
+      method: 'POST',
+      headers: { ...auth, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: 'Bonjour depuis le téléphone', model: 'petit:1b' }),
+    });
+    const streamText = await asked.text();
+    assert.match(streamText, /event: debut/);
+    assert.match(streamText, /event: texte\ndata: \{"delta":"Réponse de \*\*petit:1b\*\*"\}/);
+    const end = JSON.parse(/event: fin\ndata: (.+)/.exec(streamText)[1]);
+    assert.equal(end.ok, true);
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll('.skill-tag')].some(
+        (t) => t.textContent === 'depuis un autre appareil',
+      ),
+    );
+    const remoteConv = await (
+      await fetch(`${base}/api/conversations/${end.conversationId}`, { headers: auth })
+    ).json();
+    assert.deepEqual(
+      remoteConv.messages.map((m) => m.role),
+      ['user', 'assistant'],
+    );
+    for (let i = 0; i < 10; i++)
+      await fetch(base + '/api/etat', { headers: { Authorization: 'Bearer faux' } });
+    assert.equal((await fetch(base + '/api/etat', { headers: auth })).status, 429, 'trop d’essais');
+    await page.locator('#settings-tab').click();
+    await page.locator('#remote-enabled').uncheck();
+    await page.waitForFunction(() =>
+      document.querySelector('#remote-status').textContent.includes('Désactivé'),
+    );
+    await assert.rejects(fetch(base + '/'), 'serveur arrêté');
 
     assert.deepEqual(errors, []);
     console.log(

@@ -26,6 +26,7 @@ test('réglages valides conservés, valeurs vides ignorées', () => {
       },
     },
     online: { bibliography: false },
+    remote: { enabled: false },
   });
 });
 
@@ -46,11 +47,13 @@ test('fichier absent ou vide : réglages par défaut', () => {
     lastModel: null,
     models: {},
     online: { bibliography: false },
+    remote: { enabled: false },
   });
   assert.deepEqual(normalizeSettings({}), {
     lastModel: null,
     models: {},
     online: { bibliography: false },
+    remote: { enabled: false },
   });
   assert.equal(normalizeSettings({ online: { bibliography: 'oui' } }).online.bibliography, false);
   assert.equal(normalizeSettings({ online: { bibliography: true } }).online.bibliography, true);

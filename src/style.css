@@ -403,6 +403,25 @@ h1 {
 #engine-panel[hidden] {
   display: none;
 }
+.engine-switch {
+  display: inline-flex;
+  padding: 3px;
+  margin-right: 8px;
+  background: #eef3f0;
+  border-radius: 10px;
+}
+#engine-panel .engine-switch button {
+  border: 0;
+  background: transparent;
+  padding: 6px 14px;
+  font-size: 12px;
+}
+#engine-panel .engine-switch button[aria-pressed='true'] {
+  background: #fff;
+  color: #1b543f;
+  font-weight: 600;
+  box-shadow: 0 1px 4px #183d2314;
+}
 #engine-panel p {
   flex-basis: 100%;
   margin: 0 0 4px;

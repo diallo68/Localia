@@ -1021,7 +1021,22 @@ const readJson = async (profile, name) => {
     const ollamaCalls = await app.evaluate(() => global.requests.length);
     await page.locator('#chat-tab').click();
     await page.locator('#new').click();
-    await page.locator('#model').selectOption('integre/petit:1b');
+    // Bascule Ollama ↔ moteur intégré : le même modèle de l'autre côté.
+    assert.deepEqual(await page.$$eval('#model optgroup', (groups) => groups.map((g) => g.label)), [
+      'Moteur intégré de Localia',
+      'Ollama',
+    ]);
+    await page.locator('#model').selectOption('petit:1b');
+    await page.locator('#engine-card').click();
+    await page.locator('#engine-local').click();
+    assert.equal(await page.locator('#model').inputValue(), 'integre/petit:1b');
+    assert.equal(await page.locator('#engine-state').textContent(), 'Moteur intégré');
+    await page.locator('#engine-ollama').click();
+    assert.equal(await page.locator('#model').inputValue(), 'petit:1b');
+    assert.equal(await page.locator('#engine-state').textContent(), 'Ollama');
+    await page.locator('#engine-local').click();
+    await page.locator('#engine-card').click();
+    assert.equal(await page.locator('#model').inputValue(), 'integre/petit:1b');
     await page.locator('#prompt').fill('Question au moteur intégré');
     await page.locator('#send').click();
     await page.waitForFunction(

@@ -116,6 +116,10 @@
         </div>
         <div id="engine-panel" hidden>
           <p id="engine-detail"></p>
+          <div class="engine-switch" role="group" aria-label="Moteur des réponses">
+            <button id="engine-local" type="button" aria-pressed="false">Moteur intégré</button
+            ><button id="engine-ollama" type="button" aria-pressed="false">Ollama</button>
+          </div>
           <button id="engine-refresh" type="button"><i data-icon="refresh"></i>Actualiser</button
           ><button id="engine-connect" type="button" hidden>Démarrer Ollama</button
           ><button id="engine-library" type="button">Bibliothèque de modèles</button>

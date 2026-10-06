@@ -419,6 +419,34 @@ function engineCard() {
     text.replace(/^[●○]\s*/, '') +
     (ready ? ' — les réponses sont calculées sur ce Mac, sans Internet.' : '');
   $('engine-connect').hidden = $('connect').hidden;
+  const model = models.find((m) => m.name === $('model').value);
+  const local = model?.engine === 'integre';
+  if (ready && model) {
+    $('engine-state').textContent = local ? 'Moteur intégré' : 'Ollama';
+    $('engine-detail').textContent = local
+      ? 'Moteur intégré de Localia : le modèle tourne dans Localia même, sans Ollama ni Internet.'
+      : 'Ollama : le modèle tourne dans Ollama, sur ce Mac, sans Internet.';
+  }
+  for (const [id, on] of [
+    ['engine-local', local],
+    ['engine-ollama', Boolean(model) && !local],
+  ])
+    $(id).setAttribute('aria-pressed', String(on));
+  $('engine-local').disabled = chatting || !models.some((m) => m.engine === 'integre');
+  $('engine-ollama').disabled = chatting || !models.some((m) => m.engine !== 'integre');
+}
+// Bascule entre le moteur intégré et Ollama : même modèle de l'autre côté s'il existe
+// (« integre/qwen3:8b » ↔ « qwen3:8b »), sinon le dernier utilisé, sinon le plus petit.
+function switchEngine(toLocal) {
+  const name = $('model').value;
+  const twin = toLocal ? 'integre/' + name : name.replace(/^integre\//, '');
+  const side = models.filter((m) => (m.engine === 'integre') === toLocal);
+  const target =
+    side.find((m) => m.name === twin) || side.find((m) => m.name === settings.lastModel) || side[0];
+  if (!target || target.name === name) return;
+  $('model').value = target.name;
+  $('model').dispatchEvent(new Event('change'));
+  engineCard();
 }
 new MutationObserver(engineCard).observe($('status'), { childList: true, characterData: true });
 $('engine-card').onclick = () => {
@@ -428,6 +456,9 @@ $('engine-card').onclick = () => {
   engineCard();
 };
 $('engine-refresh').onclick = () => $('refresh').click();
+$('engine-local').onclick = () => switchEngine(true);
+$('engine-ollama').onclick = () => switchEngine(false);
+$('model').addEventListener('change', () => engineCard());
 $('engine-connect').onclick = () => $('connect').click();
 $('engine-library').onclick = () => $('models-tab').click();
 async function refresh() {
@@ -450,7 +481,18 @@ async function refresh() {
     const o = new Option('Aucun modèle disponible', '');
     $('model').add(o);
   }
-  for (const m of models) $('model').add(new Option(m.name, m.name));
+  // Deux groupes : le moteur intégré de Localia et Ollama (même nom de modèle possible des deux côtés).
+  for (const [engine, label] of [
+    ['integre', 'Moteur intégré de Localia'],
+    ['ollama', 'Ollama'],
+  ]) {
+    const list = models.filter((m) => (m.engine === 'integre') === (engine === 'integre'));
+    if (!list.length) continue;
+    const group = document.createElement('optgroup');
+    group.label = label;
+    for (const m of list) group.append(new Option(m.name, m.name));
+    $('model').append(group);
+  }
   selectModel(selected);
   $('installed').replaceChildren();
   if (!models.length)

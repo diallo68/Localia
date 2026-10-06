@@ -66,3 +66,14 @@ test('registre : seulement des modèles « integre/ » avec un fichier absolu', 
   );
   assert.deepEqual(e.normalizeRegistry({}), []);
 });
+
+test('fichier déjà téléchargé par Ollama retrouvé par son empreinte et sa taille', async () => {
+  const root = await fakeOllama({ 'blobs/sha256-dd': 'GGUF1234' });
+  assert.equal(await e.ollamaBlobWithSha('dd', 8, root), path.join(root, 'blobs', 'sha256-dd'));
+  assert.equal(
+    await e.ollamaBlobWithSha('dd', 9, root),
+    null,
+    'taille différente : pas le même fichier',
+  );
+  assert.equal(await e.ollamaBlobWithSha('ee', 8, root), null);
+});

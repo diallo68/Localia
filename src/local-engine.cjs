@@ -63,6 +63,17 @@ async function modelFileIn(name, root) {
   return { file, digest: layer.digest, size: layer.size, parameters };
 }
 
+// Fichier déjà présent chez Ollama avec la même empreinte (Ollama nomme ses fichiers d'après leur
+// SHA-256) : utilisable tel quel, sans nouveau téléchargement.
+async function ollamaBlobWithSha(sha256, size, roots = ollamaRoots()) {
+  for (const root of [].concat(roots)) {
+    const file = path.join(root, 'blobs', `sha256-${sha256}`);
+    const stat = await fs.stat(file).catch(() => null);
+    if (stat?.size === size) return file;
+  }
+  return null;
+}
+
 // Registre : [{ name, file, source, origin, size, digest, architecture, contextLength, addedAt }].
 function normalizeRegistry(raw) {
   if (!Array.isArray(raw)) return [];
@@ -154,4 +165,11 @@ function createEngine({ utilityProcess, workerPath, env }) {
   };
 }
 
-module.exports = { PREFIX, isLocal, ollamaModelFile, normalizeRegistry, createEngine };
+module.exports = {
+  PREFIX,
+  isLocal,
+  ollamaModelFile,
+  ollamaBlobWithSha,
+  normalizeRegistry,
+  createEngine,
+};

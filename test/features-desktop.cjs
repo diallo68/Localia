@@ -53,6 +53,11 @@ const readJson = async (profile, name) => {
       }),
     );
     await fs.writeFile(path.join(ollamaDir, 'blobs/sha256-abc'), 'GGUF-simulé');
+    // Fichier Ollama identique à celui du catalogue (Qwen 3 4B) : fichier creux de la bonne taille.
+    const qwenCatalog = require('../src/catalog.js').catalogEntry('qwen3-4b');
+    const sharedBlob = path.join(ollamaDir, 'blobs', `sha256-${qwenCatalog.sha256}`);
+    await fs.writeFile(sharedBlob, '');
+    await fs.truncate(sharedBlob, qwenCatalog.size);
     // Comparaison au format d'avant les séries : doit rester lisible.
     await fs.writeFile(
       path.join(profile, 'comparisons.json'),
@@ -996,6 +1001,27 @@ const readJson = async (profile, name) => {
       (await readJson(profile, 'modeles-integres.json')).map((m) => [m.name, m.origin, m.source]),
       [['integre/petit:1b', 'petit:1b', 'ollama']],
     );
+
+    // Catalogue Hugging Face : verdicts affichés ; fichier déjà présent chez Ollama utilisé sans
+    // aucun téléchargement.
+    await page.locator('#models-tab').click();
+    await page.waitForFunction(() => document.querySelectorAll('.hf-card').length === 10);
+    const qwenCard = page.locator('.hf-card', { hasText: 'Qwen 3 · 4B' });
+    assert.match(await qwenCard.textContent(), /2,5 Go · licence Apache 2\.0/);
+    await qwenCard.locator('button').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#hf-status').textContent.includes('integre/qwen3-4b est prêt'),
+    );
+    const sharedEntry = (await readJson(profile, 'modeles-integres.json')).find(
+      (m) => m.name === 'integre/qwen3-4b',
+    );
+    assert.equal(sharedEntry.source, 'ollama');
+    assert.equal(sharedEntry.file, sharedBlob);
+    await assert.rejects(
+      fs.stat(path.join(profile, 'modeles', qwenCatalog.file)),
+      'rien téléchargé',
+    );
+    assert.equal(await qwenCard.locator('button').textContent(), 'Installé ✓');
 
     // Accès depuis un autre appareil : serveur activé, clé exigée, question posée « depuis le
     // téléphone », réponse reçue au fil de l'écriture, conversation visible sur le Mac.

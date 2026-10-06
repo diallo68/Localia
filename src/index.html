@@ -182,6 +182,34 @@
           <progress id="progress" max="100"></progress>
           <p id="transfer-status" role="status"></p>
         </div>
+        <section id="hf-section">
+          <h3>Moteur intégré : télécharger depuis Hugging Face</h3>
+          <p class="muted">
+            Ces modèles fonctionnent sans Ollama. Le téléchargement reprend là où il s’est arrêté si
+            la connexion coupe, et le fichier est vérifié (empreinte SHA-256) avant d’être utilisé.
+            Chaque modèle a sa licence : lisez-la avant un usage commercial.
+          </p>
+          <div id="hf-download" hidden>
+            <div class="input-row">
+              <strong id="hf-name"></strong
+              ><button id="hf-cancel" type="button">Mettre en pause</button>
+            </div>
+            <progress id="hf-progress" max="100"></progress>
+            <p id="hf-status" class="muted" role="status"></p>
+          </div>
+          <div id="hf-catalog" class="hf-catalog"></div>
+          <form id="hf-form">
+            <label for="hf-url">Autre fichier GGUF de Hugging Face (adresse du fichier)</label>
+            <div class="input-row">
+              <input
+                id="hf-url"
+                type="url"
+                placeholder="https://huggingface.co/auteur/depot/blob/main/modele-Q4_K_M.gguf"
+                required
+              /><button type="submit">Télécharger</button>
+            </div>
+          </form>
+        </section>
         <h3>Installés sur ce Mac</h3>
         <div id="installed"></div>
         <p class="muted">
@@ -830,6 +858,7 @@
     <script src="skills.js"></script>
     <script src="setup.js"></script>
     <script src="performance.js"></script>
+    <script src="catalog.js"></script>
     <script src="benchmark-stats.js"></script>
     <script src="charts.js"></script>
     <script src="renderer.js"></script>
@@ -842,6 +871,7 @@
     <script src="skills-view.js"></script>
     <script src="guide-view.js"></script>
     <script src="performance-view.js"></script>
+    <script src="catalog-view.js"></script>
     <script src="start.js"></script>
   </body>
 </html>

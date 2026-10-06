@@ -44,6 +44,8 @@ const skillsLogic = require('./skills.js');
 const web = require('./web.cjs');
 const remote = require('./remote.cjs');
 const localEngine = require('./local-engine.cjs');
+const { CATALOG, catalogEntry, downloadUrl } = require('./catalog.js');
+const { downloadFile } = require('./download.cjs');
 const QRCode = require('qrcode');
 const { detectInjection } = require('./verify.js');
 const dns = require('node:dns');
@@ -634,12 +636,157 @@ handle('local-import', async (name) => {
   return entry;
 });
 handle('local-remove', async (name) => {
+  const registry = await readRegistry();
+  const entry = registry.find((m) => m.name === name);
   await writeJson(
     'modeles-integres.json',
-    (await readRegistry()).filter((m) => m.name !== name),
+    registry.filter((m) => m.name !== name),
     'Liste trop volumineuse.',
   );
+  // Fichier téléchargé par Localia : supprimé (ceux d'Ollama restent à Ollama).
+  if (entry?.source === 'huggingface' && path.dirname(entry.file) === modelsDir()) {
+    engineInstance?.unload();
+    await fs.rm(entry.file, { force: true });
+  }
 });
+
+// --- Téléchargement des modèles depuis Hugging Face ------------------------------------------------
+const modelsDir = () => dataPath('modeles');
+let currentDownload = null; // { id, controller }
+const partialSize = (file) =>
+  fs.stat(file + '.part').then(
+    (s) => s.size,
+    () => 0,
+  );
+handle('catalog-status', async () => {
+  const registry = await readRegistry();
+  const disk = await fs.statfs(app.getPath('userData')).catch(() => null);
+  const partial = {};
+  for (const m of CATALOG) partial[m.id] = await partialSize(path.join(modelsDir(), m.file));
+  return {
+    catalog: CATALOG,
+    installed: registry.map((m) => m.name),
+    partial,
+    downloading: currentDownload?.id ?? null,
+    memoryGB: Math.round(os.totalmem() / 2 ** 30),
+    freeDiskGB: disk ? Math.round((disk.bavail * disk.bsize) / 1e9) : null,
+    platform: process.platform,
+    arch: process.arch,
+  };
+});
+// Fichier GGUF d'un dépôt Hugging Face (adresse collée par l'utilisateur) : taille et empreinte
+// lues par l'API ; dépôts à accès restreint refusés (compte et licence nécessaires).
+async function resolveHuggingFace(address) {
+  let url;
+  try {
+    url = new URL(String(address).trim());
+  } catch {
+    throw new Error('Adresse invalide : collez l’adresse d’un fichier .gguf sur huggingface.co.');
+  }
+  const m = /^\/([\w.-]+)\/([\w.-]+)\/(?:blob|resolve)\/([\w.-]+)\/(.+\.gguf)$/i.exec(url.pathname);
+  if (url.hostname !== 'huggingface.co' || !m)
+    throw new Error(
+      'Adresse attendue : https://huggingface.co/<auteur>/<dépôt>/blob/main/<fichier>.gguf',
+    );
+  const [, owner, repo, revision, file] = m;
+  const api = (route) =>
+    fetch(`https://huggingface.co/api/models/${owner}/${repo}${route}`, {
+      signal: AbortSignal.timeout(20000),
+    }).then((r) =>
+      r.ok ? r.json() : Promise.reject(new Error(`Hugging Face : erreur ${r.status}.`)),
+    );
+  const info = await api('');
+  if (info.gated)
+    throw new Error(
+      'Ce dépôt est à accès restreint (compte et acceptation de licence) : choisissez une autre version.',
+    );
+  const folder = path.posix.dirname(file);
+  const tree = await api(`/tree/${revision}${folder === '.' ? '' : '/' + folder}`);
+  const entry = tree.find((x) => x.path === file);
+  if (!entry?.lfs?.oid) throw new Error('Fichier introuvable dans ce dépôt.');
+  const license = (info.tags || []).find((t) => t.startsWith('license:'))?.slice(8) || 'inconnue';
+  const id = path.posix
+    .basename(file, '.gguf')
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .slice(0, 80);
+  return {
+    id,
+    label: path.posix.basename(file),
+    repo: `${owner}/${repo}`,
+    file: path.posix.basename(file),
+    url: `https://huggingface.co/${owner}/${repo}/resolve/${revision}/${file}`,
+    size: entry.lfs.size,
+    sha256: entry.lfs.oid,
+    license,
+  };
+}
+async function installModel(model) {
+  if (currentDownload) throw new Error('Un téléchargement est déjà en cours.');
+  await fs.mkdir(modelsDir(), { recursive: true });
+  // Même fichier déjà téléchargé par Ollama (même empreinte) : rien à télécharger.
+  const shared = await localEngine.ollamaBlobWithSha(model.sha256, model.size);
+  if (shared) return registerModel(model, shared, 'ollama');
+  const dest = path.join(modelsDir(), model.file);
+  const remaining = model.size - (await partialSize(dest));
+  const disk = await fs.statfs(modelsDir()).catch(() => null);
+  if (disk && disk.bavail * disk.bsize < remaining + 2e9)
+    throw new Error(
+      `Place insuffisante : il faut ${Math.ceil((remaining + 2e9) / 1e9)} Go libres sur le disque.`,
+    );
+  const controller = new AbortController();
+  currentDownload = { id: model.id, controller };
+  try {
+    await downloadFile({
+      url: model.url || downloadUrl(model),
+      dest,
+      size: model.size,
+      sha256: model.sha256,
+      signal: controller.signal,
+      onProgress: (p) => send({ kind: 'download', data: { id: model.id, ...p } }),
+    });
+  } catch (error) {
+    if (controller.signal.aborted) return { cancelled: true };
+    throw error;
+  } finally {
+    currentDownload = null;
+  }
+  return registerModel(model, dest, 'huggingface');
+}
+async function registerModel(model, dest, source) {
+  send({ kind: 'download', data: { id: model.id, phase: 'essai du modèle' } });
+  let info;
+  try {
+    info = await engine().check(dest);
+  } catch (error) {
+    throw new Error(
+      `Fichier téléchargé et vérifié, mais le moteur intégré ne sait pas encore le faire tourner (${error.message.slice(0, 100)}). Une mise à jour de Localia sera nécessaire.`,
+    );
+  }
+  const entry = {
+    name: localEngine.PREFIX + model.id,
+    file: dest,
+    source,
+    origin: `${model.repo}/${model.file}`,
+    size: model.size,
+    digest: `sha256:${model.sha256}`,
+    architecture: info.architecture,
+    sizeLabel: info.sizeLabel,
+    contextLength: info.contextLength,
+    license: model.license,
+    addedAt: new Date().toISOString(),
+  };
+  const registry = (await readRegistry()).filter((m) => m.name !== entry.name);
+  await writeJson('modeles-integres.json', [...registry, entry], 'Liste trop volumineuse.');
+  return entry;
+}
+handle('catalog-download', async (id) => {
+  const model = catalogEntry(id);
+  if (!model) throw new Error('Modèle inconnu du catalogue.');
+  return installModel(model);
+});
+handle('hf-download', async (address) => installModel(await resolveHuggingFace(address)));
+handle('download-cancel', () => currentDownload?.controller.abort());
 // Guide de démarrage : Ollama installé et actif, modèles, mémoire et place libre sur le disque.
 handle('setup-status', async () => {
   const [version, tags, disk] = await Promise.all([

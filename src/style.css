@@ -1627,3 +1627,44 @@ progress {
   padding: 3px 10px;
   font-size: 11px;
 }
+.hf-catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+.hf-card {
+  background: white;
+  border: 1px solid #dfe7e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.hf-card p {
+  margin: 0;
+}
+.hf-card.too-big {
+  opacity: 0.6;
+}
+.hf-card .verdict-confortable {
+  color: #1b7a4f;
+}
+.hf-card .verdict-possible {
+  color: #b5581c;
+}
+.hf-card .verdict-trop-gros {
+  color: #b42318;
+}
+.hf-card button {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+#hf-url {
+  flex: 1;
+}
+#hf-progress {
+  width: 100%;
+}

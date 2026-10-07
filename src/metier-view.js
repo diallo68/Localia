@@ -1,0 +1,211 @@
+// Métier : écran de choix (premier lancement ou changement), et adaptation de la conversation
+// (menu Tâche, suggestions de l'accueil, onglets, consigne de métier).
+let metierChoice = null; // métier sélectionné sur l'écran, pas encore validé
+let metierMode = 'first'; // 'first' : premier lancement ; 'change' : depuis la colonne
+
+const currentMetier = () => metierById(settings.metier) || metierById(DEFAULT_METIER);
+
+function metierCard(metier) {
+  const card = element('button', 'metier-card');
+  card.type = 'button';
+  card.setAttribute('role', 'radio');
+  card.dataset.metier = metier.id;
+  const head = element('span', 'metier-head');
+  const icon = element('span', 'metier-icon');
+  icon.innerHTML = iconSvg(metier.icon);
+  const title = element('span', 'metier-title');
+  title.append(element('strong', '', metier.label));
+  if (metier.sub) title.append(element('small', '', metier.sub));
+  head.append(icon, title);
+  card.append(head);
+  for (const group of metier.groups) {
+    if (metier.groups.length > 1) card.append(element('span', 'metier-group', group.label));
+    const list = element('ul', 'metier-tasks');
+    for (const id of group.tasks.slice(0, metier.groups.length > 1 ? 4 : 6))
+      list.append(element('li', '', taskById(id).label));
+    card.append(list);
+  }
+  const tags = element('span', 'metier-tags');
+  if (metier.anonymize) tags.append(element('span', 'tag warm', 'Anonymisation'));
+  if (metier.groups.some((g) => g.tasks.some((t) => taskById(t)?.categories.includes('Calcul'))))
+    tags.append(element('span', 'tag cool', 'Calculs vérifiés'));
+  if (metier.tools?.includes('bibliography'))
+    tags.append(element('span', 'tag', 'Bibliographie et Zotero'));
+  if (tags.childNodes.length) card.append(tags);
+  card.onclick = () => selectMetier(metier.id);
+  return card;
+}
+
+function selectMetier(id) {
+  metierChoice = id;
+  for (const card of $('metier-cards').children) {
+    const on = card.dataset.metier === id;
+    card.classList.toggle('selected', on);
+    card.setAttribute('aria-checked', String(on));
+  }
+  $('metier-chosen').textContent = metierById(id)?.label || '—';
+  $('metier-continue').disabled = !id;
+}
+
+function openMetierView(mode = 'change') {
+  metierMode = mode;
+  $('metier-cards').replaceChildren(...METIERS.filter((m) => !m.simple).map((m) => metierCard(m)));
+  selectMetier(mode === 'first' ? null : settings.metier || DEFAULT_METIER);
+  $('metier-step').textContent =
+    mode === 'first' ? 'PREMIER LANCEMENT · ÉTAPE 1 SUR 2' : 'CHANGER DE MÉTIER';
+  $('metier-cancel').hidden = mode === 'first';
+  $('quick-chips').replaceChildren(
+    ...metierById('general').suggestions.map((s) => {
+      const chip = element('button', 'chip', s.title);
+      chip.type = 'button';
+      chip.onclick = () => {
+        $('quick-prompt').value = tr(s.prompt);
+        $('quick-prompt').focus();
+      };
+      return chip;
+    }),
+  );
+  langButtons();
+  document.body.dataset.onboarding = '1';
+  $('metier-view').hidden = false;
+  $('metier-view').scrollTop = 0;
+}
+
+async function closeMetierView(id) {
+  if (id && id !== settings.metier)
+    settings = await window.localia.saveSettings({ ...settings, metier: id });
+  $('metier-view').hidden = true;
+  delete document.body.dataset.onboarding;
+  applyMetier();
+  view('chat');
+  // Premier lancement sans modèle : étape 2, le guide (choix et téléchargement d'un modèle).
+  if (metierMode === 'first' && !models.length && !settings.guideDone)
+    await openGuide().catch(() => {});
+}
+
+// Interface adaptée au métier : menu Tâche, onglets, nom du métier, accueil.
+function applyMetier() {
+  const metier = currentMetier();
+  document.body.dataset.metier = metier.id;
+  $('metier-name').textContent = metier.label;
+  $('bibliography-tab').hidden = !metier.tools?.includes('bibliography');
+  const select = $('task');
+  const chosen = select.value;
+  select.replaceChildren(new Option('Libre', ''));
+  for (const group of metierTaskGroups(metier.id)) {
+    const node = document.createElement('optgroup');
+    node.label = group.label;
+    for (const id of group.tasks) node.append(new Option(taskById(id).label, id));
+    select.append(node);
+  }
+  // Tâche d'une conversation venue d'un autre métier : gardée, dans un groupe à part.
+  const keep = chosen || conversationChoices(current).task;
+  keepTaskOption(keep);
+  select.value = keep || '';
+  showTaskAdvice(false);
+  render();
+}
+
+// Tâche d'une conversation absente du menu (autre métier) : ajoutée pour rester choisie.
+function keepTaskOption(id) {
+  const select = $('task');
+  if (!id || [...select.options].some((o) => o.value === id) || !taskById(id)) return;
+  const other = document.createElement('optgroup');
+  other.label = 'Autre métier';
+  other.append(new Option(taskById(id).label, id));
+  select.append(other);
+}
+
+// Suggestions de l'accueil du métier (groupes Enseignant / Chercheur…), dans la copie affichée.
+function fillSuggestions(box) {
+  const metier = currentMetier();
+  box.replaceChildren();
+  // Accueil « Une question ? » : le titre de la question directe.
+  const welcomeBox = box.closest('#welcome');
+  welcomeBox.querySelector('h2').textContent = metier.simple
+    ? 'Une question ?'
+    : 'Déposez vos documents ici';
+  welcomeBox.querySelector('h2 + p').textContent = metier.simple
+    ? 'Demandez à Localia. Vous pouvez joindre un document ou une photo.'
+    : 'Ajoutez des fichiers pour les analyser, ou commencez simplement une conversation avec votre assistant.';
+  const groups = [...new Set(metier.suggestions.map((s) => s.group || ''))];
+  for (const group of groups) {
+    const section = element('div', 'suggestion-group');
+    if (group) section.append(element('span', 'eyebrow', group.toUpperCase()));
+    const row = element('div', 'suggestion-row');
+    for (const s of metier.suggestions.filter((x) => (x.group || '') === group)) {
+      const button = element('button');
+      button.type = 'button';
+      button.append(element('strong', '', s.title));
+      if (s.sub) button.append(element('span', '', s.sub));
+      button.onclick = () => {
+        const task = taskById(s.task);
+        if (!metier.simple && [...$('task').options].some((o) => o.value === s.task)) {
+          $('task').value = s.task;
+          $('task').dispatchEvent(new Event('change'));
+        }
+        $('prompt').value = tr(s.prompt) || taskText(task, 2);
+        $('prompt').focus();
+      };
+      row.append(button);
+    }
+    section.append(row);
+    box.append(section);
+  }
+  // Bande « Pour tous les métiers » : tâches communes (sauf pour la question directe).
+  if (metier.simple) return;
+  const band = element('div', 'common-band');
+  band.append(element('span', 'eyebrow', 'POUR TOUS LES MÉTIERS'));
+  for (const id of COMMON_TASKS.filter((t) => t !== 'question')) {
+    const task = taskById(id);
+    const chip = element('button', 'chip', task.label);
+    chip.type = 'button';
+    chip.onclick = () => {
+      keepTaskOption(id);
+      $('task').value = id;
+      $('task').dispatchEvent(new Event('change'));
+      $('prompt').value = taskText(task, 2);
+      $('prompt').focus();
+    };
+    band.append(chip);
+  }
+  box.append(band);
+}
+
+function langButtons() {
+  const lang = settings.lang || 'fr';
+  $('lang-fr').setAttribute('aria-pressed', String(lang === 'fr'));
+  $('lang-en').setAttribute('aria-pressed', String(lang === 'en'));
+}
+for (const lang of ['fr', 'en'])
+  $('lang-' + lang).onclick = guard(async () => {
+    settings = await window.localia.saveSettings({ ...settings, lang });
+    langButtons();
+    if (typeof applyLanguage === 'function') applyLanguage();
+  });
+
+$('metier-switch').onclick = () => openMetierView('change');
+$('metier-cancel').onclick = () => closeMetierView(null);
+$('metier-continue').onclick = guard(() => closeMetierView(metierChoice));
+// Question directe, sans métier : écran le plus simple, et la question part tout de suite.
+async function quickQuestion(then) {
+  await closeMetierView('general');
+  await then();
+}
+$('quick-send').onclick = guard(() =>
+  quickQuestion(async () => {
+    const text = $('quick-prompt').value.trim();
+    $('quick-prompt').value = '';
+    if (!text) return $('prompt').focus();
+    $('prompt').value = text;
+    if (models.length) $('composer').requestSubmit();
+  }),
+);
+$('quick-prompt').addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    $('quick-send').click();
+  }
+});
+$('quick-attach').onclick = guard(() => quickQuestion(async () => $('attach').click()));
+$('quick-photo').onclick = guard(() => quickQuestion(async () => $('photo').click()));

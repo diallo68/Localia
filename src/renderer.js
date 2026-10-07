@@ -131,12 +131,13 @@ function shortDate(iso) {
   if (!iso) return '';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '';
-  const time = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const locale = isEnglish() ? 'en-GB' : 'fr-FR';
+  const time = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   if (date >= today) return 'Aujourd’hui, ' + time;
   if (date >= today - DAY) return 'Hier, ' + time;
-  return date.toLocaleDateString('fr-FR', {
+  return date.toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: date.getFullYear() === today.getFullYear() ? undefined : 'numeric',
@@ -171,6 +172,7 @@ function history() {
       current = c;
       selectModel(c.model);
       const choice = conversationChoices(c);
+      keepTaskOption(choice.task);
       $('task').value = choice.task;
       $('skill').value = choice.skill;
       $('project').value = c.projectId && projectById(c.projectId) ? c.projectId : '';
@@ -301,7 +303,20 @@ function messageNode(message, question) {
     if (message.role === 'assistant') content.className = 'markdown';
     content.textContent = message.content || 'Préparation de la réponse…';
   }
-  node.append(label, content);
+  node.append(label);
+  if (message.images?.length) {
+    const strip = document.createElement('div');
+    strip.className = 'message-images';
+    for (const image of message.images) {
+      const img = document.createElement('img');
+      img.src = image.thumb;
+      img.alt = image.name;
+      img.title = image.name;
+      strip.append(img);
+    }
+    node.append(strip);
+  }
+  node.append(content);
   if (message.role === 'assistant') {
     const panel = checksPanel(message.checks);
     if (panel) node.append(panel);
@@ -382,12 +397,13 @@ function render() {
   $('rename-conversation').hidden = !current;
   $('messages').replaceChildren();
   if (!current?.messages.length) {
-    $('messages').append(welcome.cloneNode(true));
-    for (const b of $('messages').querySelectorAll('[data-prompt]'))
-      b.onclick = () => {
-        $('prompt').value = b.dataset.prompt;
-        $('prompt').focus();
-      };
+    const copy = welcome.cloneNode(true);
+    $('messages').append(copy);
+    // Copie de l'accueil : zone de dépôt et suggestions du métier rebranchées.
+    const zone = copy.querySelector('#drop-zone');
+    zone.onclick = () => $('attach').click();
+    zone.disabled = $('attach').disabled;
+    fillSuggestions(copy.querySelector('.suggestions'));
   } else current.messages.forEach((m, i, list) => messageNode(m, list[i - 1]));
   history();
 }
@@ -404,6 +420,7 @@ function controls() {
   $('rename-conversation').disabled = chatting || importing || !historyReady;
   $('send').disabled ||= comparing;
   $('attach').disabled ||= comparing;
+  $('photo').disabled = $('attach').disabled;
   dropZone.disabled = $('attach').disabled;
   for (const listener of controlListeners) listener();
   $('download').disabled = pulling;
@@ -615,6 +632,98 @@ async function readWebPage(address) {
   }
 }
 
+// Photos en attente pour le prochain message : réduites ici (1 600 px au plus, JPEG), avec une
+// miniature gardée dans la conversation pour l'affichage.
+let pendingImages = [];
+const MAX_PENDING_IMAGES = 4;
+async function shrinkImage(file, size, quality) {
+  const bitmap = await createImageBitmap(file).catch(() => {
+    throw new Error(
+      `Photo illisible : ${file.name}. Formats acceptés : JPEG, PNG, WebP (les photos HEIC d’iPhone doivent être converties).`,
+    );
+  });
+  const scale = Math.min(1, size / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+}
+async function addImages(files) {
+  const images = [...files].filter((f) => f.type.startsWith('image/') || /\.heic$/i.test(f.name));
+  if (!images.length) return;
+  if (pendingImages.length + images.length > MAX_PENDING_IMAGES)
+    throw new Error(`${MAX_PENDING_IMAGES} photos au plus par message.`);
+  notice('');
+  importing = true;
+  controls();
+  try {
+    for (const file of images) {
+      const photo = await shrinkImage(file, 1600, 0.88);
+      const thumb = await shrinkImage(file, 160, 0.7);
+      const saved = await window.localia.attachImage(
+        file.name.replace(/\.[^.]+$/, '') + '.jpg',
+        new Uint8Array(await photo.arrayBuffer()),
+      );
+      const reader = new FileReader();
+      const url = await new Promise((resolve) => {
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(thumb);
+      });
+      pendingImages.push({ id: saved.id, name: file.name, thumb: url });
+    }
+  } finally {
+    importing = false;
+    controls();
+    renderImages();
+  }
+  $('prompt').focus();
+}
+function renderImages() {
+  const box = $('image-chips');
+  box.replaceChildren();
+  box.hidden = !pendingImages.length;
+  for (const image of pendingImages) {
+    const chip = document.createElement('div');
+    chip.className = 'image-chip';
+    const img = document.createElement('img');
+    img.src = image.thumb;
+    img.alt = image.name;
+    const name = document.createElement('span');
+    name.textContent = image.name;
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = '×';
+    remove.setAttribute('aria-label', `Retirer la photo ${image.name}`);
+    remove.onclick = guard(async () => {
+      pendingImages = pendingImages.filter((i) => i !== image);
+      renderImages();
+      await window.localia.deleteDocument(image.id);
+    });
+    chip.append(img, name, remove);
+    box.append(chip);
+  }
+}
+$('photo').onclick = () => $('photo-input').click();
+$('photo-input').onchange = guard(async () => {
+  const files = [...$('photo-input').files];
+  $('photo-input').value = '';
+  await addImages(files);
+});
+// Photo collée dans le message (capture d'écran, image copiée).
+$('prompt').addEventListener(
+  'paste',
+  guard(async (event) => {
+    const files = [...(event.clipboardData?.files || [])].filter((f) =>
+      f.type.startsWith('image/'),
+    );
+    if (!files.length) return;
+    event.preventDefault();
+    await addImages(files);
+  }),
+);
+
 // Fichier joint (trombone ou dépôt) : un PDF remplace le document de la conversation ;
 // un autre fichier s'ajoute aux fichiers joints (5 au plus). Même traitement pour un fichier choisi et un fichier déposé dans la fenêtre.
 async function addAttachment(read) {
@@ -673,7 +782,11 @@ chatView.addEventListener(
     dragDepth = 0;
     chatView.classList.remove('dragging');
     if (!dropAllowed()) return;
-    const files = [...(event.dataTransfer?.files || [])];
+    const all = [...(event.dataTransfer?.files || [])];
+    // Photos déposées : jointes au prochain message, comme avec le bouton appareil photo.
+    if (all.length && all.every((f) => f.type.startsWith('image/') || /\.heic$/i.test(f.name)))
+      return addImages(all);
+    const files = all;
     if (files.length > 1) notice('Un fichier à la fois : seul le premier est ajouté.');
     const [file] = files;
     if (!file) return;
@@ -719,6 +832,8 @@ $('delete-conversation').onclick = guard(async () => {
   view('chat');
   if (conversation.document) await window.localia.deleteDocument(conversation.document.id);
   for (const f of conversation.files || []) await window.localia.deleteDocument(f.id);
+  for (const m of conversation.messages)
+    for (const image of m.images || []) await window.localia.deleteDocument(image.id);
 });
 $('chat-tab').onclick = () => view('chat');
 $('bench-nav').onclick = () => $(lastBenchStep + '-tab').click();
@@ -764,6 +879,8 @@ function linkIn(text) {
 // Renvoie { ok, error, conversationId, text } pour l'appareil distant.
 async function sendPrompt({ remoteId } = {}) {
   let content = $('prompt').value.trim();
+  // Photo seule, sans texte : question par défaut.
+  if (!content && pendingImages.length && !remoteId) content = 'Que montre cette photo ?';
   if (!content) return { ok: false, error: null };
   if (chatting || importing || comparing || !historyReady)
     return { ok: false, error: 'Localia est occupée sur le Mac : réessayez dans un moment.' };
@@ -795,6 +912,19 @@ async function sendPrompt({ remoteId } = {}) {
     view('models');
     return { ok: false, error: 'Aucun modèle installé sur le Mac.' };
   }
+  // Photos : seulement avec un modèle qui sait les lire (vérifié avant d'écrire le message).
+  const images = remoteId ? [] : pendingImages;
+  if (images.length) {
+    const model = $('model').value;
+    const info = await window.localia.modelInfo(model).catch(() => ({ capabilities: [] }));
+    if (!info.capabilities.includes('vision'))
+      return {
+        ok: false,
+        error: model.startsWith('integre/')
+          ? 'Le moteur intégré ne lit pas encore les photos. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.'
+          : `Le modèle ${model} ne lit pas les photos. Choisissez un modèle qui les lit (par exemple gemma3:12b), ou retirez la photo.`,
+      };
+  }
   // Adresse https://… dans le message : la page est lue et devient le document de la
   // conversation ; le reste du message est la question (seule, l'adresse ajoute la page).
   const link = linkIn(invocation ? invocation.rest : content);
@@ -823,6 +953,11 @@ async function sendPrompt({ remoteId } = {}) {
   const userMessage = { role: 'user', content };
   if (messageSkill) userMessage.skill = messageSkill.id;
   if (remoteId) userMessage.remote = true;
+  if (images.length) {
+    userMessage.images = images.map(({ id, name, thumb }) => ({ id, name, thumb }));
+    pendingImages = [];
+    renderImages();
+  }
   current.messages.push(userMessage);
   $('prompt').value = '';
   $('skill-suggest').hidden = true;
@@ -836,6 +971,10 @@ async function sendPrompt({ remoteId } = {}) {
   conversation.skill = $('skill').value || undefined;
   conversation.projectId = $('project').value || undefined;
   startRunNotes();
+  if (images.length && currentMetier().anonymize)
+    runNotice(
+      'Attention : les photos ne sont pas anonymisées. Le modèle voit l’image entière, avec les noms ou numéros qu’elle montre (il reste sur cet ordinateur).',
+    );
   rememberModel(conversation.model).catch((e) => notice(e.message));
   // Modèle qui a écrit la réponse, affiché à côté de « Localia » (et conservé avec le message).
   answer.model = conversation.model;
@@ -852,12 +991,16 @@ async function sendPrompt({ remoteId } = {}) {
       remoteId,
       projectId: conversation.projectId,
       documentId: conversation.document?.id,
+      anonymap: conversation.anonymap,
       fileIds: (conversation.files || []).map((f) => f.id),
       messages: conversation.messages
         .filter((m) => !m.interrupted)
-        .map(({ role, content }) => ({ role, content })),
+        .map(({ role, content, images }) =>
+          images?.length ? { role, content, images: images.map((i) => i.id) } : { role, content },
+        ),
     });
     answer.content = result.text || '';
+    if (result.anonymap) conversation.anonymap = result.anonymap;
     completed = !result.cancelled;
   } catch (error) {
     failure = error.message;
@@ -978,6 +1121,12 @@ window.localia.onProgress(({ kind, data }) => {
     );
   }
   if (kind === 'skill') runNotice(`Compétence appliquée : ${data.name} (${data.call}).`);
+  if (kind === 'anonymized')
+    runNotice(
+      data.summary
+        ? `Anonymisation : ${data.summary} remplacés par des étiquettes avant l’envoi au modèle.`
+        : 'Anonymisation active : aucune donnée personnelle repérée. Vérifiez votre texte, et ajoutez au besoin des mots à masquer dans les réglages.',
+    );
   if (kind === 'files-context')
     runNotice(
       `Fichiers transmis au modèle : ${data.names.join(', ')} (tableaux : portrait seulement).`,
@@ -1013,7 +1162,6 @@ $('model').onchange = guard(async () => {
 });
 
 // --- Assistant de recherche : type de tâche et modèle conseillé par le Benchmark ---
-for (const task of TASKS.filter((t) => !t.files)) $('task').add(new Option(task.label, task.id));
 const percentText = (v) => (v == null ? '—' : Math.round(v * 100) + ' %');
 const minutesText = (s) =>
   s == null
@@ -1037,17 +1185,25 @@ function showTaskAdvice(choose) {
   const chosenTask = taskById($('task').value);
   const advice = taskAdvice($('task').value || skill?.task);
   const box = $('task-advice');
+  const metierNotice = currentMetier().notice;
   // Suggestion de premier message (Tab pour la reprendre) selon la tâche ou la compétence.
   $('prompt').placeholder = chosenTask?.example
-    ? `Ex. ${chosenTask.example} (Tab pour l’utiliser)`
+    ? isEnglish()
+      ? `E.g. ${taskText(chosenTask, 2)} (Tab to use it)`
+      : `Ex. ${chosenTask.example} (Tab pour l’utiliser)`
     : skill
       ? `Décrivez ce que vous attendez : la compétence « ${skill.name} » s’applique.`
-      : 'Posez votre question, ou collez l’adresse d’une page web…';
-  box.hidden = !advice && !skill && !chosenTask;
+      : tr('Posez votre question, ou collez l’adresse d’une page web…');
+  box.hidden = !advice && !skill && !chosenTask && !metierNotice;
   if (box.hidden) return;
-  const parts = [];
+  const parts = metierNotice ? [tr(metierNotice)] : [];
   // Ce que le choix change pour les prochains messages.
-  if (chosenTask?.effect) parts.push(`Tâche « ${chosenTask.label} » : ${chosenTask.effect}`);
+  if (chosenTask?.effect)
+    parts.push(
+      isEnglish()
+        ? `Task “${taskText(chosenTask, 0)}”: ${taskText(chosenTask, 1)}`
+        : `Tâche « ${chosenTask.label} » : ${chosenTask.effect}`,
+    );
   if (skill) {
     parts.push(`Compétence ${skill.call} : ${skill.description}`);
     // Compétence prévue pour une autre tâche : les deux consignes risquent de se contredire.
@@ -1080,7 +1236,9 @@ function showTaskAdvice(choose) {
     if ($('model').value !== b.model) parts.push(`Vous utilisez ${$('model').value}.`);
   } else
     parts.push(
-      'Pas encore assez de réponses notées dans votre Benchmark pour conseiller un modèle pour cette tâche.',
+      tr(
+        'Pas encore assez de réponses notées dans votre Benchmark pour conseiller un modèle pour cette tâche.',
+      ),
     );
   if (advice.task.warning) parts.push(advice.task.warning);
   box.textContent = parts.join(' ');
@@ -1102,7 +1260,7 @@ for (const id of ['task', 'skill'])
   });
 // Tab dans une zone de saisie vide : reprend la suggestion de la tâche.
 $('prompt').addEventListener('keydown', (event) => {
-  const example = taskById($('task').value)?.example;
+  const example = taskText(taskById($('task').value), 2);
   if (event.key !== 'Tab' || event.shiftKey || $('prompt').value || !example) return;
   event.preventDefault();
   $('prompt').value = example;

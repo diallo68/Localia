@@ -11,11 +11,69 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body data-view="chat">
+    <section id="metier-view" hidden aria-labelledby="metier-title">
+      <div class="metier-top">
+        <div class="brand">
+          <span class="logo">L</span>
+          <div>Localia<small>L’IA, chez vous.</small></div>
+        </div>
+        <div class="segmented" role="group" aria-label="Langue">
+          <button id="lang-fr" type="button" aria-pressed="true">Français</button
+          ><button id="lang-en" type="button" aria-pressed="false">English</button>
+        </div>
+      </div>
+      <div class="metier-intro">
+        <span id="metier-step" class="eyebrow">PREMIER LANCEMENT · ÉTAPE 1 SUR 2</span>
+        <h1 id="metier-title">Quel est votre métier ?</h1>
+        <p>
+          Localia adapte ses tâches, ses compétences et les modèles conseillés à votre travail. Vous
+          pourrez en changer à tout moment.
+        </p>
+      </div>
+      <div id="metier-cards" role="radiogroup" aria-label="Métiers"></div>
+      <div class="metier-footer">
+        <span class="metier-privacy"
+          ><i data-icon="lock"></i>Vos documents et vos photos ne quittent jamais cet
+          ordinateur.</span
+        >
+        <div>
+          <span>Choisi : <strong id="metier-chosen"></strong></span
+          ><button id="metier-cancel" type="button" hidden>Annuler</button
+          ><button id="metier-continue" class="primary" type="button">
+            Continuer<i data-icon="arrow"></i>
+          </button>
+        </div>
+      </div>
+      <div class="metier-or"><span></span>ou, sans choisir de métier<span></span></div>
+      <div class="quick-question">
+        <h2>Une question ?</h2>
+        <p>Demandez à Localia. Vous pouvez joindre un document ou une photo.</p>
+        <div class="quick-box">
+          <label class="sr-only" for="quick-prompt">Votre question</label
+          ><textarea id="quick-prompt" rows="2" placeholder="Posez votre question…"></textarea>
+          <div>
+            <button id="quick-attach" class="round" type="button" aria-label="Joindre un fichier">
+              <i data-icon="paperclip"></i></button
+            ><button id="quick-photo" class="round" type="button" aria-label="Joindre une photo">
+              <i data-icon="camera"></i></button
+            ><span></span
+            ><button id="quick-send" class="primary" type="button">
+              Envoyer<i data-icon="send"></i>
+            </button>
+          </div>
+        </div>
+        <div id="quick-chips"></div>
+      </div>
+    </section>
     <aside>
       <div class="brand">
         <span class="logo">L</span>
         <div>Localia<small>L’IA, chez vous.</small></div>
       </div>
+      <button id="metier-switch" type="button" title="Changer de métier">
+        <span><small>Métier</small><strong id="metier-name"></strong></span
+        ><i data-icon="chevron"></i>
+      </button>
       <button id="new" class="primary"><i data-icon="plus"></i>Nouvelle conversation</button>
       <div class="nav-section" data-section="travail">
         <button class="section-toggle" type="button" aria-expanded="true">
@@ -183,6 +241,7 @@
             </button>
           </div>
           <div id="file-chips" hidden></div>
+          <div id="image-chips" hidden></div>
           <div id="skill-suggest" hidden role="listbox" aria-label="Compétences"></div>
           <label class="sr-only" for="prompt">Votre message</label
           ><textarea
@@ -199,7 +258,21 @@
               title="Joindre un fichier : PDF, consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message."
             >
               <i data-icon="paperclip"></i></button
-            ><span id="hint"
+            ><button
+              id="photo"
+              class="round"
+              type="button"
+              aria-label="Joindre une photo"
+              title="Joindre une photo (JPEG, PNG, WebP), ou la coller dans le message. Lue par les modèles qui savent lire les images."
+            >
+              <i data-icon="camera"></i></button
+            ><input
+              id="photo-input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              hidden
+            /><span id="hint"
               >Entrée pour envoyer · Maj + Entrée pour revenir à la ligne · une adresse https://…
               collée est lue comme page web</span
             ><button type="button" id="stop" hidden>Arrêter</button
@@ -866,6 +939,27 @@
             ><span id="settings-status" class="muted" role="status"></span>
           </div>
         </form>
+        <section id="anonymize" aria-labelledby="anonymize-title">
+          <h3 id="anonymize-title">Anonymisation</h3>
+          <p class="muted">
+            Métiers Santé, Juridique, Administration et Finance : avant l’envoi au modèle, Localia
+            remplace les noms précédés d’une civilité ou écrits « Prénom NOM », les e-mails,
+            téléphones, IBAN, numéros de carte, de sécurité sociale, de dossier ou de pièce, les
+            adresses et les dates de naissance par des étiquettes comme [PERSONNE 1] ; la réponse
+            affichée remet les vraies valeurs. Le repérage ne voit pas tout : ajoutez ici les mots à
+            toujours masquer (noms sans civilité, lieux, sociétés…), un par ligne.
+          </p>
+          <label for="mask-words">Mots toujours masqués</label
+          ><textarea
+            id="mask-words"
+            rows="4"
+            placeholder="Clinique Pasteur&#10;Aïssatou"
+          ></textarea>
+          <div class="input-row">
+            <button id="mask-save" type="button">Enregistrer la liste</button
+            ><span id="mask-status" class="muted" role="status"></span>
+          </div>
+        </section>
         <section id="privacy" aria-labelledby="privacy-title">
           <h3 id="privacy-title">Données sur ce Mac</h3>
           <p class="muted">
@@ -930,6 +1024,8 @@
     <script src="markdown.js"></script>
     <script src="questions.js"></script>
     <script src="tasks.js"></script>
+    <script src="metiers.js"></script>
+    <script src="i18n.js"></script>
     <script src="memory.js"></script>
     <script src="bibliography.js"></script>
     <script src="actions.js"></script>
@@ -948,6 +1044,7 @@
     <script src="files-view.js"></script>
     <script src="skills-view.js"></script>
     <script src="guide-view.js"></script>
+    <script src="metier-view.js"></script>
     <script src="performance-view.js"></script>
     <script src="catalog-view.js"></script>
     <script src="start.js"></script>

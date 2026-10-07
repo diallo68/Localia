@@ -249,3 +249,18 @@ $('remote-reset').onclick = guard(async () => {
     return;
   await showRemote(await window.localia.remoteReset());
 });
+
+// Anonymisation : mots toujours masqués avant l'envoi au modèle.
+function showMaskWords() {
+  $('mask-words').value = (settings.maskWords || []).join('\n');
+}
+$('mask-save').onclick = guard(async () => {
+  const maskWords = $('mask-words')
+    .value.split('\n')
+    .map((w) => w.trim())
+    .filter(Boolean);
+  settings = await window.localia.saveSettings({ ...settings, maskWords });
+  showMaskWords();
+  $('mask-status').textContent = `${settings.maskWords?.length || 0} mot(s) masqué(s).`;
+});
+$('settings-tab').addEventListener('click', showMaskWords);

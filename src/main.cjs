@@ -23,6 +23,7 @@ const {
   taskKey,
   validateMessages,
   documentMessages,
+  IMAGE_NOTE,
   withSystem,
   contextSize,
   exceedsContext,
@@ -31,6 +32,20 @@ const {
 } = require('./chat.cjs');
 const { normalizeSettings } = require('./settings.cjs');
 const { verifyAnswer } = require('./verify.js');
+const { metierById } = require('./metiers.js');
+const { createAnonymizer, anonymizedSummary } = require('./anonymize.js');
+// Étiquettes d'une conversation renvoyées par la page : vérifiées avant d'être reprises.
+function anonymap(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  const entries = Object.entries(raw).filter(
+    ([label, value]) =>
+      /^\[[A-ZÉ ]{2,30} \d{1,4}\]$/.test(label) &&
+      typeof value === 'string' &&
+      value.length > 0 &&
+      value.length <= 500,
+  );
+  return Object.fromEntries(entries.slice(0, 2000));
+}
 const { taskById } = require('./tasks.js');
 const { normalizeProjects, buildMemory } = require('./memory.js');
 const bibliography = require('./bibliography.js');
@@ -233,6 +248,38 @@ handle('attach-data', async (name, bytes) => {
   } finally {
     await fs.rm(dir, { recursive: true, force: true });
   }
+});
+// Photo jointe (bouton, dépôt ou collage) : la page l'a déjà réduite ; on vérifie le format réel
+// (signature du fichier) avant de la garder, chiffrée si le chiffrement est actif.
+const IMAGE_TYPES = [
+  ['image/jpeg', (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff],
+  ['image/png', (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47],
+  [
+    'image/webp',
+    (b) => b.subarray(0, 4).toString() === 'RIFF' && b.subarray(8, 12).toString() === 'WEBP',
+  ],
+  ['image/gif', (b) => b.subarray(0, 4).toString() === 'GIF8'],
+];
+handle('attach-image', async (name, bytes) => {
+  if (!(bytes instanceof Uint8Array) || !bytes.length) throw new Error('Photo illisible.');
+  if (bytes.length > 8 * 1024 * 1024) throw new Error('Photo limitée à 8 Mo.');
+  const buffer = Buffer.from(bytes);
+  const type = IMAGE_TYPES.find(([, test]) => test(buffer));
+  if (!type) throw new Error('Format de photo non pris en charge : JPEG, PNG, WebP ou GIF.');
+  const doc = {
+    id: crypto.randomUUID(),
+    name: path.basename(String(name || 'photo')).slice(0, 200),
+    image: true,
+    mime: type[0],
+    data: buffer.toString('base64'),
+  };
+  await fs.mkdir(documentsPath(), { recursive: true });
+  await fs.writeFile(
+    path.join(documentsPath(), doc.id + '.json'),
+    documentCodec.encode(JSON.stringify(doc)),
+    { mode: 0o600 },
+  );
+  return { id: doc.id, name: doc.name, size: buffer.length };
 });
 async function saveTextAttachment(file) {
   if ((await fs.stat(file)).size > 50_000_000) throw new Error('Fichier limité à 50 Mo.');
@@ -996,6 +1043,7 @@ handle('run', async (kind, payload) => {
   let final = null;
   let used = null;
   let sent = null;
+  let anon = null; // anonymisation de cette demande (métiers à données sensibles)
   try {
     let body = { model, stream: true };
     if (chatLike) {
@@ -1035,7 +1083,15 @@ handle('run', async (kind, payload) => {
         files.push(doc);
       }
       if (files.length) send({ kind: 'files-context', data: { names: files.map((f) => f.name) } });
+      // Métier choisi (conversations seulement : les séries du Benchmark restent sans consigne).
+      const appSettings = await readSettings();
+      const metier = kind === 'chat' ? metierById(appSettings.metier) : null;
       const system = [
+        // Interface en anglais : réponses en anglais, sauf si l'utilisateur écrit autrement.
+        kind === 'chat' && appSettings.lang === 'en'
+          ? 'Answer in English, unless the user writes in another language.'
+          : null,
+        metier?.instruction,
         modelSettings.system,
         task?.instruction,
         skill?.instruction,
@@ -1069,6 +1125,40 @@ handle('run', async (kind, payload) => {
         messages = withSystem(messages, system);
         if (kind === 'chat' && exceedsContext(payload.messages, numCtx))
           send({ kind: 'context', data: {} });
+      }
+      // Photos : seulement avec un modèle qui les lit ; envoyées à Ollama en base64.
+      if (messages.some((m) => m.images?.length)) {
+        if (localEngine.isLocal(model))
+          throw new Error(
+            'Le moteur intégré ne lit pas encore les photos. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.',
+          );
+        if (!info.capabilities?.includes('vision'))
+          throw new Error(
+            `Le modèle ${model} ne lit pas les photos. Choisissez un modèle qui les lit (par exemple gemma3:12b), ou retirez la photo.`,
+          );
+        messages = await Promise.all(
+          messages.map(async (m) => {
+            if (!m.images?.length) return m;
+            const images = [];
+            for (const id of m.images) {
+              const doc = await loadDocument(documentsPath(), id, documentCodec);
+              if (!doc.image) throw new Error('Photo jointe invalide.');
+              images.push(doc.data);
+            }
+            return { ...m, images };
+          }),
+        );
+        if (messages[0]?.role === 'system')
+          messages[0] = { ...messages[0], content: messages[0].content + '\n\n' + IMAGE_NOTE };
+        else messages.unshift({ role: 'system', content: IMAGE_NOTE });
+      }
+      // Métier à données sensibles : noms, numéros, adresses… remplacés par des étiquettes avant
+      // l'envoi ; les étiquettes de la conversation sont reprises, la réponse est remise en clair.
+      if (metier?.anonymize) {
+        anon = createAnonymizer(anonymap(payload.anonymap), appSettings.maskWords);
+        messages = messages.map((m) => ({ ...m, content: anon.mask(m.content) }));
+        const summary = anonymizedSummary(anon.counts);
+        send({ kind: 'anonymized', data: { summary } });
       }
       // Comparaison : le modèle est déchargé après sa dernière question pour libérer la mémoire.
       body = chatBody({
@@ -1110,15 +1200,23 @@ handle('run', async (kind, payload) => {
     if (chatLike && !sent) sent = { messages: body.messages };
     return {
       cancelled: false,
-      text: responseText,
-      thinking,
+      text: anon ? anon.unmask(responseText) : responseText,
+      thinking: anon ? anon.unmask(thinking) : thinking,
+      anonymap: anon?.map,
       stats: streamStats(final),
       used,
       sent,
     };
   } catch (error) {
     if (controller.signal.aborted)
-      return { cancelled: true, text: responseText, thinking, used, sent };
+      return {
+        cancelled: true,
+        text: anon ? anon.unmask(responseText) : responseText,
+        thinking,
+        used,
+        sent,
+        anonymap: anon?.map,
+      };
     throw error;
   } finally {
     tasks.delete(key);

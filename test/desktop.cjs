@@ -14,6 +14,39 @@ const path = require('node:path');
     const page = await app.firstWindow();
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
+    // Premier lancement : choix du métier (8 métiers), puis l'interface du métier choisi.
+    await page.waitForFunction(() => !document.querySelector('#metier-view').hidden);
+    assert.equal(await page.locator('.metier-card').count(), 8);
+    // Langue : anglais puis retour au français, sans recharger.
+    await page.locator('#lang-en').click();
+    await page.waitForFunction(
+      () => document.querySelector('#metier-title').textContent === 'What is your profession?',
+    );
+    assert.match(await page.locator('.metier-card[data-metier=sante]').textContent(), /Health/);
+    await page.locator('#lang-fr').click();
+    await page.waitForFunction(
+      () => document.querySelector('#metier-title').textContent === 'Quel est votre métier ?',
+    );
+    assert.match(await page.locator('.metier-card[data-metier=sante]').textContent(), /Santé/);
+    assert.equal(await page.locator('#metier-continue').isDisabled(), true);
+    await page.locator('.metier-card[data-metier=finance]').click();
+    assert.equal(await page.locator('#metier-chosen').textContent(), 'Finance');
+    await page.locator('#metier-continue').click();
+    await page.waitForFunction(() => document.querySelector('#metier-view').hidden);
+    assert.equal(
+      JSON.parse(await fs.readFile(path.join(profile, 'settings.json'), 'utf8')).metier,
+      'finance',
+    );
+    assert.equal(await page.locator('#metier-name').textContent(), 'Finance');
+    assert.equal(
+      await page.locator('#bibliography-tab').isHidden(),
+      true,
+      'bibliographie : Ens./Rech.',
+    );
+    assert.ok(await page.locator('#task option[value=fin-facture]').count());
+    assert.match(await page.locator('#task-advice').textContent(), /pas un conseil fiscal/);
+    // Le guide (étape 2) peut s'ouvrir sans modèle : retour à la conversation.
+    await page.locator('#chat-tab').click();
     await page.waitForFunction(() =>
       document.querySelector('#status').textContent.includes('connecté'),
     );
@@ -74,8 +107,10 @@ const path = require('node:path');
       'Bonjour, test local réussi.',
     );
     await page.locator('#new').click();
-    await page.locator('[data-prompt]').first().click();
-    assert.ok((await page.locator('#prompt').inputValue()).includes('e-mail'));
+    // Suggestion du métier (Finance) : tâche choisie et exemple de message proposé.
+    await page.locator('.suggestion-row button').first().click();
+    assert.equal(await page.locator('#task').inputValue(), 'fin-releve');
+    assert.ok((await page.locator('#prompt').inputValue()).includes('relevé'));
     await page.locator('#prompt').fill('');
     await page.screenshot({ path: 'test-results/desktop.png' });
     await page.setViewportSize({ width: 740, height: 560 });

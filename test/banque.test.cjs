@@ -33,3 +33,20 @@ test('documents fictifs : lisibles par Localia et signalés comme fictifs à cha
       assert.match(page.text, /Document fictif/, `${name} p.${page.number}`);
   }
 });
+
+test('séries par métier : 5 questions chacune, catégorie connue et réponse attendue', () => {
+  const metiers = path.join(dir, 'metiers');
+  const labels = new Set();
+  const files = fs.readdirSync(metiers).filter((f) => /^serie-.*\.txt$/.test(f));
+  assert.equal(files.length, 8);
+  for (const file of files) {
+    const questions = parseQuestions(fs.readFileSync(path.join(metiers, file), 'utf8'));
+    assert.equal(questions.length, 5, file);
+    for (const q of questions) {
+      assert.ok(categories.has(q.category), `${file} ${q.label} : catégorie « ${q.category} »`);
+      assert.ok(q.expected?.length > 10, `${file} ${q.label} : réponse attendue`);
+      assert.ok(!labels.has(q.label), `${q.label} en double`);
+      labels.add(q.label);
+    }
+  }
+});

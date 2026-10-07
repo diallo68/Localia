@@ -29,10 +29,12 @@
         [...conversations, ...comparisons].flatMap((c) => [
           ...(c.document ? [c.document.id] : []),
           ...(c.files || []).map((f) => f.id),
+          ...(c.messages || []).flatMap((m) => (m.images || []).map((i) => i.id)),
         ]),
       )
       .catch(() => {});
-  render();
+  applyMetier();
+  applyLanguage();
   await refresh();
   // Données chiffrées sans clé : rien n'a été chargé ni ne sera enregistré ; on l'explique.
   const privacy = await window.localia.encryptionStatus().catch(() => null);
@@ -40,7 +42,8 @@
     notice(privacy.error);
     view('settings');
     await showPrivacy(privacy);
-  } else if (!settings.guideDone && !models.length) await openGuide().catch(() => {});
+  } else if (!settings.metier && !settings.guideDone) openMetierView('first');
+  else if (!settings.guideDone && !models.length) await openGuide().catch(() => {});
   // Carte « Pour commencer » de la Bibliothèque : modèle adapté à cet ordinateur.
   else window.localia.setupStatus().then(showStarterCard, () => {});
 })();

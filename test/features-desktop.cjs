@@ -108,7 +108,12 @@ const readJson = async (profile, name) => {
           });
         if (endpoint === '/api/show')
           return Response.json({
-            capabilities: ['completion', 'thinking'],
+            // grand:8b lit les photos ; petit:1b non.
+            capabilities: [
+              'completion',
+              'thinking',
+              ...(body?.model === 'grand:8b' ? ['vision'] : []),
+            ],
             parameters: 'temperature 0.6\nnum_ctx                        8192',
             model_info: { 'test.context_length': 32768 },
             details: { family: 'test', parameter_size: '8B', quantization_level: 'Q4_K_M' },
@@ -1036,6 +1041,92 @@ const readJson = async (profile, name) => {
     await page.locator('#delete-conversation').click();
     await page.waitForFunction(() => !document.querySelectorAll('.file-chip').length);
 
+    // Photo : refusée pour un modèle qui ne lit pas les images, envoyée (réduite, en base64)
+    // à un modèle qui les lit, avec la consigne de prudence ; miniature gardée dans le message.
+    const photoPath = path.join(os.tmpdir(), `localia-photo-${Date.now()}.png`);
+    await fs.writeFile(
+      photoPath,
+      Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEklEQVR4nGP4z8CAFWEXHbQSACj/P8Fu7N9hAAAAAElFTkSuQmCC',
+        'base64',
+      ),
+    );
+    await page.locator('#new').click();
+    await page.locator('#photo-input').setInputFiles(photoPath);
+    await page.waitForFunction(() => document.querySelectorAll('.image-chip').length === 1);
+    await page.locator('#model').selectOption('petit:1b');
+    await page.locator('#send').click();
+    await page.waitForFunction(() =>
+      /ne lit pas les photos/.test(document.querySelector('#notice').textContent),
+    );
+    assert.equal(await page.locator('.message').count(), 0, 'rien n’est envoyé');
+    await page.locator('#model').selectOption('grand:8b');
+    await page.locator('#send').click();
+    await page.waitForFunction(() => document.querySelectorAll('.message-images img').length === 1);
+    request = await lastRequest();
+    const withPhoto = request.messages.at(-1);
+    assert.equal(withPhoto.content, 'Que montre cette photo ?');
+    assert.equal(withPhoto.images.length, 1);
+    assert.equal(Buffer.from(withPhoto.images[0], 'base64').subarray(0, 2).toString('hex'), 'ffd8');
+    assert.match(request.messages[0].content, /premier avis, à confirmer par un spécialiste/);
+    assert.equal(await page.locator('.image-chip').count(), 0, 'photo partie avec le message');
+    const photoId = (await readJson(profile, 'conversations.json'))[0].messages[0].images[0].id;
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#delete-conversation').click();
+    await waitForMissing(path.join(profile, 'documents', photoId + '.json'));
+    await fs.rm(photoPath, { force: true });
+
+    // Métier Santé : anonymisation avant l'envoi (repérage + liste personnelle), réponse remise
+    // en clair, étiquettes gardées avec la conversation ; consigne de métier envoyée.
+    await page.locator('#settings-tab').click();
+    await page.locator('#mask-words').fill('Clinique Pasteur');
+    await page.locator('#mask-save').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#mask-status').textContent.includes('1 mot'),
+    );
+    await page.locator('#metier-switch').click();
+    await page.locator('.metier-card[data-metier=sante]').click();
+    await page.locator('#metier-continue').click();
+    await page.waitForFunction(() => document.body.dataset.metier === 'sante');
+    await app.evaluate(() => {
+      global.chatReply = 'Compte rendu pour [PERSONNE 1], suivi à la [MOT MASQUÉ 1].';
+    });
+    await page.locator('#new').click();
+    await page
+      .locator('#prompt')
+      .fill('Patient Mamadou DIALLO vu à la Clinique Pasteur, tél. 06 12 34 56 78.');
+    await page.locator('#send').click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector('.message.assistant .markdown')
+        ?.textContent.includes('Compte rendu pour Mamadou DIALLO, suivi à la Clinique Pasteur.'),
+    );
+    request = await lastRequest();
+    const sentText = JSON.stringify(request.messages);
+    for (const secret of ['DIALLO', 'Pasteur', '06 12 34 56 78'])
+      assert.ok(!sentText.includes(secret), `${secret} envoyé au modèle`);
+    assert.match(
+      request.messages.at(-1).content,
+      /Patient \[PERSONNE 1\] vu à la \[MOT MASQUÉ 1\], tél\. \[TÉLÉPHONE 1\]/,
+    );
+    assert.match(request.messages[0].content, /Tu ne poses pas de diagnostic/);
+    assert.match(
+      await page.locator('#notice').textContent(),
+      /Anonymisation : 1 mot de votre liste, 1 téléphone, 1 personne/,
+    );
+    await waitForJson(
+      profile,
+      'conversations.json',
+      (c) => c[0]?.anonymap?.['[PERSONNE 1]'] === 'Mamadou DIALLO',
+    );
+    await app.evaluate(() => {
+      global.chatReply = undefined;
+    });
+    await page.locator('#metier-switch').click();
+    await page.locator('.metier-card[data-metier=enseignement]').click();
+    await page.locator('#metier-continue').click();
+    await page.waitForFunction(() => document.body.dataset.metier === 'enseignement');
+
     // Moteur intégré (simulé) : modèle repris d'Ollama, conversation sans passer par Ollama.
     await page.locator('#models-tab').click();
     await page
@@ -1172,7 +1263,7 @@ const readJson = async (profile, name) => {
 
     assert.deepEqual(errors, []);
     console.log(
-      'PASS fonctions: modèle mémorisé, contexte du Modelfile, renommage, réglages appliqués, comparaison avec mesures et notes, série de questions, vue d’ensemble, export CSV, ancien format, suppression, benchmark (notation à l’aveugle, import de notes, accord, export SVG, répétitions, conditions), pause et reprise, tâches, mémoire par projet, départ programmé (Mac éveillé, annulation), compétences (menu, appel /nom, suggestions, nouvelle compétence), fichiers joints (consignes, portrait des données, glisser-déposer, effacement), actions sur fichiers (dossier autorisé, plan vérifié, application, journal, annulation), aucune erreur JS.',
+      'PASS fonctions: modèle mémorisé, contexte du Modelfile, renommage, réglages appliqués, comparaison avec mesures et notes, série de questions, vue d’ensemble, export CSV, ancien format, suppression, benchmark (notation à l’aveugle, import de notes, accord, export SVG, répétitions, conditions), pause et reprise, tâches, mémoire par projet, départ programmé (Mac éveillé, annulation), compétences (menu, appel /nom, suggestions, nouvelle compétence), fichiers joints (consignes, portrait des données, glisser-déposer, effacement), photos (refus sans vision, envoi, effacement), métier Santé (anonymisation, réponse en clair), actions sur fichiers (dossier autorisé, plan vérifié, application, journal, annulation), aucune erreur JS.',
     );
   } finally {
     await app?.close();

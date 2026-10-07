@@ -67,3 +67,11 @@ test('contexte lu dans les paramètres du Modelfile', () => {
   assert.equal(modelContext(''), null);
   assert.equal(modelContext(undefined), null);
 });
+
+test('réglages : métier et langue connus seulement', () => {
+  const { normalizeSettings } = require('../src/settings.cjs');
+  assert.equal(normalizeSettings({ metier: 'finance', lang: 'en' }).metier, 'finance');
+  assert.equal(normalizeSettings({ metier: 'finance', lang: 'en' }).lang, 'en');
+  assert.equal(normalizeSettings({ metier: 'pirate', lang: 'de' }).metier, undefined);
+  assert.equal(normalizeSettings({ metier: 'pirate', lang: 'de' }).lang, undefined);
+});

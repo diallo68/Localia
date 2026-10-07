@@ -1,4 +1,7 @@
 const { modelName } = require('./ollama.cjs');
+const { metierById } = require('./metiers.js');
+
+const LANGS = ['fr', 'en'];
 
 // Options Ollama réglables par modèle (https://docs.ollama.com/modelfile#valid-parameters-and-values).
 // Une valeur absente laisse le réglage du modèle.
@@ -60,6 +63,16 @@ function normalizeSettings(raw) {
   settings.remote.enabled = raw.remote?.enabled === true;
   // Guide de démarrage : ne plus l'ouvrir au lancement une fois que l'utilisateur l'a demandé.
   if (raw.guideDone === true) settings.guideDone = true;
+  // Métier choisi au premier lancement, et langue de l'interface.
+  if (metierById(raw.metier)) settings.metier = raw.metier;
+  if (LANGS.includes(raw.lang)) settings.lang = raw.lang;
+  // Mots toujours masqués avant l'envoi au modèle (anonymisation des métiers sensibles).
+  if (Array.isArray(raw.maskWords)) {
+    const words = raw.maskWords.map((w) => String(w).trim()).filter(Boolean);
+    if (words.length > 300 || words.some((w) => w.length > 100))
+      throw new Error('Liste des mots masqués : 300 mots de 100 caractères au plus.');
+    if (words.length) settings.maskWords = [...new Set(words)];
+  }
   settings.online.bibliography = raw.online?.bibliography === true;
   if (raw.lastModel) settings.lastModel = modelName(raw.lastModel);
   const entries = Object.entries(raw.models && typeof raw.models === 'object' ? raw.models : {});

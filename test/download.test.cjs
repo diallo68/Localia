@@ -128,7 +128,7 @@ test('hôte non autorisé, au départ ou après une redirection', async () => {
 });
 
 test('catalogue : empreintes et tailles complètes, identifiants uniques, sans Ministral', () => {
-  assert.equal(CATALOG.length, 10);
+  assert.equal(CATALOG.length, 12);
   assert.equal(new Set(CATALOG.map((m) => m.id)).size, CATALOG.length);
   for (const m of CATALOG) {
     assert.match(m.sha256, /^[0-9a-f]{64}$/, m.id);

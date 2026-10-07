@@ -2,8 +2,21 @@
 // la page, tableaux simples en texte, pied de page avec numéro. Sert à créer les documents fictifs
 // de la banque de questions ; aucune dépendance.
 const WIN_ANSI = {
-  '€': 0x80, '‚': 0x82, '„': 0x84, '…': 0x85, '‘': 0x91, '’': 0x92, '“': 0x93, '”': 0x94,
-  '•': 0x95, '–': 0x96, '—': 0x97, 'œ': 0x9c, 'Œ': 0x8c, ' ': 0xa0, ' ': 0xa0,
+  '€': 0x80,
+  '‚': 0x82,
+  '„': 0x84,
+  '…': 0x85,
+  '‘': 0x91,
+  '’': 0x92,
+  '“': 0x93,
+  '”': 0x94,
+  '•': 0x95,
+  '–': 0x96,
+  '—': 0x97,
+  œ: 0x9c,
+  Œ: 0x8c,
+  ' ': 0xa0,
+  ' ': 0xa0,
 };
 function encode(text) {
   const bytes = [];
@@ -48,13 +61,21 @@ function buildPdf(blocks, footer) {
     if (b.saut) {
       pages.push([]);
       y = 750;
-    } else if (b.titre) for (const l of wrap(b.titre, b.taille || 14)) add(l, b.taille || 14, 8, true);
+    } else if (b.titre)
+      for (const l of wrap(b.titre, b.taille || 14)) add(l, b.taille || 14, 8, true);
     else if (b.texte) {
       wrap(b.texte, 10.5).forEach((l, i) => add(l, 10.5, i ? 0 : 6));
     } else if (b.tableau) {
-      const widths = b.tableau[0].map((_, c) => Math.max(...b.tableau.map((r) => String(r[c]).length)));
+      const widths = b.tableau[0].map((_, c) =>
+        Math.max(...b.tableau.map((r) => String(r[c]).length)),
+      );
       b.tableau.forEach((row, i) =>
-        add(row.map((cell, c) => String(cell).padEnd(widths[c] + 2)).join(''), 9.5, i ? 0 : 6, i === 0),
+        add(
+          row.map((cell, c) => String(cell).padEnd(widths[c] + 2)).join(''),
+          9.5,
+          i ? 0 : 6,
+          i === 0,
+        ),
       );
     }
   }

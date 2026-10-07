@@ -34,19 +34,33 @@ test('documents fictifs : lisibles par Localia et signalés comme fictifs à cha
   }
 });
 
-test('séries par métier : 5 questions chacune, catégorie connue et réponse attendue', () => {
+test('séries par métier : 5 questions sans document et 6 sur un document fictif, par métier', async () => {
   const metiers = path.join(dir, 'metiers');
   const labels = new Set();
   const files = fs.readdirSync(metiers).filter((f) => /^serie-.*\.txt$/.test(f));
-  assert.equal(files.length, 8);
+  assert.equal(files.length, 16);
+  const pdfs = fs.readdirSync(path.join(metiers, 'documents'));
   for (const file of files) {
+    const withDocument = file.endsWith('-document.txt');
     const questions = parseQuestions(fs.readFileSync(path.join(metiers, file), 'utf8'));
-    assert.equal(questions.length, 5, file);
+    assert.equal(questions.length, withDocument ? 6 : 5, file);
     for (const q of questions) {
       assert.ok(categories.has(q.category), `${file} ${q.label} : catégorie « ${q.category} »`);
       assert.ok(q.expected?.length > 10, `${file} ${q.label} : réponse attendue`);
       assert.ok(!labels.has(q.label), `${q.label} en double`);
       labels.add(q.label);
     }
+    if (withDocument) {
+      const metier = file.replace(/^serie-/, '').replace(/-document\.txt$/, '');
+      assert.ok(
+        pdfs.some((p) => p.startsWith(`doc-${metier}-`)),
+        `${file} : document absent`,
+      );
+    }
+  }
+  for (const name of pdfs) {
+    const doc = await extractPdf(path.join(metiers, 'documents', name));
+    for (const page of doc.pages)
+      assert.match(page.text, /Document fictif/, `${name} p.${page.number}`);
   }
 });

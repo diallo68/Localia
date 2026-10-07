@@ -797,6 +797,12 @@ async function resolveHuggingFace(address) {
     license,
   };
 }
+// Empreinte SHA-256 d'un fichier, lue par morceaux (fichiers de plusieurs Go).
+async function fileSha256(file) {
+  const hash = crypto.createHash('sha256');
+  for await (const chunk of require('node:fs').createReadStream(file)) hash.update(chunk);
+  return hash.digest('hex');
+}
 async function installModel(model) {
   if (currentDownload) throw new Error('Un téléchargement est déjà en cours.');
   await fs.mkdir(modelsDir(), { recursive: true });
@@ -804,6 +810,11 @@ async function installModel(model) {
   const shared = await localEngine.ollamaBlobWithSha(model.sha256, model.size);
   if (shared) return registerModel(model, shared, 'ollama');
   const dest = path.join(modelsDir(), model.file);
+  // Fichier déjà là (téléchargement précédent, copie) : enregistré s'il a la bonne empreinte.
+  if ((await fs.stat(dest).catch(() => null))?.size === model.size) {
+    send({ kind: 'download', data: { id: model.id, phase: 'vérification' } });
+    if ((await fileSha256(dest)) === model.sha256) return registerModel(model, dest, 'huggingface');
+  }
   const remaining = model.size - (await partialSize(dest));
   const disk = await fs.statfs(modelsDir()).catch(() => null);
   if (disk && disk.bavail * disk.bsize < remaining + 2e9)

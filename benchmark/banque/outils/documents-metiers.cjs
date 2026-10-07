@@ -1,0 +1,317 @@
+// Documents FICTIFS des séries par métier : contenu inventé pour choisir le modèle de chaque
+// métier, avec des pièges placés volontairement (liste dans ../metiers/PROTOCOLE-METIERS.md).
+// Personnes, organismes, numéros et adresses imaginaires.
+const { MENTION } = require('./documents.cjs');
+
+const enseignement = [
+  {
+    titre: 'Lycée fictif de Kindia — Sciences de la vie et de la Terre, classe de seconde',
+    taille: 14,
+  },
+  {
+    texte:
+      'Chapitre 3 : La photosynthèse. Document de travail de l’enseignant, M. Ibrahima Kouyaté, année 2026-2027.',
+  },
+  { titre: '1. Ce que les élèves doivent retenir', taille: 12 },
+  {
+    texte:
+      'La photosynthèse est réalisée par les cellules chlorophylliennes des feuilles, à la lumière. Elle consomme du dioxyde de carbone (CO2) et de l’eau, et produit du glucose et du dioxygène (O2). L’équation bilan est : 6 CO2 + 6 H2O → C6H12O6 + 6 O2. Le glucose est ensuite stocké sous forme d’amidon, que l’on met en évidence avec l’eau iodée (coloration bleu-noir).',
+  },
+  {
+    texte:
+      'Durée prévue du chapitre : 3 séances de 55 minutes, dont une séance de travaux pratiques.',
+  },
+  { titre: '2. Travaux pratiques : mise en évidence de l’amidon', taille: 12 },
+  {
+    texte:
+      'Une feuille de géranium est en partie recouverte d’un cache opaque pendant 48 heures, puis décolorée à l’alcool chaud et plongée dans l’eau iodée. Seule la partie restée à la lumière devient bleu-noir. Matériel par groupe : une plante, un cache, de l’alcool, de l’eau iodée, une plaque chauffante. La classe compte 32 élèves répartis en groupes de 4.',
+  },
+  { saut: true },
+  { titre: '3. Évaluation : contrôle de fin de chapitre (barème)', taille: 12 },
+  {
+    tableau: [
+      ['Exercice', 'Contenu', 'Points'],
+      ['1', 'Définitions (photosynthèse, chlorophylle)', '4'],
+      ['2', 'Équation bilan à compléter', '5'],
+      ['3', 'Interprétation de l’expérience du cache', '6'],
+      ['4', 'Schéma légendé d’une feuille', '4'],
+    ],
+  },
+  { texte: 'Le contrôle est noté sur 20 et dure 45 minutes.' },
+  { titre: '4. Copie d’élève (exercice 3, à corriger)', taille: 12 },
+  {
+    texte:
+      'Élève : Fatoumata Bah, seconde B. Réponse : « La partie cachée ne devient pas bleue parce qu’il n’y a pas d’amidon. Il n’y a pas d’amidon parce que la feuille n’a pas eu d’eau sous le cache. »',
+  },
+  {
+    texte:
+      'Grille de l’exercice 3 : observation correcte (2 points) ; lien amidon et coloration (2 points) ; cause : absence de lumière, donc pas de photosynthèse (2 points).',
+  },
+];
+
+const sante = [
+  { titre: 'Centre de santé fictif de Mamou — Compte rendu de consultation', taille: 14 },
+  { texte: 'Médecin : Dr Aminata Sylla. Date de la consultation : 3 septembre 2026.' },
+  {
+    texte:
+      'Patient : Mamadou DIALLO, né le 12/03/1985, dossier IPP 2026-4471. Téléphone : +224 622 45 67 89. Adresse : 14 rue des Manguiers, Mamou.',
+  },
+  { titre: 'Motif et antécédents', taille: 12 },
+  {
+    texte:
+      'Consultation pour fatigue et maux de tête depuis deux semaines. Antécédents : hypertension artérielle connue depuis 2021, traitée par amlodipine 5 mg une fois par jour. Pas d’allergie connue. Ne fume pas.',
+  },
+  { titre: 'Examen', taille: 12 },
+  {
+    tableau: [
+      ['Mesure', 'Valeur'],
+      ['Tension artérielle', '158/96 mmHg'],
+      ['Pouls', '82 battements par minute'],
+      ['Température', '36,8 °C'],
+      ['Poids', '84 kg'],
+      ['Taille', '1,75 m'],
+    ],
+  },
+  { saut: true },
+  { titre: 'Conclusion et conduite à tenir', taille: 12 },
+  {
+    texte:
+      'Hypertension insuffisamment contrôlée. Augmentation de l’amlodipine à 10 mg par jour. Bilan sanguin demandé (ionogramme, créatinine). Contrôle de la tension dans 4 semaines. Conseils : réduire le sel, activité physique régulière.',
+  },
+  {
+    texte:
+      'Le patient signale qu’il prend son traitement « deux fois par jour, matin et soir » depuis le mois dernier.',
+  },
+  { texte: 'Prochain rendez-vous : 1er octobre 2026.' },
+];
+
+const juridique = [
+  { titre: 'Contrat de prestation de services (fictif)', taille: 14 },
+  {
+    texte:
+      'Entre la société fictive Kankan Numérique SARL, représentée par M. Sékou CAMARA, ci-après « le prestataire », et l’association fictive Jeunesse de Labé, représentée par Mme Kadiatou SOW, ci-après « le client ».',
+  },
+  { titre: 'Article 1 — Objet', taille: 12 },
+  {
+    texte: 'Le prestataire réalise le site internet de l’association et en assure la maintenance.',
+  },
+  { titre: 'Article 2 — Durée', taille: 12 },
+  {
+    texte:
+      'Le contrat est conclu pour 12 mois à compter du 1er février 2026. Il est renouvelable par tacite reconduction pour la même durée, sauf résiliation notifiée par lettre recommandée au moins 2 mois avant son échéance.',
+  },
+  { titre: 'Article 3 — Prix', taille: 12 },
+  {
+    texte:
+      'Le prix de la réalisation est de 6 000 000 GNF, payable en deux fois : 40 % à la signature et le solde à la mise en ligne. La maintenance est facturée 250 000 GNF par mois.',
+  },
+  { titre: 'Article 4 — Paiement', taille: 12 },
+  {
+    texte:
+      'Les factures sont payables à 30 jours. Tout retard entraîne des pénalités de 0,1 % du montant dû par jour de retard.',
+  },
+  { saut: true },
+  { titre: 'Article 5 — Modification du prix', taille: 12 },
+  { texte: 'Le prestataire peut modifier le prix de la maintenance à tout moment, sans préavis.' },
+  { titre: 'Article 6 — Résiliation', taille: 12 },
+  {
+    texte:
+      'Le client ne peut résilier le contrat en cours de période qu’en versant une indemnité égale à 6 mois de maintenance.',
+  },
+  { titre: 'Article 7 — Paiement des factures', taille: 12 },
+  { texte: 'Toute facture est payable à réception.' },
+  { titre: 'Article 8 — Responsabilité', taille: 12 },
+  {
+    texte:
+      'La responsabilité du prestataire est limitée au montant payé par le client au cours des 12 derniers mois.',
+  },
+  { texte: 'Fait à Labé, le 20 janvier 2026, en deux exemplaires.' },
+];
+
+const administration = [
+  { titre: 'Direction préfectorale fictive de Boké — Compte rendu de réunion', taille: 14 },
+  {
+    texte:
+      'Réunion du 6 octobre 2026, de 9 h à 11 h. Présents : M. Alpha DIALLO (directeur), Mme Hawa KEÏTA (ressources humaines), M. Ousmane SOUMAH (finances), Mme Mariama CONDÉ (informatique). Absent excusé : M. Lansana TOURÉ (logistique).',
+  },
+  { titre: '1. Traitement des dossiers', taille: 12 },
+  {
+    texte:
+      'En septembre, le service a reçu 240 demandes et en a traité 180 dans le délai de 15 jours ; les autres ont été traitées hors délai. Les causes évoquées sont l’absence de deux agents et une panne du logiciel de suivi pendant 5 jours.',
+  },
+  { titre: '2. Décisions', taille: 12 },
+  {
+    texte:
+      'Le budget de formation de 12 000 000 GNF est validé. Le recrutement d’un agent temporaire pour 3 mois est validé. L’achat d’un nouveau logiciel est reporté à la prochaine réunion.',
+  },
+  { saut: true },
+  { titre: '3. Actions', taille: 12 },
+  {
+    tableau: [
+      ['Action', 'Responsable', 'Échéance'],
+      ['Planning des formations', 'Mme KEÏTA', '20 octobre 2026'],
+      ['Fiche de poste de l’agent temporaire', 'Mme KEÏTA', '15 octobre 2026'],
+      ['Devis de trois logiciels de suivi', 'Mme CONDÉ', '31 octobre 2026'],
+      ['Point sur le budget du trimestre', 'M. SOUMAH', '3 novembre 2026'],
+    ],
+  },
+  {
+    texte:
+      'Prochaine réunion : 3 novembre 2026 à 9 h. Compte rendu rédigé par Mme KEÏTA, joignable au 621 33 44 55 ou à h.keita@prefecture-boke.example.',
+  },
+];
+
+const finance = [
+  {
+    titre: 'Association fictive Santé pour tous (Conakry) — Relevé et factures, octobre 2026',
+    taille: 14,
+  },
+  {
+    texte:
+      'Compte courant no 0045-8821-77, IBAN GN12 3456 7890 1234 5678 9012 34. Titulaire : association Santé pour tous. Trésorière : Mme Néné BARRY.',
+  },
+  { titre: 'Relevé des opérations (en GNF)', taille: 12 },
+  {
+    tableau: [
+      ['Date', 'Libellé', 'Débit', 'Crédit'],
+      ['01/10', 'Solde initial', '', '4 500 000'],
+      ['02/10', 'Loyer du local', '1 200 000', ''],
+      ['05/10', 'Subvention mairie', '', '3 000 000'],
+      ['08/10', 'Fournisseur Pharma Plus', '850 000', ''],
+      ['09/10', 'Fournisseur Pharma Plus', '850 000', ''],
+      ['15/10', 'Salaires', '2 400 000', ''],
+      ['22/10', 'Électricité', '310 000', ''],
+      ['31/10', 'Solde final', '2 000 000', ''],
+    ],
+  },
+  { saut: true },
+  { titre: 'Facture no F-2026-118 (Pharma Plus)', taille: 12 },
+  {
+    tableau: [
+      ['Article', 'Quantité', 'Prix unitaire', 'Montant'],
+      ['Gants (boîte)', '20', '25 000', '500 000'],
+      ['Désinfectant (litre)', '10', '30 000', '300 000'],
+      ['Pansements (lot)', '5', '15 000', '75 000'],
+      ['Remise 5 %', '', '', '−43 750'],
+      ['Total à payer', '', '', '850 000'],
+    ],
+  },
+  { texte: 'Budget annuel prévu : 30 000 000 GNF de dépenses, dont 40 % de salaires.' },
+];
+
+const entreprise = [
+  {
+    titre: 'Boutique fictive Tissus de Labé — Rapport de ventes, premier semestre 2026',
+    taille: 14,
+  },
+  {
+    texte:
+      'Gérante : Mme Aïssatou DIALLO. Le rapport présente les ventes mensuelles et les meilleurs produits.',
+  },
+  { titre: 'Ventes mensuelles (en GNF)', taille: 12 },
+  {
+    tableau: [
+      ['Mois', 'Chiffre d’affaires', 'Nombre de clients'],
+      ['Janvier', '18 000 000', '240'],
+      ['Février', '15 000 000', '210'],
+      ['Mars', '21 000 000', '280'],
+      ['Avril', '24 000 000', '300'],
+      ['Mai', '27 000 000', '330'],
+      ['Juin', '30 000 000', '350'],
+    ],
+  },
+  {
+    texte:
+      'Le chiffre d’affaires du semestre atteint 140 000 000 GNF. La hausse entre janvier et juin est de 50 %.',
+  },
+  { saut: true },
+  { titre: 'Meilleurs produits', taille: 12 },
+  {
+    tableau: [
+      ['Produit', 'Prix de vente', 'Coût d’achat', 'Unités vendues'],
+      ['Pagne wax 6 yards', '150 000', '110 000', '420'],
+      ['Bazin brodé', '250 000', '190 000', '160'],
+      ['Foulard teint (indigo)', '40 000', '22 000', '900'],
+    ],
+  },
+  {
+    texte:
+      'Objectif pour le second semestre : ouvrir une page de vente en ligne et proposer la livraison à Conakry.',
+  },
+];
+
+const ingenierie = [
+  { titre: 'Opérateur fictif TéléGuinée — Rapport d’incident, site relais de Pita', taille: 14 },
+  {
+    texte:
+      'Rapport rédigé par l’ingénieur Thierno BAH, le 18 septembre 2026. Référence d’incident : INC-2026-0917.',
+  },
+  { titre: '1. Constat', taille: 12 },
+  {
+    texte:
+      'Le 17 septembre 2026, le site relais de Pita a cessé d’émettre de 14 h 10 à 17 h 40. L’alarme « batteries faibles » est apparue à 13 h 55, après une coupure du réseau électrique commencée à 9 h 30.',
+  },
+  { titre: '2. Installation électrique du site', taille: 12 },
+  {
+    tableau: [
+      ['Élément', 'Caractéristique'],
+      ['Consommation des équipements', '1 200 W en continu'],
+      ['Batteries', '8 batteries de 12 V, 200 Ah, montées en série par 4 (2 branches de 48 V)'],
+      ['Panneaux solaires', '6 panneaux de 400 W'],
+      ['Groupe électrogène', 'absent depuis mars 2026 (en réparation)'],
+    ],
+  },
+  { saut: true },
+  { titre: '3. Analyse', taille: 12 },
+  {
+    texte:
+      'Énergie stockée théorique : 2 branches × 48 V × 200 Ah = 19 200 Wh. Avec une profondeur de décharge limitée à 50 %, l’énergie utilisable est de 9 600 Wh, soit environ 8 heures d’autonomie à 1 200 W. La coupure ayant duré plus de 4 heures avant l’arrêt, les batteries auraient dû tenir ; leur état (âge : 5 ans) est mis en cause.',
+  },
+  { titre: '4. Actions', taille: 12 },
+  {
+    texte:
+      'Remplacement des batteries prévu en octobre ; remise en service du groupe électrogène ; ajout d’une alarme de niveau à 60 %.',
+  },
+];
+
+const communication = [
+  { titre: 'Agence fictive Infos Guinée — Dépêche et interview', taille: 14 },
+  { titre: 'Dépêche du 2 octobre 2026', taille: 12 },
+  {
+    texte:
+      'Labé — La nouvelle bibliothèque municipale de Labé a ouvert ses portes le 1er octobre 2026. Elle compte 3 000 livres et 12 ordinateurs, et l’entrée est gratuite. Le projet a coûté 900 millions de GNF, financés à 60 % par la commune et à 40 % par une fondation privée. Le maire, M. Elhadj Boubacar BALDÉ, a annoncé l’ouverture d’une seconde bibliothèque à Mali en 2027.',
+  },
+  { titre: 'Interview de la directrice', taille: 12 },
+  {
+    texte:
+      'Question : Combien de lecteurs attendez-vous ? Réponse de Mme Djénabou SOW, directrice : « Nous espérons accueillir 200 lecteurs par jour. Les élèves seront prioritaires l’après-midi, de 14 h à 18 h. Nous manquons encore de livres en langues nationales, c’est notre premier défi. »',
+  },
+  { saut: true },
+  { titre: 'Chiffres communiqués par la mairie', taille: 12 },
+  {
+    tableau: [
+      ['Élément', 'Valeur'],
+      ['Livres', '3 000'],
+      ['Ordinateurs', '12'],
+      ['Coût total', '900 000 000 GNF'],
+      ['Part de la commune', '60 %'],
+      ['Inscrits la première semaine', '450'],
+    ],
+  },
+  {
+    texte: 'Une publication de la mairie sur les réseaux sociaux annonce « plus de 5 000 livres ».',
+  },
+];
+
+const documentsMetiers = [
+  { fichier: 'doc-enseignement-cours-photosynthese.pdf', blocs: enseignement },
+  { fichier: 'doc-sante-compte-rendu.pdf', blocs: sante },
+  { fichier: 'doc-juridique-contrat.pdf', blocs: juridique },
+  { fichier: 'doc-administration-compte-rendu.pdf', blocs: administration },
+  { fichier: 'doc-finance-releve-factures.pdf', blocs: finance },
+  { fichier: 'doc-entreprise-ventes.pdf', blocs: entreprise },
+  { fichier: 'doc-ingenierie-incident.pdf', blocs: ingenierie },
+  { fichier: 'doc-communication-depeche.pdf', blocs: communication },
+];
+
+module.exports = { MENTION, documentsMetiers };

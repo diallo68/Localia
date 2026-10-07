@@ -52,6 +52,12 @@ async function prepare(path, contextSize) {
 // Format de conversation du modèle. Réflexion désactivée (think === false) : Gemma 4 sans la
 // consigne <|think|>, Qwen découragé de réfléchir ; le budget de réflexion nul (plus bas) coupe
 // court à ce qui resterait.
+// MedGemma 1.5 écrit parfois son raisonnement entre les jetons spéciaux <unused94> et <unused95>,
+// que le format Gemma ne connaît pas : ces jetons sont repérés dans le flux (voir chat), et le
+// raisonnement est rangé à part comme celui des autres modèles.
+function isMedGemma(fileInfo, path) {
+  return /medgemma/i.test(`${fileInfo?.metadata?.general?.name || ''} ${path || ''}`);
+}
 function chatWrapper(model, think) {
   const { resolveChatWrapper } = llamaModule;
   if (think !== false) return resolveChatWrapper(model);
@@ -62,6 +68,7 @@ function chatWrapper(model, think) {
 
 // Le modèle sait-il réfléchir (segments de raisonnement prévus par son format de conversation) ?
 async function canThink(path, fileInfo) {
+  if (isMedGemma(fileInfo, path)) return true;
   const { resolveChatWrapper } = await import('node-llama-cpp');
   const wrapper = resolveChatWrapper({ fileInfo, filename: path, warningLogs: false });
   return Boolean(wrapper?.settings?.segments?.thought);
@@ -135,6 +142,14 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
     const { items, question } = history(messages);
     session.setChatHistory(items);
     let firstToken = null;
+    // MedGemma : début et fin du raisonnement repérés par leurs jetons spéciaux.
+    const thoughtMarks = isMedGemma(loaded.model.fileInfo, path)
+      ? {
+          open: loaded.model.tokenize('<unused94>', true)[0],
+          close: loaded.model.tokenize('<unused95>', true)[0],
+        }
+      : null;
+    let inThought = false;
     const result = await session.promptWithMeta(question, {
       signal: controller.signal,
       stopOnAbortSignal: true,
@@ -145,7 +160,25 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
       seed: options.seed,
       repeatPenalty: options.repeat_penalty ? { penalty: options.repeat_penalty } : undefined,
       budgets: think === false ? { thoughtTokens: 0 } : undefined,
+      onToken: thoughtMarks
+        ? (tokens) => {
+            for (const token of tokens) {
+              firstToken ||= now();
+              if (token === thoughtMarks.open) inThought = true;
+              else if (token === thoughtMarks.close) inThought = false;
+              else {
+                const text = loaded.model.detokenize([token], false);
+                post({
+                  type: 'chunk',
+                  id,
+                  data: { message: inThought ? { thinking: text } : { content: text } },
+                });
+              }
+            }
+          }
+        : undefined,
       onResponseChunk: (chunk) => {
+        if (thoughtMarks) return;
         firstToken ||= now();
         if (chunk.type === 'segment' && chunk.segmentType === 'thought')
           post({ type: 'chunk', id, data: { message: { thinking: chunk.text } } });

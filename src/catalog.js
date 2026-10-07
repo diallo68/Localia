@@ -113,6 +113,28 @@ const CATALOG = [
     minMemoryGB: 12,
     note: 'Version officielle de Qwen 3.5 (à comparer avec la version « abliterated »).',
   },
+  {
+    id: 'phi-4-mini',
+    label: 'Phi-4 mini · 3.8B',
+    repo: 'unsloth/Phi-4-mini-instruct-GGUF',
+    file: 'Phi-4-mini-instruct-Q4_K_M.gguf',
+    size: 2491874272,
+    sha256: '88c00229914083cd112853aab84ed51b87bdf6b9ce42f532d8c85c7c63b1730a',
+    license: 'MIT',
+    minMemoryGB: 8,
+    note: 'Microsoft : petit modèle fort en raisonnement et en calcul (finance, ingénierie).',
+  },
+  {
+    id: 'medgemma-1.5-4b',
+    label: 'MedGemma 1.5 · 4B',
+    repo: 'unsloth/medgemma-1.5-4b-it-GGUF',
+    file: 'medgemma-1.5-4b-it-Q4_K_M.gguf',
+    size: 2489894976,
+    sha256: 'b31becdf4f39561800505514cce67681604fe449d04dd35c8c92fd7848c6d7bd',
+    license: 'Health AI Developer Foundations (conditions propres à lire)',
+    minMemoryGB: 8,
+    note: 'Google, spécialisé santé (janvier 2026). Licence propre à Google : à lire avant tout usage hors test.',
+  },
 ];
 
 const catalogEntry = (id) => CATALOG.find((m) => m.id === id) || null;

@@ -1,3 +1,4 @@
+import { appendFileSync } from 'node:fs';
 // Moteur intégré (llama.cpp par node-llama-cpp), dans un processus séparé : un modèle qui plante
 // ne fait pas planter Localia. Reçoit des conversations au format d'Ollama et renvoie des morceaux
 // au même format (message.content, message.thinking, puis statistiques finales).
@@ -5,11 +6,19 @@
 const fake = process.env.LOCALIA_FAKE_LLAMA === '1';
 let llamaModule = null;
 let llama = null;
-let loaded = null; // { path, model, context, contextSize }
+let loaded = null; // { path, model, context, contextSize, sequence }
 let unloadTimer = null;
 const running = new Map(); // id → AbortController
 
 const post = (message) => process.parentPort.postMessage(message);
+// Diagnostic : LOCALIA_ENGINE_DEBUG=<fichier> y trace les étapes du moteur.
+const debug = process.env.LOCALIA_ENGINE_DEBUG
+  ? (...parts) =>
+      appendFileSync(
+        process.env.LOCALIA_ENGINE_DEBUG,
+        `${new Date().toISOString()} ${parts.join(' ')}\n`,
+      )
+  : () => {};
 const now = () => process.hrtime.bigint();
 const ns = (from, to) => Number(to - from);
 
@@ -45,6 +54,9 @@ async function prepare(path, contextSize) {
     await loaded.context?.dispose();
     loaded.context = await loaded.model.createContext({ contextSize });
     loaded.contextSize = contextSize;
+    // Une seule séquence, gardée et vidée avant chaque demande : une séquence rendue n'est pas
+    // libérée tout de suite, et la demande suivante échouait parfois (« No sequences left »).
+    loaded.sequence = loaded.context.getSequence();
   }
   return loadNs;
 }
@@ -96,6 +108,7 @@ function history(messages) {
 
 async function chat({ id, path, messages, options = {}, think, keepAlive }) {
   const controller = new AbortController();
+  let session = null;
   running.set(id, controller);
   clearTimeout(unloadTimer);
   const start = now();
@@ -127,14 +140,18 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
       return;
     }
     const contextSize = options.num_ctx || 4096;
+    debug('demande', id, 'contexte', contextSize);
     const loadNs = await prepare(path, contextSize);
+    debug('modèle prêt', id);
     const { LlamaChatSession } = llamaModule;
-    const sequence = loaded.context.getSequence();
+    const sequence = loaded.sequence;
+    await sequence.clearHistory();
+    debug('séquence vidée', id);
     const before = {
       input: sequence.tokenMeter.usedInputTokens,
       output: sequence.tokenMeter.usedOutputTokens,
     };
-    const session = new LlamaChatSession({
+    session = new LlamaChatSession({
       contextSequence: sequence,
       autoDisposeSequence: false,
       chatWrapper: chatWrapper(loaded.model, think),
@@ -186,14 +203,13 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
           post({ type: 'chunk', id, data: { message: { content: chunk.text } } });
       },
     });
+    debug('réponse finie', id, result.stopReason);
     const end = now();
     const promptEnd = firstToken || end;
     const used = {
       input: sequence.tokenMeter.usedInputTokens - before.input,
       output: sequence.tokenMeter.usedOutputTokens - before.output,
     };
-    session.dispose({ disposeSequence: false });
-    sequence.dispose();
     post({
       type: 'done',
       id,
@@ -211,6 +227,8 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
   } catch (error) {
     post({ type: 'error', id, message: error?.message || String(error) });
   } finally {
+    // Session rendue même après une erreur ou un arrêt : la séquence sert à la demande suivante.
+    session?.dispose({ disposeSequence: false });
     running.delete(id);
     // Maintien en mémoire : 0 = déchargé tout de suite ; sinon après le délai (5 min par défaut).
     const seconds = keepAlive == null ? 300 : keepAlive;
@@ -267,6 +285,7 @@ async function check({ id, path }) {
 // natif de llama.cpp ne le retiennent pas toujours, et il se terminait parfois en plein travail.
 setInterval(() => {}, 1 << 30);
 process.parentPort.on('message', ({ data }) => {
+  debug('message reçu', data.type, data.id ?? '');
   if (data.type === 'chat') chat(data);
   else if (data.type === 'check') check(data);
   else if (data.type === 'capabilities') capabilities(data);

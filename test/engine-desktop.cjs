@@ -74,6 +74,31 @@ function packagedApp() {
     assert.ok(result.text.trim().length > 0, 'réponse vide');
     assert.equal(result.used.engine, 'integre');
     assert.ok(result.stats.outputTokens > 0);
+    // Réponses courtes (comme la longueur maximale d'une série) : le petit modèle de test peut
+    // sinon compter sans fin.
+    await page.evaluate(() =>
+      window.localia.saveSettings({
+        models: { 'integre/smollm2:135m': { options: { num_predict: 48 } } },
+      }),
+    );
+    // Questions enchaînées sans pause, comme une série du Benchmark (modèle gardé en mémoire) :
+    // chacune doit réussir (la séquence rendue n'était pas toujours libre : « No sequences left »).
+    const burst = await page.evaluate(async () => {
+      const out = [];
+      for (let i = 0; i < 6; i++)
+        out.push(
+          await window.localia
+            .run('compare', {
+              model: 'integre/smollm2:135m',
+              messages: [{ role: 'user', content: `Count to ${i + 2}.` }],
+              keepLoaded: i < 5,
+            })
+            .then((r) => (r.text.trim() ? 'ok' : 'vide'))
+            .catch((e) => e.message),
+        );
+      return out;
+    });
+    assert.deepEqual(burst, Array(6).fill('ok'), `questions enchaînées : ${burst.join(' | ')}`);
     const speed = result.stats.outputTokens / (result.stats.outputMs / 1000);
     console.log(
       `PASS moteur intégré réel (${process.platform}-${process.arch}${process.env.LOCALIA_PACKAGED ? ', application construite' : ''}) : ${result.stats.outputTokens} tokens à ${speed.toFixed(0)} tokens/s en ${((Date.now() - started) / 1000).toFixed(1)} s — « ${result.text.trim().slice(0, 60)} »`,

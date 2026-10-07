@@ -37,8 +37,18 @@ test('documents fictifs : lisibles par Localia et signalés comme fictifs à cha
 test('séries par métier : 5 questions sans document et 6 sur un document fictif, par métier', async () => {
   const metiers = path.join(dir, 'metiers');
   const labels = new Set();
-  const files = fs.readdirSync(metiers).filter((f) => /^serie-.*\.txt$/.test(f));
+  const files = fs
+    .readdirSync(metiers)
+    .filter((f) => /^serie-.*\.txt$/.test(f) && f !== 'serie-metiers-complete.txt');
   assert.equal(files.length, 16);
+  // Série complète : les 88 questions, chaque question sur document avec son PDF.
+  const all = parseQuestions(
+    fs.readFileSync(path.join(metiers, 'serie-metiers-complete.txt'), 'utf8'),
+  );
+  assert.equal(all.length, 88);
+  assert.equal(all.filter((q) => q.document).length, 48);
+  for (const q of all.filter((x) => x.document))
+    assert.ok(fs.existsSync(path.join(metiers, 'documents', q.document)), q.document);
   const pdfs = fs.readdirSync(path.join(metiers, 'documents'));
   for (const file of files) {
     const withDocument = file.endsWith('-document.txt');

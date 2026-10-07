@@ -31,6 +31,14 @@ function parseQuestions(text) {
         .slice(0, 40);
       lines = lines.filter((_, i) => i !== cat);
     }
+    // « Document : nom.pdf » : document propre à cette question (jamais envoyé au modèle).
+    let document = '';
+    const doc = lines.findIndex((l) => /^\s*document\s*:\s*[^\s/\\]+\.pdf\s*$/i.test(l));
+    const expectedAt = lines.findIndex((l) => /^\s*(?:attendu|expected)\s*:/i.test(l));
+    if (doc >= 0 && (expectedAt < 0 || doc < expectedAt)) {
+      document = lines[doc].replace(/^\s*document\s*:\s*/i, '').trim();
+      lines = lines.filter((_, i) => i !== doc);
+    }
     let expected = '';
     const at = lines.findIndex((l) => /^\s*(?:attendu|expected)\s*:/i.test(l));
     if (at >= 0) {
@@ -46,6 +54,7 @@ function parseQuestions(text) {
     const question = { label, prompt };
     if (category) question.category = category;
     if (expected) question.expected = expected;
+    if (document) question.document = document;
     return question;
   });
 }
@@ -59,6 +68,7 @@ function formatQuestions(questions) {
     .map(
       (q) =>
         `## ${q.label}\n${q.category ? 'Catégorie : ' + q.category + '\n' : ''}` +
+        `${q.document ? 'Document : ' + q.document + '\n' : ''}` +
         `${q.prompt}${q.expected ? '\nAttendu : ' + q.expected : ''}`,
     )
     .join('\n---\n');

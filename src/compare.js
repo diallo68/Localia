@@ -100,6 +100,10 @@ const element = (tag, className, text) => {
   if (text !== undefined) node.textContent = text;
   return node;
 };
+// Documents propres à certaines questions (« Document : nom.pdf »), importés avec le fichier de
+// questions : nom → document.
+let questionDocuments = {};
+const documentOf = (record, question) => question.doc || record.document || null;
 // Départ programmé d'une série (heure, minuteur), déclaré tôt : lu par compareControls.
 let scheduledStart = null;
 const resultsOf = (record, q) => record.results.filter((r) => r.q === q);
@@ -159,8 +163,12 @@ function questionHint() {
     const list = labels.length > 8 ? [...labels.slice(0, 6), '…', labels.at(-1)] : labels;
     // Plusieurs « Q01 », « ## Q02 »… sans ligne « --- » : sans doute une seule question par erreur.
     const marks = text.match(/^\s*#{0,4}\s*Q\d{1,3}\b/gim) || [];
-    const tooLong = compareDocument && questions.some((q) => q.prompt.length > 5000);
+    const tooLong = questions.some(
+      (q) => (compareDocument || q.document) && q.prompt.length > 5000,
+    );
+    const docs = new Set(questions.map((q) => q.document).filter(Boolean)).size;
     let message = n > 1 ? `${n} questions détectées : ${list.join(', ')}.` : '';
+    if (docs) message += ` ${docs} document(s) propres à certaines questions.`;
     let error = false;
     if (n === 1 && marks.length > 1) {
       message = `Une seule question détectée, alors que le texte en annonce ${marks.length} (${marks
@@ -189,6 +197,7 @@ $('compare-import').onclick = guard(async () => {
   const questions = parseQuestions(file.text);
   if (!questions.length) throw new Error('Aucune question trouvée dans ce fichier.');
   $('compare-prompt').value = file.text.trim();
+  questionDocuments = file.documents || {};
   compareTitle = file.name;
   questionHint();
   notice('');
@@ -524,6 +533,8 @@ function questionDetail(record, q) {
     box.append(nav);
   }
   box.append(element('p', 'task', question.prompt));
+  if (question.doc)
+    box.append(element('p', 'muted', `Document de cette question : ${question.doc.name}`));
   const sent = question.sent || record.results.find((r) => r.q === q && r.sent)?.sent;
   if (sent?.pages?.length)
     box.append(
@@ -679,6 +690,9 @@ function renderCompareHistory() {
     reuse.onclick = guard(async () => {
       const previous = compareDocument;
       $('compare-prompt').value = formatQuestions(record.questions);
+      questionDocuments = Object.fromEntries(
+        record.questions.filter((q) => q.doc).map((q) => [q.document, q.doc]),
+      );
       compareTitle = record.title || null;
       questionHint();
       compareDocument = record.document || null;
@@ -752,7 +766,7 @@ const verifyResult = (record, result) =>
     .verifyAnswer({
       answer: result.text || '',
       question: record.questions[result.q].prompt,
-      documentId: record.document?.id,
+      documentId: documentOf(record, record.questions[result.q])?.id,
     })
     .catch(() => undefined);
 
@@ -784,7 +798,7 @@ async function runRecord(record, prefix) {
       try {
         const answer = await window.localia.run('compare', {
           model,
-          documentId: record.document?.id,
+          documentId: documentOf(record, question)?.id,
           messages: [{ role: 'user', content: question.prompt }],
           // Série « Actions sur fichiers » : même consigne que l'onglet Fichiers, pour mesurer ce
           // que l'assistant fera réellement. Les autres séries restent sans consigne de tâche.
@@ -950,6 +964,17 @@ $('compare-form').onsubmit = guard(async (event) => {
   const selected = [...$('compare-models').querySelectorAll('input:checked')].map((i) => i.value);
   const repetitions = Math.min(5, Math.max(1, Number($('compare-repetitions').value) || 1));
   if (!questions.length) return;
+  // Document propre à une question : celui importé avec le fichier de questions.
+  for (const q of questions) {
+    if (!q.document) continue;
+    q.doc = questionDocuments[q.document];
+    if (!q.doc) {
+      notice(
+        `Document « ${q.document} » (question ${q.label}) non importé : réimportez le fichier de questions avec « Importer des questions ».`,
+      );
+      return;
+    }
+  }
   if (!selected.length) {
     notice('Choisissez au moins un modèle à comparer.');
     return;

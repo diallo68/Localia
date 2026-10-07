@@ -28,6 +28,7 @@
       .pruneDocuments(
         [...conversations, ...comparisons].flatMap((c) => [
           ...(c.document ? [c.document.id] : []),
+          ...(c.questions || []).flatMap((q) => (q.doc ? [q.doc.id] : [])),
           ...(c.files || []).map((f) => f.id),
           ...(c.messages || []).flatMap((m) => (m.images || []).map((i) => i.id)),
         ]),

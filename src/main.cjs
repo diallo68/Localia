@@ -93,7 +93,34 @@ handle('open-questions', async () => {
   const file = result.filePaths[0];
   if ((await fs.stat(file)).size > 1_000_000)
     throw new Error('Fichier de questions limité à 1 Mo.');
-  return { name: path.basename(file), text: await fs.readFile(file, 'utf8') };
+  const text = await fs.readFile(file, 'utf8');
+  // Questions avec leur propre document (« Document : nom.pdf ») : le PDF est cherché à côté du
+  // fichier de questions ou dans son sous-dossier « documents », et importé comme un PDF joint.
+  const names = [
+    ...new Set(
+      [...text.matchAll(/^[ \t]*document[ \t]*:[ \t]*(\S+\.pdf)[ \t]*$/gim)].map((m) => m[1]),
+    ),
+  ];
+  if (names.length > 50) throw new Error('50 documents au plus par série.');
+  const documents = {};
+  for (const name of names) {
+    if (path.basename(name) !== name || !/\.pdf$/i.test(name))
+      throw new Error(`Document « ${name} » : indiquez seulement le nom d’un fichier PDF.`);
+    const dir = path.dirname(file);
+    const candidates = [path.join(dir, name), path.join(dir, 'documents', name)];
+    let found = null;
+    for (const candidate of candidates)
+      if ((await fs.stat(candidate).catch(() => null))?.isFile()) {
+        found = candidate;
+        break;
+      }
+    if (!found)
+      throw new Error(
+        `Document « ${name} » introuvable : placez-le à côté du fichier de questions ou dans son dossier « documents ».`,
+      );
+    documents[name] = await importPdf(found, documentsPath(), documentCodec);
+  }
+  return { name: path.basename(file), text, documents };
 });
 const EXPORTS = {
   csv: 'CSV',

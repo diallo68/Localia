@@ -377,6 +377,62 @@ const readJson = async (profile, name) => {
     assert.equal(saved[0].results[0].grades.Vous.rating, 4);
     assert.equal(saved[0].results[0].stats.outputTokens, 50);
 
+    // Série dont certaines questions ont leur propre document (« Document : nom.pdf ») :
+    // PDF importé avec le fichier de questions, envoyé seulement avec sa question.
+    const seriesDir = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-serie-'));
+    await fs.mkdir(path.join(seriesDir, 'documents'));
+    await fs.writeFile(
+      path.join(seriesDir, 'documents', 'facture-test.pdf'),
+      require('./pdf-fixture.cjs').pdfFixture(['Facture fictive : total 120 EUR.']),
+    );
+    await fs.writeFile(
+      path.join(seriesDir, 'serie.txt'),
+      '## D1\nDocument : facture-test.pdf\nQuel est le total ?\n---\n## D2\nQuestion sans document.',
+    );
+    await app.evaluate(
+      ({ dialog }, file) => {
+        dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [file] });
+      },
+      path.join(seriesDir, 'serie.txt'),
+    );
+    await page.locator('#compare-import').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-count').textContent.includes('1 document(s)'),
+    );
+    for (const input of await page.locator('#compare-models input').all()) await input.uncheck();
+    await page.locator('#compare-models input[value="petit:1b"]').check();
+    const beforeDocs = await app.evaluate(() => global.requests.length);
+    await page.locator('#compare-run').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#compare-status').textContent.includes('terminée'),
+    );
+    const docRequests = (await app.evaluate(() => global.requests)).slice(beforeDocs);
+    assert.equal(docRequests.length, 2);
+    assert.match(JSON.stringify(docRequests[0].messages), /total 120 EUR/);
+    assert.doesNotMatch(
+      JSON.stringify(docRequests[1].messages),
+      /total 120 EUR|SOURCE DOCUMENTAIRE/,
+    );
+    assert.equal(
+      docRequests[0].messages.at(-1).content,
+      'Quel est le total ?',
+      'ligne Document non envoyée',
+    );
+    await fs.rm(seriesDir, { recursive: true, force: true });
+    // Série de ce test retirée : la suite du parcours retrouve ses séries habituelles.
+    page.once('dialog', (dialog) => dialog.accept());
+    await page
+      .locator('.compare-row', { hasText: 'serie.txt' })
+      .locator('button', { hasText: 'Supprimer' })
+      .click();
+    await page.waitForFunction(
+      () =>
+        ![...document.querySelectorAll('.compare-row')].some((r) =>
+          r.textContent.includes('serie.txt'),
+        ),
+    );
+    for (const input of await page.locator('#compare-models input').all()) await input.check();
+
     // Série de deux questions, réponse attendue jamais envoyée, export CSV.
     const csvPath = path.join(profile, 'export.csv');
     await app.evaluate(({ dialog }, file) => {
@@ -1185,7 +1241,7 @@ const readJson = async (profile, name) => {
     // Catalogue Hugging Face : verdicts affichés ; fichier déjà présent chez Ollama utilisé sans
     // aucun téléchargement.
     await page.locator('#models-tab').click();
-    await page.waitForFunction(() => document.querySelectorAll('.hf-card').length === 10);
+    await page.waitForFunction(() => document.querySelectorAll('.hf-card').length === 12);
     const qwenCard = page.locator('.hf-card', { hasText: 'Qwen 3 · 4B' });
     assert.match(await qwenCard.textContent(), /2,5 Go · licence Apache 2\.0/);
     await qwenCard.locator('button').click();

@@ -226,6 +226,21 @@ function rankModels(items) {
     );
 }
 
+// Modèle conseillé pour un métier (étiquette du banc d'essai, ex. « Santé ») : classement des
+// modèles notés sur ce métier, avec le temps moyen par réponse. null sans réponse notée.
+function metierAdvice(records, metier, grader = ALL_GRADERS) {
+  const perf = metierPerformance(records).filter((p) => p.metier === metier);
+  const ranked = rankModels(
+    metierMetrics(records, grader)
+      .filter((c) => c.metier === metier && c.n)
+      .map((c) => ({
+        ...c,
+        answerSeconds: perf.find((p) => p.model === c.model)?.answerSeconds ?? null,
+      })),
+  );
+  return ranked.length ? { best: ranked[0], ranked } : null;
+}
+
 // Verdict d'une réponse : celui du correcteur, ou l'ensemble des verdicts de tous les correcteurs.
 function verdictOf(result, grader) {
   if (grader !== ALL_GRADERS) return result.grades?.[grader]?.verdict || null;
@@ -432,6 +447,7 @@ if (typeof module !== 'undefined')
     metierOf,
     metierMetrics,
     metierPerformance,
+    metierAdvice,
     rankModels,
     stabilityMetrics,
     agreement,

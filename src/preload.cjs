@@ -6,6 +6,7 @@ const invoke = async (name, ...args) => {
 };
 contextBridge.exposeInMainWorld('localia', {
   platform: process.platform,
+  memory: () => invoke('memory'),
   attachPdf: () => invoke('attach-pdf'),
   attach: () => invoke('attach'),
   attachData: (name, bytes) => invoke('attach-data', name, bytes),

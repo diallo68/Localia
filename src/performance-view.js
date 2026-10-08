@@ -130,3 +130,23 @@ $('performance-tab').onclick = guard(async () => {
   await renderPerformance();
 });
 $('pc-rescan').onclick = guard(renderPerformance);
+
+// Jauge de mémoire de la barre latérale, relevée toutes les 10 s quand la fenêtre est visible.
+const memoryGigas = (bytes) =>
+  (bytes / 2 ** 30).toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+async function updateMemoryGauge() {
+  if (document.hidden) return;
+  try {
+    const { total, used } = await window.localia.memory();
+    const ratio = used / total;
+    $('memory-text').textContent = `${memoryGigas(used)} / ${memoryGigas(total)} Go`;
+    $('memory-fill').style.width = Math.round(ratio * 100) + '%';
+    $('memory-gauge').dataset.level = ratio > 0.92 ? 'high' : ratio > 0.8 ? 'warn' : 'ok';
+    $('memory-gauge').hidden = false;
+  } catch {
+    $('memory-gauge').hidden = true;
+  }
+}
+updateMemoryGauge();
+setInterval(updateMemoryGauge, 10000);
+document.addEventListener('visibilitychange', updateMemoryGauge);

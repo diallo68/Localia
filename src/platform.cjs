@@ -248,6 +248,26 @@ const names = NAMES[platform] || {
   trash: 'la corbeille',
 };
 
+// Mémoire disponible sur macOS d'après `vm_stat` : pages libres, inactives et spéculatives
+// (récupérables sans gêner les applications). os.freemem() n'en compte qu'une petite partie.
+function availableFromVmStat(text) {
+  const pageSize = Number(/page size of (\d+) bytes/.exec(text)?.[1]);
+  const pages = (label) => Number(new RegExp(`Pages ${label}:\\s+(\\d+)`).exec(text)?.[1] || 0);
+  if (!pageSize) return null;
+  return (pages('free') + pages('inactive') + pages('speculative')) * pageSize;
+}
+
+// Mémoire vive : totale et utilisée, en octets.
+async function memoryUse(exec = run) {
+  const total = os.totalmem();
+  let available = os.freemem();
+  if (platform === 'darwin') {
+    const fromVm = availableFromVmStat((await exec('/usr/bin/vm_stat', [])) || '');
+    if (fromVm) available = Math.min(total, fromVm);
+  }
+  return { total, used: total - available };
+}
+
 module.exports = {
   platform,
   ollamaCandidates,
@@ -257,4 +277,6 @@ module.exports = {
   diskEncryption,
   forbiddenRoot,
   names,
+  availableFromVmStat,
+  memoryUse,
 };

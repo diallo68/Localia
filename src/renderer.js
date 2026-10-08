@@ -523,6 +523,11 @@ async function refresh() {
     $('installed').textContent =
       'Aucun modèle disponible. Démarrez Ollama, puis téléchargez votre premier modèle.';
   const localNames = new Set(models.filter((m) => m.engine === 'integre').map((m) => m.name));
+  const scores = new Map(
+    modelMetrics(comparisons)
+      .filter((s) => s.graded)
+      .map((s) => [s.model, s]),
+  );
   for (const m of models) {
     const row = document.createElement('div');
     row.className = 'installed-row';
@@ -535,6 +540,21 @@ async function refresh() {
     const size = document.createElement('small');
     size.textContent = (m.size / 1e9).toFixed(2) + ' Go';
     row.append(title, size);
+    // Résultats du Benchmark, si ce modèle a des réponses notées.
+    const score = scores.get(m.name);
+    if (score) {
+      const line = element('span', 'installed-score');
+      line.title = `${score.graded} réponses notées dans le Benchmark`;
+      line.append(
+        element('strong', '', pct(score.correct.mean)),
+        element('span', '', 'correctes'),
+        element('strong', 'warn', pct(score.invention.mean)),
+        element('span', '', 'inventions'),
+        element('strong', '', secs(score.answerSeconds.mean)),
+        element('span', '', 'par réponse'),
+      );
+      title.after(line);
+    }
     // Moteur intégré : reprendre un modèle d'Ollama sans le retélécharger, ou le retirer.
     if (m.engine === 'integre') {
       const remove = element('button', '', 'Retirer');

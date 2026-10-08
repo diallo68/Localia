@@ -83,6 +83,7 @@ function handle(name, fn) {
     }
   });
 }
+handle('memory', () => platform.memoryUse());
 handle('open-questions', async () => {
   const result = await dialog.showOpenDialog(window, {
     title: 'Importer des questions',

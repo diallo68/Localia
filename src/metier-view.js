@@ -170,6 +170,95 @@ function fillSuggestions(box) {
     band.append(chip);
   }
   box.append(band);
+  const card = adviceCard(metier);
+  if (card) box.before(card);
+}
+
+// Les modèles installés arrivent après le premier affichage : la carte est alors refaite.
+modelListeners.push(() => {
+  const old = document.querySelector('#messages .advice-card');
+  const card = old && adviceCard(currentMetier());
+  if (card) old.replaceWith(card);
+});
+
+// Métier de Localia → étiquette des séries « métiers » du Benchmark.
+const BENCH_METIERS = {
+  enseignement: 'Enseignement',
+  sante: 'Santé',
+  juridique: 'Juridique',
+  administration: 'Administration',
+  finance: 'Finance',
+  entreprise: 'Entreprise',
+  ingenierie: 'Ingénierie',
+  communication: 'Communication',
+};
+
+// Carte « Modèle conseillé » de l'accueil : le modèle le plus juste sur ce métier d'après les
+// séries notées du Benchmark, et un modèle plus sûr s'il invente nettement moins.
+function adviceCard(metier) {
+  const label = BENCH_METIERS[metier.id];
+  const advice = label && metierAdvice(comparisons, label);
+  if (!advice) return null;
+  rememberFullNames(comparisons);
+  const { best, ranked } = advice;
+  const safer = ranked.find(
+    (c) =>
+      c !== best &&
+      best.invention >= 0.2 &&
+      c.invention <= best.invention * 0.6 &&
+      c.correct >= best.correct - 0.1,
+  );
+  const card = element('section', 'advice-card');
+  const head = element('div', 'advice-head');
+  head.innerHTML = '<i data-icon="cpu"></i>';
+  head.append(element('span', '', 'Modèle conseillé'), element('strong', '', label));
+  const body = element('div', 'advice-body');
+  const left = element('div', 'advice-main');
+  left.append(element('span', 'advice-model', shortModel(best.model)));
+  left.append(element('p', 'muted', `Le plus juste des modèles notés sur ce métier.`));
+  if (safer) {
+    const line = element('p', 'advice-safer');
+    line.append(
+      element('span', '', 'Invente souvent. Plus sûr :'),
+      ' ',
+      element('strong', '', shortModel(safer.model)),
+      ` (${pct(safer.correct)} · ${pct(safer.invention)})`,
+    );
+    left.append(line);
+  }
+  const stat = (name, value, ratio, kind) => {
+    const cell = element('div', 'advice-stat ' + kind);
+    const bar = element('span', 'advice-bar');
+    bar.append(element('i'));
+    bar.firstChild.style.width = Math.round(Math.min(1, Math.max(0, ratio)) * 100) + '%';
+    cell.append(element('small', '', name), element('strong', '', value), bar);
+    return cell;
+  };
+  const stats = element('div', 'advice-stats');
+  stats.append(
+    stat('Correctes', pct(best.correct), best.correct, 'ok'),
+    stat('Inventions', pct(best.invention), best.invention, 'warn'),
+    stat('Par réponse', secs(best.answerSeconds), (best.answerSeconds || 0) / 240, 'time'),
+  );
+  body.append(left, stats);
+  const foot = element('div', 'advice-foot');
+  foot.append(element('span', 'muted', `${best.n} réponses notées · Benchmark`));
+  const choose = (model) => {
+    if (!installed(model)) return element('span', 'muted', 'Pas installé sur cet ordinateur');
+    if ($('model').value === model) return element('span', 'advice-chosen', 'Modèle actif');
+    const button = element('button', '', 'Utiliser ce modèle');
+    button.type = 'button';
+    button.onclick = () => {
+      selectModel(model);
+      $('model').dispatchEvent(new Event('change'));
+      render();
+    };
+    return button;
+  };
+  foot.append(choose(best.model));
+  card.append(head, body, foot);
+  placeIcons(card);
+  return card;
 }
 
 function langButtons() {

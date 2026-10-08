@@ -2884,3 +2884,199 @@ aside::-webkit-scrollbar-thumb {
 .suggestion-row strong {
   font-weight: 600;
 }
+
+/* Carte « Modèle conseillé » de l'accueil */
+.advice-card {
+  width: 100%;
+  max-width: 760px;
+  margin: 6px auto 22px;
+  padding: 18px 20px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+.advice-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.advice-head .icon {
+  color: var(--accent);
+}
+.advice-head strong::before {
+  content: '·';
+  margin-right: 8px;
+  color: var(--muted);
+}
+.advice-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.advice-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.advice-main p {
+  margin: 0;
+  font-size: 12px;
+}
+.advice-model {
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.advice-safer {
+  color: var(--warn);
+}
+.advice-safer strong {
+  font-family: var(--mono);
+  font-weight: 500;
+}
+.advice-stats {
+  display: flex;
+  gap: 26px;
+  padding-left: 24px;
+  border-left: 1px solid var(--line);
+}
+.advice-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.advice-stat small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.advice-stat strong {
+  font-size: 19px;
+  font-weight: 700;
+}
+.advice-stat.warn strong {
+  color: var(--warn);
+}
+.advice-bar {
+  width: 56px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+.advice-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.advice-stat.warn .advice-bar i {
+  background: var(--warn);
+}
+.advice-stat.time .advice-bar i {
+  background: var(--muted);
+}
+.advice-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+}
+.advice-foot button {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.advice-chosen {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+/* Scores du Benchmark dans la liste des modèles installés */
+.installed-row {
+  flex-wrap: wrap;
+  align-items: center;
+}
+.installed-row > span:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.installed-score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.installed-score strong {
+  color: var(--fg);
+  font-weight: 700;
+}
+.installed-score strong.warn {
+  color: var(--warn);
+}
+.installed-score span:not(:last-child) {
+  margin-right: 8px;
+}
+
+/* Jauge de mémoire de la barre latérale */
+#memory-gauge {
+  padding: 12px 8px 4px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+#memory-gauge[hidden] {
+  display: none;
+}
+.memory-line {
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+.memory-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--line);
+  overflow: hidden;
+}
+.memory-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--muted);
+  transition: width 0.4s;
+}
+#memory-gauge[data-level='warn'] .memory-bar i {
+  background: var(--warn);
+}
+#memory-gauge[data-level='high'] .memory-bar i {
+  background: var(--danger);
+}
+#memory-gauge[data-level='high'] #memory-text {
+  color: var(--danger);
+}
+#memory-gauge + .privacy {
+  border-top: 0;
+}

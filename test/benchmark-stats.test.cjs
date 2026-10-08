@@ -229,3 +229,37 @@ test('classement : un modèle lent et juste passe devant un rapide qui invente',
     ['lent', 'rapide', 'lent-egal'],
   );
 });
+
+test('modèle conseillé par métier : le plus juste, avec son temps moyen', () => {
+  const { metierAdvice } = require('../src/benchmark-stats.js');
+  const grade = (verdict, invention = false) => ({ X: { verdict, invention } });
+  const result = (q, model, g, totalMs) => ({
+    q,
+    model,
+    status: 'done',
+    stats: { totalMs },
+    grades: g,
+  });
+  const records = [
+    {
+      questions: [{ label: 'S01 Dose' }, { label: 'S02 Protocole' }, { label: 'F01 TVA' }],
+      results: [
+        result(0, 'rapide', grade('correct', true), 10000),
+        result(1, 'rapide', grade('faux'), 10000),
+        result(0, 'juste', grade('correct'), 60000),
+        result(1, 'juste', grade('correct'), 40000),
+        result(2, 'rapide', grade('correct'), 5000),
+      ],
+    },
+  ];
+  const advice = metierAdvice(records, 'Santé');
+  assert.equal(advice.best.model, 'juste');
+  assert.equal(advice.best.correct, 1);
+  assert.equal(advice.best.invention, 0);
+  assert.equal(advice.best.answerSeconds, 50);
+  assert.deepEqual(
+    advice.ranked.map((c) => c.model),
+    ['juste', 'rapide'],
+  );
+  assert.equal(metierAdvice(records, 'Juridique'), null);
+});

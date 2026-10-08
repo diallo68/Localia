@@ -351,6 +351,19 @@ const EN = {
   // Accueil et zone de saisie
   'Que voulez-vous faire aujourd’hui ?': 'What would you like to do today?',
   'Réglages de la réponse': 'Response settings',
+  'Modèle conseillé': 'Recommended model',
+  'Le plus juste des modèles notés sur ce métier.':
+    'The most accurate of the models graded for this profession.',
+  'Invente souvent. Plus sûr :': 'Often makes things up. Safer:',
+  Correctes: 'Correct',
+  Inventions: 'Made up',
+  'Par réponse': 'Per answer',
+  'Pas installé sur cet ordinateur': 'Not installed on this computer',
+  'Utiliser ce modèle': 'Use this model',
+  correctes: 'correct',
+  inventions: 'made up',
+  'par réponse': 'per answer',
+  'Mémoire utilisée': 'Memory in use',
   'Rédigez, analysez un document ou posez une question : tout se passe sur cet ordinateur.':
     'Write, analyse a document or ask a question: everything stays on this computer.',
   'Ajouter un document': 'Add a document',

@@ -74,3 +74,17 @@ test('dossiers interdits sous Windows (sans tenir compte des majuscules)', () =>
     );
   assert.equal(h('C:\\Users\\Amadou Diallo\\AppData\\Local\\Temp\\localia-x'), null);
 });
+
+test('mémoire disponible : pages libres, inactives et spéculatives de vm_stat', async () => {
+  const { availableFromVmStat, memoryUse } = require('../src/platform.cjs');
+  const text = `Mach Virtual Memory Statistics: (page size of 4096 bytes)
+Pages free:                               10000.
+Pages active:                            500000.
+Pages inactive:                           20000.
+Pages speculative:                         1000.
+Pages wired down:                        300000.`;
+  assert.equal(availableFromVmStat(text), 31000 * 4096);
+  assert.equal(availableFromVmStat('rien'), null);
+  const use = await memoryUse(async () => text);
+  assert.ok(use.total > 0 && use.used > 0 && use.used <= use.total);
+});

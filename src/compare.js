@@ -20,6 +20,7 @@ const STATUS = {
   running: 'En cours…',
   done: 'Terminé',
   cancelled: 'Arrêté',
+  stalled: 'Bloqué',
   error: 'Erreur',
   skipped: 'Non lancé',
 };
@@ -770,6 +771,12 @@ const verifyResult = (record, result) =>
     })
     .catch(() => undefined);
 
+// Question arrêtée d'office si aucun texte (réponse ou raisonnement) n'arrive pendant ce délai :
+// un modèle qui boucle sur des jetons invisibles ne bloque plus toute la série. Le chargement du
+// modèle et la lecture d'un long document comptent dans ce délai.
+const STALL_MS = 10 * 60 * 1000;
+let lastProgress = 0;
+
 // Exécute une répétition : chaque modèle traite ses questions non terminées, à la suite.
 async function runRecord(record, prefix) {
   for (const [m, model] of record.models.entries()) {
@@ -795,6 +802,13 @@ async function runRecord(record, prefix) {
       renderComparison();
       // Le modèle reste chargé tant qu'il lui reste des questions dans cette répétition.
       const keepLoaded = record.results.some((r) => r.model === model && r.q > q && isPending(r));
+      let stalled = false;
+      lastProgress = Date.now();
+      const watchdog = setInterval(() => {
+        if (stalled || Date.now() - lastProgress < STALL_MS) return;
+        stalled = true;
+        window.localia.cancel('compare').catch(() => undefined);
+      }, 15000);
       try {
         const answer = await window.localia.run('compare', {
           model,
@@ -806,12 +820,14 @@ async function runRecord(record, prefix) {
           keepLoaded,
         });
         Object.assign(result, {
-          status: answer.cancelled ? 'cancelled' : 'done',
+          status: stalled ? 'stalled' : answer.cancelled ? 'cancelled' : 'done',
           text: answer.text,
           thinking: answer.thinking || undefined,
           stats: answer.stats,
           used: answer.used,
         });
+        if (stalled)
+          result.error = `Aucun texte reçu pendant ${STALL_MS / 60000} minutes : question arrêtée automatiquement. « Reprendre » la relancera.`;
         if (result.status === 'done') result.checks = await verifyResult(record, result);
         // Messages exacts envoyés : une fois par question, et sur la réponse s'ils diffèrent
         // (consigne permanente propre à un modèle).
@@ -822,6 +838,8 @@ async function runRecord(record, prefix) {
         }
       } catch (error) {
         Object.assign(result, { status: 'error', error: error.message });
+      } finally {
+        clearInterval(watchdog);
       }
       compareTarget = null;
       renderComparison();
@@ -998,6 +1016,7 @@ $('compare-stop').onclick = guard(async () => {
 
 window.localia.onProgress(({ kind, data }) => {
   if (kind !== 'compare' || !compareTarget) return;
+  if (data.message?.content || data.message?.thinking) lastProgress = Date.now();
   compareTarget.text += data.message?.content || '';
   compareTarget.thinking += data.message?.thinking || '';
   if (!compareNode || compareNode.dataset.pending) return;

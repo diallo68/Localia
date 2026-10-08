@@ -167,6 +167,12 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
         }
       : null;
     let inThought = false;
+    // MedGemma, réflexion désactivée : son format ne prévoit pas de segment de raisonnement
+    // (budgets sans effet), on interdit donc le jeton qui l'ouvre.
+    const tokenBias =
+      thoughtMarks && think === false
+        ? llamaModule.TokenBias.for(loaded.model).set(thoughtMarks.open, 'never')
+        : undefined;
     const result = await session.promptWithMeta(question, {
       signal: controller.signal,
       stopOnAbortSignal: true,
@@ -177,6 +183,7 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
       seed: options.seed,
       repeatPenalty: options.repeat_penalty ? { penalty: options.repeat_penalty } : undefined,
       budgets: think === false ? { thoughtTokens: 0 } : undefined,
+      tokenBias,
       onToken: thoughtMarks
         ? (tokens) => {
             for (const token of tokens) {

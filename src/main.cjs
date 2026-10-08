@@ -689,6 +689,9 @@ const engine = () =>
     workerPath: path.join(__dirname, 'llama-worker.mjs'),
     env: { ...process.env },
   }));
+// Version des règles de détection de la réflexion (llama-worker.mjs, canThink) : à augmenter
+// quand elles changent, pour que les modèles déjà enregistrés soient relus.
+const THINKING_CHECK = 2;
 async function localEntry(name) {
   const entry = (await readRegistry()).find((m) => m.name === name);
   if (!entry) throw new Error(`Modèle du moteur intégré introuvable : ${name}.`);
@@ -731,6 +734,7 @@ handle('local-import', async (name) => {
     sizeLabel: info.sizeLabel,
     contextLength: info.contextLength,
     thinking: Boolean(info.thinking),
+    thinkingCheck: THINKING_CHECK,
     parameters,
     addedAt: new Date().toISOString(),
   };
@@ -889,6 +893,7 @@ async function registerModel(model, dest, source) {
     sizeLabel: info.sizeLabel,
     contextLength: info.contextLength,
     thinking: Boolean(info.thinking),
+    thinkingCheck: THINKING_CHECK,
     license: model.license,
     addedAt: new Date().toISOString(),
   };
@@ -1267,19 +1272,18 @@ async function showModel(model) {
   // Moteur intégré : fiche équivalente à celle d'Ollama, d'après le registre.
   if (localEngine.isLocal(model)) {
     const m = await localEntry(model);
-    // Modèles enregistrés avant la détection de la réflexion : lue une fois dans le fichier.
-    if (m.thinking === undefined) {
-      m.thinking = Boolean(
-        (
-          await engine()
-            .capabilities(m.file)
-            .catch(() => ({}))
-        ).thinking,
-      );
-      const registry = (await readRegistry()).map((r) =>
-        r.name === m.name ? { ...r, thinking: m.thinking } : r,
-      );
-      await writeJson('modeles-integres.json', registry, 'Liste trop volumineuse.');
+    // Réflexion détectée avec des règles plus anciennes (ou jamais) : relue dans le fichier.
+    if (m.thinkingCheck !== THINKING_CHECK) {
+      const found = await engine()
+        .capabilities(m.file)
+        .catch(() => null);
+      if (found) {
+        m.thinking = Boolean(found.thinking);
+        const registry = (await readRegistry()).map((r) =>
+          r.name === m.name ? { ...r, thinking: m.thinking, thinkingCheck: THINKING_CHECK } : r,
+        );
+        await writeJson('modeles-integres.json', registry, 'Liste trop volumineuse.');
+      }
     }
     return {
       details: { family: m.architecture, parameter_size: m.sizeLabel, quantization_level: null },

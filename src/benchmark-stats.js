@@ -141,6 +141,91 @@ function categoryMetrics(records, grader = ALL_GRADERS) {
   }));
 }
 
+// Métier d'une question d'après le début de son libellé (séries « métiers » : E01, ED3, MD6…).
+// null pour les autres séries.
+const METIER_PREFIXES = {
+  A: 'Administration',
+  C: 'Entreprise',
+  E: 'Enseignement',
+  F: 'Finance',
+  I: 'Ingénierie',
+  J: 'Juridique',
+  M: 'Communication',
+  S: 'Santé',
+};
+function metierOf(label) {
+  const match = /^([A-Z])D?\d+\b/.exec(String(label || ''));
+  return (match && METIER_PREFIXES[match[1]]) || null;
+}
+
+// Note, précision et invention par métier et par modèle (toutes répétitions confondues).
+function metierMetrics(records, grader = ALL_GRADERS) {
+  const cells = new Map();
+  for (const record of records)
+    for (const result of record.results) {
+      if (!done(result)) continue;
+      const metier = metierOf(record.questions[result.q]?.label);
+      const values = metier && gradeValues(result, grader);
+      if (!values) continue;
+      const key = metier + '\u0000' + result.model;
+      if (!cells.has(key)) cells.set(key, { metier, model: result.model, items: [] });
+      cells.get(key).items.push(values);
+    }
+  return [...cells.values()].map(({ metier, model, items }) => ({
+    metier,
+    model,
+    n: items.length,
+    correct: mean(valuesOf(items, 'correct')),
+    acceptable: mean(valuesOf(items, 'acceptable')),
+    invention: mean(valuesOf(items, 'invention')),
+    rating: mean(valuesOf(items, 'rating')),
+  }));
+}
+
+// Performances (temps, vitesse, longueur) par métier et par modèle, sans besoin de notes.
+function metierPerformance(records) {
+  const cells = new Map();
+  for (const record of records)
+    for (const result of record.results) {
+      if (!done(result)) continue;
+      const metier = metierOf(record.questions[result.q]?.label);
+      if (!metier) continue;
+      const key = metier + '\u0000' + result.model;
+      if (!cells.has(key)) cells.set(key, { metier, model: result.model, items: [] });
+      cells.get(key).items.push(result.stats);
+    }
+  return [...cells.values()].map(({ metier, model, items }) => {
+    const sum = (key) => items.reduce((n, s) => n + (s[key] || 0), 0);
+    return {
+      metier,
+      model,
+      n: items.length,
+      answerSeconds: sum('totalMs') / items.length / 1000,
+      generation: speed(sum('outputTokens'), sum('outputMs')),
+      outputTokens: sum('outputTokens') / items.length,
+      cut: items.filter((s) => s.doneReason === 'length').length,
+    };
+  });
+}
+
+// Classement : la justesse d'abord. Part de réponses correctes, puis moins d'inventions, puis note
+// moyenne, puis rapidité (un modèle lent qui dit juste passe devant un rapide qui invente).
+// Les éléments sans note ni verdict sont exclus.
+function rankModels(items) {
+  const value = (v) => (v && typeof v === 'object' ? v.mean : v);
+  const desc = (a, b) => (value(b) ?? -1) - (value(a) ?? -1);
+  const asc = (a, b, missing) => (value(a) ?? missing) - (value(b) ?? missing);
+  return items
+    .filter((m) => value(m.rating) != null || value(m.correct) != null)
+    .sort(
+      (a, b) =>
+        desc(a.correct, b.correct) ||
+        asc(a.invention, b.invention, 1) ||
+        desc(a.rating, b.rating) ||
+        asc(a.answerSeconds, b.answerSeconds, Infinity),
+    );
+}
+
 // Verdict d'une réponse : celui du correcteur, ou l'ensemble des verdicts de tous les correcteurs.
 function verdictOf(result, grader) {
   if (grader !== ALL_GRADERS) return result.grades?.[grader]?.verdict || null;
@@ -344,6 +429,10 @@ if (typeof module !== 'undefined')
     gradeValues,
     modelMetrics,
     categoryMetrics,
+    metierOf,
+    metierMetrics,
+    metierPerformance,
+    rankModels,
     stabilityMetrics,
     agreement,
     toCsv,

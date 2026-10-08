@@ -10,7 +10,21 @@ let blind = null;
 
 const groupKey = (record) => record.groupId || record.id;
 const selectedRecords = () => comparisons.filter((r) => !excludedGroups.has(groupKey(r)));
-const shortModel = (name) => name.replace(/:latest$/, '');
+// Nom complet du modèle : fichier d'origine (ex. gemma-4-E4B-it-Q4_K_M) pour le moteur intégré,
+// nom Ollama sinon. Rempli à chaque affichage à partir des conditions enregistrées des séries.
+const fullNames = new Map();
+const shortModel = (name) => fullNames.get(name) || name.replace(/:latest$/, '');
+function rememberFullNames(records) {
+  fullNames.clear();
+  for (const record of records)
+    for (const [name, info] of Object.entries(record.env?.models || {})) {
+      const file = String(info?.origin || '')
+        .split('/')
+        .pop()
+        .replace(/\.gguf$/i, '');
+      if (file) fullNames.set(name, file);
+    }
+}
 const plusMinus = (s, format) =>
   s.mean == null ? '—' : format(s.mean) + (s.sd != null ? ' ± ' + format(s.sd) : '');
 const pct = (v) => (v == null ? '—' : number(v * 100, 0) + ' %');
@@ -125,6 +139,7 @@ function renderBenchmark() {
   if ($('benchmark-view').hidden) return;
   renderSeriesChoice();
   const records = selectedRecords();
+  rememberFullNames(records);
   const grader = renderGraderChoice(records);
   const box = $('bench-results');
   box.replaceChildren();
@@ -134,6 +149,7 @@ function renderBenchmark() {
   }
   const metrics = modelMetrics(records, grader);
   const repetitions = Math.max(...metrics.map((m) => m.repetitions));
+  renderRanking(box, metrics);
   box.append(element('h3', '', 'Résultats par modèle'));
   box.append(
     element(
@@ -307,6 +323,9 @@ function renderBenchmark() {
       }),
     );
   }
+
+  renderMetierPerformance(box, records, grader, metrics);
+  renderMetierRanking(box, records, grader, metrics);
 
   // Vérifications automatiques : alertes relevées sans modèle, par modèle.
   const checked = records.flatMap((r) => r.results.filter((x) => x.status === 'done' && x.checks));
@@ -559,6 +578,176 @@ function conditionsMarkdown(records) {
 }
 
 // Données brutes : une ligne par réponse, avec les notes de chaque correcteur.
+const ratingText = (v) => (v == null ? '—' : number(v, 2) + ' / 5');
+const meanOf = (v) => (v && typeof v === 'object' ? v.mean : v);
+
+// Classement général : note moyenne, puis réponses correctes, puis moins d'inventions.
+function renderRanking(box, metrics) {
+  box.append(element('h3', '', 'Classement des modèles'));
+  const ranked = rankModels([...metrics]);
+  if (!ranked.length) {
+    box.append(
+      element(
+        'p',
+        'muted',
+        'Aucune réponse notée : importez les notes d’un correcteur (étape 2) ou notez à l’aveugle pour obtenir le classement.',
+      ),
+    );
+    return;
+  }
+  box.append(
+    element(
+      'p',
+      'muted',
+      'La justesse d’abord : classés par part de réponses correctes, puis par part d’inventions (la plus faible d’abord), puis par note moyenne, puis par rapidité. Un modèle lent qui répond juste passe devant un modèle rapide qui invente.',
+    ),
+  );
+  box.append(
+    scrollable(
+      table(
+        [
+          'Rang',
+          'Modèle',
+          'Correctes',
+          'Inventions',
+          'Correctes ou partielles',
+          'Note moyenne',
+          'Réponses notées',
+          'Temps moyen',
+        ],
+        ranked.map((m, i) => [
+          i + 1,
+          shortModel(m.model),
+          pct(meanOf(m.correct)),
+          pct(meanOf(m.invention)),
+          pct(meanOf(m.acceptable)),
+          ratingText(meanOf(m.rating)),
+          m.graded,
+          secs(meanOf(m.answerSeconds)),
+        ]),
+      ),
+    ),
+  );
+}
+
+// Classement des modèles pour chaque métier (séries « métiers » uniquement).
+// Précision, temps et vitesse de chaque modèle, métier par métier, puis classement par métier.
+// Les notes ne sont pas obligatoires : sans elles, seules les performances sont affichées.
+function metierCells(records, grader) {
+  const quality = metierMetrics(records, grader);
+  return metierPerformance(records).map((p) => {
+    const q = quality.find((x) => x.metier === p.metier && x.model === p.model);
+    return {
+      ...p,
+      graded: q?.n || 0,
+      correct: q?.correct ?? null,
+      invention: q?.invention ?? null,
+      rating: q?.rating ?? null,
+      acceptable: q?.acceptable ?? null,
+    };
+  });
+}
+
+function renderMetierPerformance(box, records, grader, metrics) {
+  const cells = metierCells(records, grader);
+  const metiers = [...new Set(cells.map((c) => c.metier))].sort((a, b) => a.localeCompare(b, 'fr'));
+  if (!metiers.length) return;
+  const models = metrics.map((m) => m.model);
+  const anyGrade = cells.some((c) => c.graded);
+  box.append(element('h3', '', 'Précision et performances par métier'));
+  box.append(
+    element(
+      'p',
+      'muted',
+      (anyGrade
+        ? 'Pour chaque modèle : réponses correctes, inventions, puis temps moyen par réponse et vitesse d’écriture (jetons par seconde). « Meilleur choix » : la justesse d’abord, la rapidité seulement à justesse égale. '
+        : 'Aucune réponse notée : la précision s’affichera après l’import des notes (étape 2). En attendant : temps moyen par réponse et vitesse d’écriture (jetons par seconde). ') +
+        'Entre parenthèses : réponses coupées à la longueur maximale.',
+    ),
+  );
+  const cellText = (c) => {
+    if (!c) return '—';
+    const quality = c.graded ? `${pct(c.correct)} justes · ${pct(c.invention)} inventions · ` : '';
+    return (
+      quality +
+      `${secs(c.answerSeconds)} · ${tps(c.generation)} jetons/s` +
+      (c.cut ? ` (${c.cut} coupée${c.cut > 1 ? 's' : ''})` : '')
+    );
+  };
+  box.append(
+    scrollable(
+      table(
+        ['Métier', ...models.map(shortModel), anyGrade ? 'Meilleur choix' : 'Le plus rapide'],
+        metiers.map((metier) => {
+          const row = models.map((model) =>
+            cells.find((c) => c.metier === metier && c.model === model),
+          );
+          const present = row.filter(Boolean);
+          const best = anyGrade
+            ? rankModels(present.filter((c) => c.graded))[0]
+            : present.reduce((b, c) => (!b || c.answerSeconds < b.answerSeconds ? c : b), null);
+          return [metier, ...row.map(cellText), best ? shortModel(best.model) : '—'];
+        }),
+      ),
+    ),
+  );
+}
+
+// Classement des modèles pour chaque métier : justesse d'abord (voir rankModels).
+function renderMetierRanking(box, records, grader, metrics) {
+  const cells = metierCells(records, grader).filter((c) => c.graded);
+  if (!metierPerformance(records).length) return;
+  box.append(element('h3', '', 'Classement par métier'));
+  if (!cells.length) {
+    box.append(
+      element(
+        'p',
+        'muted',
+        'Aucune réponse notée : importez les notes d’un correcteur (étape 2) pour classer les modèles par métier.',
+      ),
+    );
+    return;
+  }
+  const metiers = [...new Set(cells.map((c) => c.metier))].sort((a, b) => a.localeCompare(b, 'fr'));
+  const models = metrics.map((m) => m.model);
+  box.append(
+    element(
+      'p',
+      'muted',
+      'Pour chaque métier, du meilleur au moins bon : part de réponses correctes, puis moins d’inventions, puis note, puis rapidité.',
+    ),
+  );
+  const width = Math.max(
+    ...metiers.map((metier) => cells.filter((c) => c.metier === metier).length),
+  );
+  box.append(
+    scrollable(
+      table(
+        ['Métier', ...Array.from({ length: width }, (_, i) => `${i + 1}${i ? 'e' : 'er'}`)],
+        metiers.map((metier) => [
+          metier,
+          ...rankModels(cells.filter((c) => c.metier === metier)).map(
+            (c) => `${shortModel(c.model)} (${pct(c.correct)} justes · ${secs(c.answerSeconds)})`,
+          ),
+        ]),
+      ),
+    ),
+  );
+  box.append(
+    heatmapTable({
+      title: 'Réponses correctes par métier',
+      note: 'Entre parenthèses : nombre de réponses notées.',
+      rows: metiers,
+      columns: models.map(shortModel),
+      cell: (metier, label) => {
+        const c = cells.find((x) => x.metier === metier && shortModel(x.model) === label);
+        return c && c.correct != null ? { value: c.correct, n: c.graded } : null;
+      },
+      format: pct,
+    }),
+  );
+}
+
 function rawRows(records) {
   const graders = gradersOf(records);
   const header = [

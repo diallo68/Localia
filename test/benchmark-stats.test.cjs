@@ -171,3 +171,61 @@ test('import de notes : appliquées, lignes invalides refusées avec leur raison
   assert.equal(records[0].results[1].grades.Claude.verdict, 'hors-sujet');
   assert.throws(() => s.applyGrades(records, 'Série;Question\nx;y'), /Modèle/);
 });
+
+test('métier déduit du libellé des séries métiers', () => {
+  const { metierOf } = require('../src/benchmark-stats.js');
+  assert.equal(metierOf('E01 QCM sur un texte'), 'Enseignement');
+  assert.equal(metierOf('MD6 Publication pour les réseaux sociaux'), 'Communication');
+  assert.equal(metierOf('CD2 Ventes'), 'Entreprise');
+  assert.equal(metierOf('Q1'), null);
+  assert.equal(metierOf('A1 Résumé'), 'Administration');
+  assert.equal(metierOf('Analyse libre'), null);
+});
+
+test('classement par métier : note, puis correctes, puis inventions', () => {
+  const { metierMetrics, rankModels } = require('../src/benchmark-stats.js');
+  const grade = (rating, verdict, invention = false) => ({ X: { rating, verdict, invention } });
+  const result = (q, model, g) => ({ q, model, status: 'done', stats: {}, grades: g });
+  const records = [
+    {
+      questions: [{ label: 'S01 Dose' }, { label: 'SD1 Compte rendu' }, { label: 'F01 TVA' }],
+      results: [
+        result(0, 'a', grade(4, 'correct')),
+        result(1, 'a', grade(4, 'partiel')),
+        result(0, 'b', grade(5, 'correct')),
+        result(1, 'b', grade(3, 'correct', true)),
+        result(2, 'a', grade(2, 'faux')),
+        result(2, 'b', grade(5, 'correct')),
+      ],
+    },
+  ];
+  const cells = metierMetrics(records);
+  const sante = rankModels(cells.filter((c) => c.metier === 'Santé'));
+  // Égalité de note (4) : b a plus de réponses correctes.
+  assert.deepEqual(
+    sante.map((c) => c.model),
+    ['b', 'a'],
+  );
+  const finance = rankModels(cells.filter((c) => c.metier === 'Finance'));
+  assert.deepEqual(
+    finance.map((c) => c.model),
+    ['b', 'a'],
+  );
+  assert.equal(
+    rankModels([{ model: 'x', rating: { mean: null }, correct: { mean: null } }]).length,
+    0,
+  );
+});
+
+test('classement : un modèle lent et juste passe devant un rapide qui invente', () => {
+  const { rankModels } = require('../src/benchmark-stats.js');
+  const ranked = rankModels([
+    { model: 'rapide', correct: 0.6, invention: 0.3, rating: 3.5, answerSeconds: 20 },
+    { model: 'lent', correct: 0.8, invention: 0.05, rating: 4.1, answerSeconds: 200 },
+    { model: 'lent-egal', correct: 0.6, invention: 0.3, rating: 3.5, answerSeconds: 90 },
+  ]);
+  assert.deepEqual(
+    ranked.map((m) => m.model),
+    ['lent', 'rapide', 'lent-egal'],
+  );
+});

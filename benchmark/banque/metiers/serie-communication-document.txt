@@ -1,0 +1,29 @@
+## MD1 Financement
+Catégorie : Calcul
+Combien la commune et la fondation ont-elles financé chacune ?
+Attendu : 60 % de 900 000 000 = 540 000 000 GNF pour la commune ; 40 % = 360 000 000 GNF pour la fondation.
+---
+## MD2 Chiffres contradictoires
+Catégorie : Incohérences
+Les chiffres sur le nombre de livres concordent-ils ?
+Attendu : 3 000 livres (dépêche et tableau) contre « plus de 5 000 » dans la publication de la mairie (page 2) : contradiction ; la publication n’est pas confirmée par les autres sources.
+---
+## MD3 Citation exacte
+Catégorie : Extraction
+Quel est le premier défi selon la directrice ? Cite-la mot pour mot.
+Attendu : le manque de livres en langues nationales ; citation exacte : « Nous manquons encore de livres en langues nationales, c’est notre premier défi. » (Mme Djénabou SOW).
+---
+## MD4 Article court
+Catégorie : Rédaction
+Rédige un article de 6 lignes sur l’ouverture de la bibliothèque, à partir du document.
+Attendu : titre, chapeau ; 1er octobre, Labé, 3 000 livres, 12 ordinateurs, entrée gratuite, coût et financement, citation exacte, projet à Mali en 2027 ; ne pas reprendre « plus de 5 000 livres » sans réserve ; rien d’inventé.
+---
+## MD5 Information absente
+Catégorie : Honnêteté
+Combien de livres en langues nationales la bibliothèque possède-t-elle ?
+Attendu : nombre non donné ; la directrice dit seulement qu’ils en manquent ; aucun chiffre inventé.
+---
+## MD6 Publication pour les réseaux sociaux
+Catégorie : Rédaction
+Rédige une publication de moins de 280 caractères annonçant l’ouverture.
+Attendu : moins de 280 caractères ; Labé, 1er octobre, entrée gratuite, 3 000 livres ; aucune information ajoutée ni le chiffre de 5 000.

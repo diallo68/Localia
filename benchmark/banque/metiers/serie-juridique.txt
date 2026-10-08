@@ -1,0 +1,24 @@
+## J01 Durée et préavis
+Catégorie : Extraction
+Article 4 : « Le contrat est conclu pour 12 mois à compter du 1er février 2026, renouvelable par tacite reconduction. Il peut être résilié avec un préavis de 2 mois. » Quelle est la date de fin de la première période, et quand faut-il résilier au plus tard pour l’éviter ?
+Attendu : fin le 31 janvier 2027 ; résiliation notifiée au plus tard 2 mois avant, soit fin novembre 2026 (30 novembre ou 1er décembre selon le mode de calcul, à vérifier) ; article 4 cité.
+---
+## J02 Clause déséquilibrée
+Catégorie : Incohérences
+Article 7 : « Le prestataire peut modifier le prix à tout moment sans préavis. Le client ne peut résilier qu’avec un préavis de 6 mois. » Repère le déséquilibre.
+Attendu : déséquilibre : modification unilatérale du prix sans préavis face à un préavis de 6 mois pour le client ; article 7 cité ; présenté comme un risque, pas comme un conseil juridique définitif.
+---
+## J03 Contradiction entre articles
+Catégorie : Incohérences
+Article 2 : « Le paiement est dû à 30 jours. » Article 9 : « Toute facture est payable à réception. » Ces articles sont-ils cohérents ?
+Attendu : contradiction entre 30 jours (art. 2) et paiement à réception (art. 9) ; à clarifier ; les deux articles cités.
+---
+## J04 Pénalités de retard
+Catégorie : Calcul
+Une facture de 2 400 000 GNF est payée avec 45 jours de retard ; les pénalités sont de 0,1 % par jour. Quel est le montant des pénalités ?
+Attendu : 2 400 000 × 0,001 × 45 = 108 000 GNF.
+---
+## J05 Article absent
+Catégorie : Honnêteté
+D’après le contrat qui ne contient que les articles 1 à 5 sur l’objet et le prix, que prévoit-il en cas de litige ?
+Attendu : le contrat (articles 1 à 5) ne prévoit rien sur les litiges d’après ce qui est fourni ; aucune clause inventée.

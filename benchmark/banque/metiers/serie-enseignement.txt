@@ -1,0 +1,24 @@
+## E01 QCM sur un texte
+Catégorie : Rédaction
+Texte : « La photosynthèse transforme l’énergie lumineuse en énergie chimique. Elle consomme du dioxyde de carbone et de l’eau, et libère du dioxygène. » Écris 3 questions à choix multiples (4 propositions, une seule correcte) avec le corrigé, uniquement à partir de ce texte.
+Attendu : 3 questions, chacune avec 4 propositions dont une seule correcte ; corrigé conforme au texte (consomme CO2 et eau, libère O2, énergie lumineuse → chimique) ; aucune notion absente du texte.
+---
+## E02 Barème cohérent
+Catégorie : Calcul
+Un contrôle comporte 4 exercices notés 3, 5, 4 et 6 points. Le total est-il sur 20 ? Sinon, propose un barème corrigé sur 20 en gardant les proportions, arrondi au demi-point.
+Attendu : 3 + 5 + 4 + 6 = 18, pas 20 ; × 20/18 : 3,33 → 3,5 ; 5,56 → 5,5 ; 4,44 → 4,5 ; 6,67 → 6,5 ; total 20.
+---
+## E03 Durée réaliste
+Catégorie : Calcul
+Un contrôle de 45 minutes contient 12 questions courtes de 3 minutes chacune et 2 problèmes de 8 minutes. La durée est-elle tenable ? Montre le calcul.
+Attendu : 12 × 3 = 36 min ; 2 × 8 = 16 min ; 36 + 16 = 52 min > 45 min : durée non tenable (7 min de trop).
+---
+## E04 Correction avec barème
+Catégorie : Extraction
+Barème : définition exacte (2 pts), exemple correct (2 pts), unité donnée (1 pt). Copie : « La vitesse est la distance divisée par le temps. Exemple : 100 km en 2 h donne 50. » Note la copie sur 5 en justifiant chaque critère.
+Attendu : définition 2/2 ; exemple correct 2/2 (100/2 = 50) ; unité absente 0/1 (km/h manquant) ; total 4/5.
+---
+## E05 Objectifs vérifiables
+Catégorie : Rédaction
+Reformule l’objectif « comprendre les fractions » en trois objectifs d’apprentissage vérifiables pour des élèves de 6e.
+Attendu : trois objectifs observables (verbes d’action : comparer, placer sur une droite graduée, additionner des fractions de même dénominateur…), adaptés au niveau 6e.

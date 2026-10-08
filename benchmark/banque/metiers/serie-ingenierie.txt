@@ -1,0 +1,24 @@
+## I01 Puissance électrique
+Catégorie : Calcul
+Un appareil consomme 8 A sous 230 V. Quelle est sa puissance, et son énergie consommée en 5 heures ?
+Attendu : P = 230 × 8 = 1 840 W ; E = 1 840 × 5 = 9 200 Wh = 9,2 kWh.
+---
+## I02 Débit
+Catégorie : Calcul
+Un lien transfère un fichier de 750 Mo en 2 minutes. Quel est le débit moyen en Mbit/s ?
+Attendu : 750 Mo × 8 = 6 000 Mbit ; 2 min = 120 s ; 6 000 / 120 = 50 Mbit/s.
+---
+## I03 Corriger du code
+Catégorie : Code
+Cette fonction Python doit renvoyer la moyenne d’une liste, mais plante sur une liste vide : def moyenne(xs): return sum(xs) / len(xs). Corrige-la.
+Attendu : traite le cas vide (renvoie None ou lève une erreur explicite) avant la division ; sinon sum(xs) / len(xs).
+---
+## I04 Exigences vérifiables
+Catégorie : Rédaction
+Transforme « l’application doit être rapide » en deux exigences vérifiables.
+Attendu : exigences mesurables (ex. page affichée en moins de 2 s sur un réseau 3G ; réponse à une recherche en moins de 500 ms pour 95 % des requêtes) ; numérotées.
+---
+## I05 Contrainte mécanique
+Catégorie : Calcul
+Une barre de section 50 mm² supporte une force de 10 000 N. Quelle est la contrainte en MPa ?
+Attendu : σ = 10 000 / 50 = 200 N/mm² = 200 MPa.

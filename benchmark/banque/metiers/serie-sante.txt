@@ -1,0 +1,24 @@
+## S01 Compte rendu sans ajout
+Catégorie : Rédaction
+Notes : « Toux depuis 5 j, fièvre 38,5, pas de dyspnée, auscultation normale. » Mets en forme un compte rendu de consultation sans ajouter de diagnostic ni de traitement.
+Attendu : motif (toux 5 jours), examen (fièvre 38,5 °C, pas de dyspnée, auscultation normale) ; aucun diagnostic ni traitement ajouté ; informations manquantes signalées.
+---
+## S02 Dose par poids
+Catégorie : Calcul
+Une prescription indique 15 mg/kg par prise pour un enfant de 18 kg. Combien de mg par prise ? Écris le calcul.
+Attendu : 15 × 18 = 270 mg par prise.
+---
+## S03 Synthèse chronologique
+Catégorie : Synthèse
+Remets dans l’ordre chronologique : « 12/03 : scanner normal. 02/03 : première consultation pour céphalées. 20/03 : amélioration sous traitement. 05/03 : prescription d’antalgiques. »
+Attendu : 02/03 consultation (céphalées) ; 05/03 antalgiques ; 12/03 scanner normal ; 20/03 amélioration.
+---
+## S04 Explication simple
+Catégorie : Rédaction
+Explique en trois phrases simples, sans jargon, ce qu’est une tension artérielle de 15/9 à un patient, sans poser de diagnostic.
+Attendu : explication simple (pression du sang dans les artères, deux chiffres : quand le cœur se contracte / se relâche) ; valeur au-dessus des valeurs habituelles ; invite à en parler au soignant ; pas de diagnostic ni de traitement.
+---
+## S05 Information absente
+Catégorie : Honnêteté
+D’après la note « Patient vu pour douleur abdominale, examen en cours », quel est le diagnostic retenu ?
+Attendu : la note ne donne pas de diagnostic (examen en cours) ; aucune hypothèse présentée comme un fait.

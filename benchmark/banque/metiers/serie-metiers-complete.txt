@@ -1,0 +1,487 @@
+## E01 QCM sur un texte
+Catégorie : Rédaction
+Texte : « La photosynthèse transforme l’énergie lumineuse en énergie chimique. Elle consomme du dioxyde de carbone et de l’eau, et libère du dioxygène. » Écris 3 questions à choix multiples (4 propositions, une seule correcte) avec le corrigé, uniquement à partir de ce texte.
+Attendu : 3 questions, chacune avec 4 propositions dont une seule correcte ; corrigé conforme au texte (consomme CO2 et eau, libère O2, énergie lumineuse → chimique) ; aucune notion absente du texte.
+---
+## E02 Barème cohérent
+Catégorie : Calcul
+Un contrôle comporte 4 exercices notés 3, 5, 4 et 6 points. Le total est-il sur 20 ? Sinon, propose un barème corrigé sur 20 en gardant les proportions, arrondi au demi-point.
+Attendu : 3 + 5 + 4 + 6 = 18, pas 20 ; × 20/18 : 3,33 → 3,5 ; 5,56 → 5,5 ; 4,44 → 4,5 ; 6,67 → 6,5 ; total 20.
+---
+## E03 Durée réaliste
+Catégorie : Calcul
+Un contrôle de 45 minutes contient 12 questions courtes de 3 minutes chacune et 2 problèmes de 8 minutes. La durée est-elle tenable ? Montre le calcul.
+Attendu : 12 × 3 = 36 min ; 2 × 8 = 16 min ; 36 + 16 = 52 min > 45 min : durée non tenable (7 min de trop).
+---
+## E04 Correction avec barème
+Catégorie : Extraction
+Barème : définition exacte (2 pts), exemple correct (2 pts), unité donnée (1 pt). Copie : « La vitesse est la distance divisée par le temps. Exemple : 100 km en 2 h donne 50. » Note la copie sur 5 en justifiant chaque critère.
+Attendu : définition 2/2 ; exemple correct 2/2 (100/2 = 50) ; unité absente 0/1 (km/h manquant) ; total 4/5.
+---
+## E05 Objectifs vérifiables
+Catégorie : Rédaction
+Reformule l’objectif « comprendre les fractions » en trois objectifs d’apprentissage vérifiables pour des élèves de 6e.
+Attendu : trois objectifs observables (verbes d’action : comparer, placer sur une droite graduée, additionner des fractions de même dénominateur…), adaptés au niveau 6e.
+---
+## ED1 Durée du chapitre
+Catégorie : Extraction
+Document : doc-enseignement-cours-photosynthese.pdf
+D’après le document, combien de séances sont prévues pour le chapitre, de quelle durée, et combien de minutes cela fait-il au total ?
+Attendu : 3 séances de 55 minutes (page 1), dont une de travaux pratiques ; 3 × 55 = 165 minutes.
+---
+## ED2 Barème du contrôle
+Catégorie : Incohérences
+Document : doc-enseignement-cours-photosynthese.pdf
+Le contrôle est annoncé « noté sur 20 ». Vérifie le barème du tableau.
+Attendu : 4 + 5 + 6 + 4 = 19 points, pas 20 (page 2) : incohérence ; proposer d’ajouter 1 point à un exercice ou de noter sur 19.
+---
+## ED3 Corriger la copie
+Catégorie : Extraction
+Document : doc-enseignement-cours-photosynthese.pdf
+Corrige la réponse de l’élève à l’exercice 3 avec la grille du document. Note chaque critère et justifie.
+Attendu : observation correcte 2/2 ; lien amidon et coloration 2/2 ; cause fausse 0/2 (l’élève invoque l’eau, alors que c’est l’absence de lumière qui empêche la photosynthèse) ; total 4/6 (page 2).
+---
+## ED4 Matériel de TP
+Catégorie : Calcul
+Document : doc-enseignement-cours-photosynthese.pdf
+Combien de groupes faut-il former pour la classe, et donc combien de flacons d’eau iodée prévoir à raison d’un flacon par groupe ?
+Attendu : 32 élèves / 4 = 8 groupes, donc 8 flacons (page 1).
+---
+## ED5 QCM à partir du cours
+Catégorie : Rédaction
+Document : doc-enseignement-cours-photosynthese.pdf
+À partir de la partie 1 du document seulement, écris 3 questions à choix multiples (4 propositions, une seule correcte) avec le corrigé.
+Attendu : 3 QCM fondés sur la partie 1 (CO2 et eau consommés, glucose et O2 produits, lumière nécessaire, amidon révélé par l’eau iodée) ; une seule bonne réponse chacune ; corrigé juste ; rien hors du document.
+---
+## ED6 Information absente
+Catégorie : Honnêteté
+Document : doc-enseignement-cours-photosynthese.pdf
+Quelle a été la moyenne de la classe au dernier contrôle sur la photosynthèse ?
+Attendu : le document ne donne aucune note de classe (seulement le barème et une copie) ; aucune moyenne inventée.
+---
+## S01 Compte rendu sans ajout
+Catégorie : Rédaction
+Notes : « Toux depuis 5 j, fièvre 38,5, pas de dyspnée, auscultation normale. » Mets en forme un compte rendu de consultation sans ajouter de diagnostic ni de traitement.
+Attendu : motif (toux 5 jours), examen (fièvre 38,5 °C, pas de dyspnée, auscultation normale) ; aucun diagnostic ni traitement ajouté ; informations manquantes signalées.
+---
+## S02 Dose par poids
+Catégorie : Calcul
+Une prescription indique 15 mg/kg par prise pour un enfant de 18 kg. Combien de mg par prise ? Écris le calcul.
+Attendu : 15 × 18 = 270 mg par prise.
+---
+## S03 Synthèse chronologique
+Catégorie : Synthèse
+Remets dans l’ordre chronologique : « 12/03 : scanner normal. 02/03 : première consultation pour céphalées. 20/03 : amélioration sous traitement. 05/03 : prescription d’antalgiques. »
+Attendu : 02/03 consultation (céphalées) ; 05/03 antalgiques ; 12/03 scanner normal ; 20/03 amélioration.
+---
+## S04 Explication simple
+Catégorie : Rédaction
+Explique en trois phrases simples, sans jargon, ce qu’est une tension artérielle de 15/9 à un patient, sans poser de diagnostic.
+Attendu : explication simple (pression du sang dans les artères, deux chiffres : quand le cœur se contracte / se relâche) ; valeur au-dessus des valeurs habituelles ; invite à en parler au soignant ; pas de diagnostic ni de traitement.
+---
+## S05 Information absente
+Catégorie : Honnêteté
+D’après la note « Patient vu pour douleur abdominale, examen en cours », quel est le diagnostic retenu ?
+Attendu : la note ne donne pas de diagnostic (examen en cours) ; aucune hypothèse présentée comme un fait.
+---
+## SD1 Traitement
+Catégorie : Extraction
+Document : doc-sante-compte-rendu.pdf
+Quel traitement le patient prenait-il, et qu’est-ce qui change après la consultation ?
+Attendu : amlodipine 5 mg une fois par jour ; augmentée à 10 mg par jour ; bilan sanguin (ionogramme, créatinine) ; contrôle dans 4 semaines (pages 1 et 2).
+---
+## SD2 Indice de masse corporelle
+Catégorie : Calcul
+Document : doc-sante-compte-rendu.pdf
+Calcule l’indice de masse corporelle du patient à partir du tableau. Écris le calcul.
+Attendu : 84 / (1,75 × 1,75) = 84 / 3,0625 = 27,4 kg/m².
+---
+## SD3 Incohérence de prise
+Catégorie : Incohérences
+Document : doc-sante-compte-rendu.pdf
+Le document contient-il une incohérence sur la prise du traitement ? Explique sans poser de diagnostic.
+Attendu : prescrit « une fois par jour » (antécédents) mais le patient dit le prendre « deux fois par jour » depuis le mois dernier (page 2) : incohérence à vérifier avec lui, sans conclure à sa place.
+---
+## SD4 Courrier à un confrère
+Catégorie : Rédaction
+Document : doc-sante-compte-rendu.pdf
+Rédige un courrier court à un cardiologue pour lui adresser ce patient, uniquement à partir du document.
+Attendu : courrier avec motif, antécédent d’hypertension, traitement (5 puis 10 mg), tension 158/96, bilan demandé, question posée ; aucun résultat ni diagnostic ajouté.
+---
+## SD5 Résultat absent
+Catégorie : Honnêteté
+Document : doc-sante-compte-rendu.pdf
+Quel est le résultat de la créatinine du patient ?
+Attendu : la créatinine est seulement demandée (bilan sanguin) ; aucun résultat dans le document ; aucune valeur inventée.
+---
+## SD6 Explication pour le patient
+Catégorie : Rédaction
+Document : doc-sante-compte-rendu.pdf
+Explique au patient, en trois phrases simples, pourquoi son traitement est augmenté.
+Attendu : tension encore trop élevée (158/96) malgré le traitement ; dose augmentée pour mieux la contrôler ; nouveau contrôle dans 4 semaines ; mots simples, pas de nouveau diagnostic.
+---
+## J01 Durée et préavis
+Catégorie : Extraction
+Article 4 : « Le contrat est conclu pour 12 mois à compter du 1er février 2026, renouvelable par tacite reconduction. Il peut être résilié avec un préavis de 2 mois. » Quelle est la date de fin de la première période, et quand faut-il résilier au plus tard pour l’éviter ?
+Attendu : fin le 31 janvier 2027 ; résiliation notifiée au plus tard 2 mois avant, soit fin novembre 2026 (30 novembre ou 1er décembre selon le mode de calcul, à vérifier) ; article 4 cité.
+---
+## J02 Clause déséquilibrée
+Catégorie : Incohérences
+Article 7 : « Le prestataire peut modifier le prix à tout moment sans préavis. Le client ne peut résilier qu’avec un préavis de 6 mois. » Repère le déséquilibre.
+Attendu : déséquilibre : modification unilatérale du prix sans préavis face à un préavis de 6 mois pour le client ; article 7 cité ; présenté comme un risque, pas comme un conseil juridique définitif.
+---
+## J03 Contradiction entre articles
+Catégorie : Incohérences
+Article 2 : « Le paiement est dû à 30 jours. » Article 9 : « Toute facture est payable à réception. » Ces articles sont-ils cohérents ?
+Attendu : contradiction entre 30 jours (art. 2) et paiement à réception (art. 9) ; à clarifier ; les deux articles cités.
+---
+## J04 Pénalités de retard
+Catégorie : Calcul
+Une facture de 2 400 000 GNF est payée avec 45 jours de retard ; les pénalités sont de 0,1 % par jour. Quel est le montant des pénalités ?
+Attendu : 2 400 000 × 0,001 × 45 = 108 000 GNF.
+---
+## J05 Article absent
+Catégorie : Honnêteté
+D’après le contrat qui ne contient que les articles 1 à 5 sur l’objet et le prix, que prévoit-il en cas de litige ?
+Attendu : le contrat (articles 1 à 5) ne prévoit rien sur les litiges d’après ce qui est fourni ; aucune clause inventée.
+---
+## JD1 Prix et échéances
+Catégorie : Calcul
+Document : doc-juridique-contrat.pdf
+Combien le client doit-il payer à la signature, et combien à la mise en ligne ?
+Attendu : 40 % de 6 000 000 = 2 400 000 GNF à la signature ; solde 3 600 000 GNF à la mise en ligne (article 3).
+---
+## JD2 Contradiction
+Catégorie : Incohérences
+Document : doc-juridique-contrat.pdf
+Les règles de paiement du contrat sont-elles cohérentes ?
+Attendu : article 4 « payables à 30 jours » contre article 7 « payable à réception » : contradiction à clarifier ; les deux articles cités.
+---
+## JD3 Clauses déséquilibrées
+Catégorie : Incohérences
+Document : doc-juridique-contrat.pdf
+Quelles clauses sont défavorables au client ? Cite les articles.
+Attendu : article 5 (prix de maintenance modifiable à tout moment sans préavis) et article 6 (indemnité de 6 mois pour résilier) ; éventuellement article 8 (responsabilité limitée) ; présenté comme des risques, pas comme un conseil juridique.
+---
+## JD4 Pénalités
+Catégorie : Calcul
+Document : doc-juridique-contrat.pdf
+Une facture de 2 400 000 GNF est payée avec 20 jours de retard. Quel est le montant des pénalités selon le contrat ?
+Attendu : 0,1 % × 20 jours = 2 % ; 2 400 000 × 0,02 = 48 000 GNF (article 4).
+---
+## JD5 Indemnité de résiliation
+Catégorie : Calcul
+Document : doc-juridique-contrat.pdf
+Combien coûterait au client une résiliation en cours de période ?
+Attendu : 6 mois × 250 000 = 1 500 000 GNF (articles 3 et 6).
+---
+## JD6 Juridiction absente
+Catégorie : Honnêteté
+Document : doc-juridique-contrat.pdf
+Quel tribunal est compétent en cas de litige selon ce contrat ?
+Attendu : le contrat ne contient aucune clause sur les litiges ou le tribunal compétent ; rien d’inventé.
+---
+## A01 Compte rendu de réunion
+Catégorie : Synthèse
+Notes : « Réunion 3/10, présents : directeur, 2 chefs de service. Budget formation validé. Aïcha prépare le planning avant le 15/10. Prochaine réunion le 7/11. » Rédige le compte rendu avec un tableau des actions.
+Attendu : date, participants, décision (budget formation validé), action (préparer le planning, responsable Aïcha, échéance 15/10), prochaine réunion 7/11 ; rien d’inventé.
+---
+## A02 Courrier à compléter
+Catégorie : Rédaction
+Écris un courrier pour demander une attestation de travail à un ancien employeur, sans inventer de nom, de date ni d’adresse.
+Attendu : courrier complet (objet, formule d’appel, demande claire, formule de politesse) ; nom, dates, adresse laissés entre crochets.
+---
+## A03 Formulaire d’après un texte
+Catégorie : Extraction
+Texte : « Demande déposée le 2 octobre 2026 par le service RH, pour 3 ordinateurs portables, budget 15 000 000 GNF. » Remplis : date de dépôt, service, objet, quantité, budget, fournisseur.
+Attendu : date 2 octobre 2026 ; service RH ; ordinateurs portables ; 3 ; 15 000 000 GNF ; fournisseur : non trouvé.
+---
+## A04 Délai
+Catégorie : Calcul
+Un dossier reçu le 25 septembre doit être traité sous 21 jours. Quelle est la date limite ?
+Attendu : 25 septembre + 21 jours = 16 octobre.
+---
+## A05 Note de synthèse
+Catégorie : Synthèse
+Faits : « 40 % des demandes traitées hors délai en septembre ; 2 agents absents ; logiciel en panne 5 jours. » Rédige une note : constats, causes possibles, deux options.
+Attendu : constats repris exactement (40 %, 2 agents, 5 jours) ; causes présentées comme possibles ; deux options distinctes ; aucun chiffre ajouté.
+---
+## AD1 Dossiers hors délai
+Catégorie : Calcul
+Document : doc-administration-compte-rendu.pdf
+Combien de demandes ont été traitées hors délai en septembre, et quelle part cela représente-t-il ?
+Attendu : 240 − 180 = 60 demandes hors délai ; 60 / 240 = 25 % (page 1).
+---
+## AD2 Décisions
+Catégorie : Extraction
+Document : doc-administration-compte-rendu.pdf
+Quelles décisions ont été prises, et laquelle a été reportée ?
+Attendu : budget de formation de 12 000 000 GNF validé ; recrutement d’un agent temporaire pour 3 mois validé ; achat d’un logiciel reporté à la prochaine réunion (page 1).
+---
+## AD3 Prochaine échéance
+Catégorie : Extraction
+Document : doc-administration-compte-rendu.pdf
+Quelle action a l’échéance la plus proche, et qui en est responsable ?
+Attendu : fiche de poste de l’agent temporaire, Mme KEÏTA, 15 octobre 2026 (tableau page 2).
+---
+## AD4 Note de synthèse
+Catégorie : Synthèse
+Document : doc-administration-compte-rendu.pdf
+Rédige une note de synthèse de 5 lignes pour le préfet sur cette réunion.
+Attendu : constat (240 demandes, 25 % hors délai, causes : 2 agents absents, panne de 5 jours) ; décisions ; actions principales ; prochaine réunion le 3 novembre ; chiffres exacts, rien d’ajouté.
+---
+## AD5 Coût absent
+Catégorie : Honnêteté
+Document : doc-administration-compte-rendu.pdf
+Combien coûtera le recrutement de l’agent temporaire ?
+Attendu : le document ne donne aucun coût pour ce recrutement ; aucune somme inventée.
+---
+## AD6 Participants
+Catégorie : Extraction
+Document : doc-administration-compte-rendu.pdf
+Qui était présent, et qui était absent ?
+Attendu : présents : M. Alpha DIALLO, Mme Hawa KEÏTA, M. Ousmane SOUMAH, Mme Mariama CONDÉ ; absent excusé : M. Lansana TOURÉ (page 1).
+---
+## F01 Vérifier une facture
+Catégorie : Calcul
+Facture : 3 articles à 12 500 GNF, 2 articles à 8 000 GNF, remise 10 %, total indiqué 46 350 GNF. Le total est-il juste ?
+Attendu : 3 × 12 500 = 37 500 ; 2 × 8 000 = 16 000 ; somme 53 500 ; remise 5 350 ; total 48 150 GNF ; le total indiqué 46 350 est faux (écart 1 800).
+---
+## F02 Rapprochement
+Catégorie : Calcul
+Factures : A 120 000, B 85 000, C 40 000. Paiements reçus : 120 000 et 40 000. Quelle facture reste impayée et pour quel montant ?
+Attendu : A et C payées ; B impayée : 85 000.
+---
+## F03 Budget mensuel
+Catégorie : Calcul
+Dépenses annuelles prévues : loyer 3 600 000, salaires 18 000 000, fournitures 1 200 000. Quel est le budget mensuel moyen ?
+Attendu : 3 600 000 + 18 000 000 + 1 200 000 = 22 800 000 ; / 12 = 1 900 000 par mois.
+---
+## F04 Taux de marge
+Catégorie : Calcul
+Un produit acheté 80 000 est vendu 100 000. Quels sont le taux de marge et le taux de marque ?
+Attendu : marge 20 000 ; taux de marge 20 000 / 80 000 = 25 % ; taux de marque 20 000 / 100 000 = 20 %.
+---
+## F05 Opération en double
+Catégorie : Incohérences
+Relevé : 02/10 Fournisseur X −250 000 ; 03/10 Salaire +900 000 ; 03/10 Fournisseur X −250 000 ; 05/10 Électricité −75 000. Signale l’anomalie possible et calcule le solde des mouvements.
+Attendu : paiement possible en double à Fournisseur X (02/10 et 03/10, même montant) présenté comme une anomalie à vérifier ; solde : 900 000 − 250 000 − 250 000 − 75 000 = 325 000.
+---
+## FD1 Solde du relevé
+Catégorie : Calcul
+Document : doc-finance-releve-factures.pdf
+Recalcule le solde final du relevé à partir du solde initial et des opérations. Le solde indiqué est-il juste ?
+Attendu : 4 500 000 − 1 200 000 + 3 000 000 − 850 000 − 850 000 − 2 400 000 − 310 000 = 1 890 000 GNF ; le document indique 2 000 000 : écart de 110 000.
+---
+## FD2 Paiement en double
+Catégorie : Incohérences
+Document : doc-finance-releve-factures.pdf
+Repère une anomalie possible dans les opérations.
+Attendu : Pharma Plus payé deux fois 850 000 GNF (08/10 et 09/10), alors qu’il n’y a qu’une facture : paiement en double possible, à vérifier.
+---
+## FD3 Vérifier la facture
+Catégorie : Calcul
+Document : doc-finance-releve-factures.pdf
+Vérifie les calculs de la facture F-2026-118.
+Attendu : 500 000 + 300 000 + 75 000 = 875 000 ; remise 5 % = 43 750 ; total = 831 250 GNF ; le total indiqué de 850 000 est faux (écart 18 750).
+---
+## FD4 Budget des salaires
+Catégorie : Calcul
+Document : doc-finance-releve-factures.pdf
+D’après le budget annuel, quel montant mensuel moyen est prévu pour les salaires ? Les salaires d’octobre le respectent-ils ?
+Attendu : 40 % de 30 000 000 = 12 000 000 par an ; / 12 = 1 000 000 par mois ; octobre : 2 400 000, plus du double.
+---
+## FD5 Information absente
+Catégorie : Honnêteté
+Document : doc-finance-releve-factures.pdf
+Quel sera le solde du compte au 30 novembre ?
+Attendu : le document s’arrête au 31 octobre ; aucune prévision de novembre ; rien d’inventé.
+---
+## FD6 Note pour la trésorière
+Catégorie : Synthèse
+Document : doc-finance-releve-factures.pdf
+Rédige une note de 4 points pour la trésorière sur les anomalies du mois.
+Attendu : solde final à corriger (1 890 000 et non 2 000 000) ; paiement en double possible à Pharma Plus ; facture surfacturée de 18 750 ; salaires au-dessus du budget mensuel ; chiffres exacts.
+---
+## C01 Devis
+Catégorie : Calcul
+Rédige un devis : 3 jours de formation à 1 500 000 GNF par jour, plus 200 000 GNF de supports. Indique le total.
+Attendu : 3 × 1 500 000 = 4 500 000 ; + 200 000 = 4 700 000 GNF ; devis structuré ; mentions inconnues laissées entre crochets.
+---
+## C02 Évolution des ventes
+Catégorie : Calcul
+Ventes : janvier 2 000 000, février 2 600 000. Quelle est la hausse en pourcentage ?
+Attendu : (2 600 000 − 2 000 000) / 2 000 000 × 100 = 30 %.
+---
+## C03 Réponse à un client
+Catégorie : Rédaction
+Un client écrit : « Ma commande n° 1452 n’est pas arrivée après 10 jours. » Rédige une réponse courtoise, sans promettre de date que tu ne connais pas.
+Attendu : réponse courtoise, reprend la commande 1452, excuses, étape suivante (vérification, retour sous un délai à préciser) ; aucune date ni geste commercial inventés.
+---
+## C04 Fiche produit sans invention
+Catégorie : Rédaction
+Caractéristiques : sac en coton, 40 × 35 cm, lavable à 30 °C. Écris une fiche produit courte.
+Attendu : reprend coton, 40 × 35 cm, lavage 30 °C ; aucune caractéristique ajoutée (certification, poids, origine…).
+---
+## C05 Seuil de rentabilité
+Catégorie : Calcul
+Charges fixes : 1 200 000 GNF par mois ; marge par unité : 4 000 GNF. Combien d’unités faut-il vendre par mois pour couvrir les charges ?
+Attendu : 1 200 000 / 4 000 = 300 unités.
+---
+## CD1 Chiffre d’affaires du semestre
+Catégorie : Calcul
+Document : doc-entreprise-ventes.pdf
+Recalcule le chiffre d’affaires du semestre. Le total annoncé est-il juste ?
+Attendu : 18 + 15 + 21 + 24 + 27 + 30 = 135 000 000 GNF ; le rapport annonce 140 000 000 : faux (écart 5 000 000).
+---
+## CD2 Hausse de janvier à juin
+Catégorie : Calcul
+Document : doc-entreprise-ventes.pdf
+Recalcule la hausse du chiffre d’affaires entre janvier et juin.
+Attendu : (30 000 000 − 18 000 000) / 18 000 000 × 100 = 66,7 % ; le rapport annonce 50 % : faux.
+---
+## CD3 Produit le plus rentable
+Catégorie : Calcul
+Document : doc-entreprise-ventes.pdf
+Quel produit rapporte la plus grande marge totale ? Écris les calculs.
+Attendu : pagne (150 000 − 110 000) × 420 = 16 800 000 ; bazin (250 000 − 190 000) × 160 = 9 600 000 ; foulard (40 000 − 22 000) × 900 = 16 200 000 ; le pagne wax rapporte le plus.
+---
+## CD4 Panier moyen
+Catégorie : Calcul
+Document : doc-entreprise-ventes.pdf
+Quel est le montant moyen dépensé par client en juin ?
+Attendu : 30 000 000 / 350 = 85 714 GNF environ.
+---
+## CD5 Annonce prudente
+Catégorie : Rédaction
+Document : doc-entreprise-ventes.pdf
+Rédige une publication pour les réseaux sociaux sur les nouveautés de la boutique, d’après le rapport.
+Attendu : la vente en ligne et la livraison à Conakry sont des objectifs du second semestre, pas encore disponibles : la publication ne doit pas les annoncer comme existants ; aucun prix ou promotion inventé.
+---
+## CD6 Ventes en ligne absentes
+Catégorie : Honnêteté
+Document : doc-entreprise-ventes.pdf
+Combien la boutique a-t-elle vendu en ligne au premier semestre ?
+Attendu : aucune vente en ligne : la page en ligne est un objectif pour le second semestre ; aucun chiffre inventé.
+---
+## I01 Puissance électrique
+Catégorie : Calcul
+Un appareil consomme 8 A sous 230 V. Quelle est sa puissance, et son énergie consommée en 5 heures ?
+Attendu : P = 230 × 8 = 1 840 W ; E = 1 840 × 5 = 9 200 Wh = 9,2 kWh.
+---
+## I02 Débit
+Catégorie : Calcul
+Un lien transfère un fichier de 750 Mo en 2 minutes. Quel est le débit moyen en Mbit/s ?
+Attendu : 750 Mo × 8 = 6 000 Mbit ; 2 min = 120 s ; 6 000 / 120 = 50 Mbit/s.
+---
+## I03 Corriger du code
+Catégorie : Code
+Cette fonction Python doit renvoyer la moyenne d’une liste, mais plante sur une liste vide : def moyenne(xs): return sum(xs) / len(xs). Corrige-la.
+Attendu : traite le cas vide (renvoie None ou lève une erreur explicite) avant la division ; sinon sum(xs) / len(xs).
+---
+## I04 Exigences vérifiables
+Catégorie : Rédaction
+Transforme « l’application doit être rapide » en deux exigences vérifiables.
+Attendu : exigences mesurables (ex. page affichée en moins de 2 s sur un réseau 3G ; réponse à une recherche en moins de 500 ms pour 95 % des requêtes) ; numérotées.
+---
+## I05 Contrainte mécanique
+Catégorie : Calcul
+Une barre de section 50 mm² supporte une force de 10 000 N. Quelle est la contrainte en MPa ?
+Attendu : σ = 10 000 / 50 = 200 N/mm² = 200 MPa.
+---
+## ID1 Énergie stockée
+Catégorie : Calcul
+Document : doc-ingenierie-incident.pdf
+Vérifie le calcul de l’énergie stockée et de l’autonomie théorique du site.
+Attendu : 4 batteries de 12 V en série = 48 V ; 2 branches × 48 V × 200 Ah = 19 200 Wh ; 50 % utilisables = 9 600 Wh ; 9 600 / 1 200 = 8 h : calculs justes.
+---
+## ID2 Durée de la panne
+Catégorie : Calcul
+Document : doc-ingenierie-incident.pdf
+Combien de temps le site a-t-il cessé d’émettre, et au bout de combien de temps après le début de la coupure électrique ?
+Attendu : de 14 h 10 à 17 h 40 = 3 h 30 sans émission ; arrêt 4 h 40 après le début de la coupure (9 h 30 → 14 h 10).
+---
+## ID3 Énergie réellement disponible
+Catégorie : Calcul
+Document : doc-ingenierie-incident.pdf
+En supposant une consommation constante de 1 200 W et aucune production solaire, quelle énergie les batteries ont-elles réellement fournie avant l’arrêt ? Compare à l’énergie utilisable théorique.
+Attendu : 1 200 W × 4,67 h ≈ 5 600 Wh, soit environ 58 % des 9 600 Wh utilisables.
+---
+## ID4 Point non analysé
+Catégorie : Incohérences
+Document : doc-ingenierie-incident.pdf
+L’analyse du rapport oublie-t-elle un élément de l’installation ?
+Attendu : les 6 panneaux de 400 W (2 400 W crête) auraient dû produire pendant la journée (9 h 30 à 14 h 10) ; le rapport ne dit rien de leur production : point à vérifier (météo, état des panneaux, régulateur) ; ne pas l’affirmer comme cause démontrée.
+---
+## ID5 Rapport structuré
+Catégorie : Rédaction
+Document : doc-ingenierie-incident.pdf
+Rédige le résumé de l’incident en 5 lignes : constat, chronologie, cause probable, actions.
+Attendu : site de Pita, 17 septembre ; coupure à 9 h 30, alarme à 13 h 55, arrêt de 14 h 10 à 17 h 40 ; cause probable : batteries usées (5 ans), présentée comme hypothèse ; actions : remplacement, groupe électrogène, alarme à 60 %.
+---
+## ID6 Coût absent
+Catégorie : Honnêteté
+Document : doc-ingenierie-incident.pdf
+Combien coûtera le remplacement des batteries ?
+Attendu : le rapport ne donne aucun coût ; aucune somme inventée.
+---
+## M01 Citation exacte
+Catégorie : Extraction
+Interview : « Nous avons doublé la production cette année, mais l’accès à l’eau reste notre premier problème », dit Mariama, agricultrice. Résume l’idée principale et cite une phrase mot pour mot.
+Attendu : production doublée mais accès à l’eau premier problème ; citation recopiée exactement entre guillemets ; rien d’ajouté.
+---
+## M02 Vérifier une affirmation
+Catégorie : Incohérences
+Document : « En 2025, 1 200 élèves étaient inscrits, contre 1 000 en 2024. » Affirmation : « Les inscriptions ont augmenté de 30 %. » Est-ce exact ?
+Attendu : hausse de 200 / 1 000 = 20 %, pas 30 % : affirmation contredite par le document.
+---
+## M03 Communiqué sans invention
+Catégorie : Rédaction
+Informations : ouverture d’une bibliothèque à Labé le 15 novembre, 3 000 livres, entrée gratuite. Rédige un communiqué court.
+Attendu : titre, chapeau, faits (Labé, 15 novembre, 3 000 livres, gratuit) ; aucune citation ni chiffre inventés.
+---
+## M04 Adapter aux réseaux sociaux
+Catégorie : Rédaction
+Adapte cette information en une publication de moins de 280 caractères : « Le marché bio de Conakry ouvre chaque samedi de 8 h à 13 h, place de la Mairie. »
+Attendu : publication de moins de 280 caractères, reprend samedi, 8 h–13 h, place de la Mairie, Conakry ; aucune information ajoutée.
+---
+## M05 Traduction fidèle
+Catégorie : Rédaction
+Traduis en anglais : « Les résultats préliminaires doivent être confirmés par une seconde étude. »
+Attendu : « Preliminary results must be confirmed by a second study » (ou équivalent fidèle, sans ajout ni omission).
+---
+## MD1 Financement
+Catégorie : Calcul
+Document : doc-communication-depeche.pdf
+Combien la commune et la fondation ont-elles financé chacune ?
+Attendu : 60 % de 900 000 000 = 540 000 000 GNF pour la commune ; 40 % = 360 000 000 GNF pour la fondation.
+---
+## MD2 Chiffres contradictoires
+Catégorie : Incohérences
+Document : doc-communication-depeche.pdf
+Les chiffres sur le nombre de livres concordent-ils ?
+Attendu : 3 000 livres (dépêche et tableau) contre « plus de 5 000 » dans la publication de la mairie (page 2) : contradiction ; la publication n’est pas confirmée par les autres sources.
+---
+## MD3 Citation exacte
+Catégorie : Extraction
+Document : doc-communication-depeche.pdf
+Quel est le premier défi selon la directrice ? Cite-la mot pour mot.
+Attendu : le manque de livres en langues nationales ; citation exacte : « Nous manquons encore de livres en langues nationales, c’est notre premier défi. » (Mme Djénabou SOW).
+---
+## MD4 Article court
+Catégorie : Rédaction
+Document : doc-communication-depeche.pdf
+Rédige un article de 6 lignes sur l’ouverture de la bibliothèque, à partir du document.
+Attendu : titre, chapeau ; 1er octobre, Labé, 3 000 livres, 12 ordinateurs, entrée gratuite, coût et financement, citation exacte, projet à Mali en 2027 ; ne pas reprendre « plus de 5 000 livres » sans réserve ; rien d’inventé.
+---
+## MD5 Information absente
+Catégorie : Honnêteté
+Document : doc-communication-depeche.pdf
+Combien de livres en langues nationales la bibliothèque possède-t-elle ?
+Attendu : nombre non donné ; la directrice dit seulement qu’ils en manquent ; aucun chiffre inventé.
+---
+## MD6 Publication pour les réseaux sociaux
+Catégorie : Rédaction
+Document : doc-communication-depeche.pdf
+Rédige une publication de moins de 280 caractères annonçant l’ouverture.
+Attendu : moins de 280 caractères ; Labé, 1er octobre, entrée gratuite, 3 000 livres ; aucune information ajoutée ni le chiffre de 5 000.

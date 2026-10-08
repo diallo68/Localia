@@ -1,0 +1,24 @@
+## A01 Compte rendu de réunion
+Catégorie : Synthèse
+Notes : « Réunion 3/10, présents : directeur, 2 chefs de service. Budget formation validé. Aïcha prépare le planning avant le 15/10. Prochaine réunion le 7/11. » Rédige le compte rendu avec un tableau des actions.
+Attendu : date, participants, décision (budget formation validé), action (préparer le planning, responsable Aïcha, échéance 15/10), prochaine réunion 7/11 ; rien d’inventé.
+---
+## A02 Courrier à compléter
+Catégorie : Rédaction
+Écris un courrier pour demander une attestation de travail à un ancien employeur, sans inventer de nom, de date ni d’adresse.
+Attendu : courrier complet (objet, formule d’appel, demande claire, formule de politesse) ; nom, dates, adresse laissés entre crochets.
+---
+## A03 Formulaire d’après un texte
+Catégorie : Extraction
+Texte : « Demande déposée le 2 octobre 2026 par le service RH, pour 3 ordinateurs portables, budget 15 000 000 GNF. » Remplis : date de dépôt, service, objet, quantité, budget, fournisseur.
+Attendu : date 2 octobre 2026 ; service RH ; ordinateurs portables ; 3 ; 15 000 000 GNF ; fournisseur : non trouvé.
+---
+## A04 Délai
+Catégorie : Calcul
+Un dossier reçu le 25 septembre doit être traité sous 21 jours. Quelle est la date limite ?
+Attendu : 25 septembre + 21 jours = 16 octobre.
+---
+## A05 Note de synthèse
+Catégorie : Synthèse
+Faits : « 40 % des demandes traitées hors délai en septembre ; 2 agents absents ; logiciel en panne 5 jours. » Rédige une note : constats, causes possibles, deux options.
+Attendu : constats repris exactement (40 %, 2 agents, 5 jours) ; causes présentées comme possibles ; deux options distinctes ; aucun chiffre ajouté.

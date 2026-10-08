@@ -1,0 +1,24 @@
+## M01 Citation exacte
+Catégorie : Extraction
+Interview : « Nous avons doublé la production cette année, mais l’accès à l’eau reste notre premier problème », dit Mariama, agricultrice. Résume l’idée principale et cite une phrase mot pour mot.
+Attendu : production doublée mais accès à l’eau premier problème ; citation recopiée exactement entre guillemets ; rien d’ajouté.
+---
+## M02 Vérifier une affirmation
+Catégorie : Incohérences
+Document : « En 2025, 1 200 élèves étaient inscrits, contre 1 000 en 2024. » Affirmation : « Les inscriptions ont augmenté de 30 %. » Est-ce exact ?
+Attendu : hausse de 200 / 1 000 = 20 %, pas 30 % : affirmation contredite par le document.
+---
+## M03 Communiqué sans invention
+Catégorie : Rédaction
+Informations : ouverture d’une bibliothèque à Labé le 15 novembre, 3 000 livres, entrée gratuite. Rédige un communiqué court.
+Attendu : titre, chapeau, faits (Labé, 15 novembre, 3 000 livres, gratuit) ; aucune citation ni chiffre inventés.
+---
+## M04 Adapter aux réseaux sociaux
+Catégorie : Rédaction
+Adapte cette information en une publication de moins de 280 caractères : « Le marché bio de Conakry ouvre chaque samedi de 8 h à 13 h, place de la Mairie. »
+Attendu : publication de moins de 280 caractères, reprend samedi, 8 h–13 h, place de la Mairie, Conakry ; aucune information ajoutée.
+---
+## M05 Traduction fidèle
+Catégorie : Rédaction
+Traduis en anglais : « Les résultats préliminaires doivent être confirmés par une seconde étude. »
+Attendu : « Preliminary results must be confirmed by a second study » (ou équivalent fidèle, sans ajout ni omission).

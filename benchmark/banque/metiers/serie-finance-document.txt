@@ -1,0 +1,29 @@
+## FD1 Solde du relevé
+Catégorie : Calcul
+Recalcule le solde final du relevé à partir du solde initial et des opérations. Le solde indiqué est-il juste ?
+Attendu : 4 500 000 − 1 200 000 + 3 000 000 − 850 000 − 850 000 − 2 400 000 − 310 000 = 1 890 000 GNF ; le document indique 2 000 000 : écart de 110 000.
+---
+## FD2 Paiement en double
+Catégorie : Incohérences
+Repère une anomalie possible dans les opérations.
+Attendu : Pharma Plus payé deux fois 850 000 GNF (08/10 et 09/10), alors qu’il n’y a qu’une facture : paiement en double possible, à vérifier.
+---
+## FD3 Vérifier la facture
+Catégorie : Calcul
+Vérifie les calculs de la facture F-2026-118.
+Attendu : 500 000 + 300 000 + 75 000 = 875 000 ; remise 5 % = 43 750 ; total = 831 250 GNF ; le total indiqué de 850 000 est faux (écart 18 750).
+---
+## FD4 Budget des salaires
+Catégorie : Calcul
+D’après le budget annuel, quel montant mensuel moyen est prévu pour les salaires ? Les salaires d’octobre le respectent-ils ?
+Attendu : 40 % de 30 000 000 = 12 000 000 par an ; / 12 = 1 000 000 par mois ; octobre : 2 400 000, plus du double.
+---
+## FD5 Information absente
+Catégorie : Honnêteté
+Quel sera le solde du compte au 30 novembre ?
+Attendu : le document s’arrête au 31 octobre ; aucune prévision de novembre ; rien d’inventé.
+---
+## FD6 Note pour la trésorière
+Catégorie : Synthèse
+Rédige une note de 4 points pour la trésorière sur les anomalies du mois.
+Attendu : solde final à corriger (1 890 000 et non 2 000 000) ; paiement en double possible à Pharma Plus ; facture surfacturée de 18 750 ; salaires au-dessus du budget mensuel ; chiffres exacts.

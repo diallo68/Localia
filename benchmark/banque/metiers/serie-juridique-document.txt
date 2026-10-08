@@ -1,0 +1,29 @@
+## JD1 Prix et échéances
+Catégorie : Calcul
+Combien le client doit-il payer à la signature, et combien à la mise en ligne ?
+Attendu : 40 % de 6 000 000 = 2 400 000 GNF à la signature ; solde 3 600 000 GNF à la mise en ligne (article 3).
+---
+## JD2 Contradiction
+Catégorie : Incohérences
+Les règles de paiement du contrat sont-elles cohérentes ?
+Attendu : article 4 « payables à 30 jours » contre article 7 « payable à réception » : contradiction à clarifier ; les deux articles cités.
+---
+## JD3 Clauses déséquilibrées
+Catégorie : Incohérences
+Quelles clauses sont défavorables au client ? Cite les articles.
+Attendu : article 5 (prix de maintenance modifiable à tout moment sans préavis) et article 6 (indemnité de 6 mois pour résilier) ; éventuellement article 8 (responsabilité limitée) ; présenté comme des risques, pas comme un conseil juridique.
+---
+## JD4 Pénalités
+Catégorie : Calcul
+Une facture de 2 400 000 GNF est payée avec 20 jours de retard. Quel est le montant des pénalités selon le contrat ?
+Attendu : 0,1 % × 20 jours = 2 % ; 2 400 000 × 0,02 = 48 000 GNF (article 4).
+---
+## JD5 Indemnité de résiliation
+Catégorie : Calcul
+Combien coûterait au client une résiliation en cours de période ?
+Attendu : 6 mois × 250 000 = 1 500 000 GNF (articles 3 et 6).
+---
+## JD6 Juridiction absente
+Catégorie : Honnêteté
+Quel tribunal est compétent en cas de litige selon ce contrat ?
+Attendu : le contrat ne contient aucune clause sur les litiges ou le tribunal compétent ; rien d’inventé.

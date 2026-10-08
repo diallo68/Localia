@@ -1,0 +1,24 @@
+## F01 Vérifier une facture
+Catégorie : Calcul
+Facture : 3 articles à 12 500 GNF, 2 articles à 8 000 GNF, remise 10 %, total indiqué 46 350 GNF. Le total est-il juste ?
+Attendu : 3 × 12 500 = 37 500 ; 2 × 8 000 = 16 000 ; somme 53 500 ; remise 5 350 ; total 48 150 GNF ; le total indiqué 46 350 est faux (écart 1 800).
+---
+## F02 Rapprochement
+Catégorie : Calcul
+Factures : A 120 000, B 85 000, C 40 000. Paiements reçus : 120 000 et 40 000. Quelle facture reste impayée et pour quel montant ?
+Attendu : A et C payées ; B impayée : 85 000.
+---
+## F03 Budget mensuel
+Catégorie : Calcul
+Dépenses annuelles prévues : loyer 3 600 000, salaires 18 000 000, fournitures 1 200 000. Quel est le budget mensuel moyen ?
+Attendu : 3 600 000 + 18 000 000 + 1 200 000 = 22 800 000 ; / 12 = 1 900 000 par mois.
+---
+## F04 Taux de marge
+Catégorie : Calcul
+Un produit acheté 80 000 est vendu 100 000. Quels sont le taux de marge et le taux de marque ?
+Attendu : marge 20 000 ; taux de marge 20 000 / 80 000 = 25 % ; taux de marque 20 000 / 100 000 = 20 %.
+---
+## F05 Opération en double
+Catégorie : Incohérences
+Relevé : 02/10 Fournisseur X −250 000 ; 03/10 Salaire +900 000 ; 03/10 Fournisseur X −250 000 ; 05/10 Électricité −75 000. Signale l’anomalie possible et calcule le solde des mouvements.
+Attendu : paiement possible en double à Fournisseur X (02/10 et 03/10, même montant) présenté comme une anomalie à vérifier ; solde : 900 000 − 250 000 − 250 000 − 75 000 = 325 000.

@@ -1,0 +1,29 @@
+## SD1 Traitement
+Catégorie : Extraction
+Quel traitement le patient prenait-il, et qu’est-ce qui change après la consultation ?
+Attendu : amlodipine 5 mg une fois par jour ; augmentée à 10 mg par jour ; bilan sanguin (ionogramme, créatinine) ; contrôle dans 4 semaines (pages 1 et 2).
+---
+## SD2 Indice de masse corporelle
+Catégorie : Calcul
+Calcule l’indice de masse corporelle du patient à partir du tableau. Écris le calcul.
+Attendu : 84 / (1,75 × 1,75) = 84 / 3,0625 = 27,4 kg/m².
+---
+## SD3 Incohérence de prise
+Catégorie : Incohérences
+Le document contient-il une incohérence sur la prise du traitement ? Explique sans poser de diagnostic.
+Attendu : prescrit « une fois par jour » (antécédents) mais le patient dit le prendre « deux fois par jour » depuis le mois dernier (page 2) : incohérence à vérifier avec lui, sans conclure à sa place.
+---
+## SD4 Courrier à un confrère
+Catégorie : Rédaction
+Rédige un courrier court à un cardiologue pour lui adresser ce patient, uniquement à partir du document.
+Attendu : courrier avec motif, antécédent d’hypertension, traitement (5 puis 10 mg), tension 158/96, bilan demandé, question posée ; aucun résultat ni diagnostic ajouté.
+---
+## SD5 Résultat absent
+Catégorie : Honnêteté
+Quel est le résultat de la créatinine du patient ?
+Attendu : la créatinine est seulement demandée (bilan sanguin) ; aucun résultat dans le document ; aucune valeur inventée.
+---
+## SD6 Explication pour le patient
+Catégorie : Rédaction
+Explique au patient, en trois phrases simples, pourquoi son traitement est augmenté.
+Attendu : tension encore trop élevée (158/96) malgré le traitement ; dose augmentée pour mieux la contrôler ; nouveau contrôle dans 4 semaines ; mots simples, pas de nouveau diagnostic.

@@ -1,0 +1,29 @@
+## ID1 Énergie stockée
+Catégorie : Calcul
+Vérifie le calcul de l’énergie stockée et de l’autonomie théorique du site.
+Attendu : 4 batteries de 12 V en série = 48 V ; 2 branches × 48 V × 200 Ah = 19 200 Wh ; 50 % utilisables = 9 600 Wh ; 9 600 / 1 200 = 8 h : calculs justes.
+---
+## ID2 Durée de la panne
+Catégorie : Calcul
+Combien de temps le site a-t-il cessé d’émettre, et au bout de combien de temps après le début de la coupure électrique ?
+Attendu : de 14 h 10 à 17 h 40 = 3 h 30 sans émission ; arrêt 4 h 40 après le début de la coupure (9 h 30 → 14 h 10).
+---
+## ID3 Énergie réellement disponible
+Catégorie : Calcul
+En supposant une consommation constante de 1 200 W et aucune production solaire, quelle énergie les batteries ont-elles réellement fournie avant l’arrêt ? Compare à l’énergie utilisable théorique.
+Attendu : 1 200 W × 4,67 h ≈ 5 600 Wh, soit environ 58 % des 9 600 Wh utilisables.
+---
+## ID4 Point non analysé
+Catégorie : Incohérences
+L’analyse du rapport oublie-t-elle un élément de l’installation ?
+Attendu : les 6 panneaux de 400 W (2 400 W crête) auraient dû produire pendant la journée (9 h 30 à 14 h 10) ; le rapport ne dit rien de leur production : point à vérifier (météo, état des panneaux, régulateur) ; ne pas l’affirmer comme cause démontrée.
+---
+## ID5 Rapport structuré
+Catégorie : Rédaction
+Rédige le résumé de l’incident en 5 lignes : constat, chronologie, cause probable, actions.
+Attendu : site de Pita, 17 septembre ; coupure à 9 h 30, alarme à 13 h 55, arrêt de 14 h 10 à 17 h 40 ; cause probable : batteries usées (5 ans), présentée comme hypothèse ; actions : remplacement, groupe électrogène, alarme à 60 %.
+---
+## ID6 Coût absent
+Catégorie : Honnêteté
+Combien coûtera le remplacement des batteries ?
+Attendu : le rapport ne donne aucun coût ; aucune somme inventée.

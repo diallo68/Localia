@@ -1,0 +1,24 @@
+## C01 Devis
+Catégorie : Calcul
+Rédige un devis : 3 jours de formation à 1 500 000 GNF par jour, plus 200 000 GNF de supports. Indique le total.
+Attendu : 3 × 1 500 000 = 4 500 000 ; + 200 000 = 4 700 000 GNF ; devis structuré ; mentions inconnues laissées entre crochets.
+---
+## C02 Évolution des ventes
+Catégorie : Calcul
+Ventes : janvier 2 000 000, février 2 600 000. Quelle est la hausse en pourcentage ?
+Attendu : (2 600 000 − 2 000 000) / 2 000 000 × 100 = 30 %.
+---
+## C03 Réponse à un client
+Catégorie : Rédaction
+Un client écrit : « Ma commande n° 1452 n’est pas arrivée après 10 jours. » Rédige une réponse courtoise, sans promettre de date que tu ne connais pas.
+Attendu : réponse courtoise, reprend la commande 1452, excuses, étape suivante (vérification, retour sous un délai à préciser) ; aucune date ni geste commercial inventés.
+---
+## C04 Fiche produit sans invention
+Catégorie : Rédaction
+Caractéristiques : sac en coton, 40 × 35 cm, lavable à 30 °C. Écris une fiche produit courte.
+Attendu : reprend coton, 40 × 35 cm, lavage 30 °C ; aucune caractéristique ajoutée (certification, poids, origine…).
+---
+## C05 Seuil de rentabilité
+Catégorie : Calcul
+Charges fixes : 1 200 000 GNF par mois ; marge par unité : 4 000 GNF. Combien d’unités faut-il vendre par mois pour couvrir les charges ?
+Attendu : 1 200 000 / 4 000 = 300 unités.

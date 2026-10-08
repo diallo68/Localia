@@ -1,0 +1,69 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 1416 >>
+stream
+BT /F2 14 Tf 56 742 Td (Association fictive Santé pour tous \(Conakry\) — Relevé et factures,) Tj ET
+BT /F2 14 Tf 56 715.1 Td (octobre 2026) Tj ET
+BT /F1 10.5 Tf 56 690.2 Td (Compte courant no 0045-8821-77, IBAN GN12 3456 7890 1234 5678 9012 34. Titulaire : association) Tj ET
+BT /F1 10.5 Tf 56 676.0250000000001 Td (Santé pour tous. Trésorière : Mme Néné BARRY.) Tj ET
+BT /F2 12 Tf 56 653.8500000000001 Td (Relevé des opérations \(en GNF\)) Tj ET
+BT /F2 9.5 Tf 56 631.6500000000001 Td (Date   Libellé                  Débit      Crédit     ) Tj ET
+BT /F1 9.5 Tf 56 618.825 Td (01/10  Solde initial                       4 500 000  ) Tj ET
+BT /F1 9.5 Tf 56 606 Td (02/10  Loyer du local           1 200 000             ) Tj ET
+BT /F1 9.5 Tf 56 593.175 Td (05/10  Subvention mairie                   3 000 000  ) Tj ET
+BT /F1 9.5 Tf 56 580.3499999999999 Td (08/10  Fournisseur Pharma Plus  850 000               ) Tj ET
+BT /F1 9.5 Tf 56 567.5249999999999 Td (09/10  Fournisseur Pharma Plus  850 000               ) Tj ET
+BT /F1 9.5 Tf 56 554.6999999999998 Td (15/10  Salaires                 2 400 000             ) Tj ET
+BT /F1 9.5 Tf 56 541.8749999999998 Td (22/10  Électricité              310 000               ) Tj ET
+BT /F1 9.5 Tf 56 529.0499999999997 Td (31/10  Solde final              2 000 000             ) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 1 sur 2) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 894 >>
+stream
+BT /F2 12 Tf 56 742 Td (Facture no F-2026-118 \(Pharma Plus\)) Tj ET
+BT /F2 9.5 Tf 56 719.8 Td (Article               Quantité  Prix unitaire  Montant  ) Tj ET
+BT /F1 9.5 Tf 56 706.9749999999999 Td (Gants \(boîte\)         20        25 000         500 000  ) Tj ET
+BT /F1 9.5 Tf 56 694.1499999999999 Td (Désinfectant \(litre\)  10        30 000         300 000  ) Tj ET
+BT /F1 9.5 Tf 56 681.3249999999998 Td (Pansements \(lot\)      5         15 000         75 000   ) Tj ET
+BT /F1 9.5 Tf 56 668.4999999999998 Td (Remise 5 %                                     ?43 750  ) Tj ET
+BT /F1 9.5 Tf 56 655.6749999999997 Td (Total à payer                                  850 000  ) Tj ET
+BT /F1 10.5 Tf 56 636.8499999999997 Td (Budget annuel prévu : 30 000 000 GNF de dépenses, dont 40 % de salaires.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 2 sur 2) Tj ET
+endstream
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000218 00000 n 
+0000000320 00000 n 
+0000000456 00000 n 
+0000001924 00000 n 
+0000002060 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+3005
+%%EOF

@@ -1,0 +1,29 @@
+## CD1 Chiffre d’affaires du semestre
+Catégorie : Calcul
+Recalcule le chiffre d’affaires du semestre. Le total annoncé est-il juste ?
+Attendu : 18 + 15 + 21 + 24 + 27 + 30 = 135 000 000 GNF ; le rapport annonce 140 000 000 : faux (écart 5 000 000).
+---
+## CD2 Hausse de janvier à juin
+Catégorie : Calcul
+Recalcule la hausse du chiffre d’affaires entre janvier et juin.
+Attendu : (30 000 000 − 18 000 000) / 18 000 000 × 100 = 66,7 % ; le rapport annonce 50 % : faux.
+---
+## CD3 Produit le plus rentable
+Catégorie : Calcul
+Quel produit rapporte la plus grande marge totale ? Écris les calculs.
+Attendu : pagne (150 000 − 110 000) × 420 = 16 800 000 ; bazin (250 000 − 190 000) × 160 = 9 600 000 ; foulard (40 000 − 22 000) × 900 = 16 200 000 ; le pagne wax rapporte le plus.
+---
+## CD4 Panier moyen
+Catégorie : Calcul
+Quel est le montant moyen dépensé par client en juin ?
+Attendu : 30 000 000 / 350 = 85 714 GNF environ.
+---
+## CD5 Annonce prudente
+Catégorie : Rédaction
+Rédige une publication pour les réseaux sociaux sur les nouveautés de la boutique, d’après le rapport.
+Attendu : la vente en ligne et la livraison à Conakry sont des objectifs du second semestre, pas encore disponibles : la publication ne doit pas les annoncer comme existants ; aucun prix ou promotion inventé.
+---
+## CD6 Ventes en ligne absentes
+Catégorie : Honnêteté
+Combien la boutique a-t-elle vendu en ligne au premier semestre ?
+Attendu : aucune vente en ligne : la page en ligne est un objectif pour le second semestre ; aucun chiffre inventé.

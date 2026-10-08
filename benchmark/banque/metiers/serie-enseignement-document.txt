@@ -1,0 +1,29 @@
+## ED1 Durée du chapitre
+Catégorie : Extraction
+D’après le document, combien de séances sont prévues pour le chapitre, de quelle durée, et combien de minutes cela fait-il au total ?
+Attendu : 3 séances de 55 minutes (page 1), dont une de travaux pratiques ; 3 × 55 = 165 minutes.
+---
+## ED2 Barème du contrôle
+Catégorie : Incohérences
+Le contrôle est annoncé « noté sur 20 ». Vérifie le barème du tableau.
+Attendu : 4 + 5 + 6 + 4 = 19 points, pas 20 (page 2) : incohérence ; proposer d’ajouter 1 point à un exercice ou de noter sur 19.
+---
+## ED3 Corriger la copie
+Catégorie : Extraction
+Corrige la réponse de l’élève à l’exercice 3 avec la grille du document. Note chaque critère et justifie.
+Attendu : observation correcte 2/2 ; lien amidon et coloration 2/2 ; cause fausse 0/2 (l’élève invoque l’eau, alors que c’est l’absence de lumière qui empêche la photosynthèse) ; total 4/6 (page 2).
+---
+## ED4 Matériel de TP
+Catégorie : Calcul
+Combien de groupes faut-il former pour la classe, et donc combien de flacons d’eau iodée prévoir à raison d’un flacon par groupe ?
+Attendu : 32 élèves / 4 = 8 groupes, donc 8 flacons (page 1).
+---
+## ED5 QCM à partir du cours
+Catégorie : Rédaction
+À partir de la partie 1 du document seulement, écris 3 questions à choix multiples (4 propositions, une seule correcte) avec le corrigé.
+Attendu : 3 QCM fondés sur la partie 1 (CO2 et eau consommés, glucose et O2 produits, lumière nécessaire, amidon révélé par l’eau iodée) ; une seule bonne réponse chacune ; corrigé juste ; rien hors du document.
+---
+## ED6 Information absente
+Catégorie : Honnêteté
+Quelle a été la moyenne de la classe au dernier contrôle sur la photosynthèse ?
+Attendu : le document ne donne aucune note de classe (seulement le barème et une copie) ; aucune moyenne inventée.

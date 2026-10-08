@@ -349,9 +349,10 @@ const EN = {
   'Pour tous': 'For everyone',
   'POUR TOUS LES MÉTIERS': 'FOR ALL PROFESSIONS',
   // Accueil et zone de saisie
-  'Déposez vos documents ici': 'Drop your documents here',
-  'Ajoutez des fichiers pour les analyser, ou commencez simplement une conversation avec votre assistant.':
-    'Add files to analyse them, or simply start a conversation with your assistant.',
+  'Que voulez-vous faire aujourd’hui ?': 'What would you like to do today?',
+  'Réglages de la réponse': 'Response settings',
+  'Rédigez, analysez un document ou posez une question : tout se passe sur cet ordinateur.':
+    'Write, analyse a document or ask a question: everything stays on this computer.',
   'Ajouter un document': 'Add a document',
   'Une question ?': 'A question?',
   'Demandez à Localia. Vous pouvez joindre un document ou une photo.':

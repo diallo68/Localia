@@ -140,150 +140,160 @@
       </nav>
       <div id="notice" role="alert" hidden></div>
       <section id="chat-view">
-        <div class="toolbar">
-          <label class="pick" for="project"
-            ><i data-icon="folder"></i
-            ><span class="pick-text"
-              ><small>Projet</small
-              ><select id="project">
-                <option value="">Aucun</option>
-              </select></span
-            ><i data-icon="chevron"></i></label
-          ><label class="pick" for="task"
-            ><i data-icon="file"></i
-            ><span class="pick-text"
-              ><small>Tâche</small
-              ><select id="task">
-                <option value="">Libre</option>
-              </select></span
-            ><i data-icon="chevron"></i></label
-          ><label class="pick" for="skill"
-            ><i data-icon="bulb"></i
-            ><span class="pick-text"
-              ><small>Compétence</small
-              ><select id="skill">
-                <option value="">Aucune</option>
-              </select></span
-            ><i data-icon="chevron"></i></label
-          ><label class="pick" for="model"
-            ><i data-icon="cube"></i
-            ><span class="pick-text"
-              ><small>Modèle actif</small
-              ><select id="model">
-                <option value="">Aucun modèle installé</option>
-              </select></span
-            ><i data-icon="chevron"></i></label
-          ><button id="engine-card" class="pick" type="button" aria-expanded="false">
-            <i data-icon="cpu"></i
-            ><span class="pick-text"
-              ><small>Exécution locale</small><span id="engine-state">Vérification…</span></span
-            ><i data-icon="chevron"></i>
-          </button>
-        </div>
-        <div id="engine-panel" hidden>
-          <p id="engine-detail"></p>
-          <div class="engine-switch" role="group" aria-label="Moteur des réponses">
-            <button id="engine-local" type="button" aria-pressed="false">Moteur intégré</button
-            ><button id="engine-ollama" type="button" aria-pressed="false">Ollama</button>
-          </div>
-          <button id="engine-refresh" type="button"><i data-icon="refresh"></i>Actualiser</button
-          ><button id="engine-connect" type="button" hidden>Démarrer Ollama</button
-          ><button id="engine-library" type="button">Bibliothèque de modèles</button>
-        </div>
-        <div class="conversation-actions">
-          <button id="model-settings" type="button" title="Réglages de ce modèle">
-            <i data-icon="settings"></i>Réglages du modèle</button
-          ><button id="rename-conversation" type="button" hidden>
-            <i data-icon="edit"></i>Renommer</button
-          ><button id="delete-conversation" type="button" hidden>
-            <i data-icon="trash"></i>Supprimer la conversation
-          </button>
-        </div>
-        <p id="task-advice" class="task-advice" role="status" hidden></p>
-        <form id="rename-form" hidden>
-          <label for="rename-input">Nouveau titre</label
-          ><input id="rename-input" maxlength="120" required /><button
-            class="primary"
-            type="submit"
-          >
-            Enregistrer</button
-          ><button id="rename-cancel" type="button">Annuler</button>
-        </form>
-        <div id="messages" role="log" aria-label="Conversation">
-          <div id="welcome">
-            <button id="drop-zone" type="button" aria-label="Ajouter un document">
-              <span><i data-icon="file-plus"></i></span>
+        <div class="chat-panel" aria-label="Réglages de la réponse">
+          <h2 class="chat-panel-title"><i data-icon="settings"></i>Réglages de la réponse</h2>
+          <div class="toolbar">
+            <label class="pick" for="project"
+              ><i data-icon="folder"></i
+              ><span class="pick-text"
+                ><small>Projet</small
+                ><select id="project">
+                  <option value="">Aucun</option>
+                </select></span
+              ><i data-icon="chevron"></i></label
+            ><label class="pick" for="task"
+              ><i data-icon="file"></i
+              ><span class="pick-text"
+                ><small>Tâche</small
+                ><select id="task">
+                  <option value="">Libre</option>
+                </select></span
+              ><i data-icon="chevron"></i></label
+            ><label class="pick" for="skill"
+              ><i data-icon="bulb"></i
+              ><span class="pick-text"
+                ><small>Compétence</small
+                ><select id="skill">
+                  <option value="">Aucune</option>
+                </select></span
+              ><i data-icon="chevron"></i></label
+            ><label class="pick" for="model"
+              ><i data-icon="cube"></i
+              ><span class="pick-text"
+                ><small>Modèle actif</small
+                ><select id="model">
+                  <option value="">Aucun modèle installé</option>
+                </select></span
+              ><i data-icon="chevron"></i></label
+            ><button id="engine-card" class="pick" type="button" aria-expanded="false">
+              <i data-icon="cpu"></i
+              ><span class="pick-text"
+                ><small>Exécution locale</small><span id="engine-state">Vérification…</span></span
+              ><i data-icon="chevron"></i>
             </button>
-            <h2>Déposez vos documents ici</h2>
-            <p>
-              Ajoutez des fichiers pour les analyser, ou commencez simplement une conversation avec
-              votre assistant.
-            </p>
-            <div class="suggestions">
-              <button data-prompt="Aide-moi à rédiger un e-mail professionnel.">
-                <span class="suggestion-icon"><i data-icon="pencil"></i></span
-                ><strong>Mieux écrire</strong><span>Trouver les mots justes</span></button
-              ><button data-prompt="Explique-moi simplement comment fonctionne une IA locale.">
-                <span class="suggestion-icon"><i data-icon="bulb"></i></span
-                ><strong>Comprendre un sujet</strong><span>Apprendre à votre rythme</span></button
-              ><button data-prompt="Propose-moi cinq idées de projets pour apprendre Python.">
-                <span class="suggestion-icon"><i data-icon="grid"></i></span
-                ><strong>Créer un projet</strong><span>Passer de l’idée à l’action</span>
+          </div>
+          <div id="engine-panel" hidden>
+            <p id="engine-detail"></p>
+            <div class="engine-switch" role="group" aria-label="Moteur des réponses">
+              <button id="engine-local" type="button" aria-pressed="false">Moteur intégré</button
+              ><button id="engine-ollama" type="button" aria-pressed="false">Ollama</button>
+            </div>
+            <button id="engine-refresh" type="button"><i data-icon="refresh"></i>Actualiser</button
+            ><button id="engine-connect" type="button" hidden>Démarrer Ollama</button
+            ><button id="engine-library" type="button">Bibliothèque de modèles</button>
+          </div>
+          <div class="conversation-actions">
+            <button id="model-settings" type="button" title="Réglages de ce modèle">
+              <i data-icon="settings"></i>Réglages du modèle</button
+            ><button id="rename-conversation" type="button" hidden>
+              <i data-icon="edit"></i>Renommer</button
+            ><button id="delete-conversation" type="button" hidden>
+              <i data-icon="trash"></i>Supprimer la conversation
+            </button>
+          </div>
+        </div>
+        <div class="chat-main">
+          <p id="task-advice" class="task-advice" role="status" hidden></p>
+          <form id="rename-form" hidden>
+            <label for="rename-input">Nouveau titre</label
+            ><input id="rename-input" maxlength="120" required /><button
+              class="primary"
+              type="submit"
+            >
+              Enregistrer</button
+            ><button id="rename-cancel" type="button">Annuler</button>
+          </form>
+          <div id="messages" role="log" aria-label="Conversation">
+            <div id="welcome">
+              <button id="drop-zone" type="button" aria-label="Ajouter un document">
+                <span><i data-icon="file-plus"></i></span>
               </button>
+              <h2>Que voulez-vous faire aujourd’hui ?</h2>
+              <p>
+                Rédigez, analysez un document ou posez une question : tout se passe sur cet
+                ordinateur.
+              </p>
+              <div class="suggestions">
+                <button data-prompt="Aide-moi à rédiger un e-mail professionnel.">
+                  <span class="suggestion-icon"><i data-icon="pencil"></i></span
+                  ><strong>Mieux écrire</strong><span>Trouver les mots justes</span></button
+                ><button data-prompt="Explique-moi simplement comment fonctionne une IA locale.">
+                  <span class="suggestion-icon"><i data-icon="bulb"></i></span
+                  ><strong>Comprendre un sujet</strong><span>Apprendre à votre rythme</span></button
+                ><button data-prompt="Propose-moi cinq idées de projets pour apprendre Python.">
+                  <span class="suggestion-icon"><i data-icon="grid"></i></span
+                  ><strong>Créer un projet</strong><span>Passer de l’idée à l’action</span>
+                </button>
+              </div>
             </div>
           </div>
+          <form id="composer">
+            <div id="attachment" hidden>
+              <div><strong id="attachment-name"></strong><small id="attachment-info"></small></div>
+              <button
+                id="remove-pdf"
+                type="button"
+                aria-label="Retirer le PDF de cette conversation"
+              >
+                Retirer
+              </button>
+            </div>
+            <div id="file-chips" hidden></div>
+            <div id="image-chips" hidden></div>
+            <div id="skill-suggest" hidden role="listbox" aria-label="Compétences"></div>
+            <label class="sr-only" for="prompt">Votre message</label
+            ><textarea
+              id="prompt"
+              rows="3"
+              placeholder="Posez votre question, ou collez l’adresse d’une page web…"
+            ></textarea>
+            <div class="composer-footer">
+              <button
+                id="attach"
+                class="round"
+                type="button"
+                aria-label="Joindre un fichier"
+                title="Joindre un fichier : PDF, consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message."
+              >
+                <i data-icon="paperclip"></i></button
+              ><button
+                id="photo"
+                class="round"
+                type="button"
+                aria-label="Joindre une photo"
+                title="Joindre une photo (JPEG, PNG, WebP), ou la coller dans le message. Lue par les modèles qui savent lire les images."
+              >
+                <i data-icon="camera"></i></button
+              ><input
+                id="photo-input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+                hidden
+              /><span id="hint"
+                >Entrée pour envoyer · Maj + Entrée pour revenir à la ligne · une adresse https://…
+                collée est lue comme page web</span
+              ><button type="button" id="stop" hidden>Arrêter</button
+              ><button class="primary" id="send" type="submit">
+                Envoyer<i data-icon="send"></i>
+              </button>
+            </div>
+          </form>
+          <footer>
+            Les réponses de l’IA peuvent contenir des erreurs. Vérifiez les informations
+            importantes.
+          </footer>
         </div>
-        <form id="composer">
-          <div id="attachment" hidden>
-            <div><strong id="attachment-name"></strong><small id="attachment-info"></small></div>
-            <button id="remove-pdf" type="button" aria-label="Retirer le PDF de cette conversation">
-              Retirer
-            </button>
-          </div>
-          <div id="file-chips" hidden></div>
-          <div id="image-chips" hidden></div>
-          <div id="skill-suggest" hidden role="listbox" aria-label="Compétences"></div>
-          <label class="sr-only" for="prompt">Votre message</label
-          ><textarea
-            id="prompt"
-            rows="3"
-            placeholder="Posez votre question, ou collez l’adresse d’une page web…"
-          ></textarea>
-          <div class="composer-footer">
-            <button
-              id="attach"
-              class="round"
-              type="button"
-              aria-label="Joindre un fichier"
-              title="Joindre un fichier : PDF, consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message."
-            >
-              <i data-icon="paperclip"></i></button
-            ><button
-              id="photo"
-              class="round"
-              type="button"
-              aria-label="Joindre une photo"
-              title="Joindre une photo (JPEG, PNG, WebP), ou la coller dans le message. Lue par les modèles qui savent lire les images."
-            >
-              <i data-icon="camera"></i></button
-            ><input
-              id="photo-input"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              multiple
-              hidden
-            /><span id="hint"
-              >Entrée pour envoyer · Maj + Entrée pour revenir à la ligne · une adresse https://…
-              collée est lue comme page web</span
-            ><button type="button" id="stop" hidden>Arrêter</button
-            ><button class="primary" id="send" type="submit">
-              Envoyer<i data-icon="send"></i>
-            </button>
-          </div>
-        </form>
-        <footer>
-          Les réponses de l’IA peuvent contenir des erreurs. Vérifiez les informations importantes.
-        </footer>
       </section>
       <section id="models-view" hidden>
         <div class="library-intro">

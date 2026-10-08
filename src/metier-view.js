@@ -124,10 +124,10 @@ function fillSuggestions(box) {
   const welcomeBox = box.closest('#welcome');
   welcomeBox.querySelector('h2').textContent = metier.simple
     ? 'Une question ?'
-    : 'Déposez vos documents ici';
+    : 'Que voulez-vous faire aujourd’hui ?';
   welcomeBox.querySelector('h2 + p').textContent = metier.simple
     ? 'Demandez à Localia. Vous pouvez joindre un document ou une photo.'
-    : 'Ajoutez des fichiers pour les analyser, ou commencez simplement une conversation avec votre assistant.';
+    : 'Rédigez, analysez un document ou posez une question : tout se passe sur cet ordinateur.';
   const groups = [...new Set(metier.suggestions.map((s) => s.group || ''))];
   for (const group of groups) {
     const section = element('div', 'suggestion-group');

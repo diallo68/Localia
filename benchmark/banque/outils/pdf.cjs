@@ -18,11 +18,17 @@ const WIN_ANSI = {
   ' ': 0xa0,
   ' ': 0xa0,
 };
+// Caractères absents de WinAnsi (Helvetica standard) : remplacés plutôt qu'écrits « ? ».
+const SUBSTITUTES = { '→': '->', '−': '-', '≈': '~', '≤': '<=', '≥': '>=' };
 function encode(text) {
   const bytes = [];
-  for (const ch of text) {
+  for (const ch of text.replace(/[→−≈≤≥]/g, (c) => SUBSTITUTES[c])) {
     const code = WIN_ANSI[ch] ?? ch.codePointAt(0);
-    bytes.push(code <= 0xff ? code : 0x3f);
+    if (code > 0xff)
+      throw new Error(
+        `Caractère « ${ch} » impossible à écrire dans le PDF : ajoutez-le à SUBSTITUTES.`,
+      );
+    bytes.push(code);
   }
   return Buffer.from(bytes)
     .toString('latin1')

@@ -3568,3 +3568,17 @@ body[data-view='home'] header {
 .chat-panel-title {
   letter-spacing: 0;
 }
+
+/* Logo : le cercle de Localia (assets/logo.svg, produit par npm run logo) */
+img.logo {
+  display: block;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+.metier-top img.logo {
+  width: 34px;
+  height: 34px;
+}

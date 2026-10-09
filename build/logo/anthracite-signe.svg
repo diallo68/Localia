@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Localia">
+<g transform="translate(50 50) scale(1.263) translate(-50 -50)"><defs>
+    <linearGradient id="soleil-anthracite" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd890"/><stop offset="1" stop-color="#f2a541"/></linearGradient>
+    <clipPath id="iris-anthracite"><circle cx="50" cy="50" r="33.5"/></clipPath>
+  </defs>
+  <circle cx="50" cy="50" r="38" fill="#1b1e22"/>
+  <circle cx="50" cy="50" r="33.5" fill="#2a2e33"/>
+  <g clip-path="url(#iris-anthracite)">
+    <path d="M28 60 A22 22 0 0 1 72 60 Z" fill="url(#soleil-anthracite)"/>
+    <g fill="#fbf7ef">
+      <rect x="39.5" y="48.6" width="21" height="8.2" rx="1.8"/>
+      <rect x="39.5" y="38.6" width="21" height="8.2" rx="1.8"/>
+      <rect x="39.5" y="28.6" width="21" height="8.2" rx="1.8"/>
+      <rect x="39.5" y="57.4" width="21" height="2.6"/>
+    </g>
+    <g fill="#2a2e33"><circle cx="44" cy="52.7" r="1.6"/><circle cx="44" cy="42.7" r="1.6"/><circle cx="44" cy="32.7" r="1.6"/></g>
+    <g fill="#f2a541"><rect x="48.5" y="51.7" width="8.5" height="2" rx="1"/><rect x="48.5" y="41.7" width="8.5" height="2" rx="1"/><rect x="48.5" y="31.7" width="8.5" height="2" rx="1"/></g>
+    <line x1="10" y1="60" x2="90" y2="60" stroke="#fbf7ef" stroke-width="2"/>
+    <g stroke="#f2a541" stroke-linecap="round"><line x1="38" y1="67" x2="62" y2="67" stroke-width="2.6"/><line x1="43" y1="73.5" x2="57" y2="73.5" stroke-width="2.2"/></g>
+  </g></g>
+</svg>

@@ -67,10 +67,11 @@ Métier et anonymisation : les séries du Benchmark sont envoyées sans consigne
 
 ## Nouveaux métiers (9 octobre 2026) : Recherche, Codage, Télécommunications
 
-Même construction : `serie-recherche.txt`, `serie-codage.txt`, `serie-telecom.txt` (5 questions sans document) et leurs séries `-document.txt` (6 questions sur `doc-recherche-article.pdf`, `doc-codage-ticket.pdf`, `doc-telecom-liaison.pdf`). Les 33 questions sont aussi réunies dans **`serie-metiers-nouveaux.txt`**, chaque question sur document avec son PDF : un seul import suffit.
+Même construction : `serie-recherche.txt`, `serie-codage.txt`, `serie-telecom.txt` (5 questions sans document) et leurs séries `-document.txt` (6 questions sur `doc-recherche-article.pdf`, `doc-codage-ticket.pdf`, `doc-telecom-liaison.pdf`). Les 34 questions sont aussi réunies dans **`serie-metiers-nouveaux.txt`**, chaque question sur document avec son PDF : un seul import suffit.
 
 - Lettres des questions : **R** Recherche, **P** Codage (programmation), **T** Télécommunications ; le Benchmark les range dans ces trois métiers.
-- Durée estimée : 33 questions × 4 modèles ≈ **2 à 4 heures** sur ce Mac (une nuit, avec le départ programmé).
+- Durée estimée : 34 questions × 4 modèles ≈ **2 à 4 heures** sur ce Mac (une nuit, avec le départ programmé).
 - Le code du document Codage perd son indentation à l'extraction du texte (Localia ne garde pas la position des mots dans un PDF) ; la fonction est assez courte pour rester lisible, et aucune réponse attendue n'en dépend.
+- Codage compte **6 questions sans document** : la question P06 (quatre opérations en Python, C et C++) vient d'une vraie question posée à Localia le 9 octobre 2026, où Qwen3.5-9B bloquait les quatre opérations quand le second nombre vaut 0 (en C, « addition = 0,00 » pour 10 + 0). Les nouveaux métiers comptent donc 34 questions.
 - Cybersécurité : série à rédiger séparément.
 

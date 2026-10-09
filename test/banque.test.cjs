@@ -54,11 +54,11 @@ test('séries par métier : 5 questions sans document et 6 sur un document ficti
   assert.equal(all.filter((q) => q.document).length, 48);
   for (const q of all.filter((x) => x.document))
     assert.ok(fs.existsSync(path.join(metiers, 'documents', q.document)), q.document);
-  // Nouveaux métiers : 33 questions dans un seul fichier, dont 18 sur leur document.
+  // Nouveaux métiers : 34 questions dans un seul fichier, dont 18 sur leur document.
   const nouveaux = parseQuestions(
     fs.readFileSync(path.join(metiers, 'serie-metiers-nouveaux.txt'), 'utf8'),
   );
-  assert.equal(nouveaux.length, 33);
+  assert.equal(nouveaux.length, 34);
   assert.equal(nouveaux.filter((q) => q.document).length, 18);
   for (const q of nouveaux.filter((x) => x.document))
     assert.ok(fs.existsSync(path.join(metiers, 'documents', q.document)), q.document);
@@ -66,7 +66,9 @@ test('séries par métier : 5 questions sans document et 6 sur un document ficti
   for (const file of files) {
     const withDocument = file.endsWith('-document.txt');
     const questions = parseQuestions(fs.readFileSync(path.join(metiers, file), 'utf8'));
-    assert.equal(questions.length, withDocument ? 6 : 5, file);
+    // Codage : une question de plus sans document (P06, venue d'une vraie question).
+    const expected = withDocument ? 6 : file === 'serie-codage.txt' ? 6 : 5;
+    assert.equal(questions.length, expected, file);
     for (const q of questions) {
       assert.ok(categories.has(q.category), `${file} ${q.label} : catégorie « ${q.category} »`);
       assert.ok(q.expected?.length > 10, `${file} ${q.label} : réponse attendue`);

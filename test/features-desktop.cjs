@@ -545,7 +545,16 @@ const readJson = async (profile, name) => {
         .check();
       if (i >= 3) await page.locator('#blind-form input[name=invention]').check();
       await page.locator('#blind-form input[name=rating][value="4"]').check();
+      // Réponse suivante affichée (ou notation finie) avant de continuer : sur une machine lente,
+      // la note suivante partait sinon sur la réponse déjà notée.
+      const shown = await page.locator('#blind-progress').textContent();
       await page.locator('#blind-form button[type=submit]').click();
+      await page.waitForFunction(
+        (before) =>
+          document.querySelector('#bench-blind').hidden ||
+          document.querySelector('#blind-progress').textContent !== before,
+        shown,
+      );
     }
     await page.waitForFunction(() => document.querySelector('#bench-blind').hidden);
     const graded = (await readJson(profile, 'comparisons.json')).flatMap((r) => r.results);

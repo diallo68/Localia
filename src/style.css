@@ -1275,10 +1275,11 @@ progress {
   overflow: visible;
 }
 .chart .bar-fill {
-  fill: var(--info);
+  fill: var(--accent);
 }
 .chart .bar:hover .bar-fill {
-  fill: var(--info);
+  fill: var(--accent-strong);
+  filter: brightness(0.85);
 }
 .chart .bar-label {
   font-size: 11px;
@@ -1352,7 +1353,7 @@ progress {
   stroke-width: 1.5;
 }
 .chart .dot {
-  fill: var(--info);
+  fill: var(--accent);
   stroke: var(--on-accent);
   stroke-width: 2;
 }
@@ -3559,4 +3560,11 @@ body[data-view='home'] header {
 #composer-advanced {
   white-space: nowrap;
   flex-shrink: 0;
+}
+.history-section .section-toggle {
+  white-space: nowrap;
+  text-align: left;
+}
+.chat-panel-title {
+  letter-spacing: 0;
 }

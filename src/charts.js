@@ -3,17 +3,17 @@
 // par les étiquettes directes, jamais par la couleur.
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const CHART_COLORS = {
-  bar: '#2a78d6',
+  bar: '#1f7d70',
   // Couleurs catégorielles (correcteurs), dans un ordre fixe validé pour les daltonismes.
   series: ['#2a78d6', '#eb6834', '#1baf7a'],
-  barHover: '#1c5cab',
+  barHover: '#0f5d53',
   label: '#52514e',
   value: '#0b0b0b',
   axis: '#c9d3cd',
   grid: '#e6ece8',
   surface: '#fcfcfb',
-  // Rampe séquentielle bleue (du plus clair au plus foncé) pour la carte de chaleur.
-  ramp: ['#cde2fb', '#9ec5f4', '#6da7ec', '#3987e5', '#256abf', '#184f95', '#0d366b'],
+  // Rampe séquentielle sarcelle (du plus clair au plus foncé), teinte de l'interface.
+  ramp: ['#d5ece8', '#a8d7cf', '#74bdb1', '#3f9e90', '#1f7d70', '#0f5d53', '#073f38'],
 };
 // Styles recopiés dans les SVG exportés, pour qu'ils s'affichent hors de l'application.
 const SVG_STYLE = `
@@ -386,7 +386,7 @@ function heatmapTable({ title, note, rows, columns, cell, format }) {
         Math.floor(value.value * CHART_COLORS.ramp.length),
       );
       td.style.background = CHART_COLORS.ramp[step];
-      td.style.color = step >= 3 ? '#ffffff' : CHART_COLORS.value;
+      td.style.color = step >= 4 ? '#ffffff' : CHART_COLORS.value;
       td.textContent = format(value.value) + (value.n ? ` (${value.n})` : '');
       td.title = `${row} · ${column} : ${format(value.value)} sur ${value.n} réponse(s)`;
     }

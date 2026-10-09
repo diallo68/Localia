@@ -364,6 +364,8 @@ const EN = {
   inventions: 'made up',
   'par réponse': 'per answer',
   'Mémoire utilisée': 'Memory in use',
+  'Réglages avancés': 'Advanced settings',
+  'Projet, tâche, compétence, modèle et moteur': 'Project, task, skill, model and engine',
   'Rédigez, analysez un document ou posez une question : tout se passe sur cet ordinateur.':
     'Write, analyse a document or ask a question: everything stays on this computer.',
   'Ajouter un document': 'Add a document',

@@ -146,6 +146,7 @@ function shortDate(iso) {
 const installed = (name) => models.some((m) => m.name === name);
 function selectModel(name) {
   if (installed(name)) $('model').value = name;
+  chatModelLabel();
 }
 async function rememberModel(name) {
   if (!installed(name) || settings.lastModel === name) return;
@@ -483,6 +484,27 @@ $('engine-refresh').onclick = () => $('refresh').click();
 $('engine-local').onclick = () => switchEngine(true);
 $('engine-ollama').onclick = () => switchEngine(false);
 $('model').addEventListener('change', () => engineCard());
+// Réglages avancés (projet, tâche, compétence, modèle, moteur) : repliés par défaut pour que
+// la première question vienne sans détour ; l'état choisi est retenu sur cet ordinateur.
+function setChatPanel(open) {
+  $('chat-view').classList.toggle('panel-open', open);
+  $('panel-toggle').setAttribute('aria-expanded', String(open));
+  try {
+    localStorage.setItem('localia.chatPanel', open ? 'open' : 'closed');
+  } catch {}
+}
+function chatModelLabel() {
+  const name = $('model').value;
+  $('chat-model-label').textContent = name ? name.replace(/^integre\//, '') : 'Aucun modèle';
+}
+$('panel-toggle').onclick = () => setChatPanel(!$('chat-view').classList.contains('panel-open'));
+$('model').addEventListener('change', chatModelLabel);
+modelListeners.push(chatModelLabel);
+try {
+  setChatPanel(localStorage.getItem('localia.chatPanel') === 'open');
+} catch {
+  setChatPanel(false);
+}
 $('engine-connect').onclick = () => $('connect').click();
 $('engine-library').onclick = () => $('models-tab').click();
 async function refresh() {

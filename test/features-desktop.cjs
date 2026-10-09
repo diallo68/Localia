@@ -82,6 +82,9 @@ const readJson = async (profile, name) => {
       },
     });
     const page = await app.firstWindow();
+    // Les tests manipulent les réglages avancés : panneau ouvert (retenu après rechargement).
+    await page.waitForFunction(() => typeof setChatPanel === 'function');
+    await page.evaluate(() => setChatPanel(true));
     settleWrites = async () => {
       // Deux passages : une sauvegarde demandée pendant le premier est aussi attendue.
       for (let i = 0; i < 2; i++) {

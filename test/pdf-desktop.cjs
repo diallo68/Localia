@@ -40,6 +40,9 @@ function packagedApp() {
       : { args: [path.resolve('.')] };
     app = await electron.launch({ ...launch, env: { ...process.env, LOCALIA_TEST_DATA: profile } });
     const page = await app.firstWindow();
+    // Les tests manipulent les réglages avancés : panneau ouvert (retenu après rechargement).
+    await page.waitForFunction(() => typeof setChatPanel === 'function');
+    await page.evaluate(() => setChatPanel(true));
     const errors = [];
     // Application construite : le premier lancement est plus lent (vérification par le système
     // d'une application nouvellement signée).

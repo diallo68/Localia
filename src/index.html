@@ -144,7 +144,7 @@
       </nav>
       <div id="notice" role="alert" hidden></div>
       <section id="chat-view">
-        <div class="chat-panel" aria-label="Réglages de la réponse">
+        <div id="chat-panel" class="chat-panel" aria-label="Réglages de la réponse">
           <h2 class="chat-panel-title"><i data-icon="settings"></i>Réglages de la réponse</h2>
           <div class="toolbar">
             <label class="pick" for="project"
@@ -207,6 +207,18 @@
           </div>
         </div>
         <div class="chat-main">
+          <div class="chat-bar">
+            <button
+              id="panel-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="chat-panel"
+              title="Projet, tâche, compétence, modèle et moteur"
+            >
+              <i data-icon="cube"></i><span id="chat-model-label"></span
+              ><span class="chat-bar-action">Réglages avancés</span><i data-icon="chevron"></i>
+            </button>
+          </div>
           <p id="task-advice" class="task-advice" role="status" hidden></p>
           <form id="rename-form" hidden>
             <label for="rename-input">Nouveau titre</label

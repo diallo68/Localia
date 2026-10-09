@@ -1,3 +1,5 @@
+<p align="center"><img src="src/assets/logo.svg" width="112" alt="Logo de Localia"></p>
+
 # Localia
 
 [![Tests](https://github.com/diallo68/localia/actions/workflows/tests.yml/badge.svg)](https://github.com/diallo68/localia/actions/workflows/tests.yml)

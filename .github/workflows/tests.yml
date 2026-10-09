@@ -61,6 +61,8 @@ jobs:
             os: ubuntu-latest
             build: --linux AppImage deb --x64
     runs-on: ${{ matrix.os }}
+    # Un test bloqué s'arrête au bout de 45 min (sinon GitHub attend 6 h, minutes comptées).
+    timeout-minutes: 45
     steps:
       - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
         uses: actions/checkout@v5

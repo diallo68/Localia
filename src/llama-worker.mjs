@@ -26,6 +26,7 @@ async function engine() {
   if (!llama) {
     llamaModule = await import('node-llama-cpp');
     llama = await llamaModule.getLlama();
+    debug('moteur', llama.gpu || 'cpu', 'cœurs de calcul', llama.cpuMathCores ?? '?');
   }
   return llama;
 }
@@ -159,6 +160,7 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
     const { items, question } = history(messages);
     session.setChatHistory(items);
     let firstToken = null;
+    let chunks = 0;
     // MedGemma : début et fin du raisonnement repérés par leurs jetons spéciaux.
     const thoughtMarks = isMedGemma(loaded.model.fileInfo, path)
       ? {
@@ -176,7 +178,9 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
     const result = await session.promptWithMeta(question, {
       signal: controller.signal,
       stopOnAbortSignal: true,
-      maxTokens: options.num_predict || undefined,
+      // Longueur maximale toujours fixée : sans elle, un modèle qui n'écrit pas son jeton de fin
+      // continuait sans fin (vu sous Windows). Par défaut, la taille du contexte.
+      maxTokens: options.num_predict > 0 ? options.num_predict : contextSize,
       temperature: options.temperature,
       topP: options.top_p,
       topK: options.top_k,
@@ -204,6 +208,16 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
       onResponseChunk: (chunk) => {
         if (thoughtMarks) return;
         firstToken ||= now();
+        chunks++;
+        if (chunks % 16 === 0)
+          debug(
+            'écriture',
+            id,
+            chunks,
+            'morceaux en',
+            (ns(firstToken, now()) / 1e9).toFixed(1),
+            's',
+          );
         if (chunk.type === 'segment' && chunk.segmentType === 'thought')
           post({ type: 'chunk', id, data: { message: { thinking: chunk.text } } });
         else if (!chunk.type)

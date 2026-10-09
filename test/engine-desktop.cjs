@@ -87,6 +87,13 @@ const step = async (name, work, ms = 180000) => {
     });
     const page = await step('ouverture de la fenêtre', () => app.firstWindow());
     page.setDefaultTimeout(120000);
+    // Réponses courtes dès la première question (comme la longueur maximale d'une série) : le
+    // petit modèle de test peut sinon écrire très longtemps.
+    await page.evaluate(() =>
+      window.localia.saveSettings({
+        models: { 'integre/smollm2:135m': { options: { num_predict: 48 } } },
+      }),
+    );
     const entry = await step('reprise du modèle', () =>
       page.evaluate(() => window.localia.localImport('smollm2:135m')),
     );
@@ -107,13 +114,6 @@ const step = async (name, work, ms = 180000) => {
     assert.ok(result.text.trim().length > 0, 'réponse vide');
     assert.equal(result.used.engine, 'integre');
     assert.ok(result.stats.outputTokens > 0);
-    // Réponses courtes (comme la longueur maximale d'une série) : le petit modèle de test peut
-    // sinon compter sans fin.
-    await page.evaluate(() =>
-      window.localia.saveSettings({
-        models: { 'integre/smollm2:135m': { options: { num_predict: 48 } } },
-      }),
-    );
     // Questions enchaînées sans pause, comme une série du Benchmark (modèle gardé en mémoire) :
     // chacune doit réussir (la séquence rendue n'était pas toujours libre : « No sequences left »).
     const burst = [];

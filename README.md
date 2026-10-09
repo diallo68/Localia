@@ -64,7 +64,7 @@ npm run dist:mac           # .dmg and .zip for both Mac processors
 npm run dist:win           # Windows installer and .zip
 ```
 
-Mac builds are signed *ad hoc* (required on Apple Silicon), not with an Apple developer certificate.
+Mac builds are signed *ad hoc* (required on Apple Silicon), not with an Apple developer certificate. To distribute a signed and notarized build (Apple Developer account required): `npm run package:diffusion`, see [docs/DIFFUSION-MACOS.md](docs/DIFFUSION-MACOS.md) (in French).
 
 ## Tests
 

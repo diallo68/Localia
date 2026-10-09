@@ -514,9 +514,22 @@ try {
 }
 $('engine-connect').onclick = () => $('connect').click();
 $('engine-library').onclick = () => $('models-tab').click();
+// Rafraîchissements qui se chevauchent (démarrage, bouton, fin de téléchargement) : seul le
+// dernier demandé s'applique, même si un précédent, plus lent, répond après lui.
+let refreshCount = 0;
 async function refresh() {
+  const call = ++refreshCount;
+  let found;
+  let failure = null;
   try {
-    models = (await window.localia.models()).sort((a, b) => a.size - b.size);
+    found = await window.localia.models();
+  } catch (error) {
+    failure = error;
+  }
+  if (call !== refreshCount) return;
+  try {
+    if (failure) throw failure;
+    models = found.sort((a, b) => a.size - b.size);
     const ollama = models.some((m) => m.engine !== 'integre');
     $('status').textContent = ollama ? '● Ollama connecté' : '● Moteur intégré (Ollama arrêté)';
     $('connect').hidden = ollama;
@@ -524,6 +537,7 @@ async function refresh() {
     models = [];
     // Ni modèle intégré ni Ollama actif : « Démarrer Ollama » seulement s'il est installé.
     const setup = await window.localia.setupStatus().catch(() => null);
+    if (call !== refreshCount) return;
     $('status').textContent = setup?.ollamaPath ? '○ Ollama arrêté' : '○ Aucun modèle installé';
     $('connect').hidden = !setup?.ollamaPath;
   }
@@ -1198,7 +1212,9 @@ window.localia.onProgress(({ kind, data }) => {
       });
     }
   }
-  if (kind === 'pull') {
+  // Progression arrivée après la fin du téléchargement (l'ordre des messages n'est pas garanti) :
+  // ignorée, pour ne pas effacer « Modèle prêt ».
+  if (kind === 'pull' && pulling) {
     $('transfer-status').textContent = data.status || 'Téléchargement…';
     if (data.total) {
       $('progress').value = Math.min(100, Math.round((100 * (data.completed || 0)) / data.total));

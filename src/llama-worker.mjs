@@ -1,4 +1,5 @@
 import { appendFileSync } from 'node:fs';
+import { availableParallelism } from 'node:os';
 // Moteur intégré (llama.cpp par node-llama-cpp), dans un processus séparé : un modèle qui plante
 // ne fait pas planter Localia. Reçoit des conversations au format d'Ollama et renvoie des morceaux
 // au même format (message.content, message.thinking, puis statistiques finales).
@@ -6,6 +7,7 @@ import { appendFileSync } from 'node:fs';
 const fake = process.env.LOCALIA_FAKE_LLAMA === '1';
 let llamaModule = null;
 let llama = null;
+let threads = 1; // fils de calcul de llama.cpp (voir engine)
 let loaded = null; // { path, model, context, contextSize, sequence }
 let unloadTimer = null;
 const running = new Map(); // id → AbortController
@@ -26,7 +28,21 @@ async function engine() {
   if (!llama) {
     llamaModule = await import('node-llama-cpp');
     llama = await llamaModule.getLlama();
-    debug('moteur', llama.gpu || 'cpu', 'cœurs de calcul', llama.cpuMathCores ?? '?');
+    // Fils de calcul : au moins la moitié des cœurs logiques. Sous Windows, llama.cpp ne voyait
+    // parfois qu'un cœur utile (machine de test à 4 cœurs : environ 25 s par jeton).
+    threads = Math.max(llama.cpuMathCores || 1, Math.floor(availableParallelism() / 2) || 1);
+    if (llama.maxThreads && llama.maxThreads < threads) llama.maxThreads = threads;
+    debug(
+      'moteur',
+      llama.gpu || 'cpu',
+      llama.buildType,
+      'cœurs utiles',
+      llama.cpuMathCores,
+      'fils',
+      threads,
+      '|',
+      String(llama.systemInfo || '').slice(0, 300),
+    );
   }
   return llama;
 }
@@ -53,7 +69,7 @@ async function prepare(path, contextSize) {
   }
   if (!loaded.context || loaded.contextSize !== contextSize) {
     await loaded.context?.dispose();
-    loaded.context = await loaded.model.createContext({ contextSize });
+    loaded.context = await loaded.model.createContext({ contextSize, threads });
     loaded.contextSize = contextSize;
     // Une seule séquence, gardée et vidée avant chaque demande : une séquence rendue n'est pas
     // libérée tout de suite, et la demande suivante échouait parfois (« No sequences left »).
@@ -207,6 +223,7 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
         : undefined,
       onResponseChunk: (chunk) => {
         if (thoughtMarks) return;
+        if (!firstToken) debug('premier morceau', id, (ns(start, now()) / 1e9).toFixed(1), 's');
         firstToken ||= now();
         chunks++;
         if (chunks % 16 === 0)

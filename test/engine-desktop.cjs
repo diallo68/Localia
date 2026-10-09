@@ -21,6 +21,26 @@ function packagedApp() {
   );
 }
 
+// Étape en cours, affichée tout de suite ; une étape qui ne finit pas échoue au bout de 3 min
+// au lieu de bloquer (les appels page.evaluate n'ont pas de délai propre).
+const step = async (name, work, ms = 180000) => {
+  console.log(`… ${name}`);
+  let timer;
+  try {
+    return await Promise.race([
+      work(),
+      new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`bloqué : ${name} (plus de ${ms / 1000} s)`)),
+          ms,
+        );
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
 (async () => {
   const cache =
     process.env.LOCALIA_TEST_MODELS || path.join(os.homedir(), '.cache', 'localia-test-models');
@@ -59,17 +79,21 @@ function packagedApp() {
       ...launch,
       env: { ...process.env, LOCALIA_TEST_DATA: profile, OLLAMA_MODELS: ollama },
     });
-    const page = await app.firstWindow();
+    const page = await step('ouverture de la fenêtre', () => app.firstWindow());
     page.setDefaultTimeout(120000);
-    const entry = await page.evaluate(() => window.localia.localImport('smollm2:135m'));
+    const entry = await step('reprise du modèle', () =>
+      page.evaluate(() => window.localia.localImport('smollm2:135m')),
+    );
     assert.equal(entry.name, 'integre/smollm2:135m');
     assert.equal(entry.architecture, 'llama');
     const started = Date.now();
-    const result = await page.evaluate(() =>
-      window.localia.run('chat', {
-        model: 'integre/smollm2:135m',
-        messages: [{ role: 'user', content: 'Say hello in one short sentence.' }],
-      }),
+    const result = await step('première question', () =>
+      page.evaluate(() =>
+        window.localia.run('chat', {
+          model: 'integre/smollm2:135m',
+          messages: [{ role: 'user', content: 'Say hello in one short sentence.' }],
+        }),
+      ),
     );
     assert.ok(result.text.trim().length > 0, 'réponse vide');
     assert.equal(result.used.engine, 'integre');
@@ -83,31 +107,37 @@ function packagedApp() {
     );
     // Questions enchaînées sans pause, comme une série du Benchmark (modèle gardé en mémoire) :
     // chacune doit réussir (la séquence rendue n'était pas toujours libre : « No sequences left »).
-    const burst = await page.evaluate(async () => {
-      const out = [];
-      for (let i = 0; i < 6; i++)
-        out.push(
-          await window.localia
-            .run('compare', {
-              model: 'integre/smollm2:135m',
-              messages: [{ role: 'user', content: `Count to ${i + 2}.` }],
-              keepLoaded: i < 5,
-            })
-            .then((r) => (r.text.trim() ? 'ok' : 'vide'))
-            .catch((e) => e.message),
-        );
-      return out;
-    });
+    const burst = [];
+    for (let i = 0; i < 6; i++)
+      burst.push(
+        await step(`question enchaînée ${i + 1} sur 6`, () =>
+          page.evaluate(
+            (n) =>
+              window.localia
+                .run('compare', {
+                  model: 'integre/smollm2:135m',
+                  messages: [{ role: 'user', content: `Count to ${n + 2}.` }],
+                  keepLoaded: n < 5,
+                })
+                .then((r) => (r.text.trim() ? 'ok' : 'vide'))
+                .catch((e) => e.message),
+            i,
+          ),
+        ),
+      );
     assert.deepEqual(burst, Array(6).fill('ok'), `questions enchaînées : ${burst.join(' | ')}`);
     const speed = result.stats.outputTokens / (result.stats.outputMs / 1000);
     console.log(
       `PASS moteur intégré réel (${process.platform}-${process.arch}${process.env.LOCALIA_PACKAGED ? ', application construite' : ''}) : ${result.stats.outputTokens} tokens à ${speed.toFixed(0)} tokens/s en ${((Date.now() - started) / 1000).toFixed(1)} s — « ${result.text.trim().slice(0, 60)} »`,
     );
   } finally {
-    await app?.close().catch(() => {});
+    await Promise.race([app?.close(), new Promise((r) => setTimeout(r, 15000))]).catch(() => {});
     await fs.rm(profile, { recursive: true, force: true });
   }
-})().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+})()
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  // Application qui ne se ferme pas : le test se termine quand même.
+  .finally(() => setTimeout(() => process.exit(), 1000).unref());

@@ -77,7 +77,13 @@ const step = async (name, work, ms = 180000) => {
   try {
     app = await electron.launch({
       ...launch,
-      env: { ...process.env, LOCALIA_TEST_DATA: profile, OLLAMA_MODELS: ollama },
+      env: {
+        ...process.env,
+        LOCALIA_TEST_DATA: profile,
+        OLLAMA_MODELS: ollama,
+        // Étapes du moteur, affichées si le test échoue.
+        LOCALIA_ENGINE_DEBUG: path.join(profile, 'moteur.log'),
+      },
     });
     const page = await step('ouverture de la fenêtre', () => app.firstWindow());
     page.setDefaultTimeout(120000);
@@ -94,6 +100,9 @@ const step = async (name, work, ms = 180000) => {
           messages: [{ role: 'user', content: 'Say hello in one short sentence.' }],
         }),
       ),
+    );
+    console.log(
+      `  ${result.stats.outputTokens} jetons, arrêt « ${result.stats.doneReason} », ${(result.stats.totalMs / 1000).toFixed(1)} s`,
     );
     assert.ok(result.text.trim().length > 0, 'réponse vide');
     assert.equal(result.used.engine, 'integre');
@@ -130,6 +139,10 @@ const step = async (name, work, ms = 180000) => {
     console.log(
       `PASS moteur intégré réel (${process.platform}-${process.arch}${process.env.LOCALIA_PACKAGED ? ', application construite' : ''}) : ${result.stats.outputTokens} tokens à ${speed.toFixed(0)} tokens/s en ${((Date.now() - started) / 1000).toFixed(1)} s — « ${result.text.trim().slice(0, 60)} »`,
     );
+  } catch (error) {
+    const log = await fs.readFile(path.join(profile, 'moteur.log'), 'utf8').catch(() => '');
+    console.error('Journal du moteur (fin) :\n' + log.split('\n').slice(-40).join('\n'));
+    throw error;
   } finally {
     await Promise.race([app?.close(), new Promise((r) => setTimeout(r, 15000))]).catch(() => {});
     await fs.rm(profile, { recursive: true, force: true });

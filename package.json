@@ -9,6 +9,7 @@
     "test": "node --test test/*.test.cjs",
     "package": "electron-builder --mac dir --x64",
     "package:diffusion": "node scripts/package-diffusion.cjs",
+    "captures": "node scripts/captures-readme.cjs",
     "test:desktop": "node test/desktop.cjs",
     "test:pdf": "node test/pdf-desktop.cjs",
     "format": "prettier --write src test",

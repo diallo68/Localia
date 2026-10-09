@@ -60,9 +60,11 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
     );
     if (!(await page.evaluate(() => models.length))) {
       await page.waitForFunction(() => !document.querySelector('#guide-view').hidden);
-      assert.match(
-        await page.locator('#guide-model .guide-state').textContent(),
-        /Go de mémoire : nous conseillons/,
+      // Conseil écrit une fois la mémoire mesurée : attendu, pas lu tout de suite (machine lente).
+      await page.waitForFunction(() =>
+        /Go de mémoire : nous conseillons/.test(
+          document.querySelector('#guide-model .guide-state')?.textContent || '',
+        ),
       );
     }
     await page.locator('#security-tab').click();

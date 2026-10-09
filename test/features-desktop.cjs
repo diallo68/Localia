@@ -905,9 +905,10 @@ const readJson = async (profile, name) => {
         .querySelector('#guide-ollama .guide-state')
         .textContent.includes('Ollama est actif (version 0.35.0)'),
     );
-    assert.match(
-      await page.locator('#guide-model .guide-state').textContent(),
-      /2 modèle\(s\) disponible\(s\)/,
+    await page.waitForFunction(() =>
+      /2 modèle\(s\) disponible\(s\)/.test(
+        document.querySelector('#guide-model .guide-state').textContent,
+      ),
     );
     assert.match(
       await page.locator('#starter-advice').textContent(),

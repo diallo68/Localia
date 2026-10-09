@@ -2,6 +2,7 @@
 nom: 3. Contrôler la structure
 appel: /donnees-structure
 description: Nombre de lignes et de colonnes, types, lignes irrégulières.
+exemple: /donnees-structure Vérifie le nombre de lignes, de colonnes et les types de ce CSV.
 famille: Données brutes
 tache: donnees
 ---

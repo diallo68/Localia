@@ -2,6 +2,7 @@
 nom: Besoins et utilisateurs
 appel: /appli-besoins
 description: Qui utilise l’application, pour quoi faire, dans quelles conditions.
+exemple: /appli-besoins Les agriculteurs de Timbi-Madina doivent noter leurs traitements contre le mildiou sur téléphone.
 famille: Développer une application
 tache: code
 ---

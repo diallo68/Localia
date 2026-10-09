@@ -2,6 +2,7 @@
 nom: Rédiger une thèse (parcours complet)
 appel: /these
 description: Du plan général à la soutenance.
+exemple: /these Il me reste un an : organise le travail jusqu’à la soutenance.
 famille: Thèse
 tache: redaction
 etapes: /these-plan, /these-introduction-generale, /these-etat-de-l-art, /these-chapitre, /these-coherence, /these-conclusion-generale, /these-soutenance

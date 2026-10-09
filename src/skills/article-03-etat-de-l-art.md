@@ -2,6 +2,7 @@
 nom: État de l’art (travaux connexes)
 appel: /article-etat-de-l-art
 description: Synthèse critique et comparative, pas une liste de résumés.
+exemple: /article-etat-de-l-art Compare ces cinq études sur les modèles d’alerte au mildiou.
 famille: Article scientifique
 tache: redaction
 ---

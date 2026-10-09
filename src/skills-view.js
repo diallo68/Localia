@@ -58,6 +58,11 @@ function renderSkills() {
       const card = element('article', 'skill-card' + (s.steps.length ? ' parcours' : ''));
       card.append(element('strong', '', s.name), element('code', '', s.call));
       if (s.description) card.append(element('p', '', s.description));
+      if (s.example) {
+        const example = element('p', 'skill-example');
+        example.append(element('span', '', 'Exemple :'), ' ', element('q', '', s.example));
+        card.append(example);
+      }
       const meta = [
         s.steps.length ? `Parcours en ${s.steps.length} étapes` : null,
         s.task ? `Type : ${taskById(s.task)?.label || s.task}` : null,

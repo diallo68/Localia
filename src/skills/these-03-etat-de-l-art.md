@@ -2,6 +2,7 @@
 nom: État de l’art de la thèse
 appel: /these-etat-de-l-art
 description: Revue critique et organisée de la littérature.
+exemple: /these-etat-de-l-art Organise ces références sur les modèles de prévision des maladies des plantes.
 famille: Thèse
 tache: redaction
 ---

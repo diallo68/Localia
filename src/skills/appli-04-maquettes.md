@@ -2,6 +2,7 @@
 nom: Maquettes et parcours
 appel: /appli-maquettes
 description: Écrans, navigation et parcours utilisateur avant de coder.
+exemple: /appli-maquettes Propose les écrans d’accueil, de saisie et d’historique de l’application.
 famille: Développer une application
 tache: code
 ---

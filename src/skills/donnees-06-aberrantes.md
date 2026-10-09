@@ -2,6 +2,7 @@
 nom: 6. Valeurs aberrantes
 appel: /donnees-aberrantes
 description: Contrôles physiques et statistiques ; signaler avant de corriger.
+exemple: /donnees-aberrantes Une intensité de pluie de 1 440 mm/h : est-ce plausible ?
 famille: Données brutes
 tache: donnees
 ---

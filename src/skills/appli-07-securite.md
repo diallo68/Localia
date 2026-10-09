@@ -2,6 +2,7 @@
 nom: Sécurité et données personnelles
 appel: /appli-securite
 description: Protéger les données, les accès et respecter les règles.
+exemple: /appli-securite Les données des agriculteurs sont personnelles : comment les protéger ?
 famille: Développer une application
 tache: code
 ---

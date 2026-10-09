@@ -84,6 +84,54 @@ function renderHome() {
     advice.append(card);
   }
 
+  // Continuer : dernière conversation, dernier document analysé, dernier projet.
+  const resume = $('home-continue');
+  resume.replaceChildren();
+  const byDate = [...conversations].sort((a, b) =>
+    String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')),
+  );
+  const lastConversation = byDate.find((c) => c.messages?.length);
+  const withDocument = byDate.find((c) => c.document);
+  const lastProject = [...projects].sort((a, b) =>
+    String(lastActivity(b)).localeCompare(String(lastActivity(a))),
+  )[0];
+  const openConversation = (c) => () =>
+    document.querySelector(`#history button[data-id="${CSS.escape(c.id)}"]`)?.click();
+  const tile = (icon, kind, title, detail, onclick) => {
+    const button = element('button', 'home-resume');
+    button.type = 'button';
+    button.innerHTML = `<i data-icon="${icon}"></i>`;
+    const text = element('span');
+    text.append(element('small', 'muted', kind), element('strong', '', title));
+    if (detail) text.append(element('span', 'muted', detail));
+    button.append(text);
+    button.onclick = onclick;
+    resume.append(button);
+  };
+  if (lastConversation)
+    tile(
+      'message',
+      'Dernière conversation',
+      lastConversation.title,
+      shortDate(lastConversation.updatedAt),
+      openConversation(lastConversation),
+    );
+  if (withDocument)
+    tile(
+      'file',
+      'Dernier document analysé',
+      withDocument.document.name,
+      withDocument.title,
+      openConversation(withDocument),
+    );
+  if (lastProject)
+    tile('folder', 'Dernier projet', lastProject.name, shortDate(lastActivity(lastProject)), () => {
+      openProjectId = lastProject.id;
+      $('projects-tab').click();
+    });
+  if (!resume.childNodes.length)
+    resume.append(element('p', 'muted', 'Votre travail récent apparaîtra ici.'));
+
   const list = $('home-projects');
   list.replaceChildren();
   const recent = [...projects]

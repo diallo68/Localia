@@ -1746,7 +1746,19 @@ async function loadSkills() {
     if ((await fs.stat(file)).size > 60_000) continue;
     entries.push({ name, text: await fs.readFile(file, 'utf8') });
   }
-  return { dir, ...skillsLogic.buildCatalog(entries) };
+  const catalog = skillsLogic.buildCatalog(entries);
+  // Copie d'une compétence de départ faite avant l'ajout des exemples : exemple d'origine repris.
+  if (catalog.skills.some((s) => !s.example)) {
+    const starters = [];
+    for (const name of await fs.readdir(STARTER_SKILLS).catch(() => []))
+      if (name.endsWith('.md'))
+        starters.push({ name, text: await fs.readFile(path.join(STARTER_SKILLS, name), 'utf8') });
+    const examples = new Map(
+      skillsLogic.buildCatalog(starters).skills.map((s) => [s.call, s.example]),
+    );
+    for (const s of catalog.skills) s.example ||= examples.get(s.call) || '';
+  }
+  return { dir, ...catalog };
 }
 // Fichier du dossier des compétences seulement (ni sous-dossier, ni chemin qui en sort).
 function skillFile(name) {

@@ -2,6 +2,7 @@
 nom: Données météo NASA POWER (Dalaba)
 appel: /meteo-nasa-power
 description: Script complet de préparation des données journalières NASA POWER pour la prévision du mildiou.
+exemple: /meteo-nasa-power Prépare les données NASA POWER journalières de Labé pour 2023 à 2025.
 famille: Données météo
 tache: donnees
 ---

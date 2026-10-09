@@ -2,6 +2,7 @@
 nom: Conclusion générale et perspectives
 appel: /these-conclusion-generale
 description: Réponse à la problématique, contributions, limites, perspectives.
+exemple: /these-conclusion-generale Rédige la conclusion générale : réponses, contributions, limites, perspectives.
 famille: Thèse
 tache: redaction
 ---

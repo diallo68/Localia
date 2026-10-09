@@ -89,11 +89,47 @@ async function saveModelSettings(name, value) {
   settings = await window.localia.saveSettings(next);
 }
 
-$('settings-tab').onclick = () => {
-  openSettings($('settings-model').value || $('model').value);
+$('settings-tab').onclick = () => openSettings($('settings-model').value || $('model').value);
+
+// « Confidentialité et sécurité » : stockage local, chiffrement, connexions autorisées.
+$('security-tab').onclick = () => {
+  view('security');
   showPrivacy().catch((error) => notice(error.message));
   showRemote().catch((error) => notice(error.message));
 };
+const securityState = {};
+function renderSecuritySummary() {
+  const list = $('security-summary');
+  list.replaceChildren();
+  const line = (ok, title, detail) => {
+    const item = element('li', ok ? 'ok' : 'warn');
+    item.append(element('strong', '', title), element('span', 'muted', detail));
+    list.append(item);
+  };
+  line(
+    true,
+    'Stockage local',
+    'Tout est enregistré dans le dossier de Localia, sur cet ordinateur.',
+  );
+  const encryption = securityState.encryption;
+  if (encryption)
+    line(
+      encryption.enabled,
+      'Chiffrement',
+      encryption.enabled ? 'Activé' : 'Désactivé : vos données sont enregistrées en clair.',
+    );
+  const remote = securityState.remote;
+  const online = settings.online?.bibliography;
+  line(
+    !remote?.enabled && !online,
+    'Connexions autorisées',
+    [
+      remote?.enabled ? 'Accès depuis vos autres appareils activé' : 'Aucun autre appareil',
+      online ? 'recherche bibliographique en ligne activée' : 'aucune recherche en ligne',
+    ].join(' · '),
+  );
+  placeIcons(list);
+}
 $('settings-model').onchange = showSettings;
 $('settings-form').onsubmit = guard(async (event) => {
   event.preventDefault();
@@ -143,6 +179,8 @@ async function showPrivacy(status) {
   toggle.disabled = (!status.enabled && !status.keychain) || (status.enabled && !status.unlocked);
   $('encryption-export').hidden = !status.unlocked;
   $('encryption-import').hidden = !status.enabled;
+  securityState.encryption = status;
+  renderSecuritySummary();
 }
 $('encryption-toggle').onclick = guard(async () => {
   const status = await window.localia.encryptionStatus();
@@ -161,7 +199,7 @@ $('encryption-toggle').onclick = guard(async () => {
   if (next.enabled)
     notice(
       localText(
-        'Données chiffrées. Exportez maintenant la clé de secours (Réglages des modèles → Données sur ce Mac) et gardez-la hors de ce Mac.',
+        'Données chiffrées. Exportez maintenant la clé de secours (Confidentialité et sécurité → Données sur ce Mac) et gardez-la hors de ce Mac.',
       ),
     );
 });
@@ -179,6 +217,8 @@ $('encryption-import').onclick = guard(async () => {
 // « Accès depuis vos autres appareils » : serveur, adresses et QR codes, appareils connectés.
 async function showRemote(status) {
   status ||= await window.localia.remoteStatus();
+  securityState.remote = status;
+  renderSecuritySummary();
   $('remote-enabled').checked = status.enabled;
   $('remote-reset').hidden = !status.running;
   $('remote-status').textContent = status.error

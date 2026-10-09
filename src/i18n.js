@@ -364,6 +364,45 @@ const EN = {
   inventions: 'made up',
   'par réponse': 'per answer',
   'Mémoire utilisée': 'Memory in use',
+  'Exemple :': 'Example:',
+  'Comment ça marche ? Quatre étapes pour choisir un modèle':
+    'How does it work? Four steps to choose a model',
+  'Une série': 'A series',
+  Répéter: 'Repeat',
+  Noter: 'Grade',
+  Choisir: 'Choose',
+  ': les mêmes questions posées à plusieurs modèles, sur cet ordinateur. Prenez des questions de votre travail, avec la réponse attendue si vous la connaissez.':
+    ': the same questions asked to several models, on this computer. Use questions from your own work, with the expected answer if you know it.',
+  ': un modèle ne répond pas toujours de la même façon. Deux ou trois répétitions montrent si son résultat est stable.':
+    ': a model does not always answer the same way. Two or three repetitions show whether its result is stable.',
+  ': pour chaque réponse, un verdict (correct, partiel, faux, hors sujet), une case « invention » et une note de 1 à 5. La notation à l’aveugle cache le nom du modèle.':
+    ': for each answer, a verdict (correct, partial, wrong, off-topic), a “made up” box and a 1 to 5 rating. Blind grading hides the model name.',
+  ': le classement met la justesse d’abord, puis les inventions, puis la rapidité. Le modèle le mieux noté pour votre métier est proposé sur l’accueil.':
+    ': the ranking puts accuracy first, then made-up facts, then speed. The best-rated model for your profession is suggested on the home screen.',
+  'Passer cette étape': 'Skip this step',
+  'Chiffrer aussi mes données sur ce Mac': 'Also encrypt my data on this Mac',
+  'Données chiffrées. Exportez maintenant la clé de secours (Confidentialité et sécurité → Données sur ce Mac) et gardez-la hors de ce Mac.':
+    'Data encrypted. Now export the recovery key (Privacy and security → Data on this Mac) and keep it off this Mac.',
+  'Continuer votre travail': 'Pick up where you left off',
+  'Dernière conversation': 'Last conversation',
+  'Dernier document analysé': 'Last document analysed',
+  'Dernier projet': 'Last project',
+  'Votre travail récent apparaîtra ici.': 'Your recent work will appear here.',
+  'Confidentialité et sécurité': 'Privacy and security',
+  'Conversations récentes': 'Recent conversations',
+  'Ce que Localia garde sur ce Mac, comment le protéger, et qui peut s’y connecter.':
+    'What Localia keeps on this Mac, how to protect it, and who can connect to it.',
+  'Stockage local': 'Local storage',
+  'Tout est enregistré dans le dossier de Localia, sur cet ordinateur.':
+    'Everything is saved in the Localia folder, on this computer.',
+  Chiffrement: 'Encryption',
+  Activé: 'On',
+  'Désactivé : vos données sont enregistrées en clair.': 'Off: your data is saved unencrypted.',
+  'Connexions autorisées': 'Allowed connections',
+  'Aucun autre appareil': 'No other device',
+  'Accès depuis vos autres appareils activé': 'Access from your other devices is on',
+  'recherche bibliographique en ligne activée': 'online bibliography search on',
+  'aucune recherche en ligne': 'no online search',
   Accueil: 'Home',
   Bonjour: 'Hello',
   'Que puis-je faire pour vous ?': 'What can I do for you?',

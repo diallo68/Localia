@@ -2,6 +2,7 @@
 nom: 7. Variables dérivées et agrégations
 appel: /donnees-variables
 description: Indicateurs utiles à la question de recherche, agrégations correctes.
+exemple: /donnees-variables Calcule les heures d’humidité supérieure à 90 % par jour.
 famille: Données brutes
 tache: donnees
 ---

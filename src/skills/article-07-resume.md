@@ -2,6 +2,7 @@
 nom: Résumé, titre et mots-clés
 appel: /article-resume
 description: Résumé structuré, titres possibles et mots-clés.
+exemple: /article-resume Résumé de 200 mots, trois titres possibles et cinq mots-clés.
 famille: Article scientifique
 tache: redaction
 ---

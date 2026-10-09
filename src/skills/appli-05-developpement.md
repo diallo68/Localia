@@ -2,6 +2,7 @@
 nom: Développement par étapes
 appel: /appli-developpement
 description: Coder par petites étapes testables, avec gestion de versions.
+exemple: /appli-developpement Découpe la saisie des observations en étapes que je peux coder et tester une à une.
 famille: Développer une application
 tache: code
 ---

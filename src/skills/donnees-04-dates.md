@@ -2,6 +2,7 @@
 nom: 4. Dates et continuité temporelle
 appel: /donnees-dates
 description: Construire une vraie date, trier, repérer les jours manquants et les doublons.
+exemple: /donnees-dates Construis une vraie date à partir des colonnes jour, mois et heure, et repère les heures manquantes.
 famille: Données brutes
 tache: donnees
 ---

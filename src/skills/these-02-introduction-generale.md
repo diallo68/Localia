@@ -2,6 +2,7 @@
 nom: Introduction générale
 appel: /these-introduction-generale
 description: Contexte, problématique, objectifs, démarche et plan de la thèse.
+exemple: /these-introduction-generale Rédige l’introduction générale à partir de mes notes.
 famille: Thèse
 tache: redaction
 ---

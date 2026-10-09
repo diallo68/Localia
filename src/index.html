@@ -39,10 +39,14 @@
         <span class="metier-privacy"
           ><i data-icon="lock"></i>Vos documents et vos photos ne quittent jamais cet
           ordinateur.</span
+        ><label id="metier-encrypt-row" class="check metier-encrypt" hidden
+          ><input type="checkbox" id="metier-encrypt" /> Chiffrer aussi mes données sur ce
+          Mac</label
         >
         <div>
           <span>Choisi : <strong id="metier-chosen"></strong></span
           ><button id="metier-cancel" type="button" hidden>Annuler</button
+          ><button id="metier-skip" type="button" hidden>Passer cette étape</button
           ><button id="metier-continue" class="primary" type="button">
             Continuer<i data-icon="arrow"></i>
           </button>
@@ -111,13 +115,15 @@
           <button id="performance-tab" class="nav">
             <i data-icon="monitor"></i>Performances de votre PC</button
           ><button id="settings-tab" class="nav">
-            <i data-icon="settings"></i>Réglages des modèles
-          </button>
+            <i data-icon="settings"></i>Réglages des modèles</button
+          ><button id="security-tab" class="nav">
+            <i data-icon="lock"></i>Confidentialité et sécurité</button
+          ><button id="guide-tab" class="nav"><i data-icon="bulb"></i>Guide de démarrage</button>
         </div>
       </div>
       <div class="nav-section history-section" data-section="historique">
         <button class="section-toggle" type="button" aria-expanded="true">
-          <i data-icon="clock"></i>Historique local<i data-icon="chevron"></i>
+          <i data-icon="clock"></i>Conversations récentes<i data-icon="chevron"></i>
         </button>
         <nav id="history" class="nav-group" aria-label="Historique des conversations"></nav>
       </div>
@@ -126,8 +132,7 @@
         <div class="memory-bar"><i id="memory-fill"></i></div>
       </div>
       <div class="privacy">
-        <span>●</span> Sur votre Mac<small>Vos conversations restent ici.</small
-        ><button id="guide-tab" class="link-button" type="button">Guide de démarrage</button>
+        <span>●</span> Sur votre Mac<small>Vos conversations restent ici.</small>
       </div>
     </aside>
     <main>
@@ -177,6 +182,12 @@
           </button>
         </div>
         <div id="home-advice"></div>
+        <section class="home-card" aria-labelledby="home-continue-title">
+          <div class="home-card-head">
+            <h3 id="home-continue-title"><i data-icon="clock"></i>Continuer votre travail</h3>
+          </div>
+          <div id="home-continue" class="home-continue"></div>
+        </section>
         <div class="home-columns">
           <section class="home-card" aria-labelledby="home-projects-title">
             <div class="home-card-head">
@@ -456,6 +467,29 @@
             chargement est mesuré à part. Les résultats se notent et s’analysent à l’étape 2.
           </p>
         </div>
+        <details class="bench-howto">
+          <summary>Comment ça marche ? Quatre étapes pour choisir un modèle</summary>
+          <ol>
+            <li>
+              <strong>Une série</strong> : les mêmes questions posées à plusieurs modèles, sur cet
+              ordinateur. Prenez des questions de votre travail, avec la réponse attendue si vous la
+              connaissez.
+            </li>
+            <li>
+              <strong>Répéter</strong> : un modèle ne répond pas toujours de la même façon. Deux ou
+              trois répétitions montrent si son résultat est stable.
+            </li>
+            <li>
+              <strong>Noter</strong> : pour chaque réponse, un verdict (correct, partiel, faux, hors
+              sujet), une case « invention » et une note de 1 à 5. La notation à l’aveugle cache le
+              nom du modèle.
+            </li>
+            <li>
+              <strong>Choisir</strong> : le classement met la justesse d’abord, puis les inventions,
+              puis la rapidité. Le modèle le mieux noté pour votre métier est proposé sur l’accueil.
+            </li>
+          </ol>
+        </details>
         <form id="compare-form">
           <label for="compare-prompt">Tâche à confier aux modèles</label>
           <textarea
@@ -915,6 +949,90 @@
         </div>
         <div id="skills-list"></div>
       </section>
+      <section id="security-view" class="page" hidden>
+        <p class="muted security-intro">
+          Ce que Localia garde sur ce Mac, comment le protéger, et qui peut s’y connecter.
+        </p>
+        <ul id="security-summary" class="security-summary"></ul>
+        <section id="privacy" aria-labelledby="privacy-title">
+          <h3 id="privacy-title">Données sur ce Mac</h3>
+          <p class="muted">
+            Conversations, comparaisons, projets, textes extraits des PDF, réglages et journal des
+            actions sont enregistrés dans le dossier de Localia. Chiffrés, ils sont illisibles sans
+            la clé, gardée dans le trousseau de macOS : copie du dossier, sauvegarde, autre compte
+            de l’ordinateur.
+          </p>
+          <p id="privacy-status" role="status"></p>
+          <div class="input-row">
+            <button id="encryption-toggle" type="button"></button
+            ><button id="encryption-export" type="button" hidden>Exporter la clé de secours</button
+            ><button id="encryption-import" type="button" hidden>Importer la clé de secours</button>
+          </div>
+          <p class="muted">
+            Sans le trousseau ni la clé de secours, des données chiffrées sont perdues : exportez la
+            clé de secours et gardez-la hors de ce Mac. Le chiffrement ne protège pas contre un
+            logiciel malveillant qui tourne sur votre session, ni les copies faites avant
+            l’activation (sauvegardes Time Machine) ; FileVault chiffre tout le disque.
+          </p>
+        </section>
+        <section id="anonymize" aria-labelledby="anonymize-title">
+          <h3 id="anonymize-title">Anonymisation</h3>
+          <p class="muted">
+            Métiers Santé, Juridique, Administration et Finance : avant l’envoi au modèle, Localia
+            remplace les noms précédés d’une civilité ou écrits « Prénom NOM », les e-mails,
+            téléphones, IBAN, numéros de carte, de sécurité sociale, de dossier ou de pièce, les
+            adresses et les dates de naissance par des étiquettes comme [PERSONNE 1] ; la réponse
+            affichée remet les vraies valeurs. Le repérage ne voit pas tout : ajoutez ici les mots à
+            toujours masquer (noms sans civilité, lieux, sociétés…), un par ligne.
+          </p>
+          <label for="mask-words">Mots toujours masqués</label
+          ><textarea
+            id="mask-words"
+            rows="4"
+            placeholder="Clinique Pasteur&#10;Aïssatou"
+          ></textarea>
+          <div class="input-row">
+            <button id="mask-save" type="button">Enregistrer la liste</button
+            ><span id="mask-status" class="muted" role="status"></span>
+          </div>
+        </section>
+        <section id="remote" aria-labelledby="remote-title">
+          <h3 id="remote-title">Accès depuis vos autres appareils</h3>
+          <p class="muted">
+            Utilisez Localia depuis votre téléphone ou un autre ordinateur : les modèles tournent
+            toujours sur ce Mac, et les conversations y restent. Désactivé par défaut.
+          </p>
+          <label class="check"
+            ><input type="checkbox" id="remote-enabled" /> Autoriser l’accès depuis mes autres
+            appareils</label
+          >
+          <p id="remote-status" role="status"></p>
+          <div id="remote-addresses" class="remote-addresses"></div>
+          <div id="remote-devices"></div>
+          <div class="input-row">
+            <button id="remote-reset" type="button" hidden>
+              Changer la clé (déconnecte tous les appareils)
+            </button>
+          </div>
+          <ul class="muted remote-help">
+            <li>
+              <strong>Même Wi-Fi</strong> : scannez le QR code « réseau local » avec l’appareil
+              photo du téléphone. Utilisez un Wi-Fi de confiance (maison, bureau) : sur ce réseau,
+              les échanges ne sont pas chiffrés.
+            </li>
+            <li>
+              <strong>Depuis l’extérieur</strong> : installez Tailscale (gratuit, tailscale.com) sur
+              ce Mac et sur l’autre appareil, avec le même compte ; une adresse « Tailscale »
+              apparaît alors ici, avec son QR code. Les échanges sont chiffrés, et ce Mac n’est pas
+              ouvert à Internet.
+            </li>
+            <li>
+              Ce Mac doit rester allumé, avec Localia ouverte. Au premier lancement, macOS peut
+              demander d’autoriser les connexions entrantes : acceptez.
+            </li>
+          </ul>
+        </section>
+      </section>
       <section id="settings-view" class="page" hidden>
         <div class="library-intro">
           <span class="eyebrow">OPTIMISER VOS MODÈLES</span>
@@ -1023,84 +1141,6 @@
             ><span id="settings-status" class="muted" role="status"></span>
           </div>
         </form>
-        <section id="anonymize" aria-labelledby="anonymize-title">
-          <h3 id="anonymize-title">Anonymisation</h3>
-          <p class="muted">
-            Métiers Santé, Juridique, Administration et Finance : avant l’envoi au modèle, Localia
-            remplace les noms précédés d’une civilité ou écrits « Prénom NOM », les e-mails,
-            téléphones, IBAN, numéros de carte, de sécurité sociale, de dossier ou de pièce, les
-            adresses et les dates de naissance par des étiquettes comme [PERSONNE 1] ; la réponse
-            affichée remet les vraies valeurs. Le repérage ne voit pas tout : ajoutez ici les mots à
-            toujours masquer (noms sans civilité, lieux, sociétés…), un par ligne.
-          </p>
-          <label for="mask-words">Mots toujours masqués</label
-          ><textarea
-            id="mask-words"
-            rows="4"
-            placeholder="Clinique Pasteur&#10;Aïssatou"
-          ></textarea>
-          <div class="input-row">
-            <button id="mask-save" type="button">Enregistrer la liste</button
-            ><span id="mask-status" class="muted" role="status"></span>
-          </div>
-        </section>
-        <section id="privacy" aria-labelledby="privacy-title">
-          <h3 id="privacy-title">Données sur ce Mac</h3>
-          <p class="muted">
-            Conversations, comparaisons, projets, textes extraits des PDF, réglages et journal des
-            actions sont enregistrés dans le dossier de Localia. Chiffrés, ils sont illisibles sans
-            la clé, gardée dans le trousseau de macOS : copie du dossier, sauvegarde, autre compte
-            de l’ordinateur.
-          </p>
-          <p id="privacy-status" role="status"></p>
-          <div class="input-row">
-            <button id="encryption-toggle" type="button"></button
-            ><button id="encryption-export" type="button" hidden>Exporter la clé de secours</button
-            ><button id="encryption-import" type="button" hidden>Importer la clé de secours</button>
-          </div>
-          <p class="muted">
-            Sans le trousseau ni la clé de secours, des données chiffrées sont perdues : exportez la
-            clé de secours et gardez-la hors de ce Mac. Le chiffrement ne protège pas contre un
-            logiciel malveillant qui tourne sur votre session, ni les copies faites avant
-            l’activation (sauvegardes Time Machine) ; FileVault chiffre tout le disque.
-          </p>
-        </section>
-        <section id="remote" aria-labelledby="remote-title">
-          <h3 id="remote-title">Accès depuis vos autres appareils</h3>
-          <p class="muted">
-            Utilisez Localia depuis votre téléphone ou un autre ordinateur : les modèles tournent
-            toujours sur ce Mac, et les conversations y restent. Désactivé par défaut.
-          </p>
-          <label class="check"
-            ><input type="checkbox" id="remote-enabled" /> Autoriser l’accès depuis mes autres
-            appareils</label
-          >
-          <p id="remote-status" role="status"></p>
-          <div id="remote-addresses" class="remote-addresses"></div>
-          <div id="remote-devices"></div>
-          <div class="input-row">
-            <button id="remote-reset" type="button" hidden>
-              Changer la clé (déconnecte tous les appareils)
-            </button>
-          </div>
-          <ul class="muted remote-help">
-            <li>
-              <strong>Même Wi-Fi</strong> : scannez le QR code « réseau local » avec l’appareil
-              photo du téléphone. Utilisez un Wi-Fi de confiance (maison, bureau) : sur ce réseau,
-              les échanges ne sont pas chiffrés.
-            </li>
-            <li>
-              <strong>Depuis l’extérieur</strong> : installez Tailscale (gratuit, tailscale.com) sur
-              ce Mac et sur l’autre appareil, avec le même compte ; une adresse « Tailscale »
-              apparaît alors ici, avec son QR code. Les échanges sont chiffrés, et ce Mac n’est pas
-              ouvert à Internet.
-            </li>
-            <li>
-              Ce Mac doit rester allumé, avec Localia ouverte. Au premier lancement, macOS peut
-              demander d’autoriser les connexions entrantes : acceptez.
-            </li>
-          </ul>
-        </section>
       </section>
     </main>
     <script src="icons.js"></script>

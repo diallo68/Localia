@@ -2,6 +2,7 @@
 nom: Traiter des données brutes (parcours complet)
 appel: /donnees-brutes
 description: Les 9 étapes pour passer de données brutes à des données fiables et documentées.
+exemple: /donnees-brutes J’ai reçu les relevés horaires de la station de Timbi-Madina : par où commencer ?
 famille: Données brutes
 tache: donnees
 etapes: /donnees-original, /donnees-comprendre, /donnees-structure, /donnees-dates, /donnees-manquants, /donnees-aberrantes, /donnees-variables, /donnees-modele, /donnees-documenter

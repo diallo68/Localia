@@ -2,6 +2,7 @@
 nom: Spécifications
 appel: /appli-specifications
 description: Fonctionnalités détaillées, données manipulées, règles et limites.
+exemple: /appli-specifications Détaille l’écran de saisie d’une observation de mildiou : champs, règles, limites.
 famille: Développer une application
 tache: code
 ---

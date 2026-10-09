@@ -65,6 +65,7 @@ function parseSkill(text, fileName) {
     call,
     name: String(fields.nom).slice(0, 120),
     description: String(fields.description || '').slice(0, 300),
+    example: String(fields.exemple || '').slice(0, 300),
     family: String(fields.famille || 'Mes compétences').slice(0, 60),
     task: fields.tache ? String(fields.tache).toLowerCase() : null,
     steps,

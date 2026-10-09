@@ -2,6 +2,7 @@
 nom: Tests
 appel: /appli-tests
 description: Tests automatiques et vérifications manuelles.
+exemple: /appli-tests Quels tests pour vérifier le calcul du risque de mildiou ?
 famille: Développer une application
 tache: code
 ---

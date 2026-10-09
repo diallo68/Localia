@@ -1140,7 +1140,7 @@ const readJson = async (profile, name) => {
 
     // Métier Santé : anonymisation avant l'envoi (repérage + liste personnelle), réponse remise
     // en clair, étiquettes gardées avec la conversation ; consigne de métier envoyée.
-    await page.locator('#settings-tab').click();
+    await page.locator('#security-tab').click();
     await page.locator('#mask-words').fill('Clinique Pasteur');
     await page.locator('#mask-save').click();
     await page.waitForFunction(() =>
@@ -1268,7 +1268,7 @@ const readJson = async (profile, name) => {
     // Accès depuis un autre appareil : serveur activé, clé exigée, question posée « depuis le
     // téléphone », réponse reçue au fil de l'écriture, conversation visible sur le Mac.
     const base = 'http://127.0.0.1:47899';
-    await page.locator('#settings-tab').click();
+    await page.locator('#security-tab').click();
     await page.locator('#remote-enabled').check();
     await page.waitForFunction(() =>
       document.querySelector('#remote-status').textContent.includes('47899'),
@@ -1316,7 +1316,7 @@ const readJson = async (profile, name) => {
     for (let i = 0; i < 10; i++)
       await fetch(base + '/api/etat', { headers: { Authorization: 'Bearer faux' } });
     assert.equal((await fetch(base + '/api/etat', { headers: auth })).status, 429, 'trop d’essais');
-    await page.locator('#settings-tab').click();
+    await page.locator('#security-tab').click();
     await page.locator('#remote-enabled').uncheck();
     await page.waitForFunction(() =>
       document.querySelector('#remote-status').textContent.includes('Désactivé'),

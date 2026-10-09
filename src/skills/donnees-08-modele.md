@@ -2,6 +2,7 @@
 nom: 8. Préparer pour un modèle
 appel: /donnees-modele
 description: Découpage chronologique, normalisation sans fuite, jeux d’entraînement et de test.
+exemple: /donnees-modele Sépare les données de 2022 en jeux d’entraînement et de test, sans fuite.
 famille: Données brutes
 tache: donnees
 ---

@@ -2,6 +2,7 @@
 nom: Concevoir un projet de thèse
 appel: /projet-these
 description: Problématique, objectifs, hypothèses, méthode, calendrier et risques.
+exemple: /projet-these Ma thèse porte sur la prévision du mildiou par l’IA au Fouta-Djalon.
 famille: Concevoir un projet
 tache: redaction
 ---

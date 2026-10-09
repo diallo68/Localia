@@ -2,6 +2,7 @@
 nom: Réponse aux relecteurs
 appel: /reponse-relecteurs
 description: Lettre de réponse point par point, polie et précise.
+exemple: /reponse-relecteurs Voici les commentaires des trois relecteurs : prépare la lettre de réponse.
 famille: Article scientifique
 tache: redaction
 ---

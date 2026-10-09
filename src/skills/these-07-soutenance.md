@@ -2,6 +2,7 @@
 nom: Préparer la soutenance
 appel: /these-soutenance
 description: Plan de présentation, diapositives et questions probables du jury.
+exemple: /these-soutenance Prépare un plan de 20 diapositives et les questions probables du jury.
 famille: Thèse
 tache: redaction
 ---

@@ -2,6 +2,7 @@
 nom: Rédiger un chapitre
 appel: /these-chapitre
 description: Chapitre autonome : introduction, corps, conclusion et transition.
+exemple: /these-chapitre Transforme cet article en chapitre, avec introduction et transition.
 famille: Thèse
 tache: redaction
 ---

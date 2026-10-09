@@ -2,6 +2,7 @@
 nom: Relier la thèse et les articles
 appel: /relier-these-articles
 description: Organiser une thèse par articles et faire le lien entre chapitres et publications.
+exemple: /relier-these-articles Relie mes trois articles publiés aux chapitres de la thèse.
 famille: Concevoir un projet
 tache: redaction
 ---

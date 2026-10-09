@@ -2,6 +2,7 @@
 nom: 5. Valeurs manquantes
 appel: /donnees-manquants
 description: Repérer, compter et traiter les manquants, avec des règles écrites.
+exemple: /donnees-manquants 17 heures manquent dans la série : comment les traiter ?
 famille: Données brutes
 tache: donnees
 ---

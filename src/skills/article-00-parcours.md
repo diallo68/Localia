@@ -2,6 +2,7 @@
 nom: Rédiger un article (parcours complet)
 appel: /article
 description: Du plan à la soumission et à la réponse aux relecteurs.
+exemple: /article Je veux publier la comparaison des modèles de prévision du mildiou.
 famille: Article scientifique
 tache: redaction
 etapes: /article-plan, /article-introduction, /article-etat-de-l-art, /article-methodes, /article-resultats, /article-discussion, /article-resume, /relecture-ieee, /reponse-relecteurs

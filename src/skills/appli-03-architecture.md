@@ -2,6 +2,7 @@
 nom: Architecture et choix techniques
 appel: /appli-architecture
 description: Plateforme, langages, stockage, découpage en modules, justifiés.
+exemple: /appli-architecture Application mobile hors ligne, synchronisation quand le réseau revient : quelle architecture ?
 famille: Développer une application
 tache: code
 ---

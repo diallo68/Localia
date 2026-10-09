@@ -43,7 +43,7 @@
   const privacy = await window.localia.encryptionStatus().catch(() => null);
   if (privacy?.error) {
     notice(privacy.error);
-    view('settings');
+    view('security');
     await showPrivacy(privacy);
   } else if (!settings.metier && !settings.guideDone) openMetierView('first');
   else if (!settings.guideDone && !models.length) await openGuide().catch(() => {});

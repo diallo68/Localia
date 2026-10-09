@@ -54,6 +54,17 @@ function openMetierView(mode = 'change') {
   $('metier-step').textContent =
     mode === 'first' ? 'PREMIER LANCEMENT · ÉTAPE 1 SUR 2' : 'CHANGER DE MÉTIER';
   $('metier-cancel').hidden = mode === 'first';
+  $('metier-skip').hidden = mode !== 'first';
+  // Premier lancement : proposer le chiffrement tout de suite, si le trousseau le permet.
+  $('metier-encrypt-row').hidden = true;
+  $('metier-encrypt').checked = false;
+  if (mode === 'first')
+    window.localia
+      .encryptionStatus()
+      .then((status) => {
+        $('metier-encrypt-row').hidden = status.enabled || !status.keychain;
+      })
+      .catch(() => {});
   $('first-name').value = settings.firstName || '';
   $('quick-chips').replaceChildren(
     ...metierById('general').suggestions.map((s) => {
@@ -79,6 +90,16 @@ async function closeMetierView(id) {
     settings = await window.localia.saveSettings({ ...settings, metier: id, firstName });
   $('metier-view').hidden = true;
   delete document.body.dataset.onboarding;
+  if (!$('metier-encrypt-row').hidden && $('metier-encrypt').checked) {
+    $('metier-encrypt-row').hidden = true;
+    const status = await window.localia.encryptionEnable();
+    if (status.enabled)
+      notice(
+        localText(
+          'Données chiffrées. Exportez maintenant la clé de secours (Confidentialité et sécurité → Données sur ce Mac) et gardez-la hors de ce Mac.',
+        ),
+      );
+  }
   // Nouveau métier : le modèle le mieux noté pour ce métier devient le modèle actif, s'il est
   // installé (il reste modifiable dans les réglages avancés).
   if (changed) {
@@ -298,6 +319,8 @@ for (const lang of ['fr', 'en'])
 $('metier-switch').onclick = () => openMetierView('change');
 $('metier-cancel').onclick = () => closeMetierView(null);
 $('metier-continue').onclick = guard(() => closeMetierView(metierChoice));
+// Passer le choix du métier : interface générale, modifiable plus tard (Profil et métier).
+$('metier-skip').onclick = guard(() => quickQuestion(async () => $('prompt').focus()));
 // Question directe, sans métier : écran le plus simple, et la question part tout de suite.
 async function quickQuestion(then) {
   await closeMetierView('general');

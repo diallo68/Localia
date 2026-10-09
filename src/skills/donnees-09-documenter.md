@@ -2,6 +2,7 @@
 nom: 9. Documenter et rapport qualité
 appel: /donnees-documenter
 description: Rapport qualité, journal des décisions, fichiers de sortie nommés clairement.
+exemple: /donnees-documenter Rédige le rapport qualité et le journal des décisions de cette série.
 famille: Données brutes
 tache: donnees
 ---

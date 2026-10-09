@@ -2,6 +2,7 @@
 nom: Cohérence de la thèse
 appel: /these-coherence
 description: Notations, chiffres, références et fil conducteur d’un chapitre à l’autre.
+exemple: /these-coherence Vérifie les notations et les chiffres entre les chapitres 2 et 4.
 famille: Thèse
 tache: redaction
 ---

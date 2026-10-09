@@ -2,6 +2,7 @@
 nom: Concevoir un projet d’article
 appel: /projet-article
 description: Contribution, revue cible, plan, figures et calendrier avant d’écrire.
+exemple: /projet-article Je veux tirer un article du chapitre 3 de ma thèse : par où commencer ?
 famille: Concevoir un projet
 tache: redaction
 ---

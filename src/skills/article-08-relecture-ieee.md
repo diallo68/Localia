@@ -2,6 +2,7 @@
 nom: Relecture d’un article (format IEEE)
 appel: /relecture-ieee
 description: Citations, chiffres, figures, cohérence et règles IEEE.
+exemple: /relecture-ieee Relis ce manuscrit avant la soumission à IEEE Access.
 famille: Article scientifique
 tache: relecture
 ---

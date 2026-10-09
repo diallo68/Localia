@@ -2,6 +2,7 @@
 nom: Résultats
 appel: /article-resultats
 description: Présenter les résultats sans les interpréter, en appui des figures.
+exemple: /article-resultats Présente ces scores des modèles, en appui du tableau 2 et de la figure 3.
 famille: Article scientifique
 tache: redaction
 ---

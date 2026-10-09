@@ -84,3 +84,29 @@ test('les 42 compétences de départ sont valides, parcours complets, appels uni
   );
   assert.match(instruction, /5\. \/donnees-manquants — Valeurs manquantes :/);
 });
+
+test('compétence : exemple facultatif lu dans l’en-tête', () => {
+  const { buildCatalog } = require('../src/skills.js');
+  const text = (extra) =>
+    `---\nnom: Essai\nappel: /essai\ndescription: Une phrase.\n${extra}---\nConsignes.\n`;
+  const [withExample] = buildCatalog([
+    { name: 'a.md', text: text('exemple: /essai Résume ce rapport : trois points.\n') },
+  ]).skills;
+  assert.equal(withExample.example, '/essai Résume ce rapport : trois points.');
+  const [without] = buildCatalog([{ name: 'b.md', text: text('') }]).skills;
+  assert.equal(without.example, '');
+});
+
+test('compétences fournies : chacune a un exemple qui commence par son appel', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const { buildCatalog } = require('../src/skills.js');
+  const dir = path.join(__dirname, '../src/skills');
+  const entries = fs
+    .readdirSync(dir)
+    .filter((n) => n.endsWith('.md'))
+    .map((name) => ({ name, text: fs.readFileSync(path.join(dir, name), 'utf8') }));
+  const { skills, errors } = buildCatalog(entries);
+  assert.deepEqual(errors, []);
+  for (const s of skills) assert.ok(s.example.startsWith(s.call + ' '), s.call);
+});

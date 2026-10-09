@@ -2,6 +2,7 @@
 nom: 2. Comprendre le fichier
 appel: /donnees-comprendre
 description: Lire l’en-tête, le format et écrire le dictionnaire des données.
+exemple: /donnees-comprendre Écris le dictionnaire des données de ce fichier de station Davis.
 famille: Données brutes
 tache: donnees
 ---

@@ -2,6 +2,7 @@
 nom: Développer une application (parcours complet)
 appel: /appli
 description: Du besoin au déploiement et à la maintenance.
+exemple: /appli Je veux une application hors ligne pour suivre les traitements des parcelles de pomme de terre.
 famille: Développer une application
 tache: code
 etapes: /appli-besoins, /appli-specifications, /appli-architecture, /appli-maquettes, /appli-developpement, /appli-tests, /appli-securite, /appli-deploiement, /appli-documentation

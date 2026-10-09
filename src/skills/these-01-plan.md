@@ -2,6 +2,7 @@
 nom: Plan de thèse
 appel: /these-plan
 description: Architecture générale, chapitres, fil conducteur.
+exemple: /these-plan Propose l’architecture des chapitres à partir de mes trois articles.
 famille: Thèse
 tache: redaction
 ---

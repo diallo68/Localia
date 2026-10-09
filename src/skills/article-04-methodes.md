@@ -2,6 +2,7 @@
 nom: Matériel et méthodes
 appel: /article-methodes
 description: Section reproductible : données, prétraitement, modèles, évaluation.
+exemple: /article-methodes Décris les données météo, le prétraitement et l’évaluation des modèles.
 famille: Article scientifique
 tache: redaction
 ---

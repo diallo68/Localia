@@ -34,6 +34,8 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
   let session;
   try {
     await fs.writeFile(path.join(profile, 'conversations.json'), JSON.stringify([conversation]));
+    // Mode avancé : le test ouvre « Confidentialité et sécurité » depuis la colonne de gauche.
+    await fs.writeFile(path.join(profile, 'settings.json'), JSON.stringify({ mode: 'avance' }));
     await fs.mkdir(path.join(profile, 'documents'));
     await fs.writeFile(
       path.join(profile, 'documents', documentId + '.json'),
@@ -63,7 +65,7 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
         /Go de mémoire : nous conseillons/,
       );
     }
-    await page.locator('#settings-tab').click();
+    await page.locator('#security-tab').click();
     await page.waitForFunction(() =>
       document.querySelector('#privacy-status').textContent.includes('Chiffrement désactivé'),
     );
@@ -115,7 +117,7 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
     await page.waitForFunction(() =>
       document.querySelector('#notice').textContent.includes('n’a pas rendu la clé'),
     );
-    assert.equal(await page.locator('#settings-view').isVisible(), true);
+    assert.equal(await page.locator('#security-view').isVisible(), true);
     assert.ok(!(await page.locator('#history').textContent()).includes('Mildiou'));
     assert.deepEqual(await fs.readFile(path.join(profile, 'conversations.json')), before);
     await app.evaluate(({ dialog }, file) => {
@@ -127,7 +129,7 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
     );
 
     // 4. Déchiffrement : fichiers de nouveau en clair, clé retirée.
-    await page.locator('#settings-tab').click();
+    await page.locator('#security-tab').click();
     await page.waitForFunction(() =>
       document.querySelector('#encryption-toggle').textContent.includes('Désactiver'),
     );

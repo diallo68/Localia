@@ -2,6 +2,7 @@
 nom: 1. Conserver l’original et sa traçabilité
 appel: /donnees-original
 description: Ne jamais modifier le fichier brut ; noter la source et les conditions d’obtention.
+exemple: /donnees-original Comment conserver le fichier reçu de la FPFD sans jamais le modifier ?
 famille: Données brutes
 tache: donnees
 ---

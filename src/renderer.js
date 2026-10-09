@@ -80,6 +80,7 @@ const VIEWS = {
   models: 'Bibliothèque',
   compare: 'Benchmark',
   settings: 'Réglages des modèles',
+  security: 'Confidentialité et sécurité',
   benchmark: 'Benchmark',
   projects: 'Projets',
   bibliography: 'Bibliographie',
@@ -170,6 +171,7 @@ function history() {
     b.title = c.title;
     b.classList.toggle('selected', c === current);
     b.disabled = chatting || importing;
+    b.dataset.id = c.id;
     b.onclick = () => {
       current = c;
       selectModel(c.model);

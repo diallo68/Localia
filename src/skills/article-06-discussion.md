@@ -2,6 +2,7 @@
 nom: Discussion
 appel: /article-discussion
 description: Interpréter, comparer à la littérature, limites et perspectives.
+exemple: /article-discussion Interprète ces résultats et compare-les aux études européennes.
 famille: Article scientifique
 tache: redaction
 ---

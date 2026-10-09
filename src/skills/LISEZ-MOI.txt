@@ -9,6 +9,7 @@ En-tête obligatoire, en haut du fichier :
 nom: Nom affiché
 appel: /mon-appel           (« / » puis minuscules, chiffres, tirets)
 description: Une phrase.
+exemple: /mon-appel Une demande type   (facultatif : affiché sur la carte de la compétence)
 famille: Groupe dans le menu
 tache: donnees              (facultatif : donnees, redaction, relecture, synthese, extraction, calcul, code, question)
 etapes: /a, /b, /c          (facultatif : un parcours qui enchaîne d'autres compétences)

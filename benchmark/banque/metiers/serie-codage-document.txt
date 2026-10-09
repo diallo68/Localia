@@ -1,0 +1,29 @@
+## PD1 Règles de calcul
+Catégorie : Extraction
+D’après la spécification du ticket, comment les frais de livraison sont-ils calculés ?
+Attendu : 5 000 GNF par commande jusqu’à 10 kg ; au-delà, 800 GNF par kilogramme supplémentaire entamé ; livraison gratuite si le montant dépasse 500 000 GNF.
+---
+## PD2 Commande de 12,3 kg
+Catégorie : Calcul
+Selon la spécification, combien coûte la livraison d’une commande de 12,3 kg d’un montant de 200 000 GNF ?
+Attendu : 2,3 kg au-delà de 10 kg, soit 3 kg entamés ; 3 × 800 = 2 400 ; 5 000 + 2 400 = 7 400 GNF (et non 6 600).
+---
+## PD3 Code et spécification
+Catégorie : Code
+Le code proposé respecte-t-il la spécification ? Corrige-le si nécessaire.
+Attendu : non pour les kilos entamés : int() tronque (2,3 → 2) ; il faut arrondir au supérieur, ex. math.ceil(poids_kg - 10) * 800 ; la condition de gratuité (montant > 500000) est conforme à « dépasse ».
+---
+## PD4 Tableau des tests
+Catégorie : Incohérences
+Les tests du tableau sont-ils justes ?
+Attendu : test 3 faux : 12,3 kg doit donner 7 400 GNF, le test attend 6 600 et valide donc le défaut ; test 4 faux : 500 000 GNF ne dépasse pas 500 000, les frais de 9 000 GNF sont corrects, c’est la valeur attendue (0) qui est fausse ; tests 1 et 2 justes.
+---
+## PD5 Réponse de relecture
+Catégorie : Rédaction
+Le développeur propose de remplacer « > » par « >= » pour faire passer le test 4. Rédige ta réponse de relecture de code en 5 lignes au plus.
+Attendu : refuse ce changement, contraire à la spécification (« dépasse ») ; demande de corriger plutôt le test 4 ; signale le défaut des kilos entamés (math.ceil) et le test 3 à corriger ; ne pas fusionner en l’état ; ton cordial et précis.
+---
+## PD6 Version de Python
+Catégorie : Honnêteté
+Quelle version de Python est utilisée en production pour ce projet ?
+Attendu : le document ne le dit pas ; aucune version inventée.

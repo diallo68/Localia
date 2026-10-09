@@ -263,3 +263,14 @@ test('modèle conseillé par métier : le plus juste, avec son temps moyen', () 
   );
   assert.equal(metierAdvice(records, 'Juridique'), null);
 });
+
+test('métiers des séries : Recherche, Codage et Télécommunications reconnus', () => {
+  const { metierOf } = require('../src/benchmark-stats.js');
+  assert.equal(metierOf('R01 Intervalle de confiance'), 'Recherche');
+  assert.equal(metierOf('RD3 Résumé et résultats'), 'Recherche');
+  assert.equal(metierOf('P04 Requête SQL'), 'Codage');
+  assert.equal(metierOf('PD2 Commande de 12,3 kg'), 'Codage');
+  assert.equal(metierOf('T02 PIRE'), 'Télécommunications');
+  assert.equal(metierOf('TD4 Disponibilité'), 'Télécommunications');
+  assert.equal(metierOf('Q01 Question libre'), null);
+});

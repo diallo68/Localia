@@ -1,0 +1,74 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 1264 >>
+stream
+BT /F2 14 Tf 56 742 Td (Projet fictif BoutiqueLabé — Ticket LOC-142 : frais de livraison) Tj ET
+BT /F1 10.5 Tf 56 717.1 Td (Ticket ouvert par Fatoumata CISSÉ le 30 septembre 2026, développeur : Alpha DIALLO.) Tj ET
+BT /F2 12 Tf 56 694.9250000000001 Td (1. Spécification) Tj ET
+BT /F1 10.5 Tf 56 672.725 Td (Frais de livraison : 5 000 GNF par commande jusqu’à 10 kg. Au-delà, 800 GNF par kilogramme) Tj ET
+BT /F1 10.5 Tf 56 658.5500000000001 Td (supplémentaire entamé. La livraison est gratuite si le montant de la commande dépasse 500 000) Tj ET
+BT /F1 10.5 Tf 56 644.3750000000001 Td (GNF.) Tj ET
+BT /F2 12 Tf 56 622.2000000000002 Td (2. Code proposé \(Python\)) Tj ET
+BT /F3 9.5 Tf 56 600.0000000000001 Td (def frais_livraison\(poids_kg, montant\):) Tj ET
+BT /F3 9.5 Tf 56 587.1750000000001 Td (    if montant > 500000:) Tj ET
+BT /F3 9.5 Tf 56 574.35 Td (        return 0) Tj ET
+BT /F3 9.5 Tf 56 561.525 Td (    if poids_kg <= 10:) Tj ET
+BT /F3 9.5 Tf 56 548.6999999999999 Td (        return 5000) Tj ET
+BT /F3 9.5 Tf 56 535.8749999999999 Td (    supplement = int\(poids_kg - 10\) * 800) Tj ET
+BT /F3 9.5 Tf 56 523.0499999999998 Td (    return 5000 + supplement) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 1 sur 2) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 971 >>
+stream
+BT /F2 12 Tf 56 742 Td (3. Tests) Tj ET
+BT /F2 9.5 Tf 56 719.8 Td (Test  Poids    Montant \(GNF\)  Attendu  Obtenu  Résultat  ) Tj ET
+BT /F1 9.5 Tf 56 706.9749999999999 Td (1     8 kg     100 000        5 000    5 000   réussi    ) Tj ET
+BT /F1 9.5 Tf 56 694.1499999999999 Td (2     12 kg    200 000        6 600    6 600   réussi    ) Tj ET
+BT /F1 9.5 Tf 56 681.3249999999998 Td (3     12,3 kg  200 000        6 600    6 600   réussi    ) Tj ET
+BT /F1 9.5 Tf 56 668.4999999999998 Td (4     15 kg    500 000        0        9 000   échec     ) Tj ET
+BT /F2 12 Tf 56 647.6749999999997 Td (4. Commentaire du développeur) Tj ET
+BT /F1 10.5 Tf 56 625.4749999999997 Td (Tous les tests passent sauf le test 4. Je propose de remplacer « montant > 500000 » par «) Tj ET
+BT /F1 10.5 Tf 56 611.2999999999997 Td (montant >= 500000 » pour le corriger, puis de fusionner aujourd’hui.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 2 sur 2) Tj ET
+endstream
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000218 00000 n 
+0000000320 00000 n 
+0000000415 00000 n 
+0000000561 00000 n 
+0000001877 00000 n 
+0000002023 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+3045
+%%EOF

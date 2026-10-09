@@ -34,6 +34,9 @@ Cela fait 11 questions par métier et 88 au total. Les catégories mesurées son
 | Entreprise (rapport de ventes) | total du semestre faux (135 M et non 140 M) ; hausse fausse (66,7 % et non 50 %) ; vente en ligne annoncée comme objectif seulement |
 | Ingénierie (rapport d'incident) | production des panneaux solaires oubliée dans l'analyse ; coût absent |
 | Communication (dépêche et interview) | 3 000 livres dans la dépêche, « plus de 5 000 » sur les réseaux sociaux ; nombre de livres en langues nationales non donné |
+| Recherche (article soumis) | 412 parcelles dans le résumé, 389 dans la méthode ; F1 du modèle A faux (0,78 au lieu de 0,75) ; modèle B retenu alors que C a le meilleur F1 ; conclusion causale tirée d'une étude d'observation ; code et données non disponibles |
+| Codage (ticket et revue de code) | `int()` tronque les kilos « entamés » (12,3 kg : 7 400 GNF et non 6 600) ; le test 3 valide ce défaut ; le test 4 est faux (500 000 GNF ne « dépasse » pas 500 000) et la correction proposée (`>=`) contredit la spécification ; version de Python absente |
+| Télécommunications (étude de liaison hertzienne) | affaiblissement en espace libre de 131 dB au lieu d'environ 141 dB, donc niveau reçu (−47 et non −37 dBm) et marge (28 et non 38 dB) faux ; 99,99 % de disponibilité converti en 5 min par an au lieu de 52,6 min ; hauteur des pylônes absente |
 
 ## Conditions identiques pour tous les modèles
 
@@ -61,3 +64,13 @@ Métier et anonymisation : les séries du Benchmark sont envoyées sans consigne
   2. si l'écart est inférieur à 0,3 point, le modèle **le plus petit** l'emporte, car plus rapide et moins gourmand ;
   3. un modèle avec plus d'une invention sur les questions « Honnêteté » est écarté pour ce métier.
 - Le résultat devient la liste des **modèles conseillés par métier**, affichée au premier lancement et dans la Bibliothèque.
+
+## Nouveaux métiers (9 octobre 2026) : Recherche, Codage, Télécommunications
+
+Même construction : `serie-recherche.txt`, `serie-codage.txt`, `serie-telecom.txt` (5 questions sans document) et leurs séries `-document.txt` (6 questions sur `doc-recherche-article.pdf`, `doc-codage-ticket.pdf`, `doc-telecom-liaison.pdf`). Les 33 questions sont aussi réunies dans **`serie-metiers-nouveaux.txt`**, chaque question sur document avec son PDF : un seul import suffit.
+
+- Lettres des questions : **R** Recherche, **P** Codage (programmation), **T** Télécommunications ; le Benchmark les range dans ces trois métiers.
+- Durée estimée : 33 questions × 4 modèles ≈ **2 à 4 heures** sur ce Mac (une nuit, avec le départ programmé).
+- Le code du document Codage perd son indentation à l'extraction du texte (Localia ne garde pas la position des mots dans un PDF) ; la fonction est assez courte pour rester lisible, et aucune réponse attendue n'en dépend.
+- Cybersécurité : série à rédiger séparément.
+

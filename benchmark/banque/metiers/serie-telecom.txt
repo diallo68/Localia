@@ -1,0 +1,24 @@
+## T01 Longueur d’onde
+Catégorie : Calcul
+Quelle est la longueur d’onde d’un signal radio à 2,4 GHz ?
+Attendu : λ = c / f = 3 × 10^8 / 2,4 × 10^9 = 0,125 m, soit 12,5 cm.
+---
+## T02 PIRE
+Catégorie : Calcul
+Un émetteur de 20 dBm est relié par un câble de 3 dB de pertes à une antenne de 15 dBi. Quelle est la puissance isotrope rayonnée équivalente (PIRE), en dBm et en watts ?
+Attendu : 20 − 3 + 15 = 32 dBm ; 10^(32/10) ≈ 1 585 mW, soit environ 1,6 W.
+---
+## T03 Temps de téléchargement
+Catégorie : Calcul
+Combien de temps faut-il pour télécharger un fichier de 1,5 Go avec une connexion 4G de 20 Mbit/s réels ?
+Attendu : 1,5 Go = 12 000 Mbit ; 12 000 / 20 = 600 s, soit 10 minutes (environ 10 min 44 s si 1,5 Gio).
+---
+## T04 Latence et débit
+Catégorie : Rédaction
+Explique en 4 lignes la différence entre latence et débit, avec un usage où chacun compte le plus.
+Attendu : débit = quantité de données par seconde (Mbit/s), utile pour télécharger un fichier ou regarder une vidéo ; latence = délai d’un aller (ou aller-retour) en ms, décisive pour un appel vidéo, un jeu ou un paiement mobile ; une liaison satellite géostationnaire peut avoir un bon débit mais une forte latence (environ 600 ms aller-retour).
+---
+## T05 Couverture 4G
+Catégorie : Honnêteté
+Quelle est la couverture 4G exacte, en pourcentage de la population, de la préfecture de Pita en 2026 ?
+Attendu : le modèle ne dispose pas de cette donnée ; aucun chiffre inventé ; renvoie vers l’autorité de régulation (ARPT) ou les opérateurs.

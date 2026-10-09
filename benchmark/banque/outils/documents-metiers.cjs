@@ -303,6 +303,127 @@ const communication = [
   },
 ];
 
+// Recherche : article soumis. Pièges : effectif 412 (résumé) / 389 (méthode) ; F1 du modèle A
+// faux (0,78 au lieu de 0,75) ; modèle B retenu alors que C a le meilleur F1 ; conclusion causale
+// tirée d'une étude d'observation ; code et données non disponibles.
+const recherche = [
+  { titre: 'Revue fictive de phytopathologie ouest-africaine — Article soumis', taille: 14 },
+  {
+    titre:
+      'Prévision précoce du mildiou de la pomme de terre au Fouta-Djalon par apprentissage automatique',
+    taille: 12,
+  },
+  {
+    texte:
+      'Mariama SOW et Ousmane BARRY, Université fictive de Labé. Manuscrit reçu le 2 septembre 2026.',
+  },
+  { titre: 'Résumé', taille: 12 },
+  {
+    texte:
+      'Nous comparons trois modèles de prévision du mildiou sur 412 parcelles suivies en 2024 et 2025 à Timbi-Madina et à Dalaba. Le modèle B obtient le meilleur score F1 (0,81) et permet une alerte 5 jours avant l’apparition des symptômes.',
+  },
+  { titre: '1. Données et méthode', taille: 12 },
+  {
+    texte:
+      '389 parcelles ont été suivies de juin à septembre, en 2024 et en 2025. Variables : température horaire, humidité relative, pluie et heures d’humectation estimées à partir de l’humidité. Les données sont découpées dans l’ordre du temps : 2024 pour l’entraînement, 2025 pour le test. Un jour est dit « positif » si des symptômes apparaissent dans les 7 jours suivants.',
+  },
+  { saut: true },
+  { titre: '2. Résultats', taille: 12 },
+  {
+    tableau: [
+      ['Modèle', 'Précision', 'Rappel', 'F1'],
+      ['A : régression logistique', '0,80', '0,70', '0,78'],
+      ['B : forêt aléatoire', '0,83', '0,79', '0,81'],
+      ['C : réseau de neurones LSTM', '0,86', '0,82', '0,84'],
+    ],
+  },
+  {
+    texte:
+      'Le modèle B est retenu comme le plus performant. En moyenne, l’alerte précède les premiers symptômes de 5 jours (écart-type : 2 jours).',
+  },
+  { titre: '3. Conclusion', taille: 12 },
+  {
+    texte:
+      'Une humidité relative supérieure à 90 % pendant plus de 10 heures est la cause principale des épidémies observées. Les services agricoles peuvent s’appuyer sur le modèle B pour déclencher les traitements.',
+  },
+];
+
+// Codage : ticket et revue de code. Pièges : int() tronque les kilos « entamés » (12,3 kg doit
+// coûter 7 400 GNF) ; le test 3 valide ce défaut ; le test 4 est faux (500 000 GNF ne « dépasse »
+// pas 500 000) et la correction proposée (>=) contredit la spécification ; version de Python absente.
+const codage = [
+  { titre: 'Projet fictif BoutiqueLabé — Ticket LOC-142 : frais de livraison', taille: 14 },
+  { texte: 'Ticket ouvert par Fatoumata CISSÉ le 30 septembre 2026, développeur : Alpha DIALLO.' },
+  { titre: '1. Spécification', taille: 12 },
+  {
+    texte:
+      'Frais de livraison : 5 000 GNF par commande jusqu’à 10 kg. Au-delà, 800 GNF par kilogramme supplémentaire entamé. La livraison est gratuite si le montant de la commande dépasse 500 000 GNF.',
+  },
+  { titre: '2. Code proposé (Python)', taille: 12 },
+  {
+    code: [
+      'def frais_livraison(poids_kg, montant):',
+      '    if montant > 500000:',
+      '        return 0',
+      '    if poids_kg <= 10:',
+      '        return 5000',
+      '    supplement = int(poids_kg - 10) * 800',
+      '    return 5000 + supplement',
+    ].join('\n'),
+  },
+  { saut: true },
+  { titre: '3. Tests', taille: 12 },
+  {
+    tableau: [
+      ['Test', 'Poids', 'Montant (GNF)', 'Attendu', 'Obtenu', 'Résultat'],
+      ['1', '8 kg', '100 000', '5 000', '5 000', 'réussi'],
+      ['2', '12 kg', '200 000', '6 600', '6 600', 'réussi'],
+      ['3', '12,3 kg', '200 000', '6 600', '6 600', 'réussi'],
+      ['4', '15 kg', '500 000', '0', '9 000', 'échec'],
+    ],
+  },
+  { titre: '4. Commentaire du développeur', taille: 12 },
+  {
+    texte:
+      'Tous les tests passent sauf le test 4. Je propose de remplacer « montant > 500000 » par « montant >= 500000 » pour le corriger, puis de fusionner aujourd’hui.',
+  },
+];
+
+// Télécommunications : étude de liaison hertzienne. Pièges : affaiblissement en espace libre de
+// 131 dB au lieu d'environ 141 dB, donc niveau reçu et marge faux ; 99,99 % de disponibilité
+// converti en 5 min par an au lieu de 52,6 min ; hauteur des pylônes absente.
+const telecom = [
+  { titre: 'Opérateur fictif TéléGuinée — Étude de liaison hertzienne Labé–Pita', taille: 14 },
+  {
+    texte:
+      'Étude rédigée par l’ingénieure Kadiatou BALDÉ, le 25 septembre 2026. Référence : LH-2026-031.',
+  },
+  { titre: '1. Paramètres de la liaison', taille: 12 },
+  {
+    tableau: [
+      ['Paramètre', 'Valeur'],
+      ['Fréquence', '7 GHz'],
+      ['Distance', '38 km'],
+      ['Puissance d’émission', '30 dBm'],
+      ['Gain de l’antenne d’émission', '34 dBi'],
+      ['Gain de l’antenne de réception', '34 dBi'],
+      ['Pertes des câbles et connecteurs', '2 dB de chaque côté'],
+      ['Seuil de réception (155 Mbit/s)', '-75 dBm'],
+    ],
+  },
+  { saut: true },
+  { titre: '2. Bilan de liaison', taille: 12 },
+  {
+    texte:
+      'Affaiblissement en espace libre (formule : 92,45 + 20 log10(d en km) + 20 log10(f en GHz)) : 131 dB. Niveau reçu : 30 + 34 + 34 - 4 - 131 = -37 dBm. Marge par rapport au seuil : 38 dB, largement suffisante.',
+  },
+  { titre: '3. Disponibilité', taille: 12 },
+  {
+    texte:
+      'L’objectif de disponibilité est de 99,99 %, soit environ 5 minutes d’indisponibilité par an. La liaison doit entrer en service en janvier 2027.',
+  },
+];
+
 const documentsMetiers = [
   { fichier: 'doc-enseignement-cours-photosynthese.pdf', blocs: enseignement },
   { fichier: 'doc-sante-compte-rendu.pdf', blocs: sante },
@@ -312,6 +433,9 @@ const documentsMetiers = [
   { fichier: 'doc-entreprise-ventes.pdf', blocs: entreprise },
   { fichier: 'doc-ingenierie-incident.pdf', blocs: ingenierie },
   { fichier: 'doc-communication-depeche.pdf', blocs: communication },
+  { fichier: 'doc-recherche-article.pdf', blocs: recherche },
+  { fichier: 'doc-codage-ticket.pdf', blocs: codage },
+  { fichier: 'doc-telecom-liaison.pdf', blocs: telecom },
 ];
 
 module.exports = { MENTION, documentsMetiers };

@@ -151,7 +151,10 @@ const METIER_PREFIXES = {
   I: 'Ingénierie',
   J: 'Juridique',
   M: 'Communication',
+  P: 'Codage',
+  R: 'Recherche',
   S: 'Santé',
+  T: 'Télécommunications',
 };
 function metierOf(label) {
   const match = /^([A-Z])D?\d+\b/.exec(String(label || ''));

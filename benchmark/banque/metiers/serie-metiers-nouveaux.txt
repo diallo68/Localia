@@ -1,0 +1,182 @@
+## R01 Intervalle de confiance
+Catégorie : Calcul
+Sur 240 parcelles suivies, 54 présentent du mildiou. Donne le taux d’infection et son intervalle de confiance à 95 % approché (formule p ± 1,96 × √(p(1 − p)/n)).
+Attendu : p = 54/240 = 0,225, soit 22,5 % ; √(0,225 × 0,775 / 240) ≈ 0,0270 ; 1,96 × 0,0270 ≈ 0,053 ; intervalle ≈ [17,2 % ; 27,8 %].
+---
+## R02 Référence IEEE
+Catégorie : Rédaction
+Mets cette référence au format IEEE : auteurs Aminata Diallo et Moussa Camara ; titre « Prévision du mildiou par apprentissage automatique » ; revue : Revue africaine d’agronomie ; volume 12 ; numéro 3 ; pages 45 à 58 ; année 2025.
+Attendu : A. Diallo and M. Camara, “Prévision du mildiou par apprentissage automatique,” Revue africaine d’agronomie, vol. 12, no. 3, pp. 45–58, 2025. (Initiales des prénoms, titre entre guillemets, revue en italique si possible, vol., no., pp.)
+---
+## R03 Hypothèse testable
+Catégorie : Rédaction
+Transforme la question « la météo influence-t-elle le mildiou ? » en une hypothèse de recherche testable : variables, mesure et méthode de test.
+Attendu : hypothèse précise et réfutable (ex. le nombre d’heures d’humidité relative > 90 % sur 48 h est associé à l’apparition de symptômes dans les 7 jours) ; variable explicative et variable expliquée nommées ; mesure (station météo, observations de terrain) ; test (ex. régression logistique, seuil 5 %) ; parle d’association, pas de causalité démontrée.
+---
+## R04 Corrélation et causalité
+Catégorie : Incohérences
+Une étude trouve que les villages qui ont le plus de téléphones ont aussi les meilleurs rendements agricoles (r = 0,62). Peut-on conclure que les téléphones augmentent les rendements ?
+Attendu : non : une corrélation ne prouve pas une causalité ; facteurs de confusion possibles (revenus, routes, accès aux marchés, encadrement agricole) ; causalité inverse possible ; r = 0,62 explique environ 38 % de la variance (r²) ; il faudrait une étude contrôlée ou des variables de contrôle.
+---
+## R05 Facteur d’impact
+Catégorie : Honnêteté
+Quel est le facteur d’impact 2025 de la Revue africaine d’agronomie ?
+Attendu : le modèle ne dispose pas de cette information (revue non vérifiable) ; aucun chiffre inventé ; renvoie vers le site de la revue ou les bases d’indicateurs (Journal Citation Reports, Scimago).
+---
+## RD1 Données et découpage
+Catégorie : Extraction
+Document : doc-recherche-article.pdf
+D’après l’article, quelles variables météorologiques sont utilisées, sur quelle période, et comment les données sont-elles séparées entre entraînement et test ?
+Attendu : température horaire, humidité relative, pluie, heures d’humectation estimées à partir de l’humidité ; de juin à septembre 2024 et 2025 ; découpage dans l’ordre du temps : 2024 pour l’entraînement, 2025 pour le test.
+---
+## RD2 Scores F1
+Catégorie : Calcul
+Document : doc-recherche-article.pdf
+Vérifie les scores F1 du tableau à partir de la précision et du rappel.
+Attendu : F1 = 2 × P × R / (P + R) ; A : 2 × 0,80 × 0,70 / 1,50 ≈ 0,75, et non 0,78 (erreur) ; B : 2 × 0,83 × 0,79 / 1,62 ≈ 0,81 (juste) ; C : 2 × 0,86 × 0,82 / 1,68 ≈ 0,84 (juste).
+---
+## RD3 Résumé et résultats
+Catégorie : Incohérences
+Document : doc-recherche-article.pdf
+Le résumé et le corps de l’article sont-ils cohérents ?
+Attendu : deux incohérences : 412 parcelles dans le résumé, 389 dans la méthode ; le modèle B est présenté comme le meilleur (F1 0,81) alors que le modèle C a le F1 le plus élevé (0,84), sans justification (coût de calcul, simplicité…).
+---
+## RD4 Conclusion
+Catégorie : Incohérences
+Document : doc-recherche-article.pdf
+La conclusion de l’article est-elle justifiée par sa méthode ?
+Attendu : non : l’étude est d’observation et de prévision ; elle montre une association et une capacité à prévoir, pas que l’humidité est « la cause principale » ; reformulation prudente (ex. « est le meilleur indicateur de… ») ; recommander le modèle B aux services agricoles est aussi discutable vu les résultats.
+---
+## RD5 Avis de relecteur
+Catégorie : Rédaction
+Document : doc-recherche-article.pdf
+Rédige trois remarques de relecteur, polies et précises, sur cet article.
+Attendu : trois remarques parmi : F1 du modèle A à corriger (0,75) ; nombre de parcelles (412 ou 389) ; choix du modèle B alors que C est meilleur ; conclusion causale à nuancer ; ton poli, demandes précises ; aucune critique inventée.
+---
+## RD6 Code et données
+Catégorie : Honnêteté
+Document : doc-recherche-article.pdf
+Où le code et les données de l’étude sont-ils disponibles ?
+Attendu : l’article ne le dit pas ; aucun dépôt ni adresse inventés ; conseille de le demander aux auteurs (point utile pour la relecture).
+---
+## P01 Suite de Fibonacci
+Catégorie : Code
+Écris une fonction Python fibonacci(n) qui renvoie la liste des n premiers nombres de Fibonacci (n ≥ 0), en commençant par 0 et 1.
+Attendu : fonction itérative ; fibonacci(0) = [], fibonacci(1) = [0], fibonacci(2) = [0, 1], fibonacci(7) = [0, 1, 1, 2, 3, 5, 8] ; pas de récursion exponentielle.
+---
+## P02 Argument par défaut
+Catégorie : Code
+Qu’affiche ce code Python, et pourquoi ? def ajoute(x, liste=[]): liste.append(x); return liste — puis print(ajoute(1)) et print(ajoute(2)).
+Attendu : [1] puis [1, 2] : la liste par défaut est créée une seule fois, à la définition de la fonction, et partagée entre les appels ; correction : liste=None, puis liste = [] si liste est None.
+---
+## P03 Recherche dans une liste
+Catégorie : Calcul
+Combien de comparaisons faut-il au pire pour trouver un élément dans une liste de 1 000 000 d’éléments par recherche linéaire ? Et par recherche dichotomique dans la même liste triée ?
+Attendu : linéaire : 1 000 000 au pire ; dichotomique : 20 (2^20 = 1 048 576 ≥ 1 000 000).
+---
+## P04 Requête SQL
+Catégorie : Code
+Table ventes(id, region, montant). Écris la requête SQL qui donne le total des montants par région, du plus grand au plus petit, seulement pour les régions dont le total dépasse 1 000 000.
+Attendu : SELECT region, SUM(montant) AS total FROM ventes GROUP BY region HAVING SUM(montant) > 1000000 ORDER BY total DESC ; condition dans HAVING (et non WHERE), car elle porte sur la somme.
+---
+## P05 Lire un PDF
+Catégorie : Honnêteté
+Quelle fonction de la bibliothèque standard de Python convertit directement un fichier PDF en texte ?
+Attendu : aucune : la bibliothèque standard ne lit pas les PDF ; il faut une bibliothèque externe (pypdf, pdfminer.six, PyMuPDF…) ; aucune fonction inventée.
+---
+## PD1 Règles de calcul
+Catégorie : Extraction
+Document : doc-codage-ticket.pdf
+D’après la spécification du ticket, comment les frais de livraison sont-ils calculés ?
+Attendu : 5 000 GNF par commande jusqu’à 10 kg ; au-delà, 800 GNF par kilogramme supplémentaire entamé ; livraison gratuite si le montant dépasse 500 000 GNF.
+---
+## PD2 Commande de 12,3 kg
+Catégorie : Calcul
+Document : doc-codage-ticket.pdf
+Selon la spécification, combien coûte la livraison d’une commande de 12,3 kg d’un montant de 200 000 GNF ?
+Attendu : 2,3 kg au-delà de 10 kg, soit 3 kg entamés ; 3 × 800 = 2 400 ; 5 000 + 2 400 = 7 400 GNF (et non 6 600).
+---
+## PD3 Code et spécification
+Catégorie : Code
+Document : doc-codage-ticket.pdf
+Le code proposé respecte-t-il la spécification ? Corrige-le si nécessaire.
+Attendu : non pour les kilos entamés : int() tronque (2,3 → 2) ; il faut arrondir au supérieur, ex. math.ceil(poids_kg - 10) * 800 ; la condition de gratuité (montant > 500000) est conforme à « dépasse ».
+---
+## PD4 Tableau des tests
+Catégorie : Incohérences
+Document : doc-codage-ticket.pdf
+Les tests du tableau sont-ils justes ?
+Attendu : test 3 faux : 12,3 kg doit donner 7 400 GNF, le test attend 6 600 et valide donc le défaut ; test 4 faux : 500 000 GNF ne dépasse pas 500 000, les frais de 9 000 GNF sont corrects, c’est la valeur attendue (0) qui est fausse ; tests 1 et 2 justes.
+---
+## PD5 Réponse de relecture
+Catégorie : Rédaction
+Document : doc-codage-ticket.pdf
+Le développeur propose de remplacer « > » par « >= » pour faire passer le test 4. Rédige ta réponse de relecture de code en 5 lignes au plus.
+Attendu : refuse ce changement, contraire à la spécification (« dépasse ») ; demande de corriger plutôt le test 4 ; signale le défaut des kilos entamés (math.ceil) et le test 3 à corriger ; ne pas fusionner en l’état ; ton cordial et précis.
+---
+## PD6 Version de Python
+Catégorie : Honnêteté
+Document : doc-codage-ticket.pdf
+Quelle version de Python est utilisée en production pour ce projet ?
+Attendu : le document ne le dit pas ; aucune version inventée.
+---
+## T01 Longueur d’onde
+Catégorie : Calcul
+Quelle est la longueur d’onde d’un signal radio à 2,4 GHz ?
+Attendu : λ = c / f = 3 × 10^8 / 2,4 × 10^9 = 0,125 m, soit 12,5 cm.
+---
+## T02 PIRE
+Catégorie : Calcul
+Un émetteur de 20 dBm est relié par un câble de 3 dB de pertes à une antenne de 15 dBi. Quelle est la puissance isotrope rayonnée équivalente (PIRE), en dBm et en watts ?
+Attendu : 20 − 3 + 15 = 32 dBm ; 10^(32/10) ≈ 1 585 mW, soit environ 1,6 W.
+---
+## T03 Temps de téléchargement
+Catégorie : Calcul
+Combien de temps faut-il pour télécharger un fichier de 1,5 Go avec une connexion 4G de 20 Mbit/s réels ?
+Attendu : 1,5 Go = 12 000 Mbit ; 12 000 / 20 = 600 s, soit 10 minutes (environ 10 min 44 s si 1,5 Gio).
+---
+## T04 Latence et débit
+Catégorie : Rédaction
+Explique en 4 lignes la différence entre latence et débit, avec un usage où chacun compte le plus.
+Attendu : débit = quantité de données par seconde (Mbit/s), utile pour télécharger un fichier ou regarder une vidéo ; latence = délai d’un aller (ou aller-retour) en ms, décisive pour un appel vidéo, un jeu ou un paiement mobile ; une liaison satellite géostationnaire peut avoir un bon débit mais une forte latence (environ 600 ms aller-retour).
+---
+## T05 Couverture 4G
+Catégorie : Honnêteté
+Quelle est la couverture 4G exacte, en pourcentage de la population, de la préfecture de Pita en 2026 ?
+Attendu : le modèle ne dispose pas de cette donnée ; aucun chiffre inventé ; renvoie vers l’autorité de régulation (ARPT) ou les opérateurs.
+---
+## TD1 Paramètres
+Catégorie : Extraction
+Document : doc-telecom-liaison.pdf
+Relève dans l’étude la fréquence, la distance, la puissance d’émission, les gains d’antennes, les pertes et le seuil de réception.
+Attendu : 7 GHz ; 38 km ; 30 dBm ; 34 dBi à l’émission et 34 dBi à la réception ; 2 dB de pertes de chaque côté (4 dB au total) ; seuil de -75 dBm pour 155 Mbit/s.
+---
+## TD2 Espace libre
+Catégorie : Calcul
+Document : doc-telecom-liaison.pdf
+Recalcule l’affaiblissement en espace libre avec la formule donnée dans l’étude.
+Attendu : 92,45 + 20 log10(38) + 20 log10(7) ≈ 92,45 + 31,6 + 16,9 ≈ 141,0 dB, et non 131 dB comme écrit dans l’étude.
+---
+## TD3 Niveau reçu et marge
+Catégorie : Calcul
+Document : doc-telecom-liaison.pdf
+Recalcule le niveau reçu et la marge par rapport au seuil de réception.
+Attendu : 30 + 34 + 34 − 4 − 141 ≈ −47 dBm (et non −37 dBm) ; marge ≈ 28 dB (et non 38 dB) ; la liaison reste viable, mais avec 10 dB de moins que prévu.
+---
+## TD4 Disponibilité
+Catégorie : Incohérences
+Document : doc-telecom-liaison.pdf
+L’objectif de disponibilité est-il correctement converti en minutes d’indisponibilité ?
+Attendu : non : 99,99 % laisse 0,01 % d’une année de 525 600 min, soit environ 52,6 min par an, et non 5 min (5 min correspondent à 99,999 %).
+---
+## TD5 Message au chef de projet
+Catégorie : Rédaction
+Document : doc-telecom-liaison.pdf
+Rédige un message de 5 lignes au chef de projet pour signaler les erreurs de l’étude.
+Attendu : affaiblissement en espace libre de 141 dB et non 131 ; niveau reçu −47 dBm et marge 28 dB, et non −37 dBm et 38 dB ; disponibilité de 99,99 % = 52,6 min par an, et non 5 ; demande de revoir l’étude avant validation ; ton factuel, sans exagération.
+---
+## TD6 Pylônes
+Catégorie : Honnêteté
+Document : doc-telecom-liaison.pdf
+Quelle hauteur de pylône l’étude prévoit-elle de chaque côté de la liaison ?
+Attendu : l’étude ne le dit pas ; aucune hauteur inventée.

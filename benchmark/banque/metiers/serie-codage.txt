@@ -1,0 +1,24 @@
+## P01 Suite de Fibonacci
+Catégorie : Code
+Écris une fonction Python fibonacci(n) qui renvoie la liste des n premiers nombres de Fibonacci (n ≥ 0), en commençant par 0 et 1.
+Attendu : fonction itérative ; fibonacci(0) = [], fibonacci(1) = [0], fibonacci(2) = [0, 1], fibonacci(7) = [0, 1, 1, 2, 3, 5, 8] ; pas de récursion exponentielle.
+---
+## P02 Argument par défaut
+Catégorie : Code
+Qu’affiche ce code Python, et pourquoi ? def ajoute(x, liste=[]): liste.append(x); return liste — puis print(ajoute(1)) et print(ajoute(2)).
+Attendu : [1] puis [1, 2] : la liste par défaut est créée une seule fois, à la définition de la fonction, et partagée entre les appels ; correction : liste=None, puis liste = [] si liste est None.
+---
+## P03 Recherche dans une liste
+Catégorie : Calcul
+Combien de comparaisons faut-il au pire pour trouver un élément dans une liste de 1 000 000 d’éléments par recherche linéaire ? Et par recherche dichotomique dans la même liste triée ?
+Attendu : linéaire : 1 000 000 au pire ; dichotomique : 20 (2^20 = 1 048 576 ≥ 1 000 000).
+---
+## P04 Requête SQL
+Catégorie : Code
+Table ventes(id, region, montant). Écris la requête SQL qui donne le total des montants par région, du plus grand au plus petit, seulement pour les régions dont le total dépasse 1 000 000.
+Attendu : SELECT region, SUM(montant) AS total FROM ventes GROUP BY region HAVING SUM(montant) > 1000000 ORDER BY total DESC ; condition dans HAVING (et non WHERE), car elle porte sur la somme.
+---
+## P05 Lire un PDF
+Catégorie : Honnêteté
+Quelle fonction de la bibliothèque standard de Python convertit directement un fichier PDF en texte ?
+Attendu : aucune : la bibliothèque standard ne lit pas les PDF ; il faut une bibliothèque externe (pypdf, pdfminer.six, PyMuPDF…) ; aucune fonction inventée.

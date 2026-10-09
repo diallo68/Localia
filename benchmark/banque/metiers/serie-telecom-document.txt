@@ -1,0 +1,29 @@
+## TD1 Paramètres
+Catégorie : Extraction
+Relève dans l’étude la fréquence, la distance, la puissance d’émission, les gains d’antennes, les pertes et le seuil de réception.
+Attendu : 7 GHz ; 38 km ; 30 dBm ; 34 dBi à l’émission et 34 dBi à la réception ; 2 dB de pertes de chaque côté (4 dB au total) ; seuil de -75 dBm pour 155 Mbit/s.
+---
+## TD2 Espace libre
+Catégorie : Calcul
+Recalcule l’affaiblissement en espace libre avec la formule donnée dans l’étude.
+Attendu : 92,45 + 20 log10(38) + 20 log10(7) ≈ 92,45 + 31,6 + 16,9 ≈ 141,0 dB, et non 131 dB comme écrit dans l’étude.
+---
+## TD3 Niveau reçu et marge
+Catégorie : Calcul
+Recalcule le niveau reçu et la marge par rapport au seuil de réception.
+Attendu : 30 + 34 + 34 − 4 − 141 ≈ −47 dBm (et non −37 dBm) ; marge ≈ 28 dB (et non 38 dB) ; la liaison reste viable, mais avec 10 dB de moins que prévu.
+---
+## TD4 Disponibilité
+Catégorie : Incohérences
+L’objectif de disponibilité est-il correctement converti en minutes d’indisponibilité ?
+Attendu : non : 99,99 % laisse 0,01 % d’une année de 525 600 min, soit environ 52,6 min par an, et non 5 min (5 min correspondent à 99,999 %).
+---
+## TD5 Message au chef de projet
+Catégorie : Rédaction
+Rédige un message de 5 lignes au chef de projet pour signaler les erreurs de l’étude.
+Attendu : affaiblissement en espace libre de 141 dB et non 131 ; niveau reçu −47 dBm et marge 28 dB, et non −37 dBm et 38 dB ; disponibilité de 99,99 % = 52,6 min par an, et non 5 ; demande de revoir l’étude avant validation ; ton factuel, sans exagération.
+---
+## TD6 Pylônes
+Catégorie : Honnêteté
+Quelle hauteur de pylône l’étude prévoit-elle de chaque côté de la liaison ?
+Attendu : l’étude ne le dit pas ; aucune hauteur inventée.

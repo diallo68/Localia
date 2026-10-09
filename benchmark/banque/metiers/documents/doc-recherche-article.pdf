@@ -1,0 +1,75 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 1501 >>
+stream
+BT /F2 14 Tf 56 742 Td (Revue fictive de phytopathologie ouest-africaine — Article soumis) Tj ET
+BT /F2 12 Tf 56 715.1 Td (Prévision précoce du mildiou de la pomme de terre au Fouta-Djalon par apprentissage) Tj ET
+BT /F2 12 Tf 56 690.9 Td (automatique) Tj ET
+BT /F1 10.5 Tf 56 668.6999999999999 Td (Mariama SOW et Ousmane BARRY, Université fictive de Labé. Manuscrit reçu le 2 septembre 2026.) Tj ET
+BT /F2 12 Tf 56 646.525 Td (Résumé) Tj ET
+BT /F1 10.5 Tf 56 624.3249999999999 Td (Nous comparons trois modèles de prévision du mildiou sur 412 parcelles suivies en 2024 et 2025) Tj ET
+BT /F1 10.5 Tf 56 610.15 Td (à Timbi-Madina et à Dalaba. Le modèle B obtient le meilleur score F1 \(0,81\) et permet une) Tj ET
+BT /F1 10.5 Tf 56 595.975 Td (alerte 5 jours avant l’apparition des symptômes.) Tj ET
+BT /F2 12 Tf 56 573.8000000000001 Td (1. Données et méthode) Tj ET
+BT /F1 10.5 Tf 56 551.6 Td (389 parcelles ont été suivies de juin à septembre, en 2024 et en 2025. Variables : température) Tj ET
+BT /F1 10.5 Tf 56 537.4250000000001 Td (horaire, humidité relative, pluie et heures d’humectation estimées à partir de l’humidité. Les) Tj ET
+BT /F1 10.5 Tf 56 523.2500000000001 Td (données sont découpées dans l’ordre du temps : 2024 pour l’entraînement, 2025 pour le test. Un) Tj ET
+BT /F1 10.5 Tf 56 509.0750000000001 Td (jour est dit « positif » si des symptômes apparaissent dans les 7 jours suivants.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 1 sur 2) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 1166 >>
+stream
+BT /F2 12 Tf 56 742 Td (2. Résultats) Tj ET
+BT /F2 9.5 Tf 56 719.8 Td (Modèle                       Précision  Rappel  F1    ) Tj ET
+BT /F1 9.5 Tf 56 706.9749999999999 Td (A : régression logistique    0,80       0,70    0,78  ) Tj ET
+BT /F1 9.5 Tf 56 694.1499999999999 Td (B : forêt aléatoire          0,83       0,79    0,81  ) Tj ET
+BT /F1 9.5 Tf 56 681.3249999999998 Td (C : réseau de neurones LSTM  0,86       0,82    0,84  ) Tj ET
+BT /F1 10.5 Tf 56 662.4999999999998 Td (Le modèle B est retenu comme le plus performant. En moyenne, l’alerte précède les premiers) Tj ET
+BT /F1 10.5 Tf 56 648.3249999999998 Td (symptômes de 5 jours \(écart-type : 2 jours\).) Tj ET
+BT /F2 12 Tf 56 626.1499999999999 Td (3. Conclusion) Tj ET
+BT /F1 10.5 Tf 56 603.9499999999998 Td (Une humidité relative supérieure à 90 % pendant plus de 10 heures est la cause principale des) Tj ET
+BT /F1 10.5 Tf 56 589.7749999999999 Td (épidémies observées. Les services agricoles peuvent s’appuyer sur le modèle B pour déclencher) Tj ET
+BT /F1 10.5 Tf 56 575.5999999999999 Td (les traitements.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 2 sur 2) Tj ET
+endstream
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000218 00000 n 
+0000000320 00000 n 
+0000000415 00000 n 
+0000000561 00000 n 
+0000002114 00000 n 
+0000002260 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+3478
+%%EOF

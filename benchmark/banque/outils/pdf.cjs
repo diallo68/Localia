@@ -50,17 +50,17 @@ function wrap(text, size) {
   return lines;
 }
 
-// blocks : [{ titre }, { texte }, { tableau: [[…], …] }, { saut: true }]
+// blocks : [{ titre }, { texte }, { code }, { tableau: [[…], …] }, { saut: true }]
 function buildPdf(blocks, footer) {
   const pages = [[]];
   let y = 750;
-  const add = (text, size, gap = 0, bold = false) => {
+  const add = (text, size, gap = 0, bold = false, font = bold ? 'F2' : 'F1') => {
     if (y - size - gap < 70) {
       pages.push([]);
       y = 750;
     }
     y -= gap;
-    pages.at(-1).push(`BT /${bold ? 'F2' : 'F1'} ${size} Tf 56 ${y} Td (${encode(text)}) Tj ET`);
+    pages.at(-1).push(`BT /${font} ${size} Tf 56 ${y} Td (${encode(text)}) Tj ET`);
     y -= size * 1.35;
   };
   for (const b of blocks) {
@@ -71,6 +71,10 @@ function buildPdf(blocks, footer) {
       for (const l of wrap(b.titre, b.taille || 14)) add(l, b.taille || 14, 8, true);
     else if (b.texte) {
       wrap(b.texte, 10.5).forEach((l, i) => add(l, 10.5, i ? 0 : 6));
+    } else if (b.code) {
+      // Code : police à chasse fixe, une ligne par ligne. L'indentation est dessinée mais perdue
+      // à l'extraction du texte (Localia ne garde pas la position des mots).
+      b.code.split('\n').forEach((l, i) => add(l, 9.5, i ? 0 : 6, false, 'F3'));
     } else if (b.tableau) {
       const widths = b.tableau[0].map((_, c) =>
         Math.max(...b.tableau.map((r) => String(r[c]).length)),
@@ -90,6 +94,7 @@ function buildPdf(blocks, footer) {
     '',
     '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
     '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>',
   ];
   const kids = [];
   pages.forEach((lines, i) => {
@@ -100,7 +105,7 @@ function buildPdf(blocks, footer) {
     const id = objects.length + 1;
     kids.push(id);
     objects.push(
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${id + 1} 0 R >>`,
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents ${id + 1} 0 R >>`,
       `<< /Length ${Buffer.byteLength(stream, 'latin1')} >>\nstream\n${stream}\nendstream`,
     );
   });

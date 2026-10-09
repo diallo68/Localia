@@ -1,0 +1,29 @@
+## RD1 Données et découpage
+Catégorie : Extraction
+D’après l’article, quelles variables météorologiques sont utilisées, sur quelle période, et comment les données sont-elles séparées entre entraînement et test ?
+Attendu : température horaire, humidité relative, pluie, heures d’humectation estimées à partir de l’humidité ; de juin à septembre 2024 et 2025 ; découpage dans l’ordre du temps : 2024 pour l’entraînement, 2025 pour le test.
+---
+## RD2 Scores F1
+Catégorie : Calcul
+Vérifie les scores F1 du tableau à partir de la précision et du rappel.
+Attendu : F1 = 2 × P × R / (P + R) ; A : 2 × 0,80 × 0,70 / 1,50 ≈ 0,75, et non 0,78 (erreur) ; B : 2 × 0,83 × 0,79 / 1,62 ≈ 0,81 (juste) ; C : 2 × 0,86 × 0,82 / 1,68 ≈ 0,84 (juste).
+---
+## RD3 Résumé et résultats
+Catégorie : Incohérences
+Le résumé et le corps de l’article sont-ils cohérents ?
+Attendu : deux incohérences : 412 parcelles dans le résumé, 389 dans la méthode ; le modèle B est présenté comme le meilleur (F1 0,81) alors que le modèle C a le F1 le plus élevé (0,84), sans justification (coût de calcul, simplicité…).
+---
+## RD4 Conclusion
+Catégorie : Incohérences
+La conclusion de l’article est-elle justifiée par sa méthode ?
+Attendu : non : l’étude est d’observation et de prévision ; elle montre une association et une capacité à prévoir, pas que l’humidité est « la cause principale » ; reformulation prudente (ex. « est le meilleur indicateur de… ») ; recommander le modèle B aux services agricoles est aussi discutable vu les résultats.
+---
+## RD5 Avis de relecteur
+Catégorie : Rédaction
+Rédige trois remarques de relecteur, polies et précises, sur cet article.
+Attendu : trois remarques parmi : F1 du modèle A à corriger (0,75) ; nombre de parcelles (412 ou 389) ; choix du modèle B alors que C est meilleur ; conclusion causale à nuancer ; ton poli, demandes précises ; aucune critique inventée.
+---
+## RD6 Code et données
+Catégorie : Honnêteté
+Où le code et les données de l’étude sont-ils disponibles ?
+Attendu : l’article ne le dit pas ; aucun dépôt ni adresse inventés ; conseille de le demander aux auteurs (point utile pour la relecture).

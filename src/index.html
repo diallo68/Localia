@@ -29,6 +29,10 @@
           Localia adapte ses tâches, ses compétences et les modèles conseillés à votre travail. Vous
           pourrez en changer à tout moment.
         </p>
+        <label class="first-name" for="first-name"
+          >Votre prénom <small>(facultatif)</small
+          ><input id="first-name" maxlength="40" autocomplete="given-name"
+        /></label>
       </div>
       <div id="metier-cards" role="radiogroup" aria-label="Métiers"></div>
       <div class="metier-footer">
@@ -71,16 +75,19 @@
         <div>Localia<small>L’IA, chez vous.</small></div>
       </div>
       <button id="metier-switch" type="button" title="Changer de métier">
-        <span><small>Métier</small><strong id="metier-name"></strong></span
+        <span><small>Profil et métier</small><strong id="metier-name"></strong></span
         ><i data-icon="chevron"></i>
       </button>
+      <button id="mode-switch" class="mode-switch" type="button"></button>
       <button id="new" class="primary"><i data-icon="plus"></i>Nouvelle conversation</button>
       <div class="nav-section" data-section="travail">
         <button class="section-toggle" type="button" aria-expanded="true">
           ESPACE DE TRAVAIL<i data-icon="chevron"></i>
         </button>
         <div class="nav-group">
-          <button id="chat-tab" class="nav active"><i data-icon="message"></i>Conversations</button
+          <button id="home-tab" class="nav"><i data-icon="grid"></i>Accueil</button
+          ><button id="chat-tab" class="nav active"><i data-icon="message"></i>Conversations</button
+          ><button id="projects-tab" class="nav"><i data-icon="folder"></i>Projets</button
           ><button id="bench-nav" class="nav"><i data-icon="chart"></i>Benchmark</button>
         </div>
       </div>
@@ -104,8 +111,8 @@
           <button id="performance-tab" class="nav">
             <i data-icon="monitor"></i>Performances de votre PC</button
           ><button id="settings-tab" class="nav">
-            <i data-icon="settings"></i>Réglages des modèles</button
-          ><button id="projects-tab" class="nav"><i data-icon="folder"></i>Projets</button>
+            <i data-icon="settings"></i>Réglages des modèles
+          </button>
         </div>
       </div>
       <div class="nav-section history-section" data-section="historique">
@@ -143,6 +150,51 @@
         </button>
       </nav>
       <div id="notice" role="alert" hidden></div>
+      <section id="home-view" class="page" hidden>
+        <div class="home-top">
+          <div>
+            <h2 id="home-greeting">Bonjour</h2>
+            <p class="home-sub">Que voulez-vous faire aujourd’hui ?</p>
+          </div>
+          <span id="home-engine" class="home-pill"></span>
+        </div>
+        <div class="home-actions">
+          <button id="home-ask" type="button">
+            <span class="home-icon"><i data-icon="message"></i></span
+            ><strong>Poser une question</strong
+            ><span>Une réponse claire, calculée sur cet ordinateur.</span></button
+          ><button id="home-document" type="button">
+            <span class="home-icon"><i data-icon="file"></i></span
+            ><strong>Analyser un document</strong
+            ><span>Résumer, explorer ou extraire les informations d’un fichier.</span></button
+          ><button id="home-project" type="button">
+            <span class="home-icon"><i data-icon="folder"></i></span><strong>Créer un projet</strong
+            ><span>Réunir notes, documents et conversations d’un même travail.</span></button
+          ><button id="home-compare" type="button">
+            <span class="home-icon"><i data-icon="chart"></i></span
+            ><strong>Comparer des modèles</strong
+            ><span>Mesurer la justesse des modèles sur vos propres questions.</span>
+          </button>
+        </div>
+        <div id="home-advice"></div>
+        <div class="home-columns">
+          <section class="home-card" aria-labelledby="home-projects-title">
+            <div class="home-card-head">
+              <h3 id="home-projects-title"><i data-icon="folder"></i>Projets récents</h3>
+              <button id="home-all-projects" class="link-button" type="button">
+                Voir tous les projets
+              </button>
+            </div>
+            <div id="home-projects"></div>
+          </section>
+          <section class="home-card" aria-labelledby="home-status-title">
+            <div class="home-card-head">
+              <h3 id="home-status-title"><i data-icon="settings"></i>État du système</h3>
+            </div>
+            <ul id="home-status"></ul>
+          </section>
+        </div>
+      </section>
       <section id="chat-view">
         <div id="chat-panel" class="chat-panel" aria-label="Réglages de la réponse">
           <h2 class="chat-panel-title"><i data-icon="settings"></i>Réglages de la réponse</h2>
@@ -305,6 +357,12 @@
               </button>
             </div>
           </form>
+          <div id="composer-advice" hidden>
+            <span id="composer-advice-text"></span
+            ><button id="composer-advanced" class="link-button" type="button">
+              <i data-icon="settings"></i>Réglages avancés
+            </button>
+          </div>
           <footer>
             Les réponses de l’IA peuvent contenir des erreurs. Vérifiez les informations
             importantes.
@@ -1071,6 +1129,7 @@
     <script src="skills-view.js"></script>
     <script src="guide-view.js"></script>
     <script src="metier-view.js"></script>
+    <script src="home-view.js"></script>
     <script src="performance-view.js"></script>
     <script src="catalog-view.js"></script>
     <script src="start.js"></script>

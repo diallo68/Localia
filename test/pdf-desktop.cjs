@@ -32,7 +32,10 @@ function packagedApp() {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-pdf-ui-'));
   let app;
   try {
-    await fs.writeFile(path.join(profile, 'settings.json'), JSON.stringify({ guideDone: true }));
+    await fs.writeFile(
+      path.join(profile, 'settings.json'),
+      JSON.stringify({ guideDone: true, mode: 'avance' }),
+    );
     const file = path.join(profile, 'facture.pdf');
     await fs.writeFile(file, pdfFixture());
     const launch = process.env.LOCALIA_PACKAGED

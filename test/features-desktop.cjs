@@ -37,7 +37,10 @@ const readJson = async (profile, name) => {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-features-'));
   let app;
   try {
-    await fs.writeFile(path.join(profile, 'settings.json'), JSON.stringify({ guideDone: true }));
+    await fs.writeFile(
+      path.join(profile, 'settings.json'),
+      JSON.stringify({ guideDone: true, mode: 'avance' }),
+    );
     // Modèle Ollama simulé sur le disque (manifeste et fichier GGUF) pour le moteur intégré.
     const ollamaDir = path.join(profile, 'ollama-models');
     await fs.mkdir(path.join(ollamaDir, 'manifests/registry.ollama.ai/library/petit'), {
@@ -555,8 +558,8 @@ const readJson = async (profile, name) => {
     );
     assert.equal(
       await page.locator('#bench-results .chart').count(),
-      7,
-      '6 graphiques + carte de chaleur',
+      8,
+      '6 graphiques + 2 cartes de chaleur (catégories, métiers)',
     );
 
     // Notes d'un second correcteur importées : accord entre correcteurs.
@@ -593,8 +596,8 @@ const readJson = async (profile, name) => {
     assert.match(await page.locator('#bench-results').textContent(), /Comparaison des correcteurs/);
     assert.equal(
       await page.locator('#bench-results .chart').count(),
-      10,
-      '7 + 3 graphiques par correcteur',
+      11,
+      '8 + 3 graphiques par correcteur',
     );
     assert.equal(await page.locator('#bench-results .legend').first().locator('span').count(), 2);
 

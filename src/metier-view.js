@@ -54,6 +54,7 @@ function openMetierView(mode = 'change') {
   $('metier-step').textContent =
     mode === 'first' ? 'PREMIER LANCEMENT · ÉTAPE 1 SUR 2' : 'CHANGER DE MÉTIER';
   $('metier-cancel').hidden = mode === 'first';
+  $('first-name').value = settings.firstName || '';
   $('quick-chips').replaceChildren(
     ...metierById('general').suggestions.map((s) => {
       const chip = element('button', 'chip', s.title);
@@ -72,12 +73,24 @@ function openMetierView(mode = 'change') {
 }
 
 async function closeMetierView(id) {
-  if (id && id !== settings.metier)
-    settings = await window.localia.saveSettings({ ...settings, metier: id });
+  const firstName = $('first-name').value.trim();
+  const changed = id && id !== settings.metier;
+  if (id && (changed || firstName !== (settings.firstName || '')))
+    settings = await window.localia.saveSettings({ ...settings, metier: id, firstName });
   $('metier-view').hidden = true;
   delete document.body.dataset.onboarding;
+  // Nouveau métier : le modèle le mieux noté pour ce métier devient le modèle actif, s'il est
+  // installé (il reste modifiable dans les réglages avancés).
+  if (changed) {
+    const best = BENCH_METIERS[id] && metierAdvice(comparisons, BENCH_METIERS[id])?.best;
+    if (best && installed(best.model) && $('model').value !== best.model) {
+      selectModel(best.model);
+      $('model').dispatchEvent(new Event('change'));
+    }
+  }
   applyMetier();
-  view('chat');
+  if (isAdvanced()) openHome();
+  else view('chat');
   // Premier lancement sans modèle : étape 2, le guide (choix et téléchargement d'un modèle).
   if (metierMode === 'first' && !models.length && !settings.guideDone)
     await openGuide().catch(() => {});
@@ -128,12 +141,21 @@ function fillSuggestions(box) {
   welcomeBox.querySelector('h2 + p').textContent = metier.simple
     ? 'Demandez à Localia. Vous pouvez joindre un document ou une photo.'
     : 'Rédigez, analysez un document ou posez une question : tout se passe sur cet ordinateur.';
-  const groups = [...new Set(metier.suggestions.map((s) => s.group || ''))];
+  // Mode simple : salutation et quatre suggestions, sans groupes ni tâches communes.
+  const simpleUi = !metier.simple && !isAdvanced();
+  if (simpleUi) {
+    greeting(welcomeBox.querySelector('h2'));
+    welcomeBox.querySelector('h2 + p').textContent = 'Que puis-je faire pour vous ?';
+  }
+  const suggestions = simpleUi
+    ? metier.suggestions.slice(0, 4).map((s) => ({ ...s, group: '' }))
+    : metier.suggestions;
+  const groups = [...new Set(suggestions.map((s) => s.group || ''))];
   for (const group of groups) {
     const section = element('div', 'suggestion-group');
     if (group) section.append(element('span', 'eyebrow', group.toUpperCase()));
     const row = element('div', 'suggestion-row');
-    for (const s of metier.suggestions.filter((x) => (x.group || '') === group)) {
+    for (const s of suggestions.filter((x) => (x.group || '') === group)) {
       const button = element('button');
       button.type = 'button';
       button.append(element('strong', '', s.title));
@@ -153,7 +175,7 @@ function fillSuggestions(box) {
     box.append(section);
   }
   // Bande « Pour tous les métiers » : tâches communes (sauf pour la question directe).
-  if (metier.simple) return;
+  if (metier.simple || simpleUi) return;
   const band = element('div', 'common-band');
   band.append(element('span', 'eyebrow', 'POUR TOUS LES MÉTIERS'));
   for (const id of COMMON_TASKS.filter((t) => t !== 'question')) {
@@ -205,7 +227,7 @@ function adviceCard(metier) {
     (c) =>
       c !== best &&
       best.invention >= 0.2 &&
-      c.invention <= best.invention * 0.6 &&
+      c.invention <= (best.invention * 2) / 3 &&
       c.correct >= best.correct - 0.1,
   );
   const card = element('section', 'advice-card');

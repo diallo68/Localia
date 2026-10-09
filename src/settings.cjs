@@ -66,6 +66,11 @@ function normalizeSettings(raw) {
   // Métier choisi au premier lancement, et langue de l'interface.
   if (metierById(raw.metier)) settings.metier = raw.metier;
   if (LANGS.includes(raw.lang)) settings.lang = raw.lang;
+  // Interface : simple (conversation d'abord) ou avancée (tableau de bord et tous les outils).
+  if (raw.mode === 'avance') settings.mode = 'avance';
+  // Prénom facultatif, pour l'accueil (« Bonjour … »).
+  const firstName = typeof raw.firstName === 'string' ? raw.firstName.trim() : '';
+  if (firstName) settings.firstName = firstName.slice(0, 40);
   // Mots toujours masqués avant l'envoi au modèle (anonymisation des métiers sensibles).
   if (Array.isArray(raw.maskWords)) {
     const words = raw.maskWords.map((w) => String(w).trim()).filter(Boolean);

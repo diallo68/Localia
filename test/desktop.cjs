@@ -5,6 +5,8 @@ const os = require('node:os');
 const path = require('node:path');
 (async () => {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-test-'));
+  // Mode avancé : le test parcourt tous les écrans de la colonne de gauche.
+  await fs.writeFile(path.join(profile, 'settings.json'), JSON.stringify({ mode: 'avance' }));
   let app;
   try {
     app = await electron.launch({

@@ -75,3 +75,14 @@ test('réglages : métier et langue connus seulement', () => {
   assert.equal(normalizeSettings({ metier: 'pirate', lang: 'de' }).metier, undefined);
   assert.equal(normalizeSettings({ metier: 'pirate', lang: 'de' }).lang, undefined);
 });
+
+test('réglages : mode de l’interface et prénom facultatif', () => {
+  const { normalizeSettings } = require('../src/settings.cjs');
+  assert.equal(normalizeSettings({}).mode, undefined);
+  assert.equal(normalizeSettings({ mode: 'avance' }).mode, 'avance');
+  assert.equal(normalizeSettings({ mode: 'expert' }).mode, undefined);
+  assert.equal(normalizeSettings({ firstName: '  Mohamed ' }).firstName, 'Mohamed');
+  assert.equal(normalizeSettings({ firstName: '   ' }).firstName, undefined);
+  assert.equal(normalizeSettings({ firstName: 42 }).firstName, undefined);
+  assert.equal(normalizeSettings({ firstName: 'x'.repeat(80) }).firstName.length, 40);
+});

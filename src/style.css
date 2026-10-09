@@ -3136,3 +3136,296 @@ aside::-webkit-scrollbar-thumb {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Choix du mode et carte de profil */
+.mode-switch {
+  background: transparent;
+  border: 0;
+  padding: 2px 8px 8px;
+  font-size: 11.5px;
+  color: var(--accent);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.mode-switch:hover {
+  background: transparent;
+}
+.first-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.first-name small {
+  font-weight: 400;
+  color: var(--muted);
+}
+.first-name input {
+  width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+/* Mode simple : conversations récentes et profil seulement dans la colonne, accueil centré */
+body[data-mode='simple'] aside .nav-section:not(.history-section),
+body[data-mode='simple'] #memory-gauge,
+body[data-mode='simple'] .privacy,
+body[data-mode='simple'] .chat-bar,
+body[data-mode='simple'] #messages .advice-card,
+body[data-mode='simple'] #welcome #drop-zone {
+  display: none;
+}
+body[data-mode='simple'] #metier-switch {
+  order: 10;
+  margin-top: 8px;
+}
+body[data-mode='simple'] #mode-switch {
+  order: 11;
+}
+body[data-mode='simple'] .chat-main:has(#welcome) {
+  justify-content: center;
+}
+body[data-mode='simple'] .chat-main:has(#welcome) #messages {
+  flex: 0 1 auto;
+}
+body[data-mode='simple'] #welcome {
+  padding-top: 0;
+}
+body[data-mode='simple'] #welcome h2 {
+  font-size: 34px;
+  margin-bottom: 4px;
+}
+body[data-mode='simple'] #welcome > p {
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 0;
+}
+body[data-mode='simple'] #welcome .suggestion-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+body[data-mode='simple'] #welcome .suggestion-row button {
+  flex: 0 1 170px;
+}
+#composer-advice {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 10px max(28px, calc((100% - 760px) / 2)) 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+#composer-advice[hidden] {
+  display: none;
+}
+#composer-advice .composer-model {
+  font-family: var(--mono);
+  color: var(--fg);
+  background: var(--hover);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+#composer-advice .state {
+  margin-left: 10px;
+}
+#composer-advice .state::before {
+  content: '●';
+  margin-right: 5px;
+  color: var(--muted);
+}
+#composer-advice .state.ready::before {
+  color: var(--ok);
+}
+#composer-advanced {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+/* Mode avancé : accueil en tableau de bord */
+body[data-view='home'] header {
+  display: none;
+}
+#home-view {
+  padding: 32px clamp(20px, 4vw, 44px) 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.home-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+#home-greeting {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.home-sub {
+  margin: 4px 0 0;
+  font-size: 20px;
+  color: var(--muted);
+}
+.home-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--hover);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.home-pill::before {
+  content: '●';
+  color: var(--muted);
+}
+.home-pill.ready {
+  background: var(--accent-soft);
+}
+.home-pill.ready::before {
+  color: var(--ok);
+}
+.home-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.home-actions button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 16px;
+  text-align: left;
+  border-radius: 14px;
+  border-color: var(--line);
+  background: var(--surface);
+}
+.home-actions button:hover {
+  background: var(--hover);
+}
+.home-actions strong {
+  font-size: 14px;
+}
+.home-actions button > span:last-child {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.home-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+#home-view .advice-card {
+  max-width: none;
+  margin: 0;
+}
+#home-view .advice-foot {
+  justify-content: flex-start;
+}
+#home-view .advice-foot > span:first-child {
+  margin-right: auto;
+}
+.home-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.home-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  min-width: 0;
+}
+.home-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.home-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+}
+.home-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+}
+.home-row:last-child {
+  border-bottom: 0;
+}
+.home-row strong {
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#home-status {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#home-status li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0 8px 18px;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  font-size: 12.5px;
+}
+#home-status li:last-child {
+  border-bottom: 0;
+}
+#home-status li::before {
+  content: '●';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  color: var(--ok);
+}
+#home-status li.warn::before {
+  color: var(--warn);
+}
+@media (max-width: 1000px) {
+  .home-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .home-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

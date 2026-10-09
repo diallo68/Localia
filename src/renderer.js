@@ -75,6 +75,7 @@ if (!ON_MAC) {
   while (walker.nextNode()) walker.currentNode.nodeValue = localText(walker.currentNode.nodeValue);
 }
 const VIEWS = {
+  home: 'Accueil',
   chat: 'Conversations',
   models: 'Bibliothèque',
   compare: 'Benchmark',
@@ -353,6 +354,10 @@ function renderAttachment() {
       (doc.alerts?.length
         ? ` ⚠ Ce document contient une instruction adressée à l’IA (page ${doc.alerts.map((a) => a.page).join(', ')}) : elle ne doit pas être suivie.`
         : '');
+    // PDF scanné (aucune page avec du texte) : Localia ne lit pas les images (pas d'OCR).
+    if (doc.pageCount && doc.emptyPages.length >= doc.pageCount)
+      $('attachment-info').textContent =
+        `${doc.pageCount} page(s) · Aucun texte lisible : ce PDF semble scanné. Localia ne lit pas le texte des images (pas d’OCR). Exportez-le en PDF texte ou collez le texte dans la question.`;
     if (doc.source)
       $('attachment-info').textContent += ` Source : ${new URL(doc.source).hostname}.`;
   }

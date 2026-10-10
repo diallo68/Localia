@@ -72,6 +72,7 @@ contextBridge.exposeInMainWorld('localia', {
   models: () => invoke('models'),
   start: () => invoke('start-service'),
   foundryStart: () => invoke('foundry-start'),
+  appleStatus: () => invoke('apple-status'),
   load: () => invoke('load'),
   save: (data) => invoke('save', data),
   loadSettings: () => invoke('load-settings'),

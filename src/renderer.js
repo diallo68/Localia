@@ -482,9 +482,11 @@ function engineCard() {
       ollama: 'Ollama : le modèle tourne dans Ollama, sur cet ordinateur, sans Internet.',
       foundry:
         'Foundry Local (Microsoft) : le modèle tourne dans le service Foundry Local, sur cet ordinateur, sans Internet.',
+      apple:
+        'Apple Intelligence : le modèle intégré à macOS répond sur ce Mac, sans Internet. Il lit environ 4 000 jetons : préférez-le pour des questions courtes.',
     }[kind];
   }
-  for (const engine of ['integre', 'ollama', 'foundry']) {
+  for (const engine of ['integre', 'ollama', 'foundry', 'apple']) {
     const button = $(ENGINE_BUTTONS[engine]);
     button.setAttribute('aria-pressed', String(kind === engine));
     button.disabled = chatting || !models.some((m) => engineOf(m) === engine);
@@ -493,21 +495,43 @@ function engineCard() {
   $('engine-foundry').hidden = !foundryShown && !models.some((m) => engineOf(m) === 'foundry');
   if (foundryShown && !models.some((m) => engineOf(m) === 'foundry'))
     $('engine-foundry').disabled = chatting;
+  // Apple Intelligence : bouton sur Mac seulement ; s'il est indisponible, il en donne la raison.
+  $('engine-apple').hidden = !appleState?.available && !appleState?.reason;
+  if (appleState && !appleState.available) $('engine-apple').disabled = chatting;
 }
 // Moteur d'un modèle : intégré, Foundry Local (« foundry/… ») ou Ollama.
-const engineOf = (m) => (m.engine === 'integre' || m.engine === 'foundry' ? m.engine : 'ollama');
-const ENGINE_LABELS = { integre: 'Moteur intégré', ollama: 'Ollama', foundry: 'Foundry Local' };
+const engineOf = (m) => (['integre', 'foundry', 'apple'].includes(m.engine) ? m.engine : 'ollama');
+const ENGINE_LABELS = {
+  integre: 'Moteur intégré',
+  ollama: 'Ollama',
+  foundry: 'Foundry Local',
+  apple: 'Apple Intelligence',
+};
 const ENGINE_BUTTONS = {
   integre: 'engine-local',
   ollama: 'engine-ollama',
   foundry: 'engine-foundry',
+  apple: 'engine-apple',
 };
 let foundryShown = false;
+let appleState = null; // { available, reason } du modèle d'Apple, null hors Mac
+$('engine-apple').onclick = () => {
+  if (!appleState?.available)
+    return notice(
+      'Apple Intelligence indisponible : ' + (appleState?.reason || 'raison inconnue') + '.',
+    );
+  switchEngine('apple');
+};
 // Bascule d'un moteur à l'autre : même modèle de l'autre côté s'il existe
 // (« integre/qwen3:8b » ↔ « qwen3:8b »), sinon le dernier utilisé, sinon le plus petit.
 function switchEngine(engine) {
   const name = $('model').value;
   const bare = name.replace(/^(integre|foundry)\//, '');
+  if (engine === 'apple') {
+    $('model').value = 'apple/intelligence';
+    $('model').dispatchEvent(new Event('change'));
+    return engineCard();
+  }
   const twin = engine === 'ollama' ? bare : engine + '/' + bare;
   const side = models.filter((m) => engineOf(m) === engine);
   const target =
@@ -557,7 +581,9 @@ function setChatPanel(open) {
 function chatModelLabel() {
   const name = $('model').value;
   $('chat-model-label').textContent = name
-    ? name.replace(/^(integre|foundry)\//, '')
+    ? name === 'apple/intelligence'
+      ? 'Apple Intelligence'
+      : name.replace(/^(integre|foundry)\//, '')
     : 'Aucun modèle';
 }
 $('panel-toggle').onclick = () => setChatPanel(!$('chat-view').classList.contains('panel-open'));
@@ -597,10 +623,11 @@ async function refresh() {
     $('status').textContent = setup?.ollamaPath ? '○ Ollama arrêté' : '○ Aucun modèle installé';
     $('connect').hidden = !setup?.ollamaPath;
   }
-  if (!foundryShown) {
+  if (!foundryShown || !appleState) {
     const setup = await window.localia.setupStatus().catch(() => null);
     if (call !== refreshCount) return;
     foundryShown = Boolean(setup?.foundry);
+    appleState = setup?.apple || { available: false, reason: null };
   }
   engineCard();
   const selected = $('model').value || current?.model || settings.lastModel;
@@ -614,6 +641,7 @@ async function refresh() {
     ['integre', 'Moteur intégré de Localia'],
     ['ollama', 'Ollama'],
     ['foundry', 'Foundry Local (Microsoft)'],
+    ['apple', 'Apple Intelligence'],
   ]) {
     const list = models.filter((m) => engineOf(m) === engine);
     if (!list.length) continue;
@@ -638,12 +666,8 @@ async function refresh() {
     row.className = 'installed-row';
     const title = document.createElement('span');
     title.textContent = m.name;
-    if (m.engine === 'integre' || m.engine === 'foundry') {
-      const badge = element(
-        'small',
-        'engine-badge',
-        m.engine === 'integre' ? 'moteur intégré' : 'Foundry Local',
-      );
+    if (engineOf(m) !== 'ollama') {
+      const badge = element('small', 'engine-badge', ENGINE_LABELS[m.engine].toLowerCase());
       title.append(' ', badge);
     }
     const size = document.createElement('small');
@@ -674,7 +698,7 @@ async function refresh() {
         await refresh();
       });
       row.append(remove);
-    } else if (m.engine !== 'foundry' && !localNames.has('integre/' + m.name)) {
+    } else if (engineOf(m) === 'ollama' && !localNames.has('integre/' + m.name)) {
       const use = element('button', '', 'Utiliser avec le moteur intégré');
       use.type = 'button';
       use.onclick = guard(async () => {

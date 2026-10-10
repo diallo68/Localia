@@ -60,6 +60,7 @@ const web = require('./web.cjs');
 const remote = require('./remote.cjs');
 const localEngine = require('./local-engine.cjs');
 const foundry = require('./foundry.cjs');
+const appleFm = require('./apple-fm.cjs');
 const { CATALOG, catalogEntry, downloadUrl } = require('./catalog.js');
 const { downloadFile } = require('./download.cjs');
 const QRCode = require('qrcode');
@@ -181,6 +182,10 @@ handle('environment', async (names) => {
     const m = (tags.models || []).find((x) => x.name === name);
     if (foundry.isFoundry(name)) {
       models[name] = { engine: 'Foundry Local', id: foundry.foundryId(name) };
+      continue;
+    }
+    if (appleFm.isApple(name)) {
+      models[name] = { engine: 'Apple Intelligence (Foundation Models)' };
       continue;
     }
     if (localEngine.isLocal(name)) {
@@ -682,8 +687,17 @@ handle('models', async () => {
   // Foundry Local : seulement s'il tourne déjà (démarré par le bouton « Foundry Local »).
   const base = await foundry.endpoint().catch(() => null);
   const fromFoundry = base ? await foundry.listModels(base).catch(() => []) : [];
-  if (!ollama && !local.length && !fromFoundry.length) throw ollamaError;
-  return [...(ollama || []).map((m) => ({ ...m, engine: 'ollama' })), ...local, ...fromFoundry];
+  // Modèle d'Apple : seulement s'il est disponible sur ce Mac (macOS 26, Apple Intelligence).
+  const apple = (await appleState()).available
+    ? [{ name: appleFm.MODEL, size: 0, engine: 'apple', details: { family: 'apple' } }]
+    : [];
+  if (!ollama && !local.length && !fromFoundry.length && !apple.length) throw ollamaError;
+  return [
+    ...(ollama || []).map((m) => ({ ...m, engine: 'ollama' })),
+    ...local,
+    ...fromFoundry,
+    ...apple,
+  ];
 });
 
 // --- Moteur intégré (llama.cpp) ------------------------------------------------------------------
@@ -931,6 +945,7 @@ handle('setup-status', async () => {
   return {
     ollamaPath: platform.ollamaPath(),
     foundry: Boolean(process.env.LOCALIA_FOUNDRY_URL || foundry.foundryPath()),
+    apple: await appleState(),
     running: Boolean(version || tags),
     version: version?.version ?? null,
     models: tags?.models?.length ?? 0,
@@ -995,7 +1010,18 @@ handle('pc-measure', async (name) => {
   try {
     const prompt = 'Explique en cinq phrases simples à quoi sert la météo pour un agriculteur.';
     let data = null;
-    if (foundry.isFoundry(model)) {
+    if (appleFm.isApple(model)) {
+      await appleFm.chat({
+        body: {
+          messages: [{ role: 'user', content: prompt }],
+          options: { temperature: 0, num_predict: 120 },
+        },
+        signal: controller.signal,
+        onData: (d) => {
+          if (d.done) data = d;
+        },
+      });
+    } else if (foundry.isFoundry(model)) {
       await foundry.chat({
         base: await foundryBase(),
         model,
@@ -1070,6 +1096,15 @@ async function foundryBase() {
     );
   return base;
 }
+// Disponibilité du modèle d'Apple, gardée une minute (l'aide est relancée à chaque question).
+let appleCache = null;
+async function appleState() {
+  if (appleCache && Date.now() - appleCache.at < 60000) return appleCache.state;
+  const state = await appleFm.status();
+  appleCache = { at: Date.now(), state };
+  return state;
+}
+handle('apple-status', () => appleState());
 handle('foundry-start', async () => {
   await foundryBase();
 });
@@ -1207,6 +1242,10 @@ handle('run', async (kind, payload) => {
       }
       // Photos : seulement avec un modèle qui les lit ; envoyées à Ollama en base64.
       if (messages.some((m) => m.images?.length)) {
+        if (appleFm.isApple(model))
+          throw new Error(
+            'Le modèle d’Apple ne lit pas les photos dans Localia. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.',
+          );
         if (foundry.isFoundry(model))
           throw new Error(
             'Foundry Local ne lit pas encore les photos dans Localia. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.',
@@ -1270,7 +1309,11 @@ handle('run', async (kind, payload) => {
       }
       send({ kind, data });
     };
-    if (chatLike && foundry.isFoundry(model)) {
+    if (chatLike && appleFm.isApple(model)) {
+      used.engine = 'apple';
+      await appleFm.chat({ body, signal: controller.signal, onData });
+      if (controller.signal.aborted) throw new Error('annulée');
+    } else if (chatLike && foundry.isFoundry(model)) {
       used.engine = 'foundry';
       await foundry.chat({
         base: await foundryBase(),
@@ -1319,6 +1362,14 @@ handle('cancel', (kind) => tasks.get(taskKey(kind))?.abort());
 // Fiche du modèle demandée avant chaque réponse. Ollama peut être lent à répondre pendant qu'un
 // gros modèle travaille : délai long et un second essai.
 async function showModel(model) {
+  // Modèle d'Apple : fenêtre de 4 096 jetons (documentation d'Apple), texte seulement.
+  if (appleFm.isApple(model))
+    return {
+      details: { family: 'apple', parameter_size: '3B' },
+      capabilities: ['completion'],
+      model_info: { 'apple.context_length': 4096 },
+      parameters: '',
+    };
   // Foundry Local : pas de fiche détaillée ; le modèle répond en texte.
   if (foundry.isFoundry(model))
     return {

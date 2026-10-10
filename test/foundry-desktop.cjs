@@ -44,6 +44,7 @@ function fakeFoundry() {
   );
 }
 
+const apple = process.platform !== 'win32';
 (async () => {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-foundry-'));
   const { server, asked, url } = await fakeFoundry();
@@ -55,7 +56,15 @@ function fakeFoundry() {
     );
     app = await electron.launch({
       args: [path.resolve('.')],
-      env: { ...process.env, LOCALIA_TEST_DATA: profile, LOCALIA_FOUNDRY_URL: url },
+      env: {
+        ...process.env,
+        LOCALIA_TEST_DATA: profile,
+        LOCALIA_FOUNDRY_URL: url,
+        // Fausse aide Apple Intelligence (script exécutable : pas sous Windows).
+        ...(apple
+          ? { LOCALIA_APPLE_FM: path.join(__dirname, 'fixtures', 'fake-apple-fm.cjs') }
+          : {}),
+      },
     });
     const page = await app.firstWindow();
     const errors = [];
@@ -104,9 +113,31 @@ function fakeFoundry() {
     assert.ok(asked[0].messages.at(-1).content.includes('Bonjour Foundry'));
     const saved = JSON.parse(await fs.readFile(path.join(profile, 'conversations.json'), 'utf8'));
     assert.ok(JSON.stringify(saved).includes('de **Foundry** Local.'));
+    // Apple Intelligence : modèle « apple/intelligence », bouton, réponse.
+    if (apple) {
+      // Panneau du moteur encore ouvert depuis la bascule vers Foundry Local.
+      assert.equal(await page.locator('#engine-apple').isVisible(), true);
+      await page.locator('#engine-apple').click();
+      assert.equal(await page.locator('#model').inputValue(), 'apple/intelligence');
+      assert.equal(await page.locator('#engine-state').textContent(), 'Apple Intelligence');
+      await page.locator('#prompt').fill('Bonjour Apple');
+      await page.locator('#send').click();
+      await page.waitForFunction(
+        () =>
+          document.querySelector('#stop').hidden &&
+          document
+            .querySelector('.message.assistant:last-of-type')
+            ?.textContent.includes('(consigne).'),
+        null,
+        { timeout: 30000 },
+      );
+      // Retour à Foundry Local depuis le modèle d'Apple.
+      await page.locator('#engine-foundry').click();
+      assert.equal(await page.locator('#model').inputValue(), 'foundry/' + MODEL);
+    }
     assert.deepEqual(errors, []);
     console.log(
-      'PASS Foundry Local : modèle listé, bascule de moteur, réponse en flux affichée et enregistrée, aucune erreur JS.',
+      `PASS Foundry Local${apple ? ' et Apple Intelligence' : ''} : modèles listés, bascule de moteur, réponses en flux affichées et enregistrées, aucune erreur JS.`,
     );
   } finally {
     await app?.close();

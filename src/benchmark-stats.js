@@ -155,6 +155,7 @@ const METIER_PREFIXES = {
   R: 'Recherche',
   S: 'Santé',
   T: 'Télécommunications',
+  Y: 'Cybersécurité',
 };
 function metierOf(label) {
   const match = /^([A-Z])D?\d+\b/.exec(String(label || ''));
@@ -162,12 +163,13 @@ function metierOf(label) {
 }
 
 // Note, précision et invention par métier et par modèle (toutes répétitions confondues).
-function metierMetrics(records, grader = ALL_GRADERS) {
+// group (facultatif) regroupe des métiers sous un même nom (ex. Enseignement et Recherche).
+function metierMetrics(records, grader = ALL_GRADERS, group = (m) => m) {
   const cells = new Map();
   for (const record of records)
     for (const result of record.results) {
       if (!done(result)) continue;
-      const metier = metierOf(record.questions[result.q]?.label);
+      const metier = group(metierOf(record.questions[result.q]?.label));
       const values = metier && gradeValues(result, grader);
       if (!values) continue;
       const key = metier + '\u0000' + result.model;
@@ -186,12 +188,12 @@ function metierMetrics(records, grader = ALL_GRADERS) {
 }
 
 // Performances (temps, vitesse, longueur) par métier et par modèle, sans besoin de notes.
-function metierPerformance(records) {
+function metierPerformance(records, group = (m) => m) {
   const cells = new Map();
   for (const record of records)
     for (const result of record.results) {
       if (!done(result)) continue;
-      const metier = metierOf(record.questions[result.q]?.label);
+      const metier = group(metierOf(record.questions[result.q]?.label));
       if (!metier) continue;
       const key = metier + '\u0000' + result.model;
       if (!cells.has(key)) cells.set(key, { metier, model: result.model, items: [] });
@@ -229,13 +231,17 @@ function rankModels(items) {
     );
 }
 
-// Modèle conseillé pour un métier (étiquette du banc d'essai, ex. « Santé ») : classement des
-// modèles notés sur ce métier, avec le temps moyen par réponse. null sans réponse notée.
+// Modèle conseillé pour un métier (étiquette du banc d'essai, ex. « Santé », ou liste d'étiquettes
+// comptées ensemble, ex. ['Enseignement', 'Recherche']) : classement des modèles notés sur ces
+// questions, avec le temps moyen par réponse. null sans réponse notée.
 function metierAdvice(records, metier, grader = ALL_GRADERS) {
-  const perf = metierPerformance(records).filter((p) => p.metier === metier);
+  const wanted = [].concat(metier);
+  const name = wanted.join(' + ');
+  const group = (m) => (wanted.includes(m) ? name : m);
+  const perf = metierPerformance(records, group).filter((p) => p.metier === name);
   const ranked = rankModels(
-    metierMetrics(records, grader)
-      .filter((c) => c.metier === metier && c.n)
+    metierMetrics(records, grader, group)
+      .filter((c) => c.metier === name && c.n)
       .map((c) => ({
         ...c,
         answerSeconds: perf.find((p) => p.model === c.model)?.answerSeconds ?? null,

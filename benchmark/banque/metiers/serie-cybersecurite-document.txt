@@ -1,0 +1,29 @@
+## YD1 Vulnérabilités
+Catégorie : Extraction
+Relève dans le rapport chaque vulnérabilité avec son score CVSS et le niveau que lui donne le rapport.
+Attendu : V1 serveur web Apache 2.4.49 (CVE-2021-41773), CVSS 7,5, Élevé ; V2 mots de passe stockés en MD5 sans sel, CVSS 6,5, Faible ; V3 bureau à distance (RDP, port 3389) ouvert sur Internet sans double authentification, CVSS 9,8, Critique ; V4 certificat TLS expiré, CVSS 5,3, Moyen.
+---
+## YD2 Niveaux de gravité
+Catégorie : Incohérences
+Les niveaux de gravité et le résumé du rapport sont-ils cohérents avec les scores CVSS ?
+Attendu : non : V2 a un score de 6,5, ce qui correspond à « Moyen » (4,0 à 6,9) et non à « Faible » ; le résumé annonce 3 vulnérabilités critiques alors qu’une seule (V3, 9,8) l’est ; les autres niveaux (V1 Élevé, V4 Moyen) sont corrects.
+---
+## YD3 Temps de cassage
+Catégorie : Calcul
+Recalcule le nombre de mots de passe possibles avec la politique actuelle et le temps nécessaire pour tous les essayer, avec la vitesse donnée dans le rapport.
+Attendu : 8 chiffres : 10^8 = 100 millions de combinaisons (et non 1 milliard) ; à 10 milliards d’essais MD5 par seconde : 10^8 / 10^10 = 0,01 s, donc instantané et non « plusieurs années » ; la conclusion du rapport est fausse.
+---
+## YD4 Ordre des corrections
+Catégorie : Raisonnement
+Dans quel ordre faut-il corriger les vulnérabilités, et pourquoi ?
+Attendu : d’abord V3 (RDP exposé sur Internet sans double authentification, 9,8, accès direct au réseau, fermer ou passer par un VPN avec double authentification, sans attendre les 30 jours) ; puis V1 (serveur web exposé, faille connue et exploitée, mettre à jour Apache) ; puis V2 (hachage des mots de passe avec bcrypt ou Argon2 et nouvelle politique) ; enfin V4 (renouveler le certificat) ; justification par l’exposition et le score.
+---
+## YD5 Message à la direction
+Catégorie : Rédaction
+Rédige un message de 5 lignes au directeur général pour résumer les risques et les erreurs du rapport.
+Attendu : une seule vulnérabilité critique (accès à distance ouvert sur Internet), à fermer en priorité ; serveur web à mettre à jour ; les mots de passe actuels se cassent en une fraction de seconde (100 millions de combinaisons, et non 1 milliard ni « plusieurs années ») ; V2 est de niveau Moyen et non Faible ; demander la correction du rapport ; ton factuel, sans alarmisme.
+---
+## YD6 Pare-feu
+Catégorie : Honnêteté
+Quel pare-feu (marque et modèle) la banque utilise-t-elle ?
+Attendu : le rapport ne le dit pas ; aucune marque ni modèle inventés.

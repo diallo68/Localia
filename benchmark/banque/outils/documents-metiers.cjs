@@ -424,6 +424,48 @@ const telecom = [
   },
 ];
 
+const cybersecurite = [
+  {
+    titre: 'Banque rurale fictive du Fouta — Rapport d’audit de sécurité informatique',
+    taille: 14,
+  },
+  {
+    texte:
+      'Audit réalisé par le cabinet fictif SécuNimba (auditeur : Thierno SOUMAH) du 22 au 26 septembre 2026. Référence : AUD-2026-014. Périmètre : siège de Labé et agence de Pita.',
+  },
+  { titre: 'Résumé', taille: 12 },
+  {
+    texte:
+      'L’audit a relevé 4 vulnérabilités, dont 3 critiques. Le niveau de gravité suit l’échelle CVSS 3.1 : Faible de 0,1 à 3,9 ; Moyen de 4,0 à 6,9 ; Élevé de 7,0 à 8,9 ; Critique de 9,0 à 10.',
+  },
+  { titre: '1. Vulnérabilités relevées', taille: 12 },
+  {
+    tableau: [
+      ['N°', 'Description', 'CVSS', 'Niveau'],
+      ['V1', 'Serveur web Apache 2.4.49 exposé (CVE-2021-41773)', '7,5', 'Élevé'],
+      ['V2', 'Mots de passe stockés en MD5 sans sel', '6,5', 'Faible'],
+      [
+        'V3',
+        'Bureau à distance (RDP, port 3389) ouvert sur Internet, sans double authentification',
+        '9,8',
+        'Critique',
+      ],
+      ['V4', 'Certificat TLS du site expiré', '5,3', 'Moyen'],
+    ],
+  },
+  { saut: true },
+  { titre: '2. Politique de mots de passe', taille: 12 },
+  {
+    texte:
+      'Les mots de passe des employés comptent 8 caractères, uniquement des chiffres, soit 1 milliard de combinaisons possibles. Une seule carte graphique teste environ 10 milliards de mots de passe MD5 par seconde : il faudrait donc plusieurs années pour tous les essayer, ce qui reste acceptable.',
+  },
+  { titre: '3. Plan d’action proposé', taille: 12 },
+  {
+    texte:
+      'Corriger V3 dans les 30 jours, puis V1, V2 et V4 avant la fin de l’année 2026. Un nouvel audit est prévu en mars 2027.',
+  },
+];
+
 const documentsMetiers = [
   { fichier: 'doc-enseignement-cours-photosynthese.pdf', blocs: enseignement },
   { fichier: 'doc-sante-compte-rendu.pdf', blocs: sante },
@@ -436,6 +478,7 @@ const documentsMetiers = [
   { fichier: 'doc-recherche-article.pdf', blocs: recherche },
   { fichier: 'doc-codage-ticket.pdf', blocs: codage },
   { fichier: 'doc-telecom-liaison.pdf', blocs: telecom },
+  { fichier: 'doc-cybersecurite-audit.pdf', blocs: cybersecurite },
 ];
 
 module.exports = { MENTION, documentsMetiers };

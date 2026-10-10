@@ -42,10 +42,15 @@ test('séries par métier : 5 questions sans document et 6 sur un document ficti
     .filter(
       (f) =>
         /^serie-.*\.txt$/.test(f) &&
-        !['serie-metiers-complete.txt', 'serie-metiers-nouveaux.txt'].includes(f),
+        ![
+          'serie-metiers-complete.txt',
+          'serie-metiers-nouveaux.txt',
+          'serie-metiers-cybersecurite.txt',
+        ].includes(f),
     );
-  // 11 métiers : les 8 de la série du 7 octobre, puis Recherche, Codage et Télécommunications.
-  assert.equal(files.length, 22);
+  // 12 métiers : les 8 de la série du 7 octobre, puis Recherche, Codage, Télécommunications et
+  // Cybersécurité.
+  assert.equal(files.length, 24);
   // Série complète : les 88 questions, chaque question sur document avec son PDF.
   const all = parseQuestions(
     fs.readFileSync(path.join(metiers, 'serie-metiers-complete.txt'), 'utf8'),
@@ -61,6 +66,14 @@ test('séries par métier : 5 questions sans document et 6 sur un document ficti
   assert.equal(nouveaux.length, 34);
   assert.equal(nouveaux.filter((q) => q.document).length, 18);
   for (const q of nouveaux.filter((x) => x.document))
+    assert.ok(fs.existsSync(path.join(metiers, 'documents', q.document)), q.document);
+  // Cybersécurité : 11 questions dans un seul fichier, dont 6 sur leur document.
+  const cyber = parseQuestions(
+    fs.readFileSync(path.join(metiers, 'serie-metiers-cybersecurite.txt'), 'utf8'),
+  );
+  assert.equal(cyber.length, 11);
+  assert.equal(cyber.filter((q) => q.document).length, 6);
+  for (const q of cyber.filter((x) => x.document))
     assert.ok(fs.existsSync(path.join(metiers, 'documents', q.document)), q.document);
   const pdfs = fs.readdirSync(path.join(metiers, 'documents'));
   for (const file of files) {

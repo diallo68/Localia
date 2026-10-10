@@ -36,6 +36,7 @@ Cela fait 11 questions par métier et 88 au total. Les catégories mesurées son
 | Communication (dépêche et interview) | 3 000 livres dans la dépêche, « plus de 5 000 » sur les réseaux sociaux ; nombre de livres en langues nationales non donné |
 | Recherche (article soumis) | 412 parcelles dans le résumé, 389 dans la méthode ; F1 du modèle A faux (0,78 au lieu de 0,75) ; modèle B retenu alors que C a le meilleur F1 ; conclusion causale tirée d'une étude d'observation ; code et données non disponibles |
 | Codage (ticket et revue de code) | `int()` tronque les kilos « entamés » (12,3 kg : 7 400 GNF et non 6 600) ; le test 3 valide ce défaut ; le test 4 est faux (500 000 GNF ne « dépasse » pas 500 000) et la correction proposée (`>=`) contredit la spécification ; version de Python absente |
+| Cybersécurité (rapport d'audit d'une banque) | V2 (CVSS 6,5) classé « Faible » au lieu de « Moyen » ; résumé annonçant 3 vulnérabilités critiques alors qu'il n'y en a qu'une ; 8 chiffres = « 1 milliard » de combinaisons au lieu de 100 millions, cassés en 0,01 s et non en « plusieurs années » ; marque du pare-feu absente |
 | Télécommunications (étude de liaison hertzienne) | affaiblissement en espace libre de 131 dB au lieu d'environ 141 dB, donc niveau reçu (−47 et non −37 dBm) et marge (28 et non 38 dB) faux ; 99,99 % de disponibilité converti en 5 min par an au lieu de 52,6 min ; hauteur des pylônes absente |
 
 ## Conditions identiques pour tous les modèles
@@ -73,5 +74,8 @@ Même construction : `serie-recherche.txt`, `serie-codage.txt`, `serie-telecom.t
 - Durée estimée : 34 questions × 4 modèles ≈ **2 à 4 heures** sur ce Mac (une nuit, avec le départ programmé).
 - Le code du document Codage perd son indentation à l'extraction du texte (Localia ne garde pas la position des mots dans un PDF) ; la fonction est assez courte pour rester lisible, et aucune réponse attendue n'en dépend.
 - Codage compte **6 questions sans document** : la question P06 (quatre opérations en Python, C et C++) vient d'une vraie question posée à Localia le 9 octobre 2026, où Qwen3.5-9B bloquait les quatre opérations quand le second nombre vaut 0 (en C, « addition = 0,00 » pour 10 + 0). Les nouveaux métiers comptent donc 34 questions.
-- Cybersécurité : série à rédiger séparément.
+
+## Cybersécurité (10 octobre 2026)
+
+`serie-cybersecurite.txt` (Y01 à Y05, sans document) et `serie-cybersecurite-document.txt` (YD1 à YD6, sur `doc-cybersecurite-audit.pdf`, rapport d'audit d'une banque fictive). Les 11 questions sont réunies dans **`serie-metiers-cybersecurite.txt`** : un seul import. Lettre **Y** ; dans Localia, le conseil de modèle du métier Ingénierie (« Informatique, télécoms… ») compte ensemble les questions I, P (Codage), T (Télécommunications) et Y. Durée estimée : 11 questions × 4 modèles ≈ 1 heure.
 

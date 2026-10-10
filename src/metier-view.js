@@ -216,15 +216,15 @@ modelListeners.push(() => {
   if (card) old.replaceWith(card);
 });
 
-// Métier de Localia → étiquette des séries « métiers » du Benchmark.
+// Métier de Localia → étiquette(s) des séries « métiers » du Benchmark, comptées ensemble.
 const BENCH_METIERS = {
-  enseignement: 'Enseignement',
+  enseignement: ['Enseignement', 'Recherche'],
   sante: 'Santé',
   juridique: 'Juridique',
   administration: 'Administration',
   finance: 'Finance',
   entreprise: 'Entreprise',
-  ingenierie: 'Ingénierie',
+  ingenierie: ['Ingénierie', 'Codage', 'Télécommunications', 'Cybersécurité'],
   communication: 'Communication',
 };
 
@@ -246,7 +246,7 @@ function adviceCard(metier) {
   const card = element('section', 'advice-card');
   const head = element('div', 'advice-head');
   head.innerHTML = '<i data-icon="cpu"></i>';
-  head.append(element('span', '', 'Modèle conseillé'), element('strong', '', label));
+  head.append(element('span', '', 'Modèle conseillé'), element('strong', '', metier.label));
   const body = element('div', 'advice-body');
   const left = element('div', 'advice-main');
   left.append(element('span', 'advice-model', shortModel(best.model)));

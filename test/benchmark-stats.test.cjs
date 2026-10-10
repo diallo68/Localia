@@ -264,6 +264,35 @@ test('modèle conseillé par métier : le plus juste, avec son temps moyen', () 
   assert.equal(metierAdvice(records, 'Juridique'), null);
 });
 
+test('modèle conseillé sur plusieurs métiers comptés ensemble', () => {
+  const { metierAdvice } = require('../src/benchmark-stats.js');
+  const result = (q, model, verdict) => ({
+    q,
+    model,
+    status: 'done',
+    stats: { totalMs: 1000 },
+    grades: { X: { verdict, invention: false } },
+  });
+  const records = [
+    {
+      questions: [{ label: 'E01 Cours' }, { label: 'R01 Article' }, { label: 'R02 Biblio' }],
+      results: [
+        result(0, 'a', 'correct'),
+        result(1, 'a', 'faux'),
+        result(2, 'a', 'faux'),
+        result(0, 'b', 'faux'),
+        result(1, 'b', 'correct'),
+        result(2, 'b', 'correct'),
+      ],
+    },
+  ];
+  assert.equal(metierAdvice(records, 'Enseignement').best.model, 'a');
+  const both = metierAdvice(records, ['Enseignement', 'Recherche']);
+  assert.equal(both.best.model, 'b');
+  assert.equal(both.best.n, 3);
+  assert.equal(both.best.answerSeconds, 1);
+});
+
 test('métiers des séries : Recherche, Codage et Télécommunications reconnus', () => {
   const { metierOf } = require('../src/benchmark-stats.js');
   assert.equal(metierOf('R01 Intervalle de confiance'), 'Recherche');

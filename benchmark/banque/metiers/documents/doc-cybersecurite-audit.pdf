@@ -1,0 +1,72 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 1628 >>
+stream
+BT /F2 14 Tf 56 742 Td (Banque rurale fictive du Fouta — Rapport d’audit de sécurité) Tj ET
+BT /F2 14 Tf 56 715.1 Td (informatique) Tj ET
+BT /F1 10.5 Tf 56 690.2 Td (Audit réalisé par le cabinet fictif SécuNimba \(auditeur : Thierno SOUMAH\) du 22 au 26 septembre) Tj ET
+BT /F1 10.5 Tf 56 676.0250000000001 Td (2026. Référence : AUD-2026-014. Périmètre : siège de Labé et agence de Pita.) Tj ET
+BT /F2 12 Tf 56 653.8500000000001 Td (Résumé) Tj ET
+BT /F1 10.5 Tf 56 631.6500000000001 Td (L’audit a relevé 4 vulnérabilités, dont 3 critiques. Le niveau de gravité suit l’échelle CVSS) Tj ET
+BT /F1 10.5 Tf 56 617.4750000000001 Td (3.1 : Faible de 0,1 à 3,9 ; Moyen de 4,0 à 6,9 ; Élevé de 7,0 à 8,9 ; Critique de 9,0 à 10.) Tj ET
+BT /F2 12 Tf 56 595.3000000000002 Td (1. Vulnérabilités relevées) Tj ET
+BT /F2 9.5 Tf 56 573.1000000000001 Td (N°  Description                                                                           CVSS  Niveau    ) Tj ET
+BT /F1 9.5 Tf 56 560.2750000000001 Td (V1  Serveur web Apache 2.4.49 exposé \(CVE-2021-41773\)                                     7,5   Élevé     ) Tj ET
+BT /F1 9.5 Tf 56 547.45 Td (V2  Mots de passe stockés en MD5 sans sel                                                 6,5   Faible    ) Tj ET
+BT /F1 9.5 Tf 56 534.625 Td (V3  Bureau à distance \(RDP, port 3389\) ouvert sur Internet, sans double authentification  9,8   Critique  ) Tj ET
+BT /F1 9.5 Tf 56 521.8 Td (V4  Certificat TLS du site expiré                                                         5,3   Moyen     ) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 1 sur 2) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 884 >>
+stream
+BT /F2 12 Tf 56 742 Td (2. Politique de mots de passe) Tj ET
+BT /F1 10.5 Tf 56 719.8 Td (Les mots de passe des employés comptent 8 caractères, uniquement des chiffres, soit 1 milliard) Tj ET
+BT /F1 10.5 Tf 56 705.625 Td (de combinaisons possibles. Une seule carte graphique teste environ 10 milliards de mots de) Tj ET
+BT /F1 10.5 Tf 56 691.45 Td (passe MD5 par seconde : il faudrait donc plusieurs années pour tous les essayer, ce qui reste) Tj ET
+BT /F1 10.5 Tf 56 677.2750000000001 Td (acceptable.) Tj ET
+BT /F2 12 Tf 56 655.1000000000001 Td (3. Plan d’action proposé) Tj ET
+BT /F1 10.5 Tf 56 632.9000000000001 Td (Corriger V3 dans les 30 jours, puis V1, V2 et V4 avant la fin de l’année 2026. Un nouvel audit) Tj ET
+BT /F1 10.5 Tf 56 618.7250000000001 Td (est prévu en mars 2027.) Tj ET
+BT /F1 8 Tf 56 40 Td (Document fictif créé pour le banc d’essai Localia — page 2 sur 2) Tj ET
+endstream
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000218 00000 n 
+0000000320 00000 n 
+0000000415 00000 n 
+0000000561 00000 n 
+0000002241 00000 n 
+0000002387 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+3322
+%%EOF

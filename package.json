@@ -24,7 +24,9 @@
     "dist:win": "electron-builder --win nsis zip --x64",
     "package:linux": "electron-builder --linux dir --x64",
     "dist:linux": "electron-builder --linux AppImage deb --x64",
-    "test:engine": "node test/engine-desktop.cjs"
+    "test:engine": "node test/engine-desktop.cjs",
+    "test:foundry": "node test/foundry-desktop.cjs",
+    "test:foundry-real": "node test/foundry-real.cjs"
   },
   "build": {
     "appId": "fr.localia.desktop",

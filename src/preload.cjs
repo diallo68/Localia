@@ -71,6 +71,7 @@ contextBridge.exposeInMainWorld('localia', {
   pruneDocuments: (ids) => invoke('prune-documents', ids),
   models: () => invoke('models'),
   start: () => invoke('start-service'),
+  foundryStart: () => invoke('foundry-start'),
   load: () => invoke('load'),
   save: (data) => invoke('save', data),
   loadSettings: () => invoke('load-settings'),

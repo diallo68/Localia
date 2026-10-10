@@ -59,6 +59,7 @@ const skillsLogic = require('./skills.js');
 const web = require('./web.cjs');
 const remote = require('./remote.cjs');
 const localEngine = require('./local-engine.cjs');
+const foundry = require('./foundry.cjs');
 const { CATALOG, catalogEntry, downloadUrl } = require('./catalog.js');
 const { downloadFile } = require('./download.cjs');
 const QRCode = require('qrcode');
@@ -178,6 +179,10 @@ handle('environment', async (names) => {
   const models = {};
   for (const name of names.map(modelName)) {
     const m = (tags.models || []).find((x) => x.name === name);
+    if (foundry.isFoundry(name)) {
+      models[name] = { engine: 'Foundry Local', id: foundry.foundryId(name) };
+      continue;
+    }
     if (localEngine.isLocal(name)) {
       const entry = (await readRegistry()).find((x) => x.name === name);
       models[name] = entry
@@ -674,8 +679,11 @@ handle('models', async () => {
     engine: 'integre',
     details: { family: m.architecture, parameter_size: m.sizeLabel },
   }));
-  if (!ollama && !local.length) throw ollamaError;
-  return [...(ollama || []).map((m) => ({ ...m, engine: 'ollama' })), ...local];
+  // Foundry Local : seulement s'il tourne déjà (démarré par le bouton « Foundry Local »).
+  const base = await foundry.endpoint().catch(() => null);
+  const fromFoundry = base ? await foundry.listModels(base).catch(() => []) : [];
+  if (!ollama && !local.length && !fromFoundry.length) throw ollamaError;
+  return [...(ollama || []).map((m) => ({ ...m, engine: 'ollama' })), ...local, ...fromFoundry];
 });
 
 // --- Moteur intégré (llama.cpp) ------------------------------------------------------------------
@@ -922,6 +930,7 @@ handle('setup-status', async () => {
   ]);
   return {
     ollamaPath: platform.ollamaPath(),
+    foundry: Boolean(process.env.LOCALIA_FOUNDRY_URL || foundry.foundryPath()),
     running: Boolean(version || tags),
     version: version?.version ?? null,
     models: tags?.models?.length ?? 0,
@@ -986,7 +995,21 @@ handle('pc-measure', async (name) => {
   try {
     const prompt = 'Explique en cinq phrases simples à quoi sert la météo pour un agriculteur.';
     let data = null;
-    if (localEngine.isLocal(model)) {
+    if (foundry.isFoundry(model)) {
+      await foundry.chat({
+        base: await foundryBase(),
+        model,
+        body: {
+          messages: [{ role: 'user', content: prompt }],
+          options: { temperature: 0, seed: 42, num_predict: 120 },
+          keep_alive: 0,
+        },
+        signal: controller.signal,
+        onData: (d) => {
+          if (d.done) data = d;
+        },
+      });
+    } else if (localEngine.isLocal(model)) {
       const entry = await localEntry(model);
       await engine().chat({
         file: entry.file,
@@ -1038,6 +1061,18 @@ handle('pc-measure', async (name) => {
 });
 // Seule adresse ouverte dans le navigateur par le guide.
 handle('open-ollama-download', () => shell.openExternal('https://ollama.com/download'));
+// Foundry Local : adresse du service, qui est démarré s'il est installé mais arrêté.
+async function foundryBase() {
+  const base = await foundry.endpoint({ start: true });
+  if (!base)
+    throw new Error(
+      'Foundry Local est introuvable ou arrêté. Installez-le (Windows : winget install Microsoft.FoundryLocal ; Mac Apple Silicon : brew install microsoft/foundrylocal/foundrylocal), puis téléchargez un modèle avec « foundry model download phi-4-mini ».',
+    );
+  return base;
+}
+handle('foundry-start', async () => {
+  await foundryBase();
+});
 handle('start-service', async () => {
   try {
     await request('/api/tags');
@@ -1172,6 +1207,10 @@ handle('run', async (kind, payload) => {
       }
       // Photos : seulement avec un modèle qui les lit ; envoyées à Ollama en base64.
       if (messages.some((m) => m.images?.length)) {
+        if (foundry.isFoundry(model))
+          throw new Error(
+            'Foundry Local ne lit pas encore les photos dans Localia. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.',
+          );
         if (localEngine.isLocal(model))
           throw new Error(
             'Le moteur intégré ne lit pas encore les photos. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.',
@@ -1231,7 +1270,17 @@ handle('run', async (kind, payload) => {
       }
       send({ kind, data });
     };
-    if (chatLike && localEngine.isLocal(model)) {
+    if (chatLike && foundry.isFoundry(model)) {
+      used.engine = 'foundry';
+      await foundry.chat({
+        base: await foundryBase(),
+        model,
+        body,
+        signal: controller.signal,
+        onData,
+      });
+      if (controller.signal.aborted) throw new Error('annulée');
+    } else if (chatLike && localEngine.isLocal(model)) {
       // Moteur intégré : même format de flux qu'Ollama.
       const entry = await localEntry(model);
       used.engine = 'integre';
@@ -1270,6 +1319,14 @@ handle('cancel', (kind) => tasks.get(taskKey(kind))?.abort());
 // Fiche du modèle demandée avant chaque réponse. Ollama peut être lent à répondre pendant qu'un
 // gros modèle travaille : délai long et un second essai.
 async function showModel(model) {
+  // Foundry Local : pas de fiche détaillée ; le modèle répond en texte.
+  if (foundry.isFoundry(model))
+    return {
+      details: { family: 'onnx' },
+      capabilities: ['completion'],
+      model_info: {},
+      parameters: '',
+    };
   // Moteur intégré : fiche équivalente à celle d'Ollama, d'après le registre.
   if (localEngine.isLocal(model)) {
     const m = await localEntry(model);

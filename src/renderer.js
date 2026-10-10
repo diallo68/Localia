@@ -473,27 +473,43 @@ function engineCard() {
     (ready ? ' — les réponses sont calculées sur ce Mac, sans Internet.' : '');
   $('engine-connect').hidden = $('connect').hidden;
   const model = models.find((m) => m.name === $('model').value);
-  const local = model?.engine === 'integre';
+  const kind = model ? engineOf(model) : null;
   if (ready && model) {
-    $('engine-state').textContent = local ? 'Moteur intégré' : 'Ollama';
-    $('engine-detail').textContent = local
-      ? 'Moteur intégré de Localia : le modèle tourne dans Localia même, sans Ollama ni Internet.'
-      : 'Ollama : le modèle tourne dans Ollama, sur ce Mac, sans Internet.';
+    $('engine-state').textContent = ENGINE_LABELS[kind];
+    $('engine-detail').textContent = {
+      integre:
+        'Moteur intégré de Localia : le modèle tourne dans Localia même, sans Ollama ni Internet.',
+      ollama: 'Ollama : le modèle tourne dans Ollama, sur cet ordinateur, sans Internet.',
+      foundry:
+        'Foundry Local (Microsoft) : le modèle tourne dans le service Foundry Local, sur cet ordinateur, sans Internet.',
+    }[kind];
   }
-  for (const [id, on] of [
-    ['engine-local', local],
-    ['engine-ollama', Boolean(model) && !local],
-  ])
-    $(id).setAttribute('aria-pressed', String(on));
-  $('engine-local').disabled = chatting || !models.some((m) => m.engine === 'integre');
-  $('engine-ollama').disabled = chatting || !models.some((m) => m.engine !== 'integre');
+  for (const engine of ['integre', 'ollama', 'foundry']) {
+    const button = $(ENGINE_BUTTONS[engine]);
+    button.setAttribute('aria-pressed', String(kind === engine));
+    button.disabled = chatting || !models.some((m) => engineOf(m) === engine);
+  }
+  // Foundry Local : bouton proposé dès qu'il est installé, même sans modèle encore listé.
+  $('engine-foundry').hidden = !foundryShown && !models.some((m) => engineOf(m) === 'foundry');
+  if (foundryShown && !models.some((m) => engineOf(m) === 'foundry'))
+    $('engine-foundry').disabled = chatting;
 }
-// Bascule entre le moteur intégré et Ollama : même modèle de l'autre côté s'il existe
+// Moteur d'un modèle : intégré, Foundry Local (« foundry/… ») ou Ollama.
+const engineOf = (m) => (m.engine === 'integre' || m.engine === 'foundry' ? m.engine : 'ollama');
+const ENGINE_LABELS = { integre: 'Moteur intégré', ollama: 'Ollama', foundry: 'Foundry Local' };
+const ENGINE_BUTTONS = {
+  integre: 'engine-local',
+  ollama: 'engine-ollama',
+  foundry: 'engine-foundry',
+};
+let foundryShown = false;
+// Bascule d'un moteur à l'autre : même modèle de l'autre côté s'il existe
 // (« integre/qwen3:8b » ↔ « qwen3:8b »), sinon le dernier utilisé, sinon le plus petit.
-function switchEngine(toLocal) {
+function switchEngine(engine) {
   const name = $('model').value;
-  const twin = toLocal ? 'integre/' + name : name.replace(/^integre\//, '');
-  const side = models.filter((m) => (m.engine === 'integre') === toLocal);
+  const bare = name.replace(/^(integre|foundry)\//, '');
+  const twin = engine === 'ollama' ? bare : engine + '/' + bare;
+  const side = models.filter((m) => engineOf(m) === engine);
   const target =
     side.find((m) => m.name === twin) || side.find((m) => m.name === settings.lastModel) || side[0];
   if (!target || target.name === name) return;
@@ -509,8 +525,25 @@ $('engine-card').onclick = () => {
   engineCard();
 };
 $('engine-refresh').onclick = () => $('refresh').click();
-$('engine-local').onclick = () => switchEngine(true);
-$('engine-ollama').onclick = () => switchEngine(false);
+$('engine-local').onclick = () => switchEngine('integre');
+$('engine-ollama').onclick = () => switchEngine('ollama');
+// Foundry Local : démarre son service s'il le faut, puis passe sur l'un de ses modèles.
+$('engine-foundry').onclick = guard(async () => {
+  if (!models.some((m) => engineOf(m) === 'foundry')) {
+    $('engine-foundry').disabled = true;
+    try {
+      await window.localia.foundryStart();
+      await refresh();
+    } finally {
+      engineCard();
+    }
+    if (!models.some((m) => engineOf(m) === 'foundry'))
+      notice(
+        'Foundry Local est démarré, mais aucun modèle n’y est téléchargé. Exemple : foundry model download phi-4-mini',
+      );
+  }
+  switchEngine('foundry');
+});
 $('model').addEventListener('change', () => engineCard());
 // Réglages avancés (projet, tâche, compétence, modèle, moteur) : repliés par défaut pour que
 // la première question vienne sans détour ; l'état choisi est retenu sur cet ordinateur.
@@ -523,7 +556,9 @@ function setChatPanel(open) {
 }
 function chatModelLabel() {
   const name = $('model').value;
-  $('chat-model-label').textContent = name ? name.replace(/^integre\//, '') : 'Aucun modèle';
+  $('chat-model-label').textContent = name
+    ? name.replace(/^(integre|foundry)\//, '')
+    : 'Aucun modèle';
 }
 $('panel-toggle').onclick = () => setChatPanel(!$('chat-view').classList.contains('panel-open'));
 $('model').addEventListener('change', chatModelLabel);
@@ -551,7 +586,7 @@ async function refresh() {
   try {
     if (failure) throw failure;
     models = found.sort((a, b) => a.size - b.size);
-    const ollama = models.some((m) => m.engine !== 'integre');
+    const ollama = models.some((m) => engineOf(m) === 'ollama');
     $('status').textContent = ollama ? '● Ollama connecté' : '● Moteur intégré (Ollama arrêté)';
     $('connect').hidden = ollama;
   } catch (error) {
@@ -562,6 +597,11 @@ async function refresh() {
     $('status').textContent = setup?.ollamaPath ? '○ Ollama arrêté' : '○ Aucun modèle installé';
     $('connect').hidden = !setup?.ollamaPath;
   }
+  if (!foundryShown) {
+    const setup = await window.localia.setupStatus().catch(() => null);
+    if (call !== refreshCount) return;
+    foundryShown = Boolean(setup?.foundry);
+  }
   engineCard();
   const selected = $('model').value || current?.model || settings.lastModel;
   $('model').replaceChildren();
@@ -569,12 +609,13 @@ async function refresh() {
     const o = new Option('Aucun modèle disponible', '');
     $('model').add(o);
   }
-  // Deux groupes : le moteur intégré de Localia et Ollama (même nom de modèle possible des deux côtés).
+  // Un groupe par moteur : intégré, Ollama, Foundry Local (même nom possible de plusieurs côtés).
   for (const [engine, label] of [
     ['integre', 'Moteur intégré de Localia'],
     ['ollama', 'Ollama'],
+    ['foundry', 'Foundry Local (Microsoft)'],
   ]) {
-    const list = models.filter((m) => (m.engine === 'integre') === (engine === 'integre'));
+    const list = models.filter((m) => engineOf(m) === engine);
     if (!list.length) continue;
     const group = document.createElement('optgroup');
     group.label = label;
@@ -597,12 +638,16 @@ async function refresh() {
     row.className = 'installed-row';
     const title = document.createElement('span');
     title.textContent = m.name;
-    if (m.engine === 'integre') {
-      const badge = element('small', 'engine-badge', 'moteur intégré');
+    if (m.engine === 'integre' || m.engine === 'foundry') {
+      const badge = element(
+        'small',
+        'engine-badge',
+        m.engine === 'integre' ? 'moteur intégré' : 'Foundry Local',
+      );
       title.append(' ', badge);
     }
     const size = document.createElement('small');
-    size.textContent = (m.size / 1e9).toFixed(2) + ' Go';
+    size.textContent = m.size ? (m.size / 1e9).toFixed(2) + ' Go' : '';
     row.append(title, size);
     // Résultats du Benchmark, si ce modèle a des réponses notées.
     const score = scores.get(m.name);
@@ -629,7 +674,7 @@ async function refresh() {
         await refresh();
       });
       row.append(remove);
-    } else if (!localNames.has('integre/' + m.name)) {
+    } else if (m.engine !== 'foundry' && !localNames.has('integre/' + m.name)) {
       const use = element('button', '', 'Utiliser avec le moteur intégré');
       use.type = 'button';
       use.onclick = guard(async () => {

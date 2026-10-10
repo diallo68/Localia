@@ -107,15 +107,19 @@ async function call(base, route, { body, signal, timeout = 10000 } = {}) {
   return response;
 }
 
-// Identifiants des modèles : route de l'ancienne version (/openai/models, liste de noms), sinon
-// route d'OpenAI (/v1/models, { data: [{ id }] }).
-async function modelIds(base) {
+// Identifiants des modèles téléchargés : route de l'ancienne version (/openai/models). Depuis
+// 2026, /v1/models donne tout le catalogue : on garde ceux que « foundry cache list » cite.
+async function modelIds(base, env = process.env) {
   try {
     const names = await (await call(base, '/openai/models')).json();
     if (Array.isArray(names)) return names;
   } catch {}
   const data = await (await call(base, '/v1/models')).json();
-  return (data?.data || []).map((m) => m.id).filter(Boolean);
+  const ids = (data?.data || []).map((m) => m.id).filter(Boolean);
+  const cli = foundryPath(env);
+  if (!cli) return ids;
+  const cache = await run(cli, ['cache', 'list'], 20000);
+  return ids.filter((id) => cache.includes(id) || cache.includes(id.replace(/:\d+$/, '')));
 }
 // Modèles déjà téléchargés dans Foundry Local, avec leur taille d'après le catalogue.
 async function listModels(base) {
@@ -230,6 +234,12 @@ async function load(base, id, signal) {
     await call(base, `/openai/load/${encodeURIComponent(id)}`, { signal, timeout: 600000 });
   } catch (error) {
     if (signal?.aborted) throw error;
+    // Version de 2026 : modèles chargés sur /models/loaded, chargement par la commande.
+    const loaded = await call(base, '/models/loaded', { signal })
+      .then((r) => r.json())
+      .catch(() => null);
+    const names = (Array.isArray(loaded) ? loaded : loaded?.data || []).map((m) => m.id || m);
+    if (names.includes(id)) return;
     const cli = foundryPath();
     if (cli) await run(cli, ['model', 'load', id], 600000);
   }

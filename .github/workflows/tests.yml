@@ -10,7 +10,7 @@ on:
         description: Systèmes à tester
         type: choice
         default: tous
-        options: [tous, linux, windows, macos, foundry]
+        options: [tous, linux, windows, macos, foundry, apple]
 
 concurrency:
   group: tests-${{ github.ref }}
@@ -174,3 +174,24 @@ jobs:
             catch { echo "$route -> $($_.Exception.Message)" }
           }
       - run: npm run test:foundry-real
+
+  apple:
+    name: Apple Intelligence réel (macOS 26)
+    needs: unit
+    # Sur demande : recompile l'aide Swift avec le SDK macOS 26 et l'essaie sur un vrai Mac.
+    # Les machines de GitHub n'ont sans doute pas Apple Intelligence : l'aide doit alors
+    # répondre « indisponible » avec sa raison.
+    if: github.event_name == 'workflow_dispatch' && (inputs.systemes == 'tous' || inputs.systemes == 'macos' || inputs.systemes == 'apple')
+    runs-on: macos-26
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: sw_vers && xcodebuild -version
+      - run: npm run build:apple-fm
+      - run: npm run test:apple-real

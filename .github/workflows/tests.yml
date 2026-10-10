@@ -10,7 +10,7 @@ on:
         description: Systèmes à tester
         type: choice
         default: tous
-        options: [tous, linux, windows, macos]
+        options: [tous, linux, windows, macos, foundry]
 
 concurrency:
   group: tests-${{ github.ref }}
@@ -136,7 +136,7 @@ jobs:
     name: Foundry Local réel (Windows)
     needs: unit
     # Sur demande seulement : installe Foundry Local et télécharge un petit modèle (~500 Mo).
-    if: github.event_name == 'workflow_dispatch' && (inputs.systemes == 'tous' || inputs.systemes == 'windows')
+    if: github.event_name == 'workflow_dispatch' && (inputs.systemes == 'tous' || inputs.systemes == 'windows' || inputs.systemes == 'foundry')
     runs-on: windows-latest
     timeout-minutes: 40
     # Foundry Local est en préversion : un échec ici ne bloque pas les autres tests.
@@ -158,6 +158,19 @@ jobs:
       - name: Download a small model
         shell: pwsh
         run: |
-          foundry service start
           foundry model download qwen2.5-0.5b
+      # Relevé de ce que répond le service (versions de Foundry Local en évolution).
+      - name: Foundry Local diagnostics
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          foundry --version
+          foundry server status
+          $url = ((foundry server status) | Select-String -Pattern 'http://[^\s)]+' | Select-Object -First 1).Matches.Value
+          if ($url) { $base = ([uri]$url).GetLeftPart('Authority') } else { $base = '' }
+          echo "Service : $base"
+          foreach ($route in '/v1/models', '/openai/models', '/openai/loadedmodels', '/openai/status', '/models/loaded') {
+            try { $r = Invoke-WebRequest -UseBasicParsing "$base$route"; echo "$route -> $($r.StatusCode) $($r.Content.Substring(0, [Math]::Min(300, $r.Content.Length)))" }
+            catch { echo "$route -> $($_.Exception.Message)" }
+          }
       - run: npm run test:foundry-real

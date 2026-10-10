@@ -42,7 +42,7 @@ const run = (command, args, timeout) =>
     ),
   );
 
-// Adresse du service dans la sortie de « foundry service status / start ». Seules les adresses
+// Adresse du service dans la sortie de « foundry server status / start ». Seules les adresses
 // de cet ordinateur sont acceptées.
 function parseEndpoint(text) {
   for (const match of String(text || '').matchAll(/https?:\/\/[^\s/"']+/g)) {
@@ -55,6 +55,14 @@ function parseEndpoint(text) {
 }
 
 let cached = null;
+// Commande « foundry » : « server » depuis la version de 2026, « service » avant.
+async function cliOutput(cli, action, timeout) {
+  for (const group of ['server', 'service']) {
+    const text = await run(cli, [group, action], timeout);
+    if (!/unknown command/i.test(text)) return text;
+  }
+  return '';
+}
 // Adresse du service : LOCALIA_FOUNDRY_URL (tests), sinon demandée à la commande « foundry ».
 // start = true : démarre le service s'il est arrêté. null si Foundry Local est absent ou arrêté.
 async function endpoint({ start = false, env = process.env } = {}) {
@@ -63,16 +71,17 @@ async function endpoint({ start = false, env = process.env } = {}) {
   cached = null;
   const cli = foundryPath(env);
   if (!cli) return null;
-  cached = parseEndpoint(await run(cli, ['service', 'status'], 10000));
-  if (!cached && start) cached = parseEndpoint(await run(cli, ['service', 'start'], 60000));
+  cached = parseEndpoint(await cliOutput(cli, 'status', 10000));
+  if (cached && !(await alive(cached))) cached = null;
+  if (!cached && start) cached = parseEndpoint(await cliOutput(cli, 'start', 60000));
   return cached;
 }
 async function alive(base) {
-  try {
-    return (await fetch(base + '/openai/status', { signal: AbortSignal.timeout(2000) })).ok;
-  } catch {
-    return false;
-  }
+  for (const route of ['/v1/models', '/openai/status'])
+    try {
+      if ((await fetch(base + route, { signal: AbortSignal.timeout(2000) })).ok) return true;
+    } catch {}
+  return false;
 }
 
 async function call(base, route, { body, signal, timeout = 10000 } = {}) {
@@ -98,9 +107,19 @@ async function call(base, route, { body, signal, timeout = 10000 } = {}) {
   return response;
 }
 
+// Identifiants des modèles : route de l'ancienne version (/openai/models, liste de noms), sinon
+// route d'OpenAI (/v1/models, { data: [{ id }] }).
+async function modelIds(base) {
+  try {
+    const names = await (await call(base, '/openai/models')).json();
+    if (Array.isArray(names)) return names;
+  } catch {}
+  const data = await (await call(base, '/v1/models')).json();
+  return (data?.data || []).map((m) => m.id).filter(Boolean);
+}
 // Modèles déjà téléchargés dans Foundry Local, avec leur taille d'après le catalogue.
 async function listModels(base) {
-  const names = await (await call(base, '/openai/models')).json();
+  const names = await modelIds(base);
   let sizes = new Map();
   try {
     const catalog = await (await call(base, '/foundry/list')).json();
@@ -163,13 +182,7 @@ async function chat({ base, model, body, signal, onData }) {
     throw new Error('Foundry Local ne lit pas encore les photos dans Localia. Retirez la photo.');
   const id = foundryId(model);
   const start = process.hrtime.bigint();
-  const loaded = await (
-    await call(base, '/openai/loadedmodels', { signal })
-  )
-    .json()
-    .catch(() => []);
-  if (!loaded.includes(id))
-    await call(base, `/openai/load/${encodeURIComponent(id)}`, { signal, timeout: 600000 });
+  await load(base, id, signal);
   const loadEnd = process.hrtime.bigint();
   const response = await call(base, '/v1/chat/completions', {
     body: openaiBody(id, body),
@@ -205,7 +218,21 @@ async function chat({ base, model, body, signal, onData }) {
   });
   // Comparaison : modèle libéré après sa dernière question, comme avec les autres moteurs.
   if (body.keep_alive === 0)
-    await call(base, `/openai/unload/${encodeURIComponent(id)}?force=true`).catch(() => {});
+    await call(base, `/openai/unload/${encodeURIComponent(id)}?force=true`).catch(() =>
+      foundryPath() ? run(foundryPath(), ['model', 'unload', id], 60000) : null,
+    );
+}
+// Modèle chargé avant la question : route de l'ancienne version, sinon « foundry model load ».
+async function load(base, id, signal) {
+  try {
+    const loaded = await (await call(base, '/openai/loadedmodels', { signal })).json();
+    if (Array.isArray(loaded) && loaded.includes(id)) return;
+    await call(base, `/openai/load/${encodeURIComponent(id)}`, { signal, timeout: 600000 });
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    const cli = foundryPath();
+    if (cli) await run(cli, ['model', 'load', id], 600000);
+  }
 }
 
 module.exports = {

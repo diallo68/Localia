@@ -162,3 +162,24 @@ test('LOCALIA_FOUNDRY_URL : adresse imposée (tests), sans commande foundry', as
     null,
   );
 });
+
+test('nouvelle version : modèles lus sur /v1/models quand /openai/models n’existe plus', async () => {
+  const server = http.createServer((req, res) => {
+    if (req.url === '/v1/models')
+      return res.end(
+        JSON.stringify({ object: 'list', data: [{ id: 'qwen2.5-0.5b-instruct-generic-cpu:4' }] }),
+      );
+    res.statusCode = 404;
+    res.end();
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const models = await foundry.listModels(`http://127.0.0.1:${server.address().port}`);
+    assert.deepEqual(
+      models.map((m) => m.name),
+      ['foundry/qwen2.5-0.5b-instruct-generic-cpu:4'],
+    );
+  } finally {
+    server.close();
+  }
+});

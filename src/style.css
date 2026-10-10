@@ -3582,3 +3582,54 @@ img.logo {
   width: 34px;
   height: 34px;
 }
+
+/* Liste des conversations : corbeille discrète, renforcée au survol (sélecteurs en #history, plus forts que la
+   règle générale « #history button » qui élargit chaque bouton à toute la ligne) */
+#history .history-row {
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+}
+#history .history-row:hover,
+#history .history-row:focus-within {
+  background: var(--hover);
+}
+#history .history-row .history-open {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+#history .history-row:hover .history-open {
+  background: transparent;
+}
+#history .history-delete {
+  flex: 0 0 26px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  margin-right: 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  opacity: 0.4;
+}
+#history .history-delete .icon {
+  width: 14px;
+  height: 14px;
+}
+#history .history-row:hover .history-delete,
+#history .history-delete:focus-visible {
+  opacity: 1;
+}
+#history .history-delete:hover {
+  color: var(--danger);
+  background: var(--surface);
+}
+.metier-hint {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}

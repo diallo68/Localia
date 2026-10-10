@@ -197,7 +197,7 @@ const readJson = async (profile, name) => {
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(740, 560));
     await page.waitForFunction(() => window.innerHeight < 600);
     const covered = await page.evaluate(() => {
-      const button = document.querySelector('#history button');
+      const button = document.querySelector('#history .history-open');
       button.scrollIntoView({ block: 'nearest' });
       const box = button.getBoundingClientRect();
       const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
@@ -237,7 +237,7 @@ const readJson = async (profile, name) => {
       document.querySelector('#settings-status').textContent.includes('enregistrés'),
     );
     await page.locator('#chat-tab').click();
-    await page.locator('#history button').click();
+    await page.locator('#history .history-open').click();
     await page.locator('#prompt').fill('Encore');
     await page.locator('#send').click();
     // Réponse terminée (la bulle apparaît avant l'envoi de la requête : machines lentes).
@@ -1157,8 +1157,7 @@ const readJson = async (profile, name) => {
       document.querySelector('#mask-status').textContent.includes('1 mot'),
     );
     await page.locator('#metier-switch').click();
-    await page.locator('.metier-card[data-metier=sante]').click();
-    await page.locator('#metier-continue').click();
+    await page.locator('.metier-card[data-metier=sante]').dblclick();
     await page.waitForFunction(() => document.body.dataset.metier === 'sante');
     await app.evaluate(() => {
       global.chatReply = 'Compte rendu pour [PERSONNE 1], suivi à la [MOT MASQUÉ 1].';
@@ -1195,8 +1194,7 @@ const readJson = async (profile, name) => {
       global.chatReply = undefined;
     });
     await page.locator('#metier-switch').click();
-    await page.locator('.metier-card[data-metier=enseignement]').click();
-    await page.locator('#metier-continue').click();
+    await page.locator('.metier-card[data-metier=enseignement]').dblclick();
     await page.waitForFunction(() => document.body.dataset.metier === 'enseignement');
 
     // Moteur intégré (simulé) : modèle repris d'Ollama, conversation sans passer par Ollama.

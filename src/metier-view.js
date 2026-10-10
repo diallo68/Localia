@@ -32,7 +32,14 @@ function metierCard(metier) {
   if (metier.tools?.includes('bibliography'))
     tags.append(element('span', 'tag', 'Bibliographie et Zotero'));
   if (tags.childNodes.length) card.append(tags);
+  // Un clic met la carte en évidence ; un double-clic (ou Entrée) choisit le métier tout de suite.
   card.onclick = () => selectMetier(metier.id);
+  card.ondblclick = guard(() => closeMetierView(metier.id));
+  card.onkeydown = (event) => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    guard(() => closeMetierView(metier.id))();
+  };
   return card;
 }
 
@@ -43,8 +50,6 @@ function selectMetier(id) {
     card.classList.toggle('selected', on);
     card.setAttribute('aria-checked', String(on));
   }
-  $('metier-chosen').textContent = metierById(id)?.label || '—';
-  $('metier-continue').disabled = !id;
 }
 
 function openMetierView(mode = 'change') {
@@ -53,8 +58,6 @@ function openMetierView(mode = 'change') {
   selectMetier(mode === 'first' ? null : settings.metier || DEFAULT_METIER);
   $('metier-step').textContent =
     mode === 'first' ? 'PREMIER LANCEMENT · ÉTAPE 1 SUR 2' : 'CHANGER DE MÉTIER';
-  $('metier-cancel').hidden = mode === 'first';
-  $('metier-skip').hidden = mode !== 'first';
   // Premier lancement : proposer le chiffrement tout de suite, si le trousseau le permet.
   $('metier-encrypt-row').hidden = true;
   $('metier-encrypt').checked = false;
@@ -66,17 +69,6 @@ function openMetierView(mode = 'change') {
       })
       .catch(() => {});
   $('first-name').value = settings.firstName || '';
-  $('quick-chips').replaceChildren(
-    ...metierById('general').suggestions.map((s) => {
-      const chip = element('button', 'chip', s.title);
-      chip.type = 'button';
-      chip.onclick = () => {
-        $('quick-prompt').value = tr(s.prompt);
-        $('quick-prompt').focus();
-      };
-      return chip;
-    }),
-  );
   langButtons();
   document.body.dataset.onboarding = '1';
   $('metier-view').hidden = false;
@@ -317,29 +309,9 @@ for (const lang of ['fr', 'en'])
   });
 
 $('metier-switch').onclick = () => openMetierView('change');
-$('metier-cancel').onclick = () => closeMetierView(null);
-$('metier-continue').onclick = guard(() => closeMetierView(metierChoice));
 // Passer le choix du métier : interface générale, modifiable plus tard (Profil et métier).
-$('metier-skip').onclick = guard(() => quickQuestion(async () => $('prompt').focus()));
-// Question directe, sans métier : écran le plus simple, et la question part tout de suite.
-async function quickQuestion(then) {
-  await closeMetierView('general');
-  await then();
-}
-$('quick-send').onclick = guard(() =>
-  quickQuestion(async () => {
-    const text = $('quick-prompt').value.trim();
-    $('quick-prompt').value = '';
-    if (!text) return $('prompt').focus();
-    $('prompt').value = text;
-    if (models.length) $('composer').requestSubmit();
-  }),
-);
-$('quick-prompt').addEventListener('keydown', (event) => {
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault();
-    $('quick-send').click();
-  }
+// Changement de métier : Échap ferme l'écran sans rien changer (pas au premier lancement).
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !$('metier-view').hidden && metierMode !== 'first')
+    closeMetierView(null).catch((error) => notice(error.message));
 });
-$('quick-attach').onclick = guard(() => quickQuestion(async () => $('attach').click()));
-$('quick-photo').onclick = guard(() => quickQuestion(async () => $('photo').click()));

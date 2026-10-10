@@ -30,10 +30,8 @@ const path = require('node:path');
       () => document.querySelector('#metier-title').textContent === 'Quel est votre métier ?',
     );
     assert.match(await page.locator('.metier-card[data-metier=sante]').textContent(), /Santé/);
-    assert.equal(await page.locator('#metier-continue').isDisabled(), true);
-    await page.locator('.metier-card[data-metier=finance]').click();
-    assert.equal(await page.locator('#metier-chosen').textContent(), 'Finance');
-    await page.locator('#metier-continue').click();
+    // Double-clic sur une carte : le métier est choisi tout de suite (plus de bouton Continuer).
+    await page.locator('.metier-card[data-metier=finance]').dblclick();
     await page.waitForFunction(() => document.querySelector('#metier-view').hidden);
     assert.equal(
       JSON.parse(await fs.readFile(path.join(profile, 'settings.json'), 'utf8')).metier,
@@ -102,8 +100,8 @@ const path = require('node:path');
     );
     assert.equal(await page.locator('.message.assistant .markdown strong').textContent(), 'test');
     await page.reload();
-    await page.waitForFunction(() => document.querySelector('#history button'));
-    await page.locator('#history button').click();
+    await page.waitForFunction(() => document.querySelector('#history .history-open'));
+    await page.locator('#history .history-open').click();
     assert.equal(
       await page.locator('.message.assistant p').textContent(),
       'Bonjour, test local réussi.',

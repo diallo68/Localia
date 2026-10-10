@@ -48,12 +48,10 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
     await page.waitForFunction(() =>
       document.querySelector('#history').textContent.includes('Mildiou à Dalaba'),
     );
-    // Premier lancement : question directe, sans choisir de métier (écran le plus simple).
+    // Premier lancement : double-clic sur un métier, l'interface s'ouvre tout de suite.
     await page.waitForFunction(() => !document.querySelector('#metier-view').hidden);
-    await page.locator('#quick-prompt').fill('');
-    await page.locator('#quick-send').click();
-    await page.waitForFunction(() => document.body.dataset.metier === 'general');
-    assert.equal(await page.locator('.pick[for=task]').isHidden(), true);
+    await page.locator('.metier-card[data-metier=administration]').dblclick();
+    await page.waitForFunction(() => document.body.dataset.metier === 'administration');
     // Sans modèle installé (machine de test sans Ollama) : le guide s'ouvre au premier lancement.
     await page.waitForFunction(() =>
       /Ollama|Aucun modèle|Moteur/.test(document.querySelector('#status').textContent),

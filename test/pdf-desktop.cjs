@@ -197,8 +197,8 @@ function packagedApp() {
     assert.match(payload.messages[1].content, /110 EUR/);
     assert.equal(payload.messages.at(-1).content, 'Vérifie les montants');
     await page.reload();
-    await page.waitForFunction(() => document.querySelector('#history button'));
-    await page.locator('#history button').click();
+    await page.waitForFunction(() => document.querySelector('#history .history-open'));
+    await page.locator('#history .history-open').click();
     assert.equal(await page.locator('#attachment').isVisible(), true);
     await page.screenshot({ path: 'test-results/pdf-desktop.png' });
     const documents = path.join(profile, 'documents');
@@ -218,7 +218,7 @@ function packagedApp() {
       false,
     );
     // Vérifications automatiques affichées sous la réponse.
-    await page.locator('#history button').click();
+    await page.locator('#history .history-open').click();
     await page.waitForFunction(() => document.querySelector('.message.assistant .checks'));
     const checks = await page.locator('.message.assistant .checks').first().textContent();
     assert.match(checks, /1 alerte/);
@@ -311,7 +311,7 @@ function packagedApp() {
     assert.equal((await documentFiles()).length, 1);
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#delete-conversation').click();
-    await page.waitForFunction(() => !document.querySelector('#history button'));
+    await page.waitForFunction(() => !document.querySelector('#history .history-open'));
     await waitFor(async () => (await documentFiles()).length === 0);
     const saved = JSON.parse(await fs.readFile(path.join(profile, 'conversations.json'), 'utf8'));
     assert.deepEqual(saved, []);

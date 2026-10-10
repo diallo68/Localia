@@ -23,6 +23,8 @@ const skillOf = (value) =>
     : null;
 // Fonctions appelées quand la liste des modèles installés change (comparaison, réglages).
 const modelListeners = [];
+// Avis de la réponse en cours (document transmis, mémoire du projet…), affichés dans #notice.
+let runNotes = [];
 // Fonctions appelées quand l'état des boutons doit être recalculé.
 const controlListeners = [];
 // Zone de dépôt de l'accueil : retirée de la page pendant une conversation, d'où la référence gardée.
@@ -91,6 +93,12 @@ const VIEWS = {
 };
 let lastBenchStep = 'compare';
 function view(name) {
+  // Avis d'une réponse précédente (« Texte transmis — pages … ») : retiré en changeant d'écran ;
+  // un message d'erreur, lui, reste affiché.
+  if (runNotes.length && $('notice').textContent === runNotes.join(' ')) {
+    runNotes = [];
+    notice('');
+  }
   for (const key of Object.keys(VIEWS)) {
     $(key + '-view').hidden = key !== name;
     $(key + '-tab').classList.toggle('active', key === name);
@@ -157,7 +165,10 @@ async function rememberModel(name) {
 function history() {
   $('history').replaceChildren();
   for (const c of conversations) {
+    const row = document.createElement('div');
+    row.className = 'history-row';
     const b = document.createElement('button');
+    b.className = 'history-open';
     const title = document.createElement('span');
     title.className = 'history-title';
     title.textContent = c.title;
@@ -185,7 +196,17 @@ function history() {
       render();
       view('chat');
     };
-    $('history').append(b);
+    // Corbeille : supprime cette conversation (confirmation demandée).
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'history-delete';
+    remove.title = 'Supprimer la conversation';
+    remove.setAttribute('aria-label', `Supprimer la conversation « ${c.title} »`);
+    remove.innerHTML = iconSvg('trash');
+    remove.disabled = chatting || importing;
+    remove.onclick = guard(() => deleteConversation(c));
+    row.append(b, remove);
+    $('history').append(row);
   }
 }
 const toHtml = createMarkdown(window.markdownit);
@@ -879,8 +900,9 @@ $('remove-pdf').onclick = guard(async () => {
   renderAttachment();
   await window.localia.deleteDocument(id);
 });
-$('delete-conversation').onclick = guard(async () => {
-  const conversation = current;
+$('delete-conversation').onclick = guard(() => deleteConversation(current));
+// Supprime une conversation, ses messages et les documents qu'elle seule utilise.
+async function deleteConversation(conversation) {
   if (!conversation || chatting || importing) return;
   if (
     !confirm(
@@ -888,16 +910,17 @@ $('delete-conversation').onclick = guard(async () => {
     )
   )
     return;
+  const wasOpen = current === conversation;
   conversations = conversations.filter((c) => c !== conversation);
-  current = null;
+  if (wasOpen) current = null;
   await persist();
   render();
-  view('chat');
+  if (wasOpen) view('chat');
   if (conversation.document) await window.localia.deleteDocument(conversation.document.id);
   for (const f of conversation.files || []) await window.localia.deleteDocument(f.id);
   for (const m of conversation.messages)
     for (const image of m.images || []) await window.localia.deleteDocument(image.id);
-});
+}
 $('chat-tab').onclick = () => view('chat');
 $('bench-nav').onclick = () => $(lastBenchStep + '-tab').click();
 $('models-tab').onclick = () => view('models');
@@ -1160,7 +1183,6 @@ $('custom-form').onsubmit = (event) => {
 };
 $('cancel-download').onclick = guard(() => window.localia.cancel('pull'));
 // Informations sur ce qui a été transmis au modèle pour la dernière question.
-let runNotes = [];
 // Nouvelle demande : le bandeau repart de zéro (préfixe : question d'une série, ex. « Q07 — »).
 function startRunNotes(prefix = '') {
   runNotes = prefix ? [prefix] : [];

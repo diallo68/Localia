@@ -29,6 +29,7 @@
           Localia adapte ses tâches, ses compétences et les modèles conseillés à votre travail. Vous
           pourrez en changer à tout moment.
         </p>
+        <p class="metier-hint">Double-cliquez sur votre métier pour commencer.</p>
         <label class="first-name" for="first-name"
           >Votre prénom <small>(facultatif)</small
           ><input id="first-name" maxlength="40" autocomplete="given-name"
@@ -43,34 +44,6 @@
           ><input type="checkbox" id="metier-encrypt" /> Chiffrer aussi mes données sur ce
           Mac</label
         >
-        <div>
-          <span>Choisi : <strong id="metier-chosen"></strong></span
-          ><button id="metier-cancel" type="button" hidden>Annuler</button
-          ><button id="metier-skip" type="button" hidden>Passer cette étape</button
-          ><button id="metier-continue" class="primary" type="button">
-            Continuer<i data-icon="arrow"></i>
-          </button>
-        </div>
-      </div>
-      <div class="metier-or"><span></span>ou, sans choisir de métier<span></span></div>
-      <div class="quick-question">
-        <h2>Une question ?</h2>
-        <p>Demandez à Localia. Vous pouvez joindre un document ou une photo.</p>
-        <div class="quick-box">
-          <label class="sr-only" for="quick-prompt">Votre question</label
-          ><textarea id="quick-prompt" rows="2" placeholder="Posez votre question…"></textarea>
-          <div>
-            <button id="quick-attach" class="round" type="button" aria-label="Joindre un fichier">
-              <i data-icon="paperclip"></i></button
-            ><button id="quick-photo" class="round" type="button" aria-label="Joindre une photo">
-              <i data-icon="camera"></i></button
-            ><span></span
-            ><button id="quick-send" class="primary" type="button">
-              Envoyer<i data-icon="send"></i>
-            </button>
-          </div>
-        </div>
-        <div id="quick-chips"></div>
       </div>
     </section>
     <aside>

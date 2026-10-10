@@ -30,9 +30,19 @@ function foundryCandidates(env = process.env, system = process.platform) {
     path.join(os.homedir(), '.local/bin/foundry'),
   ];
 }
+// lstat et non existsSync : sous Windows, foundry.exe est un « alias d'exécution » (lien
+// spécial de WindowsApps) que existsSync ne voit pas.
+function present(file) {
+  try {
+    fs.lstatSync(file);
+    return true;
+  } catch {
+    return false;
+  }
+}
 function foundryPath(env = process.env) {
-  if (env.FOUNDRY_PATH && fs.existsSync(env.FOUNDRY_PATH)) return env.FOUNDRY_PATH;
-  return foundryCandidates(env).find((p) => fs.existsSync(p)) || null;
+  if (env.FOUNDRY_PATH && present(env.FOUNDRY_PATH)) return env.FOUNDRY_PATH;
+  return foundryCandidates(env).find(present) || null;
 }
 
 const run = (command, args, timeout) =>
@@ -118,8 +128,28 @@ async function modelIds(base, env = process.env) {
   const ids = (data?.data || []).map((m) => m.id).filter(Boolean);
   const cli = foundryPath(env);
   if (!cli) return ids;
-  const cache = await run(cli, ['cache', 'list'], 20000);
-  return ids.filter((id) => cache.includes(id) || cache.includes(id.replace(/:\d+$/, '')));
+  return cachedIds(ids, await run(cli, ['cache', 'list'], 20000));
+}
+// Modèles du catalogue présents dans le cache. « foundry cache list » donne l'alias (nom court)
+// et l'appareil : « qwen2.5-0.5b | 822 MB | CPU » → qwen2.5-0.5b-instruct-generic-cpu:4.
+function cachedIds(ids, cache) {
+  const found = new Set(ids.filter((id) => cache.includes(id)));
+  for (const line of cache.split('\n')) {
+    const cells = line
+      .split('|')
+      .map((c) => c.trim())
+      .filter(Boolean);
+    if (cells.length < 2 || /^alias$/i.test(cells[0])) continue;
+    const alias = cells[0].toLowerCase();
+    const device = (cells.find((c) => /^(cpu|gpu|npu)$/i.test(c)) || '').toLowerCase();
+    const match =
+      ids.find(
+        (id) =>
+          id.toLowerCase().startsWith(alias + '-') && device && id.toLowerCase().includes(device),
+      ) || ids.find((id) => id.toLowerCase().startsWith(alias + '-'));
+    if (match) found.add(match);
+  }
+  return ids.filter((id) => found.has(id));
 }
 // Modèles déjà téléchargés dans Foundry Local, avec leur taille d'après le catalogue.
 async function listModels(base) {
@@ -252,6 +282,7 @@ module.exports = {
   foundryCandidates,
   foundryPath,
   parseEndpoint,
+  cachedIds,
   endpoint,
   listModels,
   readEvents,

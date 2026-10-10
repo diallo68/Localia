@@ -183,3 +183,23 @@ test('nouvelle version : modèles lus sur /v1/models quand /openai/models n’ex
     server.close();
   }
 });
+
+test('Foundry Local 0.11 : modèles du cache retrouvés à partir de leur alias et appareil', () => {
+  const ids = [
+    'deepseek-r1-distill-qwen-7b-generic-cpu:4',
+    'qwen2.5-0.5b-instruct-generic-gpu:4',
+    'qwen2.5-0.5b-instruct-generic-cpu:4',
+    'phi-4-mini-instruct-generic-cpu:5',
+  ];
+  const cache = [
+    '+-----------------------------------------+',
+    '| Alias        | Size   | Device | Loaded |',
+    '|--------------+--------+--------+--------|',
+    '| qwen2.5-0.5b | 822 MB | CPU    | ○      |',
+    '+-----------------------------------------+',
+  ].join('\r\n');
+  assert.deepEqual(foundry.cachedIds(ids, cache), ['qwen2.5-0.5b-instruct-generic-cpu:4']);
+  assert.deepEqual(foundry.cachedIds(ids, 'phi-4-mini-instruct-generic-cpu:5'), [
+    'phi-4-mini-instruct-generic-cpu:5',
+  ]);
+});

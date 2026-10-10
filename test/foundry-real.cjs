@@ -6,6 +6,15 @@ const foundry = require('../src/foundry.cjs');
 
 (async () => {
   const base = await foundry.endpoint({ start: true });
+  if (!base) {
+    // Diagnostic : commande trouvée et ce qu'elle répond.
+    const cli = foundry.foundryPath();
+    console.log('Commande foundry :', cli);
+    if (cli)
+      console.log(
+        require('node:child_process').spawnSync(cli, ['server', 'status'], { encoding: 'utf8' }),
+      );
+  }
   assert.ok(base, 'Foundry Local introuvable ou arrêté');
   const models = await foundry.listModels(base);
   console.log('Service :', base, '| modèles :', models.map((m) => m.name).join(', ') || 'aucun');

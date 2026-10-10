@@ -91,6 +91,9 @@ jobs:
         run: npm run test:pdf
       - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
         run: npm run test:encryption
+      # Foundry Local (Microsoft) simulé : service local au format d'OpenAI.
+      - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
+        run: npm run test:foundry
       # Moteur intégré réel : petit modèle de test (105 Mo, gardé en cache entre les passages).
       - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
         uses: actions/cache@v4
@@ -128,3 +131,33 @@ jobs:
             dist/*.AppImage
             dist/*.deb
           if-no-files-found: error
+
+  foundry:
+    name: Foundry Local réel (Windows)
+    needs: unit
+    # Sur demande seulement : installe Foundry Local et télécharge un petit modèle (~500 Mo).
+    if: github.event_name == 'workflow_dispatch' && (inputs.systemes == 'tous' || inputs.systemes == 'windows')
+    runs-on: windows-latest
+    timeout-minutes: 40
+    # Foundry Local est en préversion : un échec ici ne bloque pas les autres tests.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Foundry Local
+        shell: pwsh
+        run: |
+          winget install --id Microsoft.FoundryLocal --exact --silent --accept-source-agreements --accept-package-agreements
+          $dir = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps'
+          echo $dir >> $env:GITHUB_PATH
+          & (Join-Path $dir 'foundry.exe') --version
+      - name: Download a small model
+        shell: pwsh
+        run: |
+          foundry service start
+          foundry model download qwen2.5-0.5b
+      - run: npm run test:foundry-real

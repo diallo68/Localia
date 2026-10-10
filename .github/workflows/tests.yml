@@ -148,29 +148,29 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # foundry.exe est dans WindowsApps : ce dossier n'est pas ajouté au PATH (il contient aussi
+      # le bash de WSL, qui remplacerait celui de Git) ; Localia le trouve seul, FOUNDRY_PATH aussi.
       - name: Install Foundry Local
         shell: pwsh
         run: |
           winget install --id Microsoft.FoundryLocal --exact --silent --accept-source-agreements --accept-package-agreements
-          $dir = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps'
-          echo $dir >> $env:GITHUB_PATH
-          & (Join-Path $dir 'foundry.exe') --version
+          $foundry = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\foundry.exe'
+          echo "FOUNDRY_PATH=$foundry" >> $env:GITHUB_ENV
+          & $foundry --version
       - name: Download a small model
         shell: pwsh
-        run: |
-          foundry model download qwen2.5-0.5b
+        run: '& $env:FOUNDRY_PATH model download qwen2.5-0.5b'
       # Relevé de ce que répond le service (versions de Foundry Local en évolution).
       - name: Foundry Local diagnostics
         shell: pwsh
         continue-on-error: true
         run: |
-          foundry --version
-          foundry server status
-          $url = ((foundry server status) | Select-String -Pattern 'http://[^\s)]+' | Select-Object -First 1).Matches.Value
-          if ($url) { $base = ([uri]$url).GetLeftPart('Authority') } else { $base = '' }
-          echo "Service : $base"
-          foreach ($route in '/v1/models', '/openai/models', '/openai/loadedmodels', '/openai/status', '/models/loaded') {
-            try { $r = Invoke-WebRequest -UseBasicParsing "$base$route"; echo "$route -> $($r.StatusCode) $($r.Content.Substring(0, [Math]::Min(300, $r.Content.Length)))" }
+          & $env:FOUNDRY_PATH server status
+          & $env:FOUNDRY_PATH cache list
+          $url = ((& $env:FOUNDRY_PATH server status) | Select-String -Pattern 'http://[^\s)]+' | Select-Object -First 1).Matches.Value
+          $base = if ($url) { ([uri]$url).GetLeftPart('Authority') } else { '' }
+          foreach ($route in '/v1/models', '/models/loaded') {
+            try { $r = Invoke-WebRequest -UseBasicParsing "$base$route"; echo "$route -> $($r.StatusCode) $($r.Content.Length) octets" }
             catch { echo "$route -> $($_.Exception.Message)" }
           }
       - run: npm run test:foundry-real

@@ -18,8 +18,8 @@
           <div>Localia<small>L’IA, chez vous.</small></div>
         </div>
         <div class="segmented" role="group" aria-label="Langue">
-          <button id="lang-fr" type="button" aria-pressed="true">Français</button
-          ><button id="lang-en" type="button" aria-pressed="false">English</button>
+          <button id="lang-fr" type="button" data-lang="fr" aria-pressed="true">Français</button
+          ><button id="lang-en" type="button" data-lang="en" aria-pressed="false">English</button>
         </div>
       </div>
       <div class="metier-intro">
@@ -134,7 +134,13 @@
             <h2 id="home-greeting">Bonjour</h2>
             <p class="home-sub">Que voulez-vous faire aujourd’hui ?</p>
           </div>
-          <span id="home-engine" class="home-pill"></span>
+          <div class="home-side">
+            <span id="home-engine" class="home-pill"></span>
+            <div class="segmented" role="group" aria-label="Langue">
+              <button type="button" data-lang="fr" aria-pressed="true">Français</button
+              ><button type="button" data-lang="en" aria-pressed="false">English</button>
+            </div>
+          </div>
         </div>
         <div class="home-actions">
           <button id="home-ask" type="button">

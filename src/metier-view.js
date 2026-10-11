@@ -296,14 +296,15 @@ function adviceCard(metier) {
   return card;
 }
 
+// Choix de la langue : écran du métier et Accueil, boutons tenus d'accord.
 function langButtons() {
   const lang = settings.lang || 'fr';
-  $('lang-fr').setAttribute('aria-pressed', String(lang === 'fr'));
-  $('lang-en').setAttribute('aria-pressed', String(lang === 'en'));
+  for (const button of document.querySelectorAll('[data-lang]'))
+    button.setAttribute('aria-pressed', String(button.dataset.lang === lang));
 }
-for (const lang of ['fr', 'en'])
-  $('lang-' + lang).onclick = guard(async () => {
-    settings = await window.localia.saveSettings({ ...settings, lang });
+for (const button of document.querySelectorAll('[data-lang]'))
+  button.onclick = guard(async () => {
+    settings = await window.localia.saveSettings({ ...settings, lang: button.dataset.lang });
     langButtons();
     if (typeof applyLanguage === 'function') applyLanguage();
   });

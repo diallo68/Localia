@@ -3281,6 +3281,17 @@ body[data-view='home'] header {
   font-size: 20px;
   color: var(--muted);
 }
+.home-side {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+.home-side .segmented button {
+  padding: 5px 12px;
+  font-size: 12px;
+}
 .home-pill {
   display: inline-flex;
   align-items: center;

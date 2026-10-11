@@ -863,6 +863,15 @@ const EN_PATTERNS = [
   [/^○ Ollama arrêté$/, '○ Ollama stopped'],
   [/^○ Aucun modèle installé$/, '○ No model installed'],
   [/^Modèle : (.*)$/, 'Model: $1'],
+  [
+    /^(\d+) modèles? installés?$/,
+    (text) =>
+      text.replace(
+        / modèles? installés?$/,
+        parseInt(text) > 1 ? ' models installed' : ' model installed',
+      ),
+  ],
+  [/^([\d,]+) \/ ([\d,]+) Go$/, (text) => text.replace(/,/g, '.').replace(/ Go$/, ' GB')],
   [/^Localia : (.*)$/, 'Localia: $1'],
   // Ligne d'informations d'un modèle (Réglages).
   [

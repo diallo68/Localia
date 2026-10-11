@@ -37,6 +37,7 @@
   applyMetier();
   applyMode();
   applyLanguage();
+  langButtons();
   await refresh();
   if (isAdvanced() && settings.metier) openHome();
   // Données chiffrées sans clé : rien n'a été chargé ni ne sera enregistré ; on l'explique.

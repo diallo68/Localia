@@ -291,6 +291,112 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  Rang: 'Rank',
+  Chargement: 'Loading',
+  'Tous les correcteurs (moyenne)': 'All graders (average)',
+  'Classement des modèles': 'Model ranking',
+  'La justesse d’abord : classés par part de réponses correctes, puis par part d’inventions (la plus faible d’abord), puis par note moyenne, puis par rapidité. Un modèle lent qui répond juste passe devant un modèle rapide qui invente.':
+    'Accuracy first: ranked by share of correct answers, then by share of made-up facts (lowest first), then by average grade, then by speed. A slow model that answers correctly ranks above a fast model that makes things up.',
+  'Correctes ou partielles': 'Correct or partial',
+  'Note moyenne': 'Average grade',
+  'Réponses notées': 'Graded answers',
+  'Temps moyen': 'Average time',
+  'Résultats par modèle': 'Results by model',
+  Réponses: 'Answers',
+  Notées: 'Graded',
+  'Précision (correct)': 'Accuracy (correct)',
+  'Correct ou partiel': 'Correct or partial',
+  'Taux d’invention': 'Made-up rate',
+  'Note moyenne /5': 'Average grade /5',
+  'Temps moyen / réponse': 'Average time / answer',
+  'Temps médian': 'Median time',
+  'Génération (tokens/s)': 'Generation (tokens/s)',
+  'Lecture (tokens/s)': 'Prompt reading (tokens/s)',
+  'Tokens générés (moy.)': 'Tokens generated (avg.)',
+  Coupées: 'Cut off',
+  'Exporter ce tableau (CSV)': 'Export this table (CSV)',
+  'Quel modèle pour quelle tâche ?': 'Which model for which task?',
+  'Le plus précis, puis le moins inventif, puis le plus rapide, d’après les réponses notées des catégories de chaque tâche. Ce tableau alimente le menu « Tâche » des conversations. En dessous de 10 réponses notées, le conseil reste indicatif.':
+    'The most accurate, then the one that makes up the least, then the fastest, based on graded answers in each task’s categories. This table feeds the “Task” menu in conversations. Below 10 graded answers, the advice is only indicative.',
+  Précision: 'Accuracy',
+  'Plus rapide et presque aussi fiable': 'Faster and almost as reliable',
+  'pas assez de données': 'not enough data',
+  'Organiser des fichiers (onglet Fichiers)': 'Organise files (Files tab)',
+  'Précision (réponses correctes)': 'Accuracy (correct answers)',
+  'Part des réponses jugées correctes. Moustaches : écart-type entre répétitions.':
+    'Share of answers graded correct. Whiskers: standard deviation across repetitions.',
+  'Part des réponses contenant un fait faux présenté comme vrai.':
+    'Share of answers containing a false fact presented as true.',
+  'Note moyenne (sur 5)': 'Average grade (out of 5)',
+  'Vitesse de génération': 'Generation speed',
+  'Tokens générés par seconde (mesure d’Ollama).':
+    'Tokens generated per second (measured by Ollama).',
+  'Qualité et vitesse': 'Quality and speed',
+  'En haut à droite : précis et rapide.': 'Top right: accurate and fast.',
+  'Temps de réponse': 'Response time',
+  'Un point par réponse, trait : médiane. Chargement inclus.':
+    'One dot per answer, line: median. Loading included.',
+  'Précision par catégorie': 'Accuracy by category',
+  'Entre parenthèses : nombre de réponses notées.': 'In brackets: number of graded answers.',
+  'Précision et performances par métier': 'Accuracy and performance by profession',
+  'Pour chaque modèle : réponses correctes, inventions, puis temps moyen par réponse et vitesse d’écriture (jetons par seconde). « Meilleur choix » : la justesse d’abord, la rapidité seulement à justesse égale. Entre parenthèses : réponses coupées à la longueur maximale.':
+    'For each model: correct answers, made-up facts, then average time per answer and writing speed (tokens per second). “Best choice”: accuracy first, speed only when accuracy is equal. In brackets: answers cut off at the maximum length.',
+  'Meilleur choix': 'Best choice',
+  'Classement par métier': 'Ranking by profession',
+  'Pour chaque métier, du meilleur au moins bon : part de réponses correctes, puis moins d’inventions, puis note, puis rapidité.':
+    'For each profession, from best to worst: share of correct answers, then fewer made-up facts, then grade, then speed.',
+  'Réponses correctes par métier': 'Correct answers by profession',
+  'Stabilité entre répétitions': 'Stability across repetitions',
+  'Questions comparées': 'Questions compared',
+  'Réponses identiques': 'Identical answers',
+  'Verdict changé': 'Verdict changed',
+  'Écart-type des notes': 'Standard deviation of grades',
+  'Accord entre correcteurs': 'Agreement between graders',
+  'Réponses notées par les deux': 'Answers graded by both',
+  'Même verdict': 'Same verdict',
+  'Kappa de Cohen': 'Cohen’s kappa',
+  'Même avis sur l’invention': 'Same view on made-up facts',
+  'Écart moyen des notes': 'Average grade difference',
+  'Comparaison des correcteurs': 'Grader comparison',
+  'Précision selon le correcteur': 'Accuracy by grader',
+  'Part des réponses jugées correctes par chaque correcteur.':
+    'Share of answers graded correct by each grader.',
+  'Taux d’invention selon le correcteur': 'Made-up rate by grader',
+  'Part des réponses contenant un fait faux, selon chaque correcteur.':
+    'Share of answers containing a false fact, according to each grader.',
+  'Note moyenne selon le correcteur': 'Average grade by grader',
+  'Conditions de l’expérience': 'Experimental conditions',
+  'Exporter ce graphique en SVG': 'Export this chart as SVG',
+  'réflexion par défaut': 'default thinking',
+  'Exporter (CSV)': 'Export (CSV)',
+  'Vue d’ensemble': 'Overview',
+  'Moyenne des notes de tous les correcteurs, sur les réponses notées.':
+    'Average of all graders’ grades, over graded answers.',
+  'Tokens générés par seconde, sur l’ensemble des réponses (mesure d’Ollama).':
+    'Tokens generated per second, over all answers (measured by Ollama).',
+  'Temps total': 'Total time',
+  'Somme des temps de réponse, chargement compris.': 'Sum of response times, loading included.',
+  'dont chargement': 'of which loading',
+  Génération: 'Generation',
+  'Tokens générés': 'Tokens generated',
+  'Question par question': 'Question by question',
+  'Cliquez sur une case pour lire les réponses et les noter.':
+    'Click a cell to read the answers and grade them.',
+  Détail: 'Details',
+  État: 'Status',
+  'Lecture de la demande': 'Prompt reading',
+  Terminé: 'Done',
+  'Votre note :': 'Your grade:',
+  'Réutiliser la tâche': 'Reuse the task',
+  'Calculs, pages, citations et chiffres vérifiés automatiquement, sans modèle':
+    'Calculations, pages, quotes and figures checked automatically, without a model',
+  'Question affichée': 'Question shown',
+  'Chiffrer mes données': 'Encrypt my data',
+  'Pas de mise à jour (version de développement).': 'No updates (development version).',
+  'Désactivé : aucun autre appareil ne peut se connecter.': 'Off: no other device can connect.',
+  'Projet de la conversation : ses documents et ses notes sont envoyés au modèle':
+    'Conversation project: its documents and notes are sent to the model',
+  'Projet de la conversation': 'Conversation project',
   // Colonne, en-tête, barre
   'L’IA, chez vous.': 'AI, at home.',
   'Nouvelle conversation': 'New conversation',
@@ -974,6 +1080,131 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [
+    /^(.*) · (.*) · (\d+) question\(s\) × (\d+) modèle\(s\) × (\d+) répétition\(s\) · (\d+)\/(\d+) réponses notées$/,
+    '$1 · $2 · $3 question(s) × $4 model(s) × $5 repetition(s) · $6/$7 graded answers',
+  ],
+  [
+    /^Moyenne ± écart-type sur (\d+) répétitions\.$/,
+    'Mean ± standard deviation over $1 repetitions.',
+  ],
+  [
+    /^(\d+) % justes · (\d+) % inventions · (.*) · ([\d,]+) jetons\/s(.*)$/,
+    (t) =>
+      t.replace(
+        /^(\d+) % justes · (\d+) % inventions · (.*) · ([\d,]+) jetons\/s/,
+        (m, a, b, c, d) => `${a}% correct · ${b}% made up · ${c} · ${d.replace(',', '.')} tokens/s`,
+      ),
+  ],
+  [/^(.*) \((\d+) % justes · (.*)\)$/, '$1 ($2% correct · $3)'],
+  [
+    /^(.*) · (.*) : (\d+) % sur (\d+) réponse\(s\)$/,
+    (t) =>
+      t.replace(
+        /^(.*) · (.*) : (\d+) % sur (\d+) réponse\(s\)$/,
+        (m, row, column, value, n) => `${tr(row)} · ${tr(column)}: ${value}% over ${n} answer(s)`,
+      ),
+  ],
+  [/^(ChatGPT|Claude|Gemini|Mistral|Vous) :$/, (t) => `${tr(t.slice(0, -2))}:`],
+  [
+    /^([\d,]+) \((\d+) notées\)$/,
+    (t) =>
+      t.replace(/^([\d,]+) \((\d+) notées\)$/, (m, a, n) => `${a.replace(',', '.')} (${n} graded)`),
+  ],
+  [/^Vérifier les réponses \((\d+)\)$/, 'Check the answers ($1)'],
+  [/^(\d+) questions × (\d+) modèles?$/, '$1 questions × $2 models'],
+  [
+    /^(.*) · répétition (\d+)\/(\d+) · (.*) · (\d+) questions × (\d+) modèle\(s\)$/,
+    '$1 · repetition $2/$3 · $4 · $5 questions × $6 model(s)',
+  ],
+  [/^(.*) · (\d+) questions × (\d+) modèle\(s\)$/, '$1 · $2 questions × $3 model(s)'],
+  [/^(\d) sur 5$/, '$1 out of 5'],
+  [
+    /^(correct|partiel|faux) · (sans invention|invention) · (\d)\/5$/,
+    (t) =>
+      t
+        .replace('partiel', 'partial')
+        .replace('faux', 'wrong')
+        .replace('sans invention', 'nothing made up')
+        .replace(/· invention ·/, '· made up ·'),
+  ],
+  [/^(.*) · ([\d.]+) Go$/, '$1 · $2 GB'],
+  [/^(\d+) réponses notées · Benchmark$/, '$1 graded answers · Benchmark'],
+  [/^Supprimer la conversation « (.*) »$/, 'Delete the conversation “$1”'],
+  [/^(.*) · (\d+) note\(s\)$/, '$1 · $2 note(s)'],
+  [
+    /^(\d+) page\(s\) · Texte lu localement\./,
+    (t) =>
+      t
+        .replace(/^(\d+) page\(s\) · Texte lu localement\./, '$1 page(s) · Text read locally.')
+        .replace(
+          'Document long : seuls des extraits seront transmis selon la question.',
+          'Long document: only extracts relevant to the question will be sent.',
+        )
+        .replace('Pages sans texte non analysées : ', 'Pages without text not analysed: ')
+        .replace('Images et mise en page non analysées.', 'Images and layout not analysed.')
+        .replace(
+          / ⚠ Ce document contient une instruction adressée à l’IA \(page (.*)\) : elle ne doit pas être suivie\./,
+          ' ⚠ This document contains an instruction addressed to the AI (page $1): it must not be followed.',
+        ),
+  ],
+  [
+    /^Document Word · (\d+) section\(s\) · Texte lu localement\./,
+    (t) =>
+      t
+        .replace(
+          /^Document Word · (\d+) section\(s\) · Texte lu localement\./,
+          'Word document · $1 section(s) · Text read locally.',
+        )
+        .replace(
+          'Document long : seuls des extraits seront transmis selon la question.',
+          'Long document: only extracts relevant to the question will be sent.',
+        )
+        .replace('Images et mise en page non analysées.', 'Images and layout not analysed.')
+        .replace(
+          / ⚠ Ce document contient une instruction adressée à l’IA \(section (.*)\) : elle ne doit pas être suivie\./,
+          ' ⚠ This document contains an instruction addressed to the AI (section $1): it must not be followed.',
+        ),
+  ],
+  [
+    /^(Aucun autre appareil|Accès depuis vos autres appareils activé) · (aucune recherche en ligne|recherche bibliographique en ligne activée)$/,
+    (t) =>
+      t
+        .replace('Aucun autre appareil', 'No other device')
+        .replace('Accès depuis vos autres appareils activé', 'Access from your other devices on')
+        .replace('aucune recherche en ligne', 'no online search')
+        .replace('recherche bibliographique en ligne activée', 'online bibliography search on'),
+  ],
+  [
+    /^Chiffrement désactivé : (\d+) fichier\(s\) enregistré\(s\) en clair\./,
+    (t) =>
+      t
+        .replace(
+          /^Chiffrement désactivé : (\d+) fichier\(s\) enregistré\(s\) en clair\./,
+          'Encryption off: $1 file(s) saved unencrypted.',
+        )
+        .replace('FileVault est activé sur ce Mac.', 'FileVault is on for this Mac.'),
+  ],
+  [
+    /^(.*), (conseillé|votre choix) : changer de modèle$/,
+    (t) =>
+      t
+        .replace(/, conseillé : changer de modèle$/, ', recommended: change model')
+        .replace(/, votre choix : changer de modèle$/, ', your choice: change model'),
+  ],
+  [/^le mieux noté en (.*) dans vos séries$/, 'the best graded in $1 in your series'],
+  [
+    /^(Précision \(réponses correctes\)|Taux d’invention|Note moyenne \(sur 5\)|Vitesse de génération|Qualité et vitesse|Temps de réponse|Précision selon le correcteur|Taux d’invention selon le correcteur|Note moyenne selon le correcteur|Temps total) : /,
+    (t) => {
+      const [title, rest] = t.split(/ : (.*)/s);
+      return `${tr(title)}: ${rest
+        .replace(/(\d),(\d)/g, '$1.$2')
+        .replace(/ %/g, '%')
+        .replace(/ médiane /g, ' median ')
+        .replace(/\((\d+) notées\)/g, '($1 graded)')
+        .replace(/ ; /g, '; ')}`;
+    },
+  ],
   [
     /^Mémoire : ([\d\s\u202f]+) caractères\./,
     (text) =>

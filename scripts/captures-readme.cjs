@@ -3,12 +3,13 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 // Captures du README (docs/*.png, 3120 × 1744) sur un profil de démonstration fictif :
-// npm run captures. Aucune donnée réelle n'est utilisée.
+// npm run captures (en anglais dans docs/en : npm run captures -- en). Aucune donnée réelle n'est utilisée.
 const { execFileSync } = require('node:child_process');
-const out = path.join(__dirname, '..', 'docs');
+const lang = process.argv[2] === 'en' ? 'en' : 'fr';
+const out = path.join(__dirname, '..', 'docs', lang === 'en' ? 'en' : '');
 (async () => {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-demo-'));
-  execFileSync(process.execPath, [path.join(__dirname, 'demo-data.cjs'), profile]);
+  execFileSync(process.execPath, [path.join(__dirname, 'demo-data.cjs'), profile, lang]);
   await fs.mkdir(out, { recursive: true });
   const app = await electron.launch({
     args: [path.join(__dirname, '..')],

@@ -1,7 +1,10 @@
 // Profil de démonstration fictif pour les captures du README (scripts/captures-readme.cjs).
+// node scripts/demo-data.cjs <dossier> [en] : « en » donne un profil en anglais.
 const fs = require('node:fs');
 const path = require('node:path');
 const dir = process.argv[2];
+const EN = process.argv[3] === 'en';
+const t = (fr, en) => (EN ? en : fr);
 fs.mkdirSync(path.join(dir, 'documents'), { recursive: true });
 let seed = 7;
 const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
@@ -13,7 +16,7 @@ write('settings.json', {
   metier: 'finance',
   mode: 'avance',
   firstName: 'Awa',
-  lang: 'fr',
+  lang: t('fr', 'en'),
   guideDone: true,
   lastModel: 'qwen3:8b',
   models: {},
@@ -22,20 +25,25 @@ write('settings.json', {
 });
 
 const docId = 'demo-doc-bilan';
+const DOC_NAME = t('Bilan_2025_Boulangerie_Durand.pdf', 'Durand_Bakery_2025_Report.pdf');
 fs.writeFileSync(
   path.join(dir, 'documents', docId + '.json'),
   JSON.stringify({
     id: docId,
-    name: 'Bilan_2025_Boulangerie_Durand.pdf',
+    name: DOC_NAME,
     pages: [
       {
         number: 1,
-        text: 'Bilan d’activité 2025 – Boulangerie Durand (entreprise fictive). Chiffre d’affaires : 412 000 €.',
+        text: t(
+          'Bilan d’activité 2025 – Boulangerie Durand (entreprise fictive). Chiffre d’affaires : 412 000 €.',
+          'Annual report 2025 – Durand Bakery (fictional business). Revenue: €412,000.',
+        ),
       },
     ],
   }),
 );
-const answer = `D’après le bilan, l’année 2025 se résume ainsi :
+const answer = t(
+  `D’après le bilan, l’année 2025 se résume ainsi :
 
 | Indicateur | 2025 | Évolution |
 |---|---|---|
@@ -46,17 +54,30 @@ const answer = `D’après le bilan, l’année 2025 se résume ainsi :
 - Le bilan prévoit **45 000 €** d’investissements en 2026, surtout pour le four (p. 4).
 - Le financement associe un **prêt de 30 000 €** et **15 000 €** de trésorerie (p. 5).
 
-Vérifiez ces montants avec les comptes annuels.`;
+Vérifiez ces montants avec les comptes annuels.`,
+  `According to the report, 2025 can be summed up as follows:
+
+| Indicator | 2025 | Change |
+|---|---|---|
+| Revenue | €412,000 | +6% |
+| Online sales | 9% of sales | 3% in 2024 |
+| Margin | −2 points | electricity +18% |
+
+- The report plans **€45,000** of investment in 2026, mainly for the oven (p. 4).
+- It is financed by a **€30,000 loan** and **€15,000** from cash reserves (p. 5).
+
+Check these figures against the annual accounts.`,
+);
 write('conversations.json', [
   {
     id: 'demo-c1',
-    title: 'Bilan 2025 : chiffres clés',
+    title: t('Bilan 2025 : chiffres clés', '2025 report: key figures'),
     model: 'qwen3:8b',
     updatedAt: iso(1),
     projectId: 'demo-p1',
     document: {
       id: docId,
-      name: 'Bilan_2025_Boulangerie_Durand.pdf',
+      name: DOC_NAME,
       pageCount: 6,
       characters: 8200,
       emptyPages: [],
@@ -64,51 +85,72 @@ write('conversations.json', [
     messages: [
       {
         role: 'user',
-        content: 'D’après ce bilan, quels sont les chiffres clés de 2025 ?',
+        content: t(
+          'D’après ce bilan, quels sont les chiffres clés de 2025 ?',
+          'According to this report, what are the key figures for 2025?',
+        ),
       },
       { role: 'assistant', content: answer, model: 'qwen3:8b', interrupted: false },
     ],
   },
   {
     id: 'demo-c2',
-    title: 'Courriel de relance client',
+    title: t('Courriel de relance client', 'Payment reminder email'),
     model: 'gemma3:12b',
     updatedAt: iso(26),
     messages: [
       {
         role: 'user',
-        content: 'Aide-moi à relancer poliment un client qui n’a pas payé sa facture.',
+        content: t(
+          'Aide-moi à relancer poliment un client qui n’a pas payé sa facture.',
+          'Help me send a polite reminder to a client who has not paid their invoice.',
+        ),
       },
       {
         role: 'assistant',
-        content:
+        content: t(
           'Objet : Facture n° 2025-118 en attente de règlement\n\nBonjour Madame Martin,\n\nSauf erreur de notre part…',
+          'Subject: Invoice no. 2025-118 awaiting payment\n\nDear Ms Martin,\n\nUnless we are mistaken…',
+        ),
         model: 'gemma3:12b',
       },
     ],
   },
   {
     id: 'demo-c3',
-    title: 'Résumé d’un contrat de location',
+    title: t('Résumé d’un contrat de location', 'Lease agreement summary'),
     model: 'qwen3:8b',
     updatedAt: iso(70),
     messages: [
-      { role: 'user', content: 'Résume ce contrat de location en cinq points.' },
-      { role: 'assistant', content: 'Voici les cinq points principaux…', model: 'qwen3:8b' },
+      {
+        role: 'user',
+        content: t(
+          'Résume ce contrat de location en cinq points.',
+          'Summarise this lease in five points.',
+        ),
+      },
+      {
+        role: 'assistant',
+        content: t('Voici les cinq points principaux…', 'Here are the five main points…'),
+        model: 'qwen3:8b',
+      },
     ],
   },
 ]);
 write('projects.json', [
   {
     id: 'demo-p1',
-    name: 'Bilan 2025 – Boulangerie Durand',
-    description: 'Bilan annuel et projets 2026.',
+    name: t('Bilan 2025 – Boulangerie Durand', '2025 Report – Durand Bakery'),
+    description: t('Bilan annuel et projets 2026.', 'Annual report and 2026 plans.'),
     createdAt: iso(400),
     notes: [
       {
         id: 'n1',
-        title: 'Points à vérifier',
-        text: 'Montant de l’aide régionale pour le four : à confirmer.',
+        title: t('Points à vérifier', 'To check'),
+        text: t(
+          'Montant de l’aide régionale pour le four : à confirmer.',
+          'Amount of the regional grant for the oven: to be confirmed.',
+        ),
         createdAt: iso(5),
       },
     ],
@@ -116,7 +158,7 @@ write('projects.json', [
   },
   {
     id: 'demo-p2',
-    name: 'Site web de l’association',
+    name: t('Site web de l’association', 'Charity website'),
     description: '',
     createdAt: iso(300),
     notes: [],
@@ -124,7 +166,7 @@ write('projects.json', [
   },
 ]);
 
-const QUESTIONS = [
+const QUESTIONS_FR = [
   ['E01 QCM sur un texte', 'Rédaction'],
   ['E02 Barème d’un examen', 'Calcul'],
   ['E03 Plan de cours', 'Rédaction'],
@@ -141,6 +183,24 @@ const QUESTIONS = [
   ['F04 Montant à extraire', 'Extraction'],
   ['F05 Échéance absente', 'Honnêteté'],
 ];
+const QUESTIONS_EN = [
+  ['E01 Quiz on a text', 'Writing'],
+  ['E02 Exam marking scheme', 'Calculation'],
+  ['E03 Lesson plan', 'Writing'],
+  ['E04 Article summary', 'Summary'],
+  ['E05 Missing information', 'Honesty'],
+  ['S01 Dose by body weight', 'Calculation'],
+  ['S02 Patient file summary', 'Summary'],
+  ['S03 Blood pressure', 'Extraction'],
+  ['S04 Medical report', 'Writing'],
+  ['S05 Unmentioned allergy', 'Honesty'],
+  ['F01 VAT on an invoice', 'Calculation'],
+  ['F02 Inconsistent total', 'Inconsistencies'],
+  ['F03 Budget forecast', 'Calculation'],
+  ['F04 Amount to extract', 'Extraction'],
+  ['F05 Missing due date', 'Honesty'],
+];
+const QUESTIONS = EN ? QUESTIONS_EN : QUESTIONS_FR;
 const MODELS = {
   'gemma3:12b': {
     ok: 0.82,
@@ -180,13 +240,13 @@ const records = [1, 2].map((rep) => ({
   groupId: 'demo-groupe',
   repetition: rep,
   repetitions: 2,
-  title: 'Série « métiers » de démonstration',
+  title: t('Série « métiers » de démonstration', 'Demonstration “professions” series'),
   env: {
     capturedAt: iso(30),
     localia: '0.5.0',
     ollama: '0.35.0',
     machine: {
-      cpu: 'Processeur de démonstration',
+      cpu: t('Processeur de démonstration', 'Demonstration processor'),
       physicalCores: 8,
       logicalCores: 16,
       memoryGB: 16,
@@ -211,8 +271,11 @@ const records = [1, 2].map((rep) => ({
   questions: QUESTIONS.map(([label, category]) => ({
     label,
     category,
-    prompt: `Question de démonstration : ${label.slice(4)}.`,
-    expected: 'Réponse attendue (démonstration).',
+    prompt: t(
+      `Question de démonstration : ${label.slice(4)}.`,
+      `Demonstration question: ${label.slice(4)}.`,
+    ),
+    expected: t('Réponse attendue (démonstration).', 'Expected answer (demonstration).'),
   })),
   models: Object.keys(MODELS),
   results: QUESTIONS.flatMap((_, q) =>
@@ -227,7 +290,7 @@ const records = [1, 2].map((rep) => ({
           invention,
           rating:
             verdict === 'correct' ? 4 + (rand() < 0.5 ? 1 : 0) : verdict === 'partiel' ? 3 : 2,
-          comment: 'Note de démonstration.',
+          comment: t('Note de démonstration.', 'Demonstration note.'),
           at: iso(20),
         };
       };
@@ -235,7 +298,7 @@ const records = [1, 2].map((rep) => ({
         q,
         model,
         status: 'done',
-        text: 'Réponse de démonstration.',
+        text: t('Réponse de démonstration.', 'Demonstration answer.'),
         stats: {
           totalMs: Math.round(total * 1000),
           loadMs: 3000,

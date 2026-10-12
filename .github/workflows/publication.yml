@@ -1,0 +1,55 @@
+name: Publication
+
+# Nouvelle version : changer « version » dans package.json, puis envoyer l'étiquette du même
+# numéro (git tag v0.6.0 && git push origin v0.6.0). Les 4 applications sont construites et
+# déposées dans une publication en BROUILLON sur GitHub : rien n'est proposé aux utilisateurs
+# tant qu'elle n'est pas publiée à la main (onglet Releases). Voir docs/MISES-A-JOUR.md.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS Apple Silicon
+            os: macos-15
+            build: --mac dmg zip --arm64
+          - name: macOS Intel
+            os: macos-15-intel
+            build: --mac dmg zip --x64
+          - name: Windows
+            os: windows-latest
+            build: --win nsis zip --x64
+          - name: Linux
+            os: ubuntu-latest
+            build: --linux AppImage deb --x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: Étiquette et version identiques
+        run: |
+          version=$(node -p "require('./package.json').version")
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "Étiquette $GITHUB_REF_NAME ≠ version $version de package.json"; exit 1; }
+      - run: npm ci
+      - run: npm test
+      - name: Construction et dépôt dans le brouillon de publication
+        run: npx electron-builder ${{ matrix.build }} --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'

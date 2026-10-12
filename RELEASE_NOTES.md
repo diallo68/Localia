@@ -2,6 +2,24 @@
 
 *Notes de version en français plus bas.*
 
+## 0.6.0 — 2026-10-12
+
+- **New home in simple mode (the default)**: choose your field (General, Teaching, Finance, Health, and “More”: Researcher, Legal, Administration, Business, Engineering, Communication), the kind of request (ask a question, analyse a document, explore an idea), the recommended model shown in the input box (“Recommended” or “Your choice”), suggestions, and “Resume a project”. Sidebar: Home, “Analyse your PC”, projects, recent conversations; language (FR/EN) and “Ready” status at the top right.
+- **Documents in projects**: add several files at once (button or drag and drop): PDF (even scanned), Word, Excel, **PowerPoint** (new reader, speaker notes included), CSV, text and **photos** (text read by character recognition). In a conversation linked to the project, the passages closest to each question are sent to the model with the document name and the page, section or slide. Choose the project directly in the input box, or “Ask a question about this project”. The model knows your projects and explains how to link one.
+- **Photos with any model**: when the model cannot read images (built-in engine, Foundry, Apple…), the text of the photo is read on the computer (OCR) and sent with the message.
+- **Scanned PDFs, Word and Excel** are read (OCR in French and English, offline).
+- **Voice dictation** transcribed on the computer (whisper.cpp), no Internet.
+- **Answers**: copy, listen, export to PDF or **Word (.docx)**; search conversations; delete several conversations at once.
+- **Automatic model choice** from the computer (memory, processor, disk) and the field, preferring your own Benchmark results; your manual choice is kept.
+- **Graphics card setting** for the built-in engine (Automatic / Always / Never), with the card actually used shown in “Analyse your PC”.
+- **Offline model install**: from a file (USB stick), with SHA-256 check, and copy to a stick.
+- **Automatic updates** from GitHub: install on restart on Windows and Linux; on unsigned Macs, the disk image is downloaded, checked and opened.
+- **Accessibility**: text size, high contrast (also follows the system setting).
+- **Two more engines**: Foundry Local (Microsoft, Windows) and Apple Intelligence (macOS 26).
+- **Field instructions** (Health, Legal, Finance, Administration): general questions answered, caution kept; no invented anonymisation labels.
+- **Benchmark**: series per field (Research, Coding, Telecoms, Cybersecurity…), model ranking per field.
+- Fixes: an empty answer (whole length spent thinking) is now explained instead of silently dropped; input box layout in simple mode.
+
 ## 0.5.0 — 2026-10-05
 
 - **Automatic checks, without any model**, under every answer (chat and comparison): calculations written in the answer are recomputed (e.g. “41.4 × 1000 × 0.30 = 12.42” flagged, exact 12,420); impossible page or excerpt references; quotations not found word for word in the document; numbers absent from the document. On the author's own series, every flagged answer had also been judged erroneous by the graders, with no false alarm.
@@ -53,6 +71,24 @@
 ---
 
 # Notes de version
+
+## 0.6.0 — 12 octobre 2026
+
+- **Nouvel accueil du mode simple (par défaut)** : choix du domaine (Général, Enseignement, Finance, Santé, et « Autres » : Chercheur, Juridique, Administration, Entreprise, Ingénierie, Communication), du type de demande (poser une question, analyser un document, explorer une idée), modèle conseillé affiché dans la zone de saisie (« Conseillé » ou « Votre choix »), suggestions et « Reprendre un projet ». Colonne : Accueil, « Analyser votre PC », projets, conversations récentes ; langue (FR/EN) et état « Prêt » en haut à droite.
+- **Documents dans les projets** : plusieurs fichiers à la fois (bouton ou glisser-déposer) : PDF (même scanné), Word, Excel, **PowerPoint** (nouveau lecteur, notes de l'orateur comprises), CSV, textes et **photos** (texte lu par reconnaissance de caractères). Dans une conversation du projet, les passages les plus proches de chaque question sont envoyés au modèle avec le nom du document et la page, la section ou la diapositive. Projet choisi directement dans la zone de saisie, ou « Poser une question sur ce projet ». Le modèle connaît vos projets et explique comment en relier un.
+- **Photos avec tous les modèles** : si le modèle ne lit pas les images (moteur intégré, Foundry, Apple…), le texte de la photo est lu sur l'ordinateur et envoyé avec le message.
+- **PDF scannés, Word et Excel** lus (OCR français et anglais, sans Internet).
+- **Dictée vocale** transcrite sur l'ordinateur (whisper.cpp), sans Internet.
+- **Réponses** : copier, écouter, exporter en PDF ou en **Word (.docx)** ; recherche dans les conversations ; suppression de plusieurs conversations à la fois.
+- **Choix automatique du modèle** selon l'ordinateur (mémoire, processeur, disque) et le domaine, en préférant vos résultats du Benchmark ; votre choix manuel est respecté.
+- **Réglage de la carte graphique** du moteur intégré (Automatique / Toujours / Jamais), avec la carte réellement utilisée affichée dans « Analyser votre PC ».
+- **Modèles sans Internet** : installation depuis un fichier (clé USB), empreinte SHA-256 vérifiée, et copie vers une clé.
+- **Mises à jour automatiques** depuis GitHub : installation au redémarrage sous Windows et Linux ; sur Mac non signé, l'image disque est téléchargée, vérifiée et ouverte.
+- **Accessibilité** : taille du texte, contraste élevé (qui suit aussi le réglage du système).
+- **Deux moteurs de plus** : Foundry Local (Microsoft, Windows) et Apple Intelligence (macOS 26).
+- **Consignes des métiers** (Santé, Juridique, Finance, Administration) : questions générales acceptées, prudence gardée ; plus d'étiquettes d'anonymisation inventées.
+- **Benchmark** : séries par métier (Recherche, Codage, Télécoms, Cybersécurité…), classement des modèles par métier.
+- Corrections : une réponse vide (toute la longueur passée à réfléchir) est expliquée au lieu d'être effacée sans message ; présentation de la zone de saisie en mode simple.
 
 ## 0.5.0 — 5 octobre 2026
 

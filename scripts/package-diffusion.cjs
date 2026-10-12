@@ -40,6 +40,8 @@ require('electron-builder')
     [arch]: true,
     config: {
       ...pkg.build,
+      // Version signée : les mises à jour s'installent automatiquement sur Mac (src/updates.cjs).
+      extraMetadata: { signedRelease: true },
       mac: {
         ...pkg.build.mac,
         identity: identity.replace(/^Developer ID Application: /, ''),

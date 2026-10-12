@@ -74,6 +74,7 @@ const foundry = require('./foundry.cjs');
 const appleFm = require('./apple-fm.cjs');
 const { CATALOG, catalogEntry, downloadUrl } = require('./catalog.js');
 const { downloadFile } = require('./download.cjs');
+const updates = require('./updates.cjs');
 const { createDictation, fake: fakeDictation } = require('./dictation.cjs');
 const QRCode = require('qrcode');
 const { detectInjection } = require('./verify.js');
@@ -914,6 +915,44 @@ handle('microphone-access', async () => {
   if (process.platform !== 'darwin') return true;
   if (systemPreferences.getMediaAccessStatus('microphone') === 'granted') return true;
   return systemPreferences.askForMediaAccess('microphone');
+});
+// --- Mises à jour de Localia ---------------------------------------------------------------------
+let updaterInstance = null;
+const updater = () =>
+  (updaterInstance ??=
+    process.env.LOCALIA_FAKE_UPDATE === '1'
+      ? updates.fakeUpdater({ send })
+      : updates.createUpdater({
+          currentVersion: app.getVersion(),
+          platform: process.platform,
+          arch: process.arch,
+          // Version signée par package:diffusion (Developer ID) : installation automatique sur Mac.
+          signed: require('../package.json').signedRelease === true,
+          packaged: app.isPackaged,
+          downloadsDir: app.getPath('downloads'),
+          send,
+          downloadFile,
+          openPath: (file) => shell.openPath(file),
+        }));
+handle('update-status', () => ({
+  version: app.getVersion(),
+  mode: updater().mode,
+  // Délai de la recherche au démarrage (réduit par les tests).
+  delay: Number(process.env.LOCALIA_UPDATE_DELAY) || 8000,
+}));
+handle('update-check', () => updater().check());
+handle('update-download', () => updater().download());
+handle('update-install', () => updater().install());
+// Notes de version : page GitHub de Localia seulement, ouverte dans le navigateur.
+handle('update-notes', async (url) => {
+  const parsed = new URL(String(url));
+  if (
+    parsed.protocol !== 'https:' ||
+    parsed.hostname !== 'github.com' ||
+    !parsed.pathname.startsWith(`/${updates.REPO}/releases`)
+  )
+    throw new Error('Adresse non autorisée.');
+  await shell.openExternal(parsed.href);
 });
 let currentDownload = null; // { id, controller }
 const partialSize = (file) =>

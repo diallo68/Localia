@@ -494,6 +494,21 @@ const EN = {
   'Aucune conversation trouvée.': 'No conversation found.',
   'Taille du texte': 'Text size',
   'Contraste élevé': 'High contrast',
+  Nouveautés: 'What’s new',
+  'Plus tard': 'Later',
+  Télécharger: 'Download',
+  Ouvrir: 'Open',
+  'Redémarrer maintenant': 'Restart now',
+  'Mises à jour de Localia': 'Localia updates',
+  'Localia peut vérifier au démarrage si une nouvelle version est publiée sur GitHub. Seule la liste publique des versions est lue : aucune donnée ne quitte cet ordinateur. Rien n’est installé sans votre accord.':
+    'Localia can check at startup whether a new version is published on GitHub. Only the public list of versions is read: no data leaves this computer. Nothing is installed without your consent.',
+  'Rechercher les mises à jour au démarrage': 'Check for updates at startup',
+  'Rechercher maintenant': 'Check now',
+  'Recherche en cours…': 'Checking…',
+  'Localia est à jour.': 'Localia is up to date.',
+  'Recherche impossible : ': 'Check failed: ',
+  'Image disque ouverte : glissez Localia dans Applications.':
+    'Disk image opened: drag Localia into Applications.',
   'Contraste élevé : textes plus foncés et bordures plus visibles':
     'High contrast: darker text and more visible borders',
   'Texte normal': 'Normal text',
@@ -599,7 +614,6 @@ const EN = {
   'Mettre en pause': 'Pause',
   'Autre fichier GGUF de Hugging Face (adresse du fichier)':
     'Another GGUF file from Hugging Face (file address)',
-  Télécharger: 'Download',
   'Avec Ollama (facultatif)': 'With Ollama (optional)',
   'Si Ollama est installé, Localia utilise aussi ses modèles. Téléchargement par Ollama :':
     'If Ollama is installed, Localia also uses its models. Download through Ollama:',

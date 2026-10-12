@@ -83,6 +83,8 @@ const readJson = async (profile, name) => {
         LOCALIA_REMOTE_PORT: '47899',
         LOCALIA_FAKE_LLAMA: '1',
         LOCALIA_FAKE_WHISPER: '1',
+        LOCALIA_FAKE_UPDATE: '1',
+        LOCALIA_UPDATE_DELAY: '300',
         OLLAMA_MODELS: path.join(profile, 'ollama-models'),
       },
     });
@@ -90,6 +92,30 @@ const readJson = async (profile, name) => {
     // Les tests manipulent les réglages avancés : panneau ouvert (retenu après rechargement).
     await page.waitForFunction(() => typeof setChatPanel === 'function');
     await page.evaluate(() => setChatPanel(true));
+    // Mise à jour (simulée) : bandeau au démarrage, téléchargement, puis installation au
+    // redémarrage ; recherche désactivable dans Confidentialité et sécurité.
+    await page.waitForFunction(() =>
+      document.querySelector('#update-text').textContent.includes('Localia 9.9.9 est disponible'),
+    );
+    await page.locator('#update-go').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#update-text').textContent.includes('s’installera au redémarrage'),
+    );
+    assert.equal(await page.locator('#update-go').textContent(), 'Redémarrer maintenant');
+    await page.locator('#update-go').click();
+    await page.locator('#update-later').click();
+    assert.equal(await page.locator('#update-banner').isVisible(), false);
+    await page.locator('#security-tab').click();
+    await page.waitForFunction(() => document.querySelector('#updates-enabled').checked);
+    await page.locator('#updates-enabled').uncheck();
+    await page.waitForFunction(async () => (await window.localia.loadSettings()).updates === 'off');
+    await page.locator('#updates-check').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#updates-status').textContent.includes('9.9.9'),
+    );
+    await page.locator('#updates-enabled').check();
+    await page.waitForFunction(async () => (await window.localia.loadSettings()).updates !== 'off');
+    await page.locator('#chat-tab').click();
     settleWrites = async () => {
       // Deux passages : une sauvegarde demandée pendant le premier est aussi attendue.
       for (let i = 0; i < 2; i++) {

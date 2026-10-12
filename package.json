@@ -93,6 +93,14 @@
       "node_modules/tesseract.js-core/**",
       "node_modules/@tesseract.js-data/**",
       "node_modules/smart-whisper/**"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "diallo68",
+        "repo": "Localia",
+        "releaseType": "draft"
+      }
     ]
   },
   "devDependencies": {
@@ -106,6 +114,7 @@
     "@napi-rs/canvas": "1.0.10",
     "@tesseract.js-data/eng": "1.0.0",
     "@tesseract.js-data/fra": "1.0.0",
+    "electron-updater": "6.8.10",
     "node-llama-cpp": "^3.22.1",
     "pdfjs-dist": "^6.4.299",
     "qrcode": "^1.5.4",

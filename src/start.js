@@ -3,6 +3,7 @@
   settings = await window.localia.loadSettings().catch(() => settings);
   textSizeButtons();
   applyContrast();
+  scheduleUpdateCheck().catch(() => {});
   try {
     const saved = await window.localia.load();
     if (

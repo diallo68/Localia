@@ -71,6 +71,8 @@ function normalizeSettings(raw) {
   if (TEXT_SIZES.includes(raw.textSize) && raw.textSize !== 1) settings.textSize = raw.textSize;
   // Interface : simple (conversation d'abord) ou avancée (tableau de bord et tous les outils).
   if (raw.mode === 'avance') settings.mode = 'avance';
+  // Recherche des mises à jour au démarrage : active sauf si l'utilisateur l'a désactivée.
+  if (raw.updates === 'off') settings.updates = 'off';
   // Contraste : « fort » choisi, ou « normal » pour ignorer le réglage du système.
   if (['fort', 'normal'].includes(raw.contrast)) settings.contrast = raw.contrast;
   // Modèle choisi par l'utilisateur lui-même : Localia ne le change plus automatiquement.

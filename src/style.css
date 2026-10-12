@@ -3770,3 +3770,28 @@ img.logo {
   color: var(--on-accent);
   background: var(--accent);
 }
+
+/* Bandeau de mise à jour */
+.update-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 16px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent-soft);
+  font-size: 13px;
+}
+.update-banner[hidden] {
+  display: none;
+}
+.update-banner progress {
+  flex: 1 1 120px;
+}
+.update-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}

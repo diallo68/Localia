@@ -135,6 +135,15 @@
         </button>
       </nav>
       <div id="notice" role="alert" hidden></div>
+      <div id="update-banner" class="update-banner" role="status" hidden>
+        <span id="update-text"></span>
+        <progress id="update-progress" max="100" hidden></progress>
+        <span class="update-actions"
+          ><button id="update-go" class="primary" type="button"></button
+          ><button id="update-notes" class="link-button" type="button">Nouveautés</button
+          ><button id="update-later" class="link-button" type="button">Plus tard</button></span
+        >
+      </div>
       <section id="home-view" class="page" hidden>
         <div class="home-top">
           <div>
@@ -1034,6 +1043,22 @@
             ><span id="mask-status" class="muted" role="status"></span>
           </div>
         </section>
+        <section id="updates" aria-labelledby="updates-title">
+          <h3 id="updates-title">Mises à jour de Localia</h3>
+          <p class="muted">
+            Localia peut vérifier au démarrage si une nouvelle version est publiée sur GitHub. Seule
+            la liste publique des versions est lue : aucune donnée ne quitte cet ordinateur. Rien
+            n’est installé sans votre accord.
+          </p>
+          <label class="check"
+            ><input type="checkbox" id="updates-enabled" /> Rechercher les mises à jour au
+            démarrage</label
+          >
+          <div class="input-row">
+            <button id="updates-check" type="button">Rechercher maintenant</button>
+          </div>
+          <p id="updates-status" class="muted" role="status"></p>
+        </section>
         <section id="remote" aria-labelledby="remote-title">
           <h3 id="remote-title">Accès depuis vos autres appareils</h3>
           <p class="muted">
@@ -1212,6 +1237,7 @@
     <script src="catalog-view.js"></script>
     <script src="model-choice.js"></script>
     <script src="dictation-view.js"></script>
+    <script src="updates-view.js"></script>
     <script src="start.js"></script>
   </body>
 </html>

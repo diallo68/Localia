@@ -222,3 +222,27 @@ $('simple-pc').onclick = () => $('performance-tab').click();
 $('simple-new-project').onclick = newProject;
 $('resume-all').onclick = () => $('projects-tab').click();
 modelListeners.push(updateReadyPill);
+
+// Projet de la conversation, choisi dans la zone de saisie (le menu « Projet » des réglages
+// avancés reste la référence) : ses documents et ses notes sont envoyés au modèle.
+function syncComposerProject() {
+  const select = $('composer-project');
+  select.replaceChildren(
+    ...[...$('project').options].map((o) => new Option(o.value ? o.text : 'Sans projet', o.value)),
+  );
+  select.value = $('project').value;
+  select.closest('.project-choice').classList.toggle('chosen', Boolean(select.value));
+}
+$('composer-project').onchange = () => {
+  $('project').value = $('composer-project').value;
+  $('project').dispatchEvent(new Event('change'));
+};
+// Page d'un projet : nouvelle conversation reliée à ce projet.
+$('project-ask').onclick = () => {
+  const id = openProjectId;
+  $('new').click();
+  $('project').value = id;
+  syncComposerProject();
+  setComposeMode('question');
+  $('prompt').focus();
+};

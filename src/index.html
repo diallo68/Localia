@@ -436,6 +436,14 @@
                 title="Dicter la question : votre voix est transcrite sur cet ordinateur, sans Internet. Cliquez de nouveau pour terminer."
               >
                 <i data-icon="mic"></i><span class="simple-label">Dicter</span></button
+              ><label
+                class="project-choice"
+                title="Projet de la conversation : ses documents et ses notes sont envoyés au modèle"
+                ><i data-icon="folder"></i
+                ><select
+                  id="composer-project"
+                  aria-label="Projet de la conversation"
+                ></select></label
               ><input
                 id="photo-input"
                 type="file"
@@ -755,6 +763,8 @@
             <label class="sr-only" for="project-title">Nom du projet</label
             ><input id="project-title" maxlength="120" /><button id="project-save" type="button">
               Enregistrer</button
+            ><button id="project-ask" class="primary" type="button">
+              Poser une question sur ce projet</button
             ><button id="project-delete" type="button">Supprimer le projet</button>
           </div>
           <label for="project-description">Description (envoyée avec la mémoire)</label>

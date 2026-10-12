@@ -628,6 +628,7 @@ function renderFiles() {
 }
 function render() {
   stopSpeaking();
+  if (typeof syncComposerProject === 'function') syncComposerProject();
   renderAttachment();
   renderFiles();
   $('delete-conversation').hidden = !current;
@@ -1632,6 +1633,7 @@ $('project').onchange = guard(async () => {
     current.projectId = $('project').value || undefined;
     await persist();
   }
+  if (typeof syncComposerProject === 'function') syncComposerProject();
 });
 for (const id of ['task', 'skill'])
   $(id).onchange = guard(async () => {

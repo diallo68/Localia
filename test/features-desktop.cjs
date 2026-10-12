@@ -336,6 +336,7 @@ const readJson = async (profile, name) => {
     );
     request = await lastRequest();
     assert.match(request.messages[0].content, /Mémoire du projet « Thèse »/);
+    assert.match(request.messages[0].content, /Cette conversation est reliée au projet « Thèse »/);
     assert.match(request.messages[0].content, /### Site d’étude\nDalaba, Fouta Djalon/);
     assert.match(
       await page.locator('#notice').textContent(),

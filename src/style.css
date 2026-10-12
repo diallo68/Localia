@@ -3242,7 +3242,7 @@ body[data-mode='simple'] #metier-switch,
 body[data-mode='simple'] #status,
 body[data-mode='simple'] #refresh,
 body[data-mode='simple'] #welcome .suggestions,
-body[data-mode='simple'] .chat-main:has(#welcome) #hint,
+body[data-mode='simple'] #hint,
 body[data-mode='simple'] .chat-bar,
 body[data-mode='simple'] #messages .advice-card,
 body[data-mode='simple'] #welcome #drop-zone {
@@ -4288,4 +4288,40 @@ body[data-mode='simple'] .chat-main:has(#welcome) .welcome-after {
 }
 .project-doc-alert {
   color: var(--warn);
+}
+
+/* Projet de la conversation, dans la zone de saisie */
+.project-choice {
+  display: none;
+}
+body[data-mode='simple'] .project-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  max-width: 220px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.project-choice.chosen {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.project-choice select {
+  min-width: 0;
+  max-width: 170px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+}
+body[data-mode='simple'] .composer-footer {
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }

@@ -1581,12 +1581,32 @@ handle('run', async (kind, payload) => {
       // Métier choisi (conversations seulement : les séries du Benchmark restent sans consigne).
       const appSettings = await readSettings();
       const metier = kind === 'chat' ? metierById(appSettings.metier) : null;
+      // Projets de Localia : le modèle sait qu'ils existent et comment l'utilisateur les lui donne.
+      let localiaProjects = null;
+      if (kind === 'chat' && project)
+        localiaProjects = `Cette conversation est reliée au projet « ${project.name} » de Localia (l’application qui te fait tourner sur l’ordinateur de l’utilisateur) : ce que contient le projet (description, notes, passages de documents) t’est fourni plus bas. ${project.documents.length || project.notes.length ? '' : 'Ce projet ne contient encore ni document ni note : dis-le si la question porte sur son contenu, et indique qu’on ajoute des documents dans la page du projet.'}`;
+      else if (kind === 'chat') {
+        const known = normalizeProjects(
+          await readJson('projects.json', [], 'Projets illisibles.').catch(() => []),
+        );
+        if (known.length)
+          localiaProjects =
+            `L’utilisateur travaille dans Localia, une application qui te fait tourner sur son ordinateur. Ses projets dans Localia : ${known
+              .slice(0, 30)
+              .map(
+                (p) =>
+                  `« ${p.name} » (${p.documents.length} document${p.documents.length > 1 ? 's' : ''}, ${p.notes.length} note${p.notes.length > 1 ? 's' : ''})`,
+              )
+              .join(', ')}. ` +
+            'Cette conversation n’est reliée à aucun projet : tu n’as pas leur contenu. Si l’utilisateur parle d’un de ces projets ou de ses documents, ne dis pas que tu ne peux jamais y accéder : explique-lui de choisir le projet dans le menu « Projet » de la zone de saisie (ou le bouton « Poser une question sur ce projet » dans la page du projet), puis de reposer sa question.';
+      }
       const baseSystem = [
         // Interface en anglais : réponses en anglais, sauf si l'utilisateur écrit autrement.
         kind === 'chat' && appSettings.lang === 'en'
           ? 'Answer in English, unless the user writes in another language.'
           : null,
         metier?.instruction,
+        localiaProjects,
         modelSettings.system,
         task?.instruction,
         skill?.instruction,

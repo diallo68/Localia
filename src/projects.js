@@ -34,6 +34,7 @@ function fillProjectSelect() {
   select.replaceChildren(new Option('Aucun', ''));
   for (const p of projects) select.add(new Option(p.name, p.id));
   select.value = projectById(previous) ? previous : '';
+  if (typeof syncComposerProject === 'function') syncComposerProject();
 }
 
 function renderProjects() {

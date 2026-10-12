@@ -1185,6 +1185,17 @@ const readJson = async (profile, name) => {
       1.3,
     );
     await page.locator('[data-text-size="1"]').click();
+    // Contraste élevé : couleurs plus foncées sur toute la page, gardé dans les réglages.
+    await page.locator('#contrast-toggle').click();
+    await page.waitForFunction(() => document.documentElement.dataset.contrast === 'fort');
+    assert.equal((await readJson(profile, 'settings.json')).contrast, 'fort');
+    assert.equal(
+      await page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--fg').trim()),
+      '#000000',
+    );
+    await page.locator('#contrast-toggle').click();
+    await page.waitForFunction(() => !document.documentElement.dataset.contrast);
+    assert.equal((await readJson(profile, 'settings.json')).contrast, 'normal');
     await page.waitForFunction(
       () => document.querySelector('[data-text-size="1"]').getAttribute('aria-pressed') === 'true',
     );

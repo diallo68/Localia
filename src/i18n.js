@@ -490,6 +490,9 @@ const EN = {
   'Rechercher dans les conversations': 'Search conversations',
   'Aucune conversation trouvée.': 'No conversation found.',
   'Taille du texte': 'Text size',
+  'Contraste élevé': 'High contrast',
+  'Contraste élevé : textes plus foncés et bordures plus visibles':
+    'High contrast: darker text and more visible borders',
   'Texte normal': 'Normal text',
   'Texte grand': 'Large text',
   'Texte très grand': 'Very large text',

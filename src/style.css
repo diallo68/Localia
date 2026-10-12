@@ -75,6 +75,51 @@
   --shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.6);
   color-scheme: dark;
 }
+/* Contraste élevé (réglage de l'Accueil) : textes plus foncés, bordures et focus bien visibles. */
+:root[data-contrast='fort'] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f2f2f2;
+  --hover: #e6e6e6;
+  --line: #5c5c5c;
+  --fg: #000000;
+  --muted: #262626;
+  --accent: #07463e;
+  --accent-strong: #07463e;
+  --accent-soft: rgba(7, 70, 62, 0.16);
+  --warn: #7a3500;
+  --danger: #8f1408;
+  --info: #0b3f99;
+  --ok: #0a5626;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-contrast='fort']:not([data-theme='light']) {
+    --bg: #000000;
+    --surface: #000000;
+    --surface-2: #121212;
+    --hover: #262626;
+    --line: #a3a3a3;
+    --fg: #ffffff;
+    --muted: #e0e0e0;
+    --accent: #5eead4;
+    --accent-strong: #5eead4;
+    --accent-soft: rgba(94, 234, 212, 0.2);
+    --warn: #fcd34d;
+    --danger: #ffa198;
+    --info: #a5c4ff;
+    --ok: #86efac;
+  }
+}
+:root[data-contrast='fort'] :focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+:root[data-contrast='fort'] button,
+:root[data-contrast='fort'] input,
+:root[data-contrast='fort'] select,
+:root[data-contrast='fort'] textarea {
+  border-color: var(--line);
+}
 :root {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--fg);
@@ -3720,4 +3765,8 @@ img.logo {
 }
 .composer-choice {
   cursor: help;
+}
+.contrast-toggle[aria-pressed='true'] {
+  color: var(--on-accent);
+  background: var(--accent);
 }

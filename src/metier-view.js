@@ -319,6 +319,25 @@ for (const button of document.querySelectorAll('[data-text-size]'))
     textSizeButtons();
   });
 
+// Contraste élevé : choisi sur l'Accueil, ou demandé par le système (réglage d'accessibilité)
+// tant que l'utilisateur ne l'a pas désactivé dans Localia.
+function applyContrast() {
+  const system = matchMedia('(prefers-contrast: more)').matches;
+  const strong = settings.contrast === 'fort' || (system && settings.contrast !== 'normal');
+  if (strong) document.documentElement.dataset.contrast = 'fort';
+  else delete document.documentElement.dataset.contrast;
+  $('contrast-toggle').setAttribute('aria-pressed', String(strong));
+}
+$('contrast-toggle').onclick = guard(async () => {
+  const strong = document.documentElement.dataset.contrast === 'fort';
+  settings = await window.localia.saveSettings({
+    ...settings,
+    contrast: strong ? 'normal' : 'fort',
+  });
+  applyContrast();
+});
+matchMedia('(prefers-contrast: more)').addEventListener('change', applyContrast);
+
 $('metier-switch').onclick = () => openMetierView('change');
 // Passer le choix du métier : interface générale, modifiable plus tard (Profil et métier).
 // Changement de métier : Échap ferme l'écran sans rien changer (pas au premier lancement).

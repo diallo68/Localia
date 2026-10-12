@@ -454,6 +454,23 @@ const EN = {
   'Joindre une photo': 'Attach a photo',
   'Joindre un fichier : PDF (même scanné), Word (.docx), Excel (.xlsx), consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message.':
     'Attach a file: PDF (even scanned), Word (.docx), Excel (.xlsx), instructions (.txt, .md), code (.py, .R, .sql…) or data (.csv, .tsv, .json). For a web page, paste its address in the message.',
+  Copier: 'Copy',
+  'Copié ✓': 'Copied ✓',
+  Écouter: 'Listen',
+  'Arrêter la lecture': 'Stop reading',
+  'Exporter en PDF': 'Export as PDF',
+  'Copier le texte de la réponse': 'Copy the answer text',
+  'Lire la réponse à voix haute (voix de l’ordinateur)': 'Read the answer aloud (computer voice)',
+  'Enregistrer la question et la réponse dans un fichier PDF':
+    'Save the question and the answer in a PDF file',
+  'Réponse enregistrée :': 'Answer saved:',
+  'Rechercher…': 'Search…',
+  'Rechercher dans les conversations': 'Search conversations',
+  'Aucune conversation trouvée.': 'No conversation found.',
+  'Taille du texte': 'Text size',
+  'Texte normal': 'Normal text',
+  'Texte grand': 'Large text',
+  'Texte très grand': 'Very large text',
   'Joindre une photo (JPEG, PNG, WebP), ou la coller dans le message. Lue par les modèles qui savent lire les images.':
     'Attach a photo (JPEG, PNG, WebP), or paste it into the message. Read by models that can read images.',
   'Entrée pour envoyer · Maj + Entrée pour revenir à la ligne · une adresse https://… collée est lue comme page web':

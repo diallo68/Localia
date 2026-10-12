@@ -9,6 +9,7 @@ const {
   powerSaveBlocker,
   Notification,
   utilityProcess,
+  session,
 } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs/promises');
@@ -153,6 +154,57 @@ handle('export-file', async (name, extension, content) => {
   if (result.canceled || !result.filePath) return null;
   // BOM UTF-8 pour le CSV : Excel affiche correctement les accents.
   await fs.writeFile(result.filePath, (extension === 'csv' ? '\ufeff' : '') + content);
+  return path.basename(result.filePath);
+});
+// Réponse exportée en PDF : page HTML (déjà nettoyée par le rendu Markdown) imprimée dans une
+// fenêtre cachée, sans JavaScript et sans réseau (une image distante ne serait pas chargée).
+const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+handle('export-pdf', async (payload) => {
+  const { title, question, html, model } = payload || {};
+  if (typeof html !== 'string' || html.length > 5_000_000) throw new Error('Réponse invalide.');
+  const name = String(title || 'reponse').slice(0, 80);
+  const result = await dialog.showSaveDialog(window, {
+    title: 'Exporter la réponse en PDF',
+    defaultPath: path.join(
+      app.getPath('documents'),
+      name.replace(/[^\p{L}\p{N} ._-]+/gu, '_').trim() + '.pdf',
+    ),
+    filters: [{ name: 'Document PDF', extensions: ['pdf'] }],
+  });
+  if (result.canceled || !result.filePath) return null;
+  const date = new Date().toLocaleDateString('fr-FR', { dateStyle: 'long' });
+  const page = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${escapeHtml(name)}</title><style>
+body{font:11pt/1.55 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:#111;margin:0}
+header{border-bottom:1px solid #ccc;margin-bottom:18px;padding-bottom:8px;font-size:9pt;color:#555}
+h1{font-size:15pt;margin:0 0 4px;color:#111}.question{background:#f3f4f6;border-radius:6px;padding:10px 12px;margin-bottom:16px;white-space:pre-wrap}
+pre{background:#f6f6f6;padding:8px;border-radius:4px;white-space:pre-wrap;font-size:9pt}code{font-size:9.5pt}
+table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:3px 7px}img{max-width:100%}
+footer{margin-top:24px;border-top:1px solid #ccc;padding-top:6px;font-size:8.5pt;color:#666}
+</style></head><body><header><h1>${escapeHtml(name)}</h1>Localia · ${escapeHtml(date)}</header>${
+    question
+      ? `<div class="question"><strong>Question :</strong> ${escapeHtml(question)}</div>`
+      : ''
+  }<main>${html}</main><footer>Réponse écrite sur cet ordinateur par ${escapeHtml(
+    model || 'un modèle local',
+  )}, sans Internet. Une IA peut se tromper : vérifiez les points importants.</footer></body></html>`;
+  const temp = path.join(os.tmpdir(), `localia-export-${crypto.randomUUID()}.html`);
+  const printSession = session.fromPartition('localia-export-pdf');
+  printSession.webRequest.onBeforeRequest((details, callback) =>
+    callback({ cancel: !details.url.startsWith('file:') }),
+  );
+  const printer = new BrowserWindow({
+    show: false,
+    webPreferences: { javascript: false, sandbox: true, session: printSession },
+  });
+  try {
+    await fs.writeFile(temp, page, { mode: 0o600 });
+    await printer.loadFile(temp);
+    const pdf = await printer.webContents.printToPDF({ pageSize: 'A4', printBackground: true });
+    await fs.writeFile(result.filePath, pdf);
+  } finally {
+    printer.destroy();
+    await fs.rm(temp, { force: true });
+  }
   return path.basename(result.filePath);
 });
 handle('open-grades', async () => {

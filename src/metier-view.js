@@ -309,6 +309,22 @@ for (const button of document.querySelectorAll('[data-lang]'))
     if (typeof applyLanguage === 'function') applyLanguage();
   });
 
+// Taille du texte (zoom de toute la fenêtre) : normal, grand ou très grand ; gardée dans les réglages.
+function textSizeButtons() {
+  const size = String(settings.textSize || 1);
+  window.localia.setTextSize(Number(size));
+  for (const button of document.querySelectorAll('[data-text-size]'))
+    button.setAttribute('aria-pressed', String(button.dataset.textSize === size));
+}
+for (const button of document.querySelectorAll('[data-text-size]'))
+  button.onclick = guard(async () => {
+    settings = await window.localia.saveSettings({
+      ...settings,
+      textSize: Number(button.dataset.textSize),
+    });
+    textSizeButtons();
+  });
+
 $('metier-switch').onclick = () => openMetierView('change');
 // Passer le choix du métier : interface générale, modifiable plus tard (Profil et métier).
 // Changement de métier : Échap ferme l'écran sans rien changer (pas au premier lancement).

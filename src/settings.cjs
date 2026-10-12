@@ -2,6 +2,7 @@ const { modelName } = require('./ollama.cjs');
 const { metierById } = require('./metiers.js');
 
 const LANGS = ['fr', 'en'];
+const TEXT_SIZES = [1, 1.15, 1.3];
 
 // Options Ollama réglables par modèle (https://docs.ollama.com/modelfile#valid-parameters-and-values).
 // Une valeur absente laisse le réglage du modèle.
@@ -66,6 +67,8 @@ function normalizeSettings(raw) {
   // Métier choisi au premier lancement, et langue de l'interface.
   if (metierById(raw.metier)) settings.metier = raw.metier;
   if (LANGS.includes(raw.lang)) settings.lang = raw.lang;
+  // Taille du texte de l'interface (zoom de la fenêtre).
+  if (TEXT_SIZES.includes(raw.textSize) && raw.textSize !== 1) settings.textSize = raw.textSize;
   // Interface : simple (conversation d'abord) ou avancée (tableau de bord et tous les outils).
   if (raw.mode === 'avance') settings.mode = 'avance';
   // Prénom facultatif, pour l'accueil (« Bonjour … »).

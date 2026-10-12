@@ -3644,3 +3644,51 @@ img.logo {
   font-weight: 600;
   color: var(--accent);
 }
+
+/* Sous chaque réponse : copier, écouter, exporter en PDF */
+.answer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.answer-action {
+  padding: 4px 10px;
+  font-size: 11px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.answer-action:hover,
+.answer-action.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Recherche dans les conversations */
+#history-search {
+  margin: 4px 8px 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  width: calc(100% - 16px);
+}
+.history-empty {
+  margin: 4px 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Taille du texte : trois « A » de taille croissante */
+.text-size button {
+  padding: 6px 10px;
+  line-height: 1;
+}
+.text-size button:nth-child(1) {
+  font-size: 12px;
+}
+.text-size button:nth-child(2) {
+  font-size: 15px;
+}
+.text-size button:nth-child(3) {
+  font-size: 18px;
+}

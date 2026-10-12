@@ -162,9 +162,22 @@ async function rememberModel(name) {
   if (!installed(name) || settings.lastModel === name) return;
   settings = await window.localia.saveSettings({ ...settings, lastModel: name });
 }
+// Recherche dans les conversations : titre et texte des messages, sans tenir compte des accents
+// ni des majuscules (fold, de bibliography.js).
+function matchesSearch(c, words) {
+  if (!words.length) return true;
+  const text = fold(c.title + '\n' + c.messages.map((m) => m.content).join('\n'));
+  return words.every((w) => text.includes(w));
+}
+$('history-search').oninput = () => history();
 function history() {
   $('history').replaceChildren();
-  for (const c of conversations) {
+  const words = fold($('history-search').value).split(/\s+/).filter(Boolean);
+  const shown = conversations.filter((c) => matchesSearch(c, words));
+  $('history-search').hidden = conversations.length < 2 && !words.length;
+  if (words.length && !shown.length)
+    $('history').append(element('p', 'history-empty', 'Aucune conversation trouvée.'));
+  for (const c of shown) {
     const row = document.createElement('div');
     row.className = 'history-row';
     const b = document.createElement('button');
@@ -288,6 +301,69 @@ function checksPanel(report) {
   box.append(summary, list);
   return box;
 }
+// Lecture à voix haute avec les voix de l'ordinateur (aucun envoi sur Internet), phrase par
+// phrase : une seule réponse lue à la fois ; un second clic arrête la lecture.
+let speaking = null;
+function stopSpeaking() {
+  speechSynthesis.cancel();
+  speaking?.classList.remove('active');
+  if (speaking) speaking.textContent = tr('Écouter');
+  speaking = null;
+}
+function speak(button, text) {
+  const again = speaking === button;
+  stopSpeaking();
+  if (again) return;
+  const lang = settings.lang === 'en' ? 'en' : 'fr';
+  const voice = speechSynthesis.getVoices().find((v) => v.lang.toLowerCase().startsWith(lang));
+  const sentences = text.replace(/\s+/g, ' ').match(/[^.!?;:]{1,220}[.!?;:]*/g) || [];
+  if (!sentences.length) return;
+  speaking = button;
+  button.classList.add('active');
+  button.textContent = tr('Arrêter la lecture');
+  sentences.forEach((sentence, i) => {
+    const utterance = new SpeechSynthesisUtterance(sentence.trim());
+    utterance.lang = voice?.lang || (lang === 'en' ? 'en-US' : 'fr-FR');
+    if (voice) utterance.voice = voice;
+    if (i === sentences.length - 1) utterance.onend = () => speaking === button && stopSpeaking();
+    speechSynthesis.speak(utterance);
+  });
+}
+// Sous chaque réponse : copier le texte, l'écouter, l'exporter en PDF.
+function answerActions(message, question, content) {
+  const bar = element('div', 'answer-actions');
+  const action = (label, title, fn) => {
+    const button = element('button', 'answer-action', tr(label));
+    button.type = 'button';
+    button.title = tr(title);
+    button.onclick = guard(() => fn(button));
+    bar.append(button);
+    return button;
+  };
+  action('Copier', 'Copier le texte de la réponse', async (button) => {
+    await navigator.clipboard.writeText(content.innerText.trim());
+    button.textContent = tr('Copié ✓');
+    setTimeout(() => (button.textContent = tr('Copier')), 1500);
+  });
+  if ('speechSynthesis' in window)
+    action('Écouter', 'Lire la réponse à voix haute (voix de l’ordinateur)', (button) =>
+      speak(button, content.innerText),
+    );
+  action(
+    'Exporter en PDF',
+    'Enregistrer la question et la réponse dans un fichier PDF',
+    async () => {
+      const saved = await window.localia.exportPdf({
+        title: current?.title || 'Réponse de Localia',
+        question: question?.role === 'user' ? question.content : '',
+        html: content.innerHTML,
+        model: message.model || current?.model || '',
+      });
+      if (saved) notice(`${tr('Réponse enregistrée :')} ${saved}`);
+    },
+  );
+  return bar;
+}
 function messageNode(message, question) {
   const node = document.createElement('article');
   node.className = 'message ' + message.role;
@@ -345,6 +421,7 @@ function messageNode(message, question) {
   if (message.role === 'assistant') {
     const panel = checksPanel(message.checks);
     if (panel) node.append(panel);
+    if (message.content) node.append(answerActions(message, question, content));
     if (message.content) {
       const remember = document.createElement('button');
       remember.type = 'button';
@@ -431,6 +508,7 @@ function renderFiles() {
   }
 }
 function render() {
+  stopSpeaking();
   renderAttachment();
   renderFiles();
   $('delete-conversation').hidden = !current;

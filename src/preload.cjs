@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webFrame } = require('electron');
 const invoke = async (name, ...args) => {
   const result = await ipcRenderer.invoke(name, ...args);
   if (!result.ok) throw new Error(result.error);
@@ -35,6 +35,8 @@ contextBridge.exposeInMainWorld('localia', {
   skillsNew: () => invoke('skills-new'),
   openQuestions: () => invoke('open-questions'),
   exportFile: (name, extension, content) => invoke('export-file', name, extension, content),
+  exportPdf: (payload) => invoke('export-pdf', payload),
+  setTextSize: (factor) => webFrame.setZoomFactor(factor),
   openGrades: () => invoke('open-grades'),
   environment: (names) => invoke('environment', names),
   deleteDocument: (id) => invoke('delete-document', id),

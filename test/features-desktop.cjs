@@ -1115,6 +1115,54 @@ const readJson = async (profile, name) => {
     assert.match(wordSent, /Document Word : « Page n » désigne la section n/);
     assert.match(wordSent, /Juillet \| 481/);
     assert.match(wordSent, /Feuille « Météo » du classeur Excel « meteo\.xlsx »/);
+
+    // Sous la réponse : copier, écouter, exporter en PDF (question et réponse, sans réseau).
+    const answer = page.locator('.message.assistant').last();
+    await answer.locator('.answer-action', { hasText: 'Copier' }).click();
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll('.answer-action')].some((b) => b.textContent === 'Copié ✓'),
+    );
+    const copied = await app.evaluate(({ clipboard }) => clipboard.readText());
+    assert.ok(copied.length > 0 && !copied.includes('<'), 'texte copié sans balises');
+    assert.equal(await answer.locator('.answer-action', { hasText: 'Écouter' }).count(), 1);
+    const pdfOut = path.join(dataDir, 'reponse.pdf');
+    await app.evaluate(({ dialog }, file) => {
+      dialog.showSaveDialog = async () => ({ canceled: false, filePath: file });
+    }, pdfOut);
+    await answer.locator('.answer-action', { hasText: 'Exporter en PDF' }).click();
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('reponse.pdf'),
+    );
+    assert.equal((await fs.readFile(pdfOut)).subarray(0, 5).toString(), '%PDF-');
+
+    // Recherche dans les conversations : par le texte des messages, sans tenir compte des accents.
+    await page.locator('#history-search').fill('PLUIE juillet');
+    await page.waitForFunction(
+      () => document.querySelectorAll('#history .history-row').length === 1,
+    );
+    await page.locator('#history-search').fill('mot-introuvable-xyz');
+    await page.waitForFunction(() => document.querySelector('.history-empty'));
+    await page.locator('#history-search').fill('');
+
+    // Taille du texte : zoom de la fenêtre, gardé dans les réglages.
+    await page.locator('#home-tab').click();
+    await page.locator('[data-text-size="1.3"]').click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[data-text-size="1.3"]').getAttribute('aria-pressed') === 'true',
+    );
+    assert.equal((await readJson(profile, 'settings.json')).textSize, 1.3);
+    assert.equal(
+      await app.evaluate(({ BrowserWindow }) =>
+        BrowserWindow.getAllWindows()[0].webContents.getZoomFactor(),
+      ),
+      1.3,
+    );
+    await page.locator('[data-text-size="1"]').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-text-size="1"]').getAttribute('aria-pressed') === 'true',
+    );
+    await page.locator('#chat-tab').click();
     await page.locator('#attach').click();
     await page.waitForFunction(
       () => document.querySelector('#attachment-info').textContent.includes('(OCR)'),

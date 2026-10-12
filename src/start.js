@@ -1,6 +1,7 @@
 // Démarrage : réglages, historique et comparaisons, puis connexion à Ollama.
 (async () => {
   settings = await window.localia.loadSettings().catch(() => settings);
+  textSizeButtons();
   try {
     const saved = await window.localia.load();
     if (

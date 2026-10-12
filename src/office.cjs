@@ -95,6 +95,66 @@ function docxText(buffer) {
     .trim();
 }
 
+// Présentation PowerPoint (.pptx) : texte de chaque diapositive (paragraphes, tableaux) et ses
+// notes de l'orateur, dans l'ordre de la présentation ; diapositives masquées ignorées.
+function pptxSlides(buffer) {
+  const zip = readZip(buffer);
+  const presentation = zip.read('ppt/presentation.xml');
+  if (presentation === null)
+    throw new Error('Ce fichier n’est pas une présentation PowerPoint (.pptx).');
+  const rels = zip.read('ppt/_rels/presentation.xml.rels') || '';
+  const targets = new Map(
+    [...rels.matchAll(/<Relationship\b[^>]*>/g)].map((m) => [
+      attribute(m[0], 'Id'),
+      attribute(m[0], 'Target'),
+    ]),
+  );
+  const order = [...presentation.matchAll(/<p:sldId\b[^>]*>/g)]
+    .map((m) => targets.get(attribute(m[0], 'r:id')))
+    .filter(Boolean)
+    .map((t) => 'ppt/' + t.replace(/^\/?ppt\//, '').replace(/^\.\.\//, ''));
+  const text = (xml) =>
+    xml
+      // Cellule de tableau : ses paragraphes sur une même ligne.
+      .replace(/<a:tc\b[^]*?<\/a:tc>/g, (cell) => cell.replace(/<\/a:p>/g, ' '))
+      .replace(/<a:br\b[^>]*\/>/g, '\n')
+      .replace(/<\/a:p>/g, '\n')
+      .replace(/<\/a:tc>/g, ' | ')
+      .replace(/<\/a:tr>/g, '\n')
+      .replace(/<a:t(?:\s[^>]*)?>([^<]*)<\/a:t>|<[^>]+>/g, (_, t) => (t ? unescapeXml(t) : ''))
+      .replace(/ +\| /g, ' | ')
+      .replace(/ \| \n/g, '\n')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  const slides = [];
+  order.forEach((part, index) => {
+    const xml = zip.read(part);
+    if (!xml || /<p:sld\b[^>]*\sshow="0"/.test(xml)) return;
+    const relsPart = part.replace(/slides\/(slide\d+\.xml)$/, 'slides/_rels/$1.rels');
+    const notesTarget = /Target="([^"]*notesSlide\d+\.xml)"/.exec(zip.read(relsPart) || '')?.[1];
+    const notesXml = notesTarget
+      ? zip.read('ppt/' + notesTarget.replace(/^\.\.\//, '').replace(/^\/?ppt\//, ''))
+      : null;
+    // Notes : seulement le corps (pas le numéro ni l'image de la diapositive).
+    const notes = notesXml
+      ? text(
+          [...notesXml.matchAll(/<p:sp>[^]*?<\/p:sp>/g)]
+            .filter((m) => /type="body"/.test(m[0]))
+            .map((m) => m[0])
+            .join(''),
+        )
+      : '';
+    const body = text(xml);
+    if (body || notes)
+      slides.push({
+        number: index + 1,
+        text: body + (notes ? `\n\nNotes de l’orateur : ${notes}` : ''),
+      });
+  });
+  return slides;
+}
+
 // Formats de nombre qui sont des dates : identifiants prédéfinis d'Excel, ou format personnalisé
 // contenant jour, mois ou année (hors texte entre guillemets et couleurs entre crochets).
 const DATE_FORMATS = new Set([14, 15, 16, 17, 18, 19, 20, 21, 22, 45, 46, 47]);
@@ -202,4 +262,4 @@ function xlsxSheets(buffer) {
   return sheets;
 }
 
-module.exports = { readZip, docxText, xlsxSheets, serialDate, unescapeXml };
+module.exports = { readZip, docxText, pptxSlides, xlsxSheets, serialDate, unescapeXml };

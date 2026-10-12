@@ -38,7 +38,9 @@ const {
   exceedsContext,
   chatBody,
   streamStats,
+  documentBudget,
 } = require('./chat.cjs');
+const projectDocs = require('./project-docs.cjs');
 const { normalizeSettings } = require('./settings.cjs');
 const { verifyAnswer } = require('./verify.js');
 const { metierById } = require('./metiers.js');
@@ -453,6 +455,66 @@ async function saveTextAttachment(file) {
     preview: doc.kind === 'table' ? doc.content : null,
   };
 }
+// Documents d'un projet : plusieurs fichiers à la fois (boîte de dialogue ou dépôt dans la page).
+// Chaque fichier est lu à part : une erreur sur l'un n'empêche pas les autres.
+async function importProjectFiles(files) {
+  const added = [];
+  const errors = [];
+  for (const [index, { file, name }] of files.entries()) {
+    send({ kind: 'project-document', data: { name, index, total: files.length } });
+    try {
+      added.push(
+        await projectDocs.importProjectDocument(file, {
+          directory: documentsPath(),
+          codec: documentCodec,
+          onProgress: (data) => send({ kind: 'ocr', data }),
+        }),
+      );
+    } catch (error) {
+      errors.push({ name, error: error.message });
+    }
+  }
+  return { added, errors };
+}
+handle('project-documents-add', async () => {
+  const result = await dialog.showOpenDialog(window, {
+    title: 'Ajouter des documents au projet',
+    properties: ['openFile', 'multiSelections'],
+    filters: [
+      {
+        name: 'PDF, Word, Excel, PowerPoint, CSV, textes et photos',
+        extensions: projectDocs.PROJECT_EXTENSIONS,
+      },
+    ],
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+  return importProjectFiles(
+    result.filePaths.slice(0, 50).map((file) => ({ file, name: path.basename(file) })),
+  );
+});
+// Fichiers déposés : la page transmet noms et contenus (jamais un chemin).
+handle('project-documents-drop', async (items) => {
+  if (!Array.isArray(items) || !items.length || items.length > 50)
+    throw new Error('Déposez entre 1 et 50 fichiers à la fois.');
+  const dir = await fs.mkdtemp(path.join(app.getPath('temp'), 'localia-projet-'));
+  try {
+    const files = [];
+    for (const [i, item] of items.entries()) {
+      const name = path.basename(String(item?.name || '')).slice(0, 200);
+      if (!name || !(item.bytes instanceof Uint8Array)) throw new Error('Fichier illisible.');
+      if (item.bytes.length > 50 * 1024 * 1024)
+        throw new Error(`${name} : fichier limité à 50 Mo.`);
+      const sub = path.join(dir, String(i));
+      await fs.mkdir(sub);
+      const file = path.join(sub, name);
+      await fs.writeFile(file, item.bytes, { mode: 0o600 });
+      files.push({ file, name });
+    }
+    return await importProjectFiles(files);
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
 // --- Accès depuis les autres appareils -----------------------------------------------------------
 const remotePort = () => Number(process.env.LOCALIA_REMOTE_PORT) || remote.DEFAULT_PORT;
 let remoteServer = null;
@@ -1493,11 +1555,12 @@ handle('run', async (kind, payload) => {
       if (taskId && !task) throw new Error('Type de tâche inconnu.');
       // Mémoire du projet de la conversation : notes de l'utilisateur, choisies selon la question.
       let memory = null;
+      let project = null;
       if (payload.projectId) {
         const projects = normalizeProjects(
           await readJson('projects.json', [], 'Projets illisibles.'),
         );
-        const project = projects.find((p) => p.id === payload.projectId);
+        project = projects.find((p) => p.id === payload.projectId);
         if (!project) throw new Error('Projet introuvable : il a peut-être été supprimé.');
         memory = buildMemory(project, payload.messages.at(-1)?.content || '');
         if (memory)
@@ -1518,7 +1581,7 @@ handle('run', async (kind, payload) => {
       // Métier choisi (conversations seulement : les séries du Benchmark restent sans consigne).
       const appSettings = await readSettings();
       const metier = kind === 'chat' ? metierById(appSettings.metier) : null;
-      const system = [
+      const baseSystem = [
         // Interface en anglais : réponses en anglais, sauf si l'utilisateur écrit autrement.
         kind === 'chat' && appSettings.lang === 'en'
           ? 'Answer in English, unless the user writes in another language.'
@@ -1533,11 +1596,48 @@ handle('run', async (kind, payload) => {
         .filter(Boolean)
         .join('\n\n');
       const withDocument = Boolean(payload.documentId);
+      const withProjectDocuments = Boolean(project?.documents.length);
       const numCtx = contextSize(
         modelSettings,
         info,
-        withDocument || kind === 'files' || files.length > 0,
+        withDocument || withProjectDocuments || kind === 'files' || files.length > 0,
       );
+      // Documents du projet : passages les plus proches de la question (moins de place si la
+      // conversation a aussi son propre document).
+      let system = baseSystem;
+      if (withProjectDocuments) {
+        const loaded = [];
+        for (const d of project.documents)
+          loaded.push({
+            ...(await loadDocument(documentsPath(), d.id, documentCodec).catch(() => ({
+              pages: [],
+            }))),
+            name: d.name,
+            type: d.type,
+          });
+        const budget = withDocument
+          ? 6000
+          : Math.max(
+              4000,
+              Math.min(
+                40000,
+                documentBudget(numCtx, modelSettings.options?.num_predict) - system.length,
+              ),
+            );
+        const context = projectDocs.projectDocumentsContext(
+          project,
+          loaded.filter((d) => d.pages.length),
+          payload.messages.at(-1)?.content || '',
+          budget,
+        );
+        if (context) {
+          system = [system, context.text].filter(Boolean).join('\n\n');
+          send({
+            kind: 'project-documents',
+            data: { project: project.name, used: context.used, partial: context.partial },
+          });
+        }
+      }
       let messages = payload.messages;
       if (withDocument) {
         const doc = await loadDocument(documentsPath(), payload.documentId, documentCodec);

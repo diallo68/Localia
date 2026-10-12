@@ -4217,3 +4217,75 @@ body[data-mode='simple'] .chat-main:has(#welcome) .welcome-after {
   background: var(--accent-soft);
   color: var(--accent);
 }
+
+/* Documents d'un projet */
+.project-drop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 16px;
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  font-size: 12px;
+}
+.project-drop.dragging {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.project-drop button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.project-docs-status {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--muted);
+}
+.project-docs-status:empty {
+  display: none;
+}
+.project-docs-status.warn {
+  color: var(--warn);
+}
+.project-docs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 8px;
+}
+.project-doc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.project-doc-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.project-doc-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.project-doc-text strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-doc-alert {
+  color: var(--warn);
+}

@@ -287,4 +287,5 @@ module.exports = {
   deleteDocument,
   pruneDocuments,
   documentContext,
+  saveDocument,
 };

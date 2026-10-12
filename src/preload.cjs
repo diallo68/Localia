@@ -54,6 +54,8 @@ contextBridge.exposeInMainWorld('localia', {
   openGrades: () => invoke('open-grades'),
   environment: (names) => invoke('environment', names),
   deleteDocument: (id) => invoke('delete-document', id),
+  projectDocumentsAdd: () => invoke('project-documents-add'),
+  projectDocumentsDrop: (items) => invoke('project-documents-drop', items),
   verifyAnswer: (payload) => invoke('verify-answer', payload),
   biblioCheckDocument: (id) => invoke('biblio-check-document', id),
   biblioSearch: (query) => invoke('biblio-search', query),

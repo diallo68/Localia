@@ -26,16 +26,17 @@
   const comparisonsReady = await loadComparisons();
   await loadProjects();
   // Un fichier illisible pourrait référencer des documents : rien n'est effacé dans ce cas.
-  if (historyReady && comparisonsReady)
+  if (historyReady && comparisonsReady && projectsLoaded)
     await window.localia
-      .pruneDocuments(
-        [...conversations, ...comparisons].flatMap((c) => [
+      .pruneDocuments([
+        ...projects.flatMap((p) => p.documents.map((d) => d.id)),
+        ...[...conversations, ...comparisons].flatMap((c) => [
           ...(c.document ? [c.document.id] : []),
           ...(c.questions || []).flatMap((q) => (q.doc ? [q.doc.id] : [])),
           ...(c.files || []).map((f) => f.id),
           ...(c.messages || []).flatMap((m) => (m.images || []).map((i) => i.id)),
         ]),
-      )
+      ])
       .catch(() => {});
   applyMetier();
   applyMode();

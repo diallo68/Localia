@@ -1496,6 +1496,10 @@ window.localia.onProgress(({ kind, data }) => {
       `Mémoire du projet « ${data.project} » transmise : ${data.notes.length} note(s)${data.partial ? ', les plus proches de la question' : ''} (${data.notes.map((n) => n.title).join(', ')}).`,
     );
   }
+  if (kind === 'project-documents')
+    runNotice(
+      `Documents du projet « ${data.project} » transmis${data.partial ? ' (passages les plus proches de la question)' : ''} : ${data.used.map((u) => u.name).join(', ')}.`,
+    );
   if (kind === 'skill') runNotice(`Compétence appliquée : ${data.name} (${data.call}).`);
   if (kind === 'anonymized')
     runNotice(

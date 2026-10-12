@@ -80,7 +80,11 @@ modelListeners.push(updateComposerAdvice);
 
 // Accueil du mode avancé : actions, modèle conseillé, projets récents, état du système.
 function lastActivity(project) {
-  return [project.createdAt, ...project.notes.flatMap((n) => [n.createdAt, n.updatedAt])]
+  return [
+    project.createdAt,
+    ...project.notes.flatMap((n) => [n.createdAt, n.updatedAt]),
+    ...(project.documents || []).map((d) => d.addedAt),
+  ]
     .filter(Boolean)
     .sort()
     .pop();

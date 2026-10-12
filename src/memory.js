@@ -8,7 +8,10 @@ const LIMITS = {
   description: 2000,
   title: 200,
   text: 20000,
+  documents: 100,
 };
+const DOCUMENT_TYPES = ['pdf', 'word', 'excel', 'powerpoint', 'table', 'text', 'image'];
+const count = (value) => (Number.isInteger(value) && value >= 0 ? value : undefined);
 
 const words = (text) => [
   ...new Set(
@@ -36,6 +39,9 @@ function normalizeProjects(raw) {
     if (!name) throw new Error('Un projet doit avoir un nom.');
     const notes = Array.isArray(p.notes) ? p.notes : [];
     if (notes.length > LIMITS.notes) throw new Error(`Projet « ${name} » : trop de notes.`);
+    const documents = Array.isArray(p.documents) ? p.documents : [];
+    if (documents.length > LIMITS.documents)
+      throw new Error(`Projet « ${name} » : ${LIMITS.documents} documents au plus.`);
     return {
       id: p.id,
       name,
@@ -51,6 +57,24 @@ function normalizeProjects(raw) {
           text: body,
           createdAt: typeof n.createdAt === 'string' ? n.createdAt : new Date().toISOString(),
           updatedAt: typeof n.updatedAt === 'string' ? n.updatedAt : undefined,
+        };
+      }),
+      // Documents ajoutés au projet : fiche seulement (le texte est dans le dossier des documents).
+      documents: documents.map((d) => {
+        if (!d || typeof d.id !== 'string' || !/^[0-9a-f-]{36}$/.test(d.id))
+          throw new Error('Document de projet invalide.');
+        if (!DOCUMENT_TYPES.includes(d.type)) throw new Error('Type de document inconnu.');
+        return {
+          id: d.id,
+          name: text(d.name, LIMITS.title, 'Nom de document').trim() || 'Document',
+          type: d.type,
+          size: count(d.size),
+          sections: count(d.sections),
+          characters: count(d.characters),
+          ocr: count(d.ocr),
+          alerts: count(d.alerts),
+          summary: typeof d.summary === 'string' ? d.summary.slice(0, 200) : undefined,
+          addedAt: typeof d.addedAt === 'string' ? d.addedAt : new Date().toISOString(),
         };
       }),
     };

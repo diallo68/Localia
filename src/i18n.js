@@ -681,8 +681,8 @@ const EN = {
   Terminer: 'Finish',
   'MÉMOIRE DE VOS TRAVAUX': 'MEMORY OF YOUR WORK',
   'Projets.': 'Projects.',
-  'Chaque projet garde vos notes : sources, décisions, définitions, résultats. Dans une conversation liée à un projet, ces notes sont envoyées au modèle comme contexte. Seul ce que vous écrivez ou ajoutez vous-même entre dans la mémoire.':
-    'Each project keeps your notes: sources, decisions, definitions, results. In a conversation linked to a project, these notes are sent to the model as context. Only what you write or add yourself goes into the memory.',
+  'Chaque projet garde vos documents et vos notes : sources, décisions, définitions, résultats. Dans une conversation liée à un projet, les notes et les passages utiles des documents sont envoyés au modèle comme contexte. Tout reste sur cet ordinateur.':
+    'Each project keeps your documents and notes: sources, decisions, definitions, results. In a conversation linked to a project, the notes and the useful passages of the documents are sent to the model as context. Everything stays on this computer.',
   'Nom du nouveau projet': 'Name of the new project',
   'Créer le projet': 'Create the project',
   'Nom du projet': 'Project name',
@@ -761,6 +761,13 @@ const EN = {
   'Analyser à nouveau': 'Analyse again',
   'Carte graphique du moteur intégré': 'Graphics card for the built-in engine',
   'Analyser votre PC': 'Analyse your PC',
+  Documents: 'Documents',
+  'Ajouter des documents': 'Add documents',
+  'ou glissez-les ici · PDF (même scanné), Word, Excel, PowerPoint, CSV, textes et photos (texte lu par reconnaissance de caractères)':
+    'or drop them here · PDF (even scanned), Word, Excel, PowerPoint, CSV, text and photos (text read by character recognition)',
+  'Aucun document pour l’instant.': 'No documents yet.',
+  'Contient des phrases adressées à une IA : relisez ce document, il pourrait chercher à détourner les réponses.':
+    'Contains sentences addressed to an AI: review this document, it may try to hijack the answers.',
   PROJETS: 'PROJECTS',
   'Nouveau projet': 'New project',
   'Votre domaine': 'Your field',
@@ -982,6 +989,32 @@ const EN_PATTERNS = [
   ],
   [/^([\d,]+) \/ ([\d,]+) Go$/, (text) => text.replace(/,/g, '.').replace(/ Go$/, ' GB')],
   [/^Localia : (.*)$/, 'Localia: $1'],
+  [/^Lecture de (.*) \((\d+) sur (\d+)\)…$/, 'Reading $1 ($2 of $3)…'],
+  [
+    /^Reconnaissance de caractères : page (\d+) sur (\d+)…$/,
+    'Character recognition: page $1 of $2…',
+  ],
+  [/^Reconnaissance de caractères : (.*)…$/, 'Character recognition: $1…'],
+  [
+    /^(\d+) documents? ajoutés?\./,
+    (text) =>
+      text
+        .replace(
+          /^(\d+) documents? ajoutés?\./,
+          (m, n) => `${n} document${n > 1 ? 's' : ''} added.`,
+        )
+        .replace(/ Non ajoutés? : /, ' Not added: '),
+  ],
+  [
+    /^Documents du projet « (.*) » transmis/,
+    (text) =>
+      text
+        .replace(/^Documents du projet « (.*) » transmis/, 'Documents of project “$1” sent')
+        .replace(
+          ' (passages les plus proches de la question)',
+          ' (passages closest to the question)',
+        ),
+  ],
   [
     /^Carte graphique utilisée : (.*) \((.*)\)(.*)\. (Tout le modèle|La partie du modèle)/,
     (text) =>

@@ -159,13 +159,13 @@ function renderSimpleProjects() {
     const card = element('button', 'resume-card');
     card.type = 'button';
     const n = projectConversations(project);
-    const notes = project.notes.length;
+    const docs = project.documents.length;
     const foot = element('span', 'resume-foot');
     foot.append(
       element(
         'span',
         '',
-        `${notes} note${notes > 1 ? 's' : ''} · ${n} conversation${n > 1 ? 's' : ''}`,
+        `${docs} document${docs > 1 ? 's' : ''} · ${n} conversation${n > 1 ? 's' : ''}`,
       ),
       element('span', '', shortDate(lastActivity(project))),
     );

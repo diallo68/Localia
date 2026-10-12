@@ -735,9 +735,9 @@
           <span class="eyebrow">MÉMOIRE DE VOS TRAVAUX</span>
           <h2>Projets.</h2>
           <p>
-            Chaque projet garde vos notes : sources, décisions, définitions, résultats. Dans une
-            conversation liée à un projet, ces notes sont envoyées au modèle comme contexte. Seul ce
-            que vous écrivez ou ajoutez vous-même entre dans la mémoire.
+            Chaque projet garde vos documents et vos notes : sources, décisions, définitions,
+            résultats. Dans une conversation liée à un projet, les notes et les passages utiles des
+            documents sont envoyés au modèle comme contexte. Tout reste sur cet ordinateur.
           </p>
         </div>
         <form id="project-form" class="input-row">
@@ -760,6 +760,18 @@
           <label for="project-description">Description (envoyée avec la mémoire)</label>
           <textarea id="project-description" rows="2" maxlength="2000"></textarea>
           <p id="project-budget" class="muted"></p>
+          <h3>Documents</h3>
+          <div id="project-drop" class="project-drop">
+            <button id="project-add-docs" class="primary" type="button">
+              <i data-icon="file-plus"></i>Ajouter des documents
+            </button>
+            <span class="muted"
+              >ou glissez-les ici · PDF (même scanné), Word, Excel, PowerPoint, CSV, textes et
+              photos (texte lu par reconnaissance de caractères)</span
+            >
+            <span id="project-docs-status" class="project-docs-status" role="status"></span>
+          </div>
+          <div id="project-docs" class="project-docs"></div>
           <h3>Notes</h3>
           <form id="note-form">
             <label class="sr-only" for="note-title">Titre de la note</label

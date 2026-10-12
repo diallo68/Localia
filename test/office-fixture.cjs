@@ -152,4 +152,56 @@ function scannedPdfFixture(lines) {
   return Buffer.concat(parts);
 }
 
-module.exports = { zipFixture, docxFixture, xlsxFixture, scannedPdfFixture };
+// Présentation PowerPoint : 3 diapositives dont une masquée, un tableau et des notes de l'orateur.
+function pptxFixture() {
+  const P =
+    'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  const shape = (paragraphs, type = '') =>
+    `<p:sp>${type ? `<p:nvSpPr><p:nvPr><p:ph type="${type}"/></p:nvPr></p:nvSpPr>` : ''}<p:txBody>${paragraphs
+      .map((t) => `<a:p><a:r><a:t>${t}</a:t></a:r></a:p>`)
+      .join('')}</p:txBody></p:sp>`;
+  const slide = (body, hidden = false) =>
+    `<p:sld ${P}${hidden ? ' show="0"' : ''}><p:cSld><p:spTree>${body}</p:spTree></p:cSld></p:sld>`;
+  const rel = (id, target) => `<Relationship Id="${id}" Type="x" Target="${target}"/>`;
+  const rels = (items) => `<Relationships>${items.join('')}</Relationships>`;
+  return zipFixture({
+    'ppt/presentation.xml': `<p:presentation ${P}><p:sldIdLst><p:sldId id="256" r:id="rId2"/><p:sldId id="257" r:id="rId3"/><p:sldId id="258" r:id="rId4"/></p:sldIdLst></p:presentation>`,
+    'ppt/_rels/presentation.xml.rels': rels([
+      rel('rId2', 'slides/slide1.xml'),
+      rel('rId3', 'slides/slide2.xml'),
+      rel('rId4', 'slides/slide3.xml'),
+    ]),
+    'ppt/slides/slide1.xml': slide(
+      shape(['Campagne de Dalaba 2025']) +
+        shape(['Mildiou observé sur 12 parcelles', 'Pluie : 481 mm en juillet']),
+    ),
+    'ppt/slides/_rels/slide1.xml.rels': rels([rel('rId1', '../notesSlides/notesSlide1.xml')]),
+    'ppt/notesSlides/notesSlide1.xml': `<p:notes ${P}><p:cSld><p:spTree>${shape(['1'], 'sldNum')}${shape(['Citer la FPFD comme source.'], 'body')}</p:spTree></p:cSld></p:notes>`,
+    'ppt/slides/slide2.xml': slide(shape(['Diapositive masquée à ne pas lire']), true),
+    'ppt/slides/slide3.xml': slide(
+      '<p:graphicFrame><a:tbl><a:tr><a:tc><a:txBody><a:p><a:r><a:t>Parcelle</a:t></a:r></a:p></a:txBody></a:tc><a:tc><a:txBody><a:p><a:r><a:t>Sévérité</a:t></a:r></a:p></a:txBody></a:tc></a:tr><a:tr><a:tc><a:txBody><a:p><a:r><a:t>P3</a:t></a:r></a:p></a:txBody></a:tc><a:tc><a:txBody><a:p><a:r><a:t>40 %</a:t></a:r></a:p></a:txBody></a:tc></a:tr></a:tbl></p:graphicFrame>',
+    ),
+  });
+}
+
+// Photo d'un document (PNG) : lignes de texte noir sur fond blanc.
+function photoFixture(lines) {
+  const { createCanvas } = require('@napi-rs/canvas');
+  const canvas = createCanvas(1400, 120 + lines.length * 90);
+  const g = canvas.getContext('2d');
+  g.fillStyle = '#fff';
+  g.fillRect(0, 0, canvas.width, canvas.height);
+  g.fillStyle = '#000';
+  g.font = '48px Arial';
+  lines.forEach((line, i) => g.fillText(line, 60, 100 + i * 90));
+  return canvas.toBuffer('image/png');
+}
+
+module.exports = {
+  zipFixture,
+  docxFixture,
+  xlsxFixture,
+  scannedPdfFixture,
+  pptxFixture,
+  photoFixture,
+};

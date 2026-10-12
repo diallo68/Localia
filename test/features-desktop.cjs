@@ -361,11 +361,68 @@ const readJson = async (profile, name) => {
     savedProjects = await readJson(profile, 'projects.json');
     assert.equal(savedProjects[0].notes[1].text, 'Réponse relue et corrigée.');
     assert.ok(savedProjects[0].notes[1].updatedAt);
+
+    // Documents du projet : plusieurs fichiers à la fois, un ancien format refusé sans bloquer les
+    // autres ; passages envoyés au modèle dans une conversation du projet ; effacés avec le projet.
+    const { pptxFixture } = require('./office-fixture.cjs');
+    const projectFiles = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-projet-'));
+    const slides = path.join(projectFiles, 'présentation.pptx');
+    await fs.writeFile(slides, pptxFixture());
+    await fs.writeFile(path.join(projectFiles, 'pluie.csv'), 'mois;pluie\njuillet;481\n');
+    await fs.writeFile(path.join(projectFiles, 'ancien.ppt'), 'x');
+    await app.evaluate(
+      ({ dialog }, files) => {
+        global.realOpenDialog ||= dialog.showOpenDialog;
+        dialog.showOpenDialog = async () => ({ canceled: false, filePaths: files });
+      },
+      ['présentation.pptx', 'pluie.csv', 'ancien.ppt'].map((f) => path.join(projectFiles, f)),
+    );
+    await page.locator('#project-add-docs').click();
+    await page.waitForFunction(() => document.querySelectorAll('.project-doc').length === 2);
+    assert.match(
+      await page.locator('#project-docs-status').textContent(),
+      /^2 documents ajoutés\. Non ajouté : ancien\.ppt : Ancien format PowerPoint/,
+    );
+    assert.match(await page.locator('#project-docs').textContent(), /PowerPoint · 2 diapositives/);
+    await app.evaluate(({ dialog }) => {
+      dialog.showOpenDialog = global.realOpenDialog;
+    });
+    const projectDocIds = (await readJson(profile, 'projects.json'))[0].documents.map((d) => d.id);
+    assert.equal(projectDocIds.length, 2);
+    await page.locator('#chat-tab').click();
+    await page.locator('#prompt').fill('Combien de millimètres en juillet à Dalaba ?');
+    await page.locator('#send').click();
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('.message.assistant').length === 5 &&
+        document.querySelector('#stop').hidden,
+    );
+    request = await lastRequest();
+    assert.match(
+      request.messages[0].content,
+      /Documents du projet « Thèse » \(2\) : texte complet/,
+    );
+    assert.match(
+      request.messages[0].content,
+      /\[présentation\.pptx — diapositive 1\]\nCampagne de Dalaba 2025[^]*Pluie : 481 mm/,
+    );
+    assert.match(
+      await page.locator('#notice').textContent(),
+      /Documents du projet « Thèse » transmis/,
+    );
+    await page.locator('#projects-tab').click();
+    await fs.rm(projectFiles, { recursive: true, force: true });
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#project-delete').click();
     await page.waitForFunction(() => document.querySelector('#project-detail').hidden);
     assert.deepEqual(await readJson(profile, 'projects.json'), []);
     assert.equal((await readJson(profile, 'conversations.json'))[0].projectId, undefined);
+    for (const id of projectDocIds)
+      assert.equal(
+        await fs.stat(path.join(profile, 'documents', id + '.json')).catch(() => null),
+        null,
+        'document du projet effacé',
+      );
     await page.locator('#chat-tab').click();
 
     // Comparaison de deux modèles.

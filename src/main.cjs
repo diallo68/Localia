@@ -1678,24 +1678,46 @@ handle('run', async (kind, payload) => {
         if (kind === 'chat' && exceedsContext(payload.messages, numCtx))
           send({ kind: 'context', data: {} });
       }
-      // Photos : seulement avec un modèle qui les lit ; envoyées à Ollama en base64.
+      // Photos : envoyées en base64 à un modèle qui les lit. Sinon (moteur intégré, Foundry,
+      // Apple, modèle sans vision), leur texte est lu sur cet ordinateur par reconnaissance de
+      // caractères et ajouté au message ; une photo sans texte est refusée.
+      const canSee =
+        !appleFm.isApple(model) &&
+        !foundry.isFoundry(model) &&
+        !localEngine.isLocal(model) &&
+        Boolean(info.capabilities?.includes('vision'));
+      if (messages.some((m) => m.images?.length) && !canSee) {
+        const read = [];
+        messages = await Promise.all(
+          messages.map(async (m) => {
+            if (!m.images?.length) return m;
+            let content = m.content;
+            for (const id of m.images) {
+              const doc = await loadDocument(documentsPath(), id, documentCodec);
+              if (!doc.image) throw new Error('Photo jointe invalide.');
+              // Texte déjà lu gardé avec la photo : pas de nouvelle lecture aux questions suivantes.
+              if (typeof doc.ocrText !== 'string') {
+                send({ kind: 'ocr', data: { photo: doc.name } });
+                doc.ocrText = (await projectDocs.readImage(Buffer.from(doc.data, 'base64'))).text;
+                await fs.writeFile(
+                  path.join(documentsPath(), id + '.json'),
+                  documentCodec.encode(JSON.stringify(doc)),
+                  { mode: 0o600 },
+                );
+              }
+              if (!doc.ocrText)
+                throw new Error(
+                  `Le modèle ${model.replace(/^integre\//, '')} ne lit pas les photos, et aucun texte n’a été trouvé sur « ${doc.name} ». Choisissez un modèle qui lit les images (par exemple gemma3:12b dans Ollama), ou retirez la photo.`,
+                );
+              read.push(doc.name);
+              content += `\n\n[Texte lu sur la photo « ${doc.name} » par reconnaissance de caractères — la mise en page et les images ne sont pas transmises]\n${doc.ocrText}`;
+            }
+            return { ...m, content, images: undefined };
+          }),
+        );
+        send({ kind: 'photo-text', data: { names: [...new Set(read)] } });
+      }
       if (messages.some((m) => m.images?.length)) {
-        if (appleFm.isApple(model))
-          throw new Error(
-            'Le modèle d’Apple ne lit pas les photos dans Localia. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.',
-          );
-        if (foundry.isFoundry(model))
-          throw new Error(
-            'Foundry Local ne lit pas encore les photos dans Localia. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.',
-          );
-        if (localEngine.isLocal(model))
-          throw new Error(
-            'Le moteur intégré ne lit pas encore les photos. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.',
-          );
-        if (!info.capabilities?.includes('vision'))
-          throw new Error(
-            `Le modèle ${model} ne lit pas les photos. Choisissez un modèle qui les lit (par exemple gemma3:12b), ou retirez la photo.`,
-          );
         messages = await Promise.all(
           messages.map(async (m) => {
             if (!m.images?.length) return m;

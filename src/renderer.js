@@ -1290,19 +1290,9 @@ async function sendPrompt({ remoteId } = {}) {
     view('models');
     return { ok: false, error: 'Aucun modèle installé sur le Mac.' };
   }
-  // Photos : seulement avec un modèle qui sait les lire (vérifié avant d'écrire le message).
+  // Photos : envoyées telles quelles à un modèle qui les lit ; sinon leur texte est lu par
+  // reconnaissance de caractères (processus principal).
   const images = remoteId ? [] : pendingImages;
-  if (images.length) {
-    const model = $('model').value;
-    const info = await window.localia.modelInfo(model).catch(() => ({ capabilities: [] }));
-    if (!info.capabilities.includes('vision'))
-      return {
-        ok: false,
-        error: model.startsWith('integre/')
-          ? 'Le moteur intégré ne lit pas encore les photos. Choisissez un modèle d’Ollama qui les lit (par exemple gemma3:12b), ou retirez la photo.'
-          : `Le modèle ${model} ne lit pas les photos. Choisissez un modèle qui les lit (par exemple gemma3:12b), ou retirez la photo.`,
-      };
-  }
   // Adresse https://… dans le message : la page est lue et devient le document de la
   // conversation ; le reste du message est la question (seule, l'adresse ajoute la page).
   const link = linkIn(invocation ? invocation.rest : content);
@@ -1398,6 +1388,11 @@ async function sendPrompt({ remoteId } = {}) {
     } else {
       conversation.messages.pop();
       $('prompt').value = content;
+      // Envoi refusé : les photos restent jointes, prêtes pour un nouvel essai.
+      if (images.length && !pendingImages.length) {
+        pendingImages = images;
+        renderImages();
+      }
     }
     chatting = false;
     reply = null;
@@ -1497,6 +1492,10 @@ window.localia.onProgress(({ kind, data }) => {
       `Mémoire du projet « ${data.project} » transmise : ${data.notes.length} note(s)${data.partial ? ', les plus proches de la question' : ''} (${data.notes.map((n) => n.title).join(', ')}).`,
     );
   }
+  if (kind === 'photo-text')
+    runNotice(
+      `Ce modèle ne lit pas les images : le texte de ${data.names.length > 1 ? 'vos photos' : 'la photo'} (${data.names.join(', ')}) a été lu sur cet ordinateur et envoyé avec votre message.`,
+    );
   if (kind === 'project-documents')
     runNotice(
       `Documents du projet « ${data.project} » transmis${data.partial ? ' (passages les plus proches de la question)' : ''} : ${data.used.map((u) => u.name).join(', ')}.`,

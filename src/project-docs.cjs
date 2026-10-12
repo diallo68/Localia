@@ -217,6 +217,7 @@ function projectDocumentsContext(project, docs, question, budget) {
 }
 
 module.exports = {
+  readImage,
   PROJECT_EXTENSIONS,
   MAX_DOCUMENTS,
   typeOf,

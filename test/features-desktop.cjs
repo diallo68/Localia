@@ -1406,6 +1406,40 @@ const readJson = async (profile, name) => {
     await waitForMissing(path.join(profile, 'documents', photoId + '.json'));
     await fs.rm(photoPath, { force: true });
 
+    // Photo avec du texte et modèle qui ne lit pas les images : texte lu par reconnaissance de
+    // caractères sur cet ordinateur, puis envoyé avec le message.
+    const textPhoto = path.join(os.tmpdir(), `localia-reponse-${Date.now()}.png`);
+    await fs.writeFile(
+      textPhoto,
+      require('./office-fixture.cjs').photoFixture([
+        'Refus de prise en charge',
+        'Dossier 2025-4471',
+      ]),
+    );
+    await page.locator('#new').click();
+    await page.locator('#photo-input').setInputFiles(textPhoto);
+    await page.waitForFunction(() => document.querySelectorAll('.image-chip').length === 1);
+    await page.locator('#model').selectOption('petit:1b');
+    await page.locator('#prompt').fill('voici leur réponse :');
+    await page.locator('#send').click();
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('.message.assistant').length === 1 &&
+        document.querySelector('#stop').hidden,
+      null,
+      { timeout: 60000 },
+    );
+    request = await lastRequest();
+    assert.equal(request.messages.at(-1).images, undefined);
+    assert.match(
+      request.messages.at(-1).content,
+      /^voici leur réponse :\n\n\[Texte lu sur la photo « localia-reponse-\d+\.(png|jpg) » par reconnaissance de caractères[^\]]*\]\n[^]*2025-4471/,
+    );
+    assert.match(await page.locator('#notice').textContent(), /Ce modèle ne lit pas les images/);
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#delete-conversation').click();
+    await fs.rm(textPhoto, { force: true });
+
     // Métier Santé : anonymisation avant l'envoi (repérage + liste personnelle), réponse remise
     // en clair, étiquettes gardées avec la conversation ; consigne de métier envoyée.
     await page.locator('#security-tab').click();

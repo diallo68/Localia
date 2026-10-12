@@ -149,9 +149,13 @@ const round = (n) =>
 function describeTable(name, table, profile, sampleRows = 8) {
   const d = { ',': 'virgule', ';': 'point-virgule', '\t': 'tabulation' }[table.delimiter];
   const lines = [
-    `Tableau « ${name} » : ${profile.rows} lignes, ${profile.columns.length} colonnes, séparateur ${d}${profile.decimalComma ? ', virgule décimale probable' : ''}.`,
+    table.sheet
+      ? `Feuille « ${table.sheet} » du classeur Excel « ${name} » : ${profile.rows} lignes, ${profile.columns.length} colonnes (valeurs séparées par des tabulations ci-dessous).`
+      : `Tableau « ${name} » : ${profile.rows} lignes, ${profile.columns.length} colonnes, séparateur ${d}${profile.decimalComma ? ', virgule décimale probable' : ''}.`,
   ];
-  if (table.preamble.length)
+  if (table.preamble.length && table.sheet)
+    lines.push(`Texte au-dessus du tableau : ${table.preamble.join(' / ').slice(0, 300)}`);
+  else if (table.preamble.length)
     lines.push(
       `${table.preamble.length} ligne(s) d'en-tête avant le tableau (à sauter à la lecture, ex. skiprows=${table.preamble.length}).` +
         (table.preamble.some((l) => /NASA\/POWER|POWER/i.test(l)) ? ' Format NASA POWER.' : ''),
@@ -222,11 +226,60 @@ function prepareAttachment(name, buffer, { maxText = 12000 } = {}) {
   };
 }
 
+// Feuille d'un classeur (lignes de cellules déjà lues) en tableau : l'en-tête est la première ligne
+// remplie au moins à moitié ; les lignes au-dessus (titre, notes) sont gardées comme préambule.
+function sheetTable(sheet) {
+  const rows = sheet.rows;
+  const width = rows.reduce((w, r) => Math.max(w, r.length), 0);
+  const filled = (r) => r.filter((v) => v !== '').length;
+  let start = rows.findIndex((r) => filled(r) >= Math.max(1, width / 2));
+  if (start < 0) start = 0;
+  return {
+    delimiter: '\t',
+    sheet: sheet.name,
+    preamble: rows
+      .slice(0, start)
+      .map((r) => r.filter(Boolean).join(' '))
+      .filter(Boolean),
+    header: (rows[start] || []).map((v, i) => v || `Colonne ${i + 1}`),
+    rows: rows.slice(start + 1).filter((r) => filled(r)),
+  };
+}
+
+// Classeur Excel joint : un portrait par feuille ; une petite feuille est transmise en entier pour
+// que le modèle réponde directement sur les valeurs, une grande seulement résumée.
+function prepareWorkbook(name, sheets, { maxText = 12000, fullRows = 200 } = {}) {
+  const tables = sheets.filter((s) => s.rows.length).map(sheetTable);
+  if (!tables.length) throw new Error('Ce classeur Excel ne contient aucune donnée.');
+  const describe = (full) =>
+    tables
+      .map((t) => {
+        const profile = profileTable(t);
+        const whole = full && t.rows.length <= fullRows;
+        return (
+          describeTable(name, t, profile, whole ? t.rows.length : 8) +
+          (whole ? '\n(Feuille transmise en entier.)' : '') +
+          (sheets.find((s) => s.name === t.sheet)?.truncated
+            ? '\nFeuille très longue : lecture arrêtée.'
+            : '')
+        );
+      })
+      .join('\n\n');
+  let content = describe(true);
+  if (content.length > maxText) content = describe(false);
+  const rows = tables.reduce((n, t) => n + t.rows.length, 0);
+  return {
+    kind: 'table',
+    content,
+    summary: `${tables.length} feuille(s), ${rows} ligne(s) de données`,
+  };
+}
+
 // Bloc ajouté à la consigne du modèle pour les fichiers joints.
 function attachmentsBlock(files) {
   if (!files.length) return '';
   return [
-    "Fichiers joints par l'utilisateur. Le code sera exécuté sur son ordinateur, dans le dossier de ces fichiers : lis-les par leur nom. Pour un tableau, seul son portrait est fourni (colonnes, types, bornes, premières lignes) : utilise exactement ces noms de colonnes et n'invente aucune valeur.",
+    "Fichiers joints par l'utilisateur. Le code sera exécuté sur son ordinateur, dans le dossier de ces fichiers : lis-les par leur nom. Pour un tableau, seul son portrait est fourni (colonnes, types, bornes, premières lignes), sauf une feuille Excel marquée « transmise en entier » : utilise exactement ces noms de colonnes et n'invente aucune valeur.",
     ...files.map((f) =>
       f.kind === 'table'
         ? `### Tableau : ${f.name}\n${f.content}`
@@ -244,5 +297,7 @@ if (typeof module !== 'undefined')
     profileTable,
     describeTable,
     prepareAttachment,
+    sheetTable,
+    prepareWorkbook,
     attachmentsBlock,
   };

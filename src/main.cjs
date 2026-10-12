@@ -17,7 +17,13 @@ const os = require('node:os');
 const net = require('node:net');
 const { pathToFileURL, fileURLToPath } = require('node:url');
 const { modelName, request, readStream } = require('./ollama.cjs');
-const { importPdf, loadDocument, deleteDocument, pruneDocuments } = require('./documents.cjs');
+const {
+  importPdf,
+  importWord,
+  loadDocument,
+  deleteDocument,
+  pruneDocuments,
+} = require('./documents.cjs');
 const {
   checkKind,
   taskKey,
@@ -57,6 +63,7 @@ const watchLogic = require('./watch.js');
 const tables = require('./tables.js');
 const skillsLogic = require('./skills.js');
 const web = require('./web.cjs');
+const office = require('./office.cjs');
 const remote = require('./remote.cjs');
 const localEngine = require('./local-engine.cjs');
 const foundry = require('./foundry.cjs');
@@ -246,31 +253,55 @@ handle('attach-pdf', async () => {
 // un document (chiffré si le chiffrement est actif) ; un tableau est résumé en portrait.
 // Un seul bouton « Ajouter » : un PDF devient le document de la conversation (lu page par page),
 // tout autre fichier accepté devient un fichier joint (texte, code, portrait d'un tableau).
+// Formats acceptés : PDF et Word deviennent le document de la conversation (lu section par
+// section) ; Excel, données et textes deviennent des fichiers joints.
+const ATTACH_EXTENSIONS = [
+  'pdf',
+  'docx',
+  'xlsx',
+  ...tables.TEXT_EXTENSIONS,
+  ...tables.TABLE_EXTENSIONS,
+];
+async function importAttachment(file) {
+  const extension = path.extname(file).slice(1).toLowerCase();
+  if (extension === 'doc' || extension === 'xls')
+    throw new Error(
+      `Ancien format ${extension === 'doc' ? 'Word (.doc)' : 'Excel (.xls)'} : ouvrez le fichier et enregistrez-le en .${extension}x, puis ajoutez-le à nouveau.`,
+    );
+  if (extension === 'pdf')
+    return {
+      kind: 'pdf',
+      doc: await importPdf(file, documentsPath(), documentCodec, (data) =>
+        send({ kind: 'ocr', data }),
+      ),
+    };
+  if (extension === 'docx')
+    return { kind: 'pdf', doc: await importWord(file, documentsPath(), documentCodec) };
+  return { kind: 'file', file: await saveTextAttachment(file) };
+}
 handle('attach', async () => {
   const result = await dialog.showOpenDialog(window, {
     title: 'Ajouter à la conversation',
     properties: ['openFile'],
     filters: [
       {
-        name: 'PDF, consignes, code et données',
-        extensions: ['pdf', ...tables.TEXT_EXTENSIONS, ...tables.TABLE_EXTENSIONS],
+        name: 'PDF, Word, Excel, consignes, code et données',
+        extensions: ATTACH_EXTENSIONS,
       },
     ],
   });
   if (result.canceled || !result.filePaths.length) return null;
-  const file = result.filePaths[0];
-  if (/\.pdf$/i.test(file))
-    return { kind: 'pdf', doc: await importPdf(file, documentsPath(), documentCodec) };
-  return { kind: 'file', file: await saveTextAttachment(file) };
+  return importAttachment(result.filePaths[0]);
 });
 // Fichier déposé dans la fenêtre : la page transmet son nom et son contenu (jamais un chemin, que
 // l'on ne pourrait pas vérifier) ; mêmes formats et mêmes limites que le choix par la boîte de dialogue.
 handle('attach-data', async (name, bytes) => {
   const base = path.basename(String(name || '')).slice(0, 200);
   const extension = path.extname(base).slice(1).toLowerCase();
-  const allowed = ['pdf', ...tables.TEXT_EXTENSIONS, ...tables.TABLE_EXTENSIONS];
-  if (!base || !allowed.includes(extension))
-    throw new Error('Format non pris en charge : PDF, consignes, code ou données (.csv, .json…).');
+  if (!base || ![...ATTACH_EXTENSIONS, 'doc', 'xls'].includes(extension))
+    throw new Error(
+      'Format non pris en charge : PDF, Word, Excel, consignes, code ou données (.csv, .json…).',
+    );
   if (!(bytes instanceof Uint8Array)) throw new Error('Fichier illisible.');
   if (bytes.length > (extension === 'pdf' ? 25 : 50) * 1024 * 1024)
     throw new Error(
@@ -280,9 +311,7 @@ handle('attach-data', async (name, bytes) => {
   const file = path.join(dir, base);
   try {
     await fs.writeFile(file, bytes, { mode: 0o600 });
-    if (extension === 'pdf')
-      return { kind: 'pdf', doc: await importPdf(file, documentsPath(), documentCodec) };
-    return { kind: 'file', file: await saveTextAttachment(file) };
+    return await importAttachment(file);
   } finally {
     await fs.rm(dir, { recursive: true, force: true });
   }
@@ -322,7 +351,10 @@ handle('attach-image', async (name, bytes) => {
 async function saveTextAttachment(file) {
   if ((await fs.stat(file)).size > 50_000_000) throw new Error('Fichier limité à 50 Mo.');
   const name = path.basename(file);
-  const prepared = tables.prepareAttachment(name, await fs.readFile(file));
+  const buffer = await fs.readFile(file);
+  const prepared = /\.xlsx$/i.test(name)
+    ? tables.prepareWorkbook(name, office.xlsxSheets(buffer))
+    : tables.prepareAttachment(name, buffer);
   const doc = { id: crypto.randomUUID(), name, file: true, ...prepared };
   await fs.mkdir(documentsPath(), { recursive: true });
   await fs.writeFile(

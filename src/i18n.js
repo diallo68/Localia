@@ -452,8 +452,8 @@ const EN = {
   Arrêter: 'Stop',
   'Joindre un fichier': 'Attach a file',
   'Joindre une photo': 'Attach a photo',
-  'Joindre un fichier : PDF, consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message.':
-    'Attach a file: PDF, instructions (.txt, .md), code (.py, .R, .sql…) or data (.csv, .tsv, .json). For a web page, paste its address in the message.',
+  'Joindre un fichier : PDF (même scanné), Word (.docx), Excel (.xlsx), consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message.':
+    'Attach a file: PDF (even scanned), Word (.docx), Excel (.xlsx), instructions (.txt, .md), code (.py, .R, .sql…) or data (.csv, .tsv, .json). For a web page, paste its address in the message.',
   'Joindre une photo (JPEG, PNG, WebP), ou la coller dans le message. Lue par les modèles qui savent lire les images.':
     'Attach a photo (JPEG, PNG, WebP), or paste it into the message. Read by models that can read images.',
   'Entrée pour envoyer · Maj + Entrée pour revenir à la ligne · une adresse https://… collée est lue comme page web':

@@ -91,9 +91,11 @@ function documentMessages(doc, messages, system, { numCtx, numPredict, summary =
           // Page web : sa source, et des sections numérotées à la place des pages.
           (doc.web
             ? `Page web : ${doc.source}${doc.fetchedAt ? ` (lue le ${doc.fetchedAt.slice(0, 10)})` : ''} ; « Page n » désigne la section n de la page.\n`
-            : doc.source
-              ? `Document téléchargé depuis : ${doc.source}\n`
-              : '') +
+            : doc.word
+              ? `Document Word : « Page n » désigne la section n du document.\n`
+              : doc.source
+                ? `Document téléchargé depuis : ${doc.source}\n`
+                : '') +
           context.text +
           '\nSOURCE DOCUMENTAIRE — fin',
       },

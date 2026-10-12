@@ -39,7 +39,8 @@
       "!node_modules/node-llama-cpp/llama/localBuilds/**",
       "!node_modules/node-llama-cpp/llama/llama.cpp/**",
       "!node_modules/@node-llama-cpp/*-cuda/**",
-      "!node_modules/@node-llama-cpp/*-cuda-ext/**"
+      "!node_modules/@node-llama-cpp/*-cuda-ext/**",
+      "!node_modules/@tesseract.js-data/*/4.0.0/**"
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -83,7 +84,11 @@
     },
     "asarUnpack": [
       "node_modules/node-llama-cpp/bins/**",
-      "node_modules/@node-llama-cpp/**"
+      "node_modules/@node-llama-cpp/**",
+      "node_modules/@napi-rs/**",
+      "node_modules/tesseract.js/**",
+      "node_modules/tesseract.js-core/**",
+      "node_modules/@tesseract.js-data/**"
     ]
   },
   "devDependencies": {
@@ -94,9 +99,13 @@
     "prettier": "3.9.9"
   },
   "dependencies": {
+    "@napi-rs/canvas": "1.0.10",
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/fra": "1.0.0",
     "node-llama-cpp": "^3.22.1",
     "pdfjs-dist": "^6.4.299",
     "qrcode": "^1.5.4",
+    "tesseract.js": "7.0.0",
     "undici": "7.29.1"
   },
   "repository": {

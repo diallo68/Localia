@@ -372,15 +372,26 @@ function renderAttachment() {
           : '');
       return;
     }
+    if (doc.word) {
+      $('attachment-info').textContent =
+        `Document Word · ${doc.pageCount} section(s) · Texte lu localement. ${doc.characters > 9500 ? 'Document long : seuls des extraits seront transmis selon la question.' : ''} Images et mise en page non analysées.` +
+        (doc.alerts?.length
+          ? ` ⚠ Ce document contient une instruction adressée à l’IA (section ${doc.alerts.map((a) => a.page).join(', ')}) : elle ne doit pas être suivie.`
+          : '');
+      return;
+    }
     $('attachment-info').textContent =
       `${doc.pageCount} page(s) · Texte lu localement. ${doc.characters > 9500 ? 'Document long : seuls des extraits seront transmis selon la question.' : ''} ${doc.emptyPages.length ? 'Pages sans texte non analysées : ' + doc.emptyPages.join(', ') : ''} Images et mise en page non analysées.` +
       (doc.alerts?.length
         ? ` ⚠ Ce document contient une instruction adressée à l’IA (page ${doc.alerts.map((a) => a.page).join(', ')}) : elle ne doit pas être suivie.`
         : '');
-    // PDF scanné (aucune page avec du texte) : Localia ne lit pas les images (pas d'OCR).
-    if (doc.pageCount && doc.emptyPages.length >= doc.pageCount)
-      $('attachment-info').textContent =
-        `${doc.pageCount} page(s) · Aucun texte lisible : ce PDF semble scanné. Localia ne lit pas le texte des images (pas d’OCR). Exportez-le en PDF texte ou collez le texte dans la question.`;
+    // Pages scannées lues par reconnaissance de caractères : erreurs possibles sur les chiffres.
+    if (doc.ocrPages?.length) {
+      const low = doc.ocrPages.filter((p) => p.confidence < 70).map((p) => p.number);
+      $('attachment-info').textContent +=
+        ` ${doc.ocrPages.length} page(s) scannée(s) lue(s) par reconnaissance de caractères (OCR) : vérifiez les chiffres et les noms importants.` +
+        (low.length ? ` Lecture incertaine page(s) ${low.join(', ')}.` : '');
+    }
     if (doc.source)
       $('attachment-info').textContent += ` Source : ${new URL(doc.source).hostname}.`;
   }
@@ -885,6 +896,7 @@ async function addAttachment(read) {
   controls();
   try {
     const added = await read();
+    notice('');
     if (!added) return;
     const name = added.kind === 'pdf' ? added.doc.name : added.file.name;
     if (added.kind === 'file' && (current?.files || []).length >= 5) {
@@ -908,6 +920,11 @@ async function addAttachment(read) {
   }
 }
 $('attach').onclick = guard(() => addAttachment(() => window.localia.attach()));
+// PDF scanné : avancement de la reconnaissance de caractères, page par page.
+window.localia.onProgress(({ kind, data }) => {
+  if (kind === 'ocr' && importing)
+    notice(`Lecture du texte scanné (OCR) : page ${data.page} sur ${data.pageCount}…`);
+});
 dropZone.onclick = () => $('attach').click();
 // Dépôt de fichiers sur la conversation : le contenu est lu ici puis transmis, jamais le chemin.
 const chatView = $('chat-view');

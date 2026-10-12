@@ -1083,6 +1083,45 @@ const readJson = async (profile, name) => {
     await page.locator('#delete-conversation').click();
     await page.waitForFunction(() => !document.querySelectorAll('.file-chip').length);
     for (const id of fileIds) await waitForMissing(path.join(profile, 'documents', id + '.json'));
+
+    // Classeur Excel (fichier joint), document Word et PDF scanné (document de la conversation).
+    const { xlsxFixture, docxFixture, scannedPdfFixture } = require('./office-fixture.cjs');
+    const xlsxFile = path.join(dataDir, 'meteo.xlsx');
+    const docxFile = path.join(dataDir, 'rapport.docx');
+    const scanFile = path.join(dataDir, 'facture-scannee.pdf');
+    await fs.writeFile(xlsxFile, xlsxFixture());
+    await fs.writeFile(docxFile, docxFixture());
+    await fs.writeFile(scanFile, scannedPdfFixture(['Facture numéro 2026-118']));
+    await app.evaluate(
+      ({ dialog }, files) => {
+        dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [files.shift()] });
+      },
+      [xlsxFile, docxFile, scanFile],
+    );
+    await page.locator('#new').click();
+    await page.locator('#attach').click();
+    await page.waitForFunction(() => document.querySelectorAll('.file-chip').length === 1);
+    assert.match(await page.locator('#file-chips').textContent(), /meteo\.xlsx/);
+    assert.match(await page.locator('#file-chips').textContent(), /2 feuille\(s\)/);
+    await page.locator('#attach').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#attachment-info').textContent.includes('Document Word'),
+    );
+    await page.locator('#prompt').fill('Quelle pluie en juillet ?');
+    await page.locator('#send').click();
+    await page.waitForFunction(() => !document.querySelector('#send').disabled);
+    request = await lastRequest();
+    const wordSent = request.messages.map((m) => m.content).join('\n');
+    assert.match(wordSent, /Document Word : « Page n » désigne la section n/);
+    assert.match(wordSent, /Juillet \| 481/);
+    assert.match(wordSent, /Feuille « Météo » du classeur Excel « meteo\.xlsx »/);
+    await page.locator('#attach').click();
+    await page.waitForFunction(
+      () => document.querySelector('#attachment-info').textContent.includes('(OCR)'),
+      null,
+      { timeout: 60000 },
+    );
+    assert.match(await page.locator('#attachment-name').textContent(), /facture-scannee\.pdf/);
     await fs.rm(dataDir, { recursive: true, force: true });
 
     // Fichier déposé dans la fenêtre (glisser-déposer) : son contenu est transmis, pas son chemin.
@@ -1103,6 +1142,10 @@ const readJson = async (profile, name) => {
     await drop('programme.exe', 'MZ');
     await page.waitForFunction(() =>
       document.querySelector('#notice').textContent.includes('Format non pris en charge'),
+    );
+    await drop('ancien.doc', 'x');
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('Ancien format Word (.doc)'),
     );
     await drop('mesures.csv', 'date,pluie\n2024-06-01,12\n2024-06-02,0\n');
     await page.waitForFunction(() => document.querySelectorAll('.file-chip').length === 1);

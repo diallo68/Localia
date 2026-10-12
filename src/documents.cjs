@@ -3,8 +3,12 @@ const path = require('node:path');
 const { Worker } = require('node:worker_threads');
 const { randomUUID } = require('node:crypto');
 const { detectInjection } = require('./verify.js');
+const { docxText } = require('./office.cjs');
+const { splitSections } = require('./web.cjs');
 const MAX_BYTES = 25 * 1024 * 1024;
-async function extractPdf(file) {
+// Lecture dans un fil séparé. Une page scannée lue par OCR prend quelques secondes : le délai
+// de 60 s est compté depuis la dernière page avancée, et chaque page lue par OCR est signalée.
+async function extractPdf(file, onProgress = () => {}) {
   const stat = await fs.stat(file);
   if (!stat.isFile() || stat.size > MAX_BYTES)
     throw new Error('Choisissez un PDF de moins de 25 Mo.');
@@ -13,11 +17,21 @@ async function extractPdf(file) {
     throw new Error('Ce fichier n’est pas un PDF valide.');
   return new Promise((resolve, reject) => {
     const worker = new Worker(path.join(__dirname, 'pdf-worker.cjs'), { workerData: bytes });
-    const timer = setTimeout(() => {
-      worker.terminate();
-      reject(new Error('Lecture trop longue. Essayez un PDF plus court.'));
-    }, 60000);
-    worker.once('message', (result) => {
+    let timer;
+    const wait = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        worker.terminate();
+        reject(new Error('Lecture trop longue. Essayez un PDF plus court.'));
+      }, 60000);
+    };
+    wait();
+    worker.on('message', (result) => {
+      if (result.progress) {
+        wait();
+        onProgress(result.progress);
+        return;
+      }
       clearTimeout(timer);
       worker.terminate();
       result.error ? reject(new Error(result.error)) : resolve(result);
@@ -34,9 +48,7 @@ async function extractPdf(file) {
 }
 // Codage des fichiers de documents : texte brut par défaut, chiffré si le chiffrement est actif.
 const PLAIN = { encode: (text) => text, decode: (buffer) => buffer.toString('utf8') };
-async function importPdf(file, directory, codec = PLAIN) {
-  const extracted = await extractPdf(file);
-  const doc = { id: randomUUID(), name: path.basename(file), ...extracted };
+async function saveDocument(doc, directory, codec) {
   await fs.mkdir(directory, { recursive: true });
   await fs.writeFile(path.join(directory, doc.id + '.json'), codec.encode(JSON.stringify(doc)), {
     mode: 0o600,
@@ -47,9 +59,42 @@ async function importPdf(file, directory, codec = PLAIN) {
     pageCount: doc.pageCount,
     characters: doc.pages.reduce((n, p) => n + p.text.length, 0),
     emptyPages: doc.emptyPages,
+    ocrPages: doc.ocrPages || [],
+    ...(doc.word ? { word: true } : {}),
     // Phrases adressées à une IA (injection de consignes), signalées dès l'import.
     alerts: detectInjection(doc.pages),
   };
+}
+async function importPdf(file, directory, codec = PLAIN, onProgress) {
+  const extracted = await extractPdf(file, onProgress);
+  return saveDocument(
+    { id: randomUUID(), name: path.basename(file), ...extracted },
+    directory,
+    codec,
+  );
+}
+// Document Word (.docx) : son texte en sections d'environ 2 500 caractères, comme une page web.
+async function importWord(file, directory, codec = PLAIN) {
+  const stat = await fs.stat(file);
+  if (!stat.isFile() || stat.size > MAX_BYTES)
+    throw new Error('Choisissez un document Word de moins de 25 Mo.');
+  const text = docxText(await fs.readFile(file));
+  if (!text) throw new Error('Ce document Word ne contient pas de texte.');
+  if (text.length > 1000000)
+    throw new Error('Ce document contient trop de texte. Séparez-le en plusieurs documents.');
+  const pages = splitSections(text);
+  return saveDocument(
+    {
+      id: randomUUID(),
+      name: path.basename(file),
+      word: true,
+      pageCount: pages.length,
+      emptyPages: [],
+      pages,
+    },
+    directory,
+    codec,
+  );
 }
 const DOCUMENT_ID = /^[0-9a-f-]{36}$/;
 function checkId(id) {
@@ -194,7 +239,7 @@ function documentContext(doc, question, budget = 10000, { summary = false } = {}
   }
   selected.sort((a, b) => a.page - b.page || a.offset - b.offset);
   const partial = selected.length < chunks.length;
-  const printed = doc.web ? new Map() : printedPages(doc);
+  const printed = doc.web || doc.word ? new Map() : printedPages(doc);
   const label = (c) =>
     `[Page ${c.page}, extrait ${Math.floor(c.offset / 1400) + 1}` +
     (printed.has(c.page) ? ` — page imprimée ${printed.get(c.page)}]` : ']');
@@ -237,6 +282,7 @@ module.exports = {
   printedPages,
   extractPdf,
   importPdf,
+  importWord,
   loadDocument,
   deleteDocument,
   pruneDocuments,

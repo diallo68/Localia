@@ -179,7 +179,7 @@ const readJson = async (profile, name) => {
             { message: { content: global.chatReply ?? `Réponse de **${body.model}**` } },
             {
               done: true,
-              done_reason: 'stop',
+              done_reason: global.chatDoneReason ?? 'stop',
               total_duration: 3e9,
               load_duration: 1e9,
               prompt_eval_count: 40,
@@ -1439,6 +1439,25 @@ const readJson = async (profile, name) => {
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#delete-conversation').click();
     await fs.rm(textPhoto, { force: true });
+
+    // Réponse vide (longueur maximale atteinte pendant la réflexion) : expliquée, question gardée.
+    await app.evaluate(() => {
+      global.chatReply = '';
+      global.chatDoneReason = 'length';
+    });
+    await page.locator('#new').click();
+    await page.locator('#prompt').fill('Question sans réponse visible');
+    await page.locator('#send').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('pendant sa réflexion'),
+    );
+    assert.equal(await page.locator('#prompt').inputValue(), 'Question sans réponse visible');
+    assert.equal(await page.locator('.message').count(), 0);
+    await app.evaluate(() => {
+      delete global.chatReply;
+      delete global.chatDoneReason;
+    });
+    await page.locator('#prompt').fill('');
 
     // Métier Santé : anonymisation avant l'envoi (repérage + liste personnelle), réponse remise
     // en clair, étiquettes gardées avec la conversation ; consigne de métier envoyée.

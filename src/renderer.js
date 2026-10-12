@@ -1370,6 +1370,14 @@ async function sendPrompt({ remoteId } = {}) {
     answer.content = result.text || '';
     if (result.anonymap) conversation.anonymap = result.anonymap;
     completed = !result.cancelled;
+    // Réponse vide (souvent : toute la longueur permise passée à réfléchir) : expliqué, la
+    // question reste dans la zone de saisie.
+    if (completed && !answer.content.trim() && !reply.dataset.answer) {
+      completed = false;
+      failure = /length|maxTokens/i.test(result.stats?.doneReason || '')
+        ? 'Le modèle a atteint la longueur maximale de réponse pendant sa réflexion, sans écrire de réponse. Désactivez la réflexion ou augmentez la longueur maximale (Réglages avancés → Réglages des modèles), puis renvoyez la question.'
+        : 'Le modèle n’a écrit aucune réponse. Renvoyez la question, reformulez-la ou essayez un autre modèle.';
+    }
   } catch (error) {
     failure = error.message;
   } finally {

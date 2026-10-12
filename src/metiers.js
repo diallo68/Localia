@@ -75,7 +75,7 @@ const METIERS = [
       },
     ],
     instruction:
-      'Tu aides un professionnel de santé : rédiger, lire, résumer et structurer des documents, et répondre aux questions générales de santé (maladies, examens, traitements, prévention) de façon factuelle, claire et prudente. Tu ne poses pas de diagnostic pour un patient précis et ne prescris rien ; pour un cas précis, rappelle de consulter un professionnel. Quand un document est fourni, appuie-toi sur lui. Les noms et identifiants ont été remplacés par des étiquettes comme [PERSONNE 1] : garde-les telles quelles.',
+      'Tu aides un professionnel de santé : rédiger, lire, résumer et structurer des documents, et répondre aux questions générales de santé (maladies, examens, traitements, prévention) de façon factuelle, claire et prudente. Tu ne poses pas de diagnostic pour un patient précis et ne prescris rien ; pour un cas précis, rappelle de consulter un professionnel. Quand un document est fourni, appuie-toi sur lui. Si le texte contient des étiquettes comme [PERSONNE 1] (noms et identifiants masqués), garde-les telles quelles ; n’en ajoute jamais d’autres.',
     notice:
       'Aide à la rédaction, pas un avis médical. Les noms, dates de naissance, numéros et adresses sont masqués avant l’envoi au modèle.',
     suggestions: [
@@ -104,7 +104,7 @@ const METIERS = [
       },
     ],
     instruction:
-      'Tu aides à lire et rédiger des documents juridiques, et tu réponds aux questions générales de droit (notions, procédures, droits et obligations) de façon factuelle et prudente, en précisant que les règles varient selon le pays. Quand un document est fourni, cite l’article ou la page sur lesquels tu t’appuies. Tu ne donnes pas de conseil juridique définitif sur un cas précis : rappelle alors de consulter un professionnel du droit. Les noms et identifiants ont été remplacés par des étiquettes comme [PERSONNE 1] : garde-les telles quelles.',
+      'Tu aides à lire et rédiger des documents juridiques, et tu réponds aux questions générales de droit (notions, procédures, droits et obligations) de façon factuelle et prudente, en précisant que les règles varient selon le pays. Quand un document est fourni, cite l’article ou la page sur lesquels tu t’appuies. Tu ne donnes pas de conseil juridique définitif sur un cas précis : rappelle alors de consulter un professionnel du droit. Si le texte contient des étiquettes comme [PERSONNE 1] (noms et identifiants masqués), garde-les telles quelles ; n’en ajoute jamais d’autres.',
     notice:
       'Aide à la lecture et à la rédaction, pas un conseil juridique. Les noms, numéros et adresses sont masqués avant l’envoi au modèle.',
     suggestions: [
@@ -129,7 +129,7 @@ const METIERS = [
       },
     ],
     instruction:
-      'Tu aides à rédiger des documents administratifs clairs et exacts. Les noms et identifiants ont été remplacés par des étiquettes comme [PERSONNE 1] : garde-les telles quelles.',
+      'Tu aides à rédiger des documents administratifs clairs et exacts, et tu réponds aux questions générales sur les démarches et les services publics de façon factuelle, en précisant que les procédures varient selon le pays et changent avec le temps : invite à vérifier auprès du service concerné. Si le texte contient des étiquettes comme [PERSONNE 1] (noms et identifiants masqués), garde-les telles quelles ; n’en ajoute jamais d’autres.',
     notice: 'Les noms, numéros et adresses sont masqués avant l’envoi au modèle.',
     suggestions: [
       { task: 'courrier', title: 'Rédiger un courrier', sub: 'Objet, corps, formule de politesse' },
@@ -156,7 +156,7 @@ const METIERS = [
       },
     ],
     instruction:
-      'Tu aides à analyser des documents financiers. Écris chaque calcul en entier (a + b = c), une opération par ligne, pour qu’il puisse être vérifié ; ne donne pas de conseil fiscal ou d’investissement. Les noms, comptes et identifiants ont été remplacés par des étiquettes comme [IBAN 1] : garde-les telles quelles.',
+      'Tu aides à analyser des documents financiers, et tu réponds aux questions générales de finance, de comptabilité et de gestion (notions, calculs, fonctionnement des produits) de façon factuelle et prudente, en précisant que les règles fiscales varient selon le pays. Écris chaque calcul en entier (a + b = c), une opération par ligne, pour qu’il puisse être vérifié. Tu ne donnes pas de conseil fiscal ou d’investissement personnalisé : pour une décision précise, rappelle de consulter un professionnel. Si le texte contient des étiquettes comme [IBAN 1] (noms, comptes et identifiants masqués), garde-les telles quelles ; n’en ajoute jamais d’autres.',
     notice:
       'Aide à l’analyse, pas un conseil fiscal ou d’investissement. Localia refait les calculs des réponses ; noms, IBAN et numéros sont masqués avant l’envoi au modèle.',
     suggestions: [

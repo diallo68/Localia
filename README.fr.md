@@ -10,7 +10,7 @@ Localia est une application de bureau pour macOS, Windows et Linux, pour utilise
 
 <p align="center"><a href="https://github.com/diallo68/Localia/releases/latest"><b>⬇ Télécharger Localia</b></a> — macOS (puce Apple et Intel), Windows, Linux · gratuit et libre</p>
 
-<p align="center"><img src="docs/demo.gif" width="880" alt="Démonstration : un projet avec un rapport Word, une question, et la réponse de Gemma 4 E4B, calculée sur l’ordinateur, qui cite le document"></p>
+<p align="center"><img src="docs/demo.gif" width="880" alt="Démonstration : le domaine Entreprise, un projet avec un bilan Word, une question, et la réponse de Gemma 4 E4B, calculée sur l’ordinateur, qui cite le document"></p>
 
 | Mode simple | Mode avancé : accueil |
 |---|---|

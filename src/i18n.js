@@ -528,6 +528,8 @@ const EN = {
     'AI answers may contain errors. Check important information.',
   Vous: 'You',
   '＋ Mémoire du projet': '＋ Project memory',
+  'Ajouter cette réponse aux notes du projet de la conversation':
+    'Add this answer to the notes of the conversation’s project',
   'Préparation de la réponse…': 'Preparing the answer…',
   // Choix du métier
   'PREMIER LANCEMENT · ÉTAPE 1 SUR 2': 'FIRST LAUNCH · STEP 1 OF 2',
@@ -763,6 +765,8 @@ const EN = {
   'Analyser votre PC': 'Analyse your PC',
   Documents: 'Documents',
   'Ajouter des documents': 'Add documents',
+  'Sans projet': 'No project',
+  'Poser une question sur ce projet': 'Ask a question about this project',
   'ou glissez-les ici · PDF (même scanné), Word, Excel, PowerPoint, CSV, textes et photos (texte lu par reconnaissance de caractères)':
     'or drop them here · PDF (even scanned), Word, Excel, PowerPoint, CSV, text and photos (text read by character recognition)',
   'Aucun document pour l’instant.': 'No documents yet.',
@@ -970,6 +974,36 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [
+    /^Mémoire : ([\d\s\u202f]+) caractères\./,
+    (text) =>
+      text
+        .replace(/(\d)[\s\u202f](?=\d{3}\b)/g, '$1,')
+        .replace(/^Mémoire : ([\d,]+) caractères\./, 'Memory: $1 characters.')
+        .replace(
+          / Tout est envoyé au modèle \(limite : ([\d,]+) caractères\)\./,
+          ' Everything is sent to the model (limit: $1 characters).',
+        )
+        .replace(
+          / Au-delà de ([\d,]+), seules les notes les plus proches de chaque question sont envoyées au modèle\./,
+          ' Beyond $1, only the notes closest to each question are sent to the model.',
+        ),
+  ],
+  [
+    /^(PDF|Word|Excel|PowerPoint|Tableau|Texte|Photo|Document) · /,
+    (text) =>
+      text
+        .replace(/^Tableau/, 'Table')
+        .replace(/^Texte/, 'Text')
+        .replace(/(\d+) diapositives?/, (m, n) => `${n} slide${n > 1 ? 's' : ''}`)
+        .replace(/(\d)[\s\u202f](?=\d{3}\b)/g, '$1,')
+        .replace(/ caractères\b/, ' characters')
+        .replace(/texte lu par reconnaissance de caractères/, 'text read by character recognition')
+        .replace(
+          /(\d+) pages? scannées? lues? par reconnaissance de caractères/,
+          (m, n) => `${n} scanned page${n > 1 ? 's' : ''} read by character recognition`,
+        ),
+  ],
   [/^(\d+) questions détectées : (.*)$/, '$1 questions detected: $2'],
   [/^Choisi : (.*)$/, 'Chosen: $1'],
   [/^Aujourd’hui, (.*)$/, 'Today, $1'],
@@ -1010,6 +1044,7 @@ const EN_PATTERNS = [
     (text) =>
       text
         .replace(/^Documents du projet « (.*) » transmis/, 'Documents of project “$1” sent')
+        .replace(/ : /, ': ')
         .replace(
           ' (passages les plus proches de la question)',
           ' (passages closest to the question)',

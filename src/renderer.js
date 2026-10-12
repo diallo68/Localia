@@ -545,8 +545,8 @@ function messageNode(message, question) {
       const remember = document.createElement('button');
       remember.type = 'button';
       remember.className = 'remember';
-      remember.textContent = '＋ Mémoire du projet';
-      remember.title = 'Ajouter cette réponse aux notes du projet de la conversation';
+      remember.textContent = tr('＋ Mémoire du projet');
+      remember.title = tr('Ajouter cette réponse aux notes du projet de la conversation');
       remember.onclick = guard(() => addToMemory(message.content, question?.content));
       node.append(remember);
     }

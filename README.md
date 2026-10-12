@@ -10,7 +10,7 @@ Localia is a desktop application for macOS, Windows and Linux for working with l
 
 <p align="center"><a href="https://github.com/diallo68/Localia/releases/latest"><b>⬇ Download Localia</b></a> — macOS (Apple chip and Intel), Windows, Linux · free and open source</p>
 
-<p align="center"><img src="docs/demo.gif" width="880" alt="Demo: the Business field, a project with a Word report, a question, and the answer from Gemma 4 E4B running on the computer, citing the document"></p>
+<p align="center"><img src="docs/demo-en.gif" width="880" alt="Demo: the Business and trade field, a project with a Word report, a question, and the answer from Gemma 4 E4B running on the computer, citing the document"></p>
 
 | Simple mode | Advanced mode: home |
 |---|---|

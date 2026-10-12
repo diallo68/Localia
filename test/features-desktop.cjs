@@ -1206,6 +1206,26 @@ const readJson = async (profile, name) => {
     await page.locator('#history-search').fill('mot-introuvable-xyz');
     await page.waitForFunction(() => document.querySelector('.history-empty'));
     await page.locator('#history-search').fill('');
+    // Sélection de plusieurs conversations, supprimées ensemble après confirmation.
+    const countBefore = (await readJson(profile, 'conversations.json')).length;
+    assert.ok(countBefore >= 3, 'au moins trois conversations');
+    await page.locator('#history-select').click();
+    await page.waitForFunction(() => document.querySelectorAll('.history-check').length > 2);
+    assert.equal(await page.locator('#history-delete').isDisabled(), true, 'rien de coché');
+    await page.locator('.history-check').nth(0).check();
+    await page.locator('#history .history-open').nth(1).click();
+    await page.waitForFunction(
+      () => document.querySelector('#history-delete').textContent.trim() === 'Supprimer (2)',
+    );
+    assert.equal(await page.locator('.history-delete:visible').count(), 0, 'corbeilles masquées');
+    page.once('dialog', (dialog) => {
+      assert.match(dialog.message(), /Supprimer définitivement 2 conversations/);
+      dialog.accept();
+    });
+    await page.locator('#history-delete').click();
+    await page.waitForFunction(() => !document.querySelector('.history-check'));
+    await settleWrites();
+    assert.equal((await readJson(profile, 'conversations.json')).length, countBefore - 2);
 
     // Taille du texte : zoom de la fenêtre, gardé dans les réglages.
     await page.locator('#home-tab').click();
@@ -1498,6 +1518,13 @@ const readJson = async (profile, name) => {
       });
       await refresh();
     });
+    // Mode simple : langue, taille du texte et contraste restent accessibles dans la colonne.
+    for (const selector of [
+      '.display-settings [data-lang="en"]',
+      '[data-text-size="1.3"]',
+      '#contrast-toggle',
+    ])
+      assert.ok(await page.locator(selector).isVisible(), selector);
     const advised = await page.evaluate(() => recommendedModel()?.name);
     assert.ok(advised, 'un modèle conseillé parmi les modèles installés');
     await page.waitForFunction((name) => document.querySelector('#model').value === name, advised);

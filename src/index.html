@@ -51,6 +51,30 @@
         <img class="logo" src="assets/logo.svg" alt="" />
         <div>Localia<small>L’IA, chez vous.</small></div>
       </div>
+      <div class="display-settings" role="group" aria-label="Affichage">
+        <div class="segmented" role="group" aria-label="Langue">
+          <button type="button" data-lang="fr" aria-pressed="true" title="Français">FR</button
+          ><button type="button" data-lang="en" aria-pressed="false" title="English">EN</button>
+        </div>
+        <div class="segmented text-size" role="group" aria-label="Taille du texte">
+          <button type="button" data-text-size="1" aria-pressed="true" title="Texte normal">
+            A</button
+          ><button type="button" data-text-size="1.15" aria-pressed="false" title="Texte grand">
+            A</button
+          ><button type="button" data-text-size="1.3" aria-pressed="false" title="Texte très grand">
+            A
+          </button>
+        </div>
+        <button
+          id="contrast-toggle"
+          class="contrast-toggle"
+          type="button"
+          aria-pressed="false"
+          title="Contraste élevé : textes plus foncés et bordures plus visibles"
+        >
+          Contraste
+        </button>
+      </div>
       <button id="metier-switch" type="button" title="Changer de métier">
         <span><small>Profil et métier</small><strong id="metier-name"></strong></span
         ><i data-icon="chevron"></i>
@@ -105,6 +129,15 @@
           aria-label="Rechercher dans les conversations"
           hidden
         />
+        <div id="history-tools" class="history-tools" hidden>
+          <button id="history-select" class="link-button" type="button">Sélectionner</button>
+          <span id="history-selection" hidden
+            ><button id="history-all" class="link-button" type="button">Tout sélectionner</button
+            ><button id="history-delete" class="link-button danger" type="button" disabled>
+              Supprimer</button
+            ><button id="history-cancel" class="link-button" type="button">Annuler</button></span
+          >
+        </div>
         <nav id="history" class="nav-group" aria-label="Historique des conversations"></nav>
       </div>
       <div id="memory-gauge" hidden>
@@ -156,29 +189,6 @@
               <button type="button" data-lang="fr" aria-pressed="true">Français</button
               ><button type="button" data-lang="en" aria-pressed="false">English</button>
             </div>
-            <div class="segmented text-size" role="group" aria-label="Taille du texte">
-              <button type="button" data-text-size="1" aria-pressed="true" title="Texte normal">
-                A</button
-              ><button type="button" data-text-size="1.15" aria-pressed="false" title="Texte grand">
-                A</button
-              ><button
-                type="button"
-                data-text-size="1.3"
-                aria-pressed="false"
-                title="Texte très grand"
-              >
-                A
-              </button>
-            </div>
-            <button
-              id="contrast-toggle"
-              class="home-pill contrast-toggle"
-              type="button"
-              aria-pressed="false"
-              title="Contraste élevé : textes plus foncés et bordures plus visibles"
-            >
-              Contraste élevé
-            </button>
           </div>
         </div>
         <div class="home-actions">

@@ -170,6 +170,27 @@ function matchesSearch(c, words) {
   return words.every((w) => text.includes(w));
 }
 $('history-search').oninput = () => history();
+// Sélection de plusieurs conversations pour les supprimer ensemble.
+let selecting = false;
+const selectedIds = new Set();
+function setSelecting(on) {
+  selecting = on;
+  selectedIds.clear();
+  history();
+}
+$('history-select').onclick = () => setSelecting(true);
+$('history-cancel').onclick = () => setSelecting(false);
+$('history-all').onclick = () => {
+  const words = fold($('history-search').value).split(/\s+/).filter(Boolean);
+  const shown = conversations.filter((c) => matchesSearch(c, words));
+  const all = shown.every((c) => selectedIds.has(c.id));
+  for (const c of shown) all ? selectedIds.delete(c.id) : selectedIds.add(c.id);
+  history();
+};
+$('history-delete').onclick = guard(async () => {
+  const list = conversations.filter((c) => selectedIds.has(c.id));
+  if (await deleteConversations(list)) setSelecting(false);
+});
 function history() {
   $('history').replaceChildren();
   const words = fold($('history-search').value).split(/\s+/).filter(Boolean);
@@ -177,9 +198,34 @@ function history() {
   $('history-search').hidden = conversations.length < 2 && !words.length;
   if (words.length && !shown.length)
     $('history').append(element('p', 'history-empty', 'Aucune conversation trouvée.'));
+  $('history-tools').hidden = conversations.length < 2;
+  $('history-select').hidden = selecting;
+  $('history-selection').hidden = !selecting;
+  $('history-delete').disabled = !selectedIds.size || chatting || importing;
+  $('history-delete').textContent = selectedIds.size
+    ? `${tr('Supprimer')} (${selectedIds.size})`
+    : tr('Supprimer');
+  $('history-all').textContent = tr(
+    shown.length && shown.every((c) => selectedIds.has(c.id))
+      ? 'Tout désélectionner'
+      : 'Tout sélectionner',
+  );
   for (const c of shown) {
     const row = document.createElement('div');
     row.className = 'history-row';
+    if (selecting) {
+      const check = document.createElement('input');
+      check.type = 'checkbox';
+      check.className = 'history-check';
+      check.checked = selectedIds.has(c.id);
+      check.setAttribute('aria-label', `Sélectionner « ${c.title} »`);
+      check.onchange = () => {
+        check.checked ? selectedIds.add(c.id) : selectedIds.delete(c.id);
+        history();
+      };
+      row.append(check);
+      row.classList.toggle('checked', check.checked);
+    }
     const b = document.createElement('button');
     b.className = 'history-open';
     const title = document.createElement('span');
@@ -197,6 +243,11 @@ function history() {
     b.disabled = chatting || importing;
     b.dataset.id = c.id;
     b.onclick = () => {
+      // Mode sélection : un clic coche ou décoche la conversation au lieu de l'ouvrir.
+      if (selecting) {
+        selectedIds.has(c.id) ? selectedIds.delete(c.id) : selectedIds.add(c.id);
+        return history();
+      }
       current = c;
       selectModel(c.model);
       const choice = conversationChoices(c);
@@ -218,6 +269,7 @@ function history() {
     remove.innerHTML = iconSvg('trash');
     remove.disabled = chatting || importing;
     remove.onclick = guard(() => deleteConversation(c));
+    remove.hidden = selecting;
     row.append(b, remove);
     $('history').append(row);
   }
@@ -1134,23 +1186,30 @@ $('remove-pdf').onclick = guard(async () => {
 $('delete-conversation').onclick = guard(() => deleteConversation(current));
 // Supprime une conversation, ses messages et les documents qu'elle seule utilise.
 async function deleteConversation(conversation) {
-  if (!conversation || chatting || importing) return;
-  if (
-    !confirm(
-      `Supprimer définitivement « ${conversation.title} » ? Les messages et le texte du PDF joint seront effacés de ce Mac.`,
-    )
-  )
-    return;
-  const wasOpen = current === conversation;
-  conversations = conversations.filter((c) => c !== conversation);
+  return deleteConversations(conversation ? [conversation] : []);
+}
+// Suppression d'une ou plusieurs conversations (confirmation demandée), avec leurs documents,
+// fichiers joints et photos.
+async function deleteConversations(list) {
+  if (!list.length || chatting || importing) return false;
+  const question =
+    list.length === 1
+      ? `Supprimer définitivement « ${list[0].title} » ? Les messages et le texte du PDF joint seront effacés de ce Mac.`
+      : `Supprimer définitivement ${list.length} conversations ? Leurs messages et les textes des documents joints seront effacés de ce Mac.`;
+  if (!confirm(question)) return false;
+  const wasOpen = list.includes(current);
+  conversations = conversations.filter((c) => !list.includes(c));
   if (wasOpen) current = null;
   await persist();
   render();
   if (wasOpen) view('chat');
-  if (conversation.document) await window.localia.deleteDocument(conversation.document.id);
-  for (const f of conversation.files || []) await window.localia.deleteDocument(f.id);
-  for (const m of conversation.messages)
-    for (const image of m.images || []) await window.localia.deleteDocument(image.id);
+  for (const conversation of list) {
+    if (conversation.document) await window.localia.deleteDocument(conversation.document.id);
+    for (const f of conversation.files || []) await window.localia.deleteDocument(f.id);
+    for (const m of conversation.messages)
+      for (const image of m.images || []) await window.localia.deleteDocument(image.id);
+  }
+  return true;
 }
 $('chat-tab').onclick = () => view('chat');
 $('bench-nav').onclick = () => $(lastBenchStep + '-tab').click();

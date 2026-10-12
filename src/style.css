@@ -287,7 +287,9 @@ aside > * {
   flex-direction: column;
   flex: 1 1 auto;
   flex-shrink: 1;
-  min-height: 130px;
+  /* Titre, recherche, outils de sélection et quelques conversations toujours visibles ;
+     au-delà, c'est la colonne qui défile. */
+  min-height: 220px;
 }
 .history-section .section-toggle {
   font-size: 13px;
@@ -3226,9 +3228,12 @@ body[data-mode='simple'] #messages .advice-card,
 body[data-mode='simple'] #welcome #drop-zone {
   display: none;
 }
+body[data-mode='simple'] .display-settings {
+  order: 9;
+  margin-top: 8px;
+}
 body[data-mode='simple'] #metier-switch {
   order: 10;
-  margin-top: 8px;
 }
 body[data-mode='simple'] #mode-switch {
   order: 11;
@@ -3794,4 +3799,69 @@ img.logo {
   display: flex;
   gap: 8px;
   margin-left: auto;
+}
+
+/* Affichage (barre latérale, les deux modes) : langue, taille du texte, contraste ; en bas de
+   la colonne en mode avancé, au-dessus du profil en mode simple. */
+.display-settings {
+  order: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.display-settings .segmented {
+  padding: 2px;
+  gap: 2px;
+}
+.display-settings .segmented button {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+.display-settings .text-size button:nth-child(1) {
+  font-size: 11px;
+}
+.display-settings .text-size button:nth-child(2) {
+  font-size: 13px;
+}
+.display-settings .text-size button:nth-child(3) {
+  font-size: 15px;
+}
+.display-settings .contrast-toggle {
+  padding: 4px 8px;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+}
+
+/* Sélection de plusieurs conversations */
+.history-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 8px 4px;
+  font-size: 12px;
+}
+.history-tools[hidden],
+#history-selection[hidden] {
+  display: none;
+}
+#history-selection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.history-tools .danger:not(:disabled) {
+  color: var(--danger);
+}
+.history-check {
+  margin: 0 2px 0 6px;
+  flex: 0 0 auto;
+}
+.history-row.checked {
+  background: var(--accent-soft);
+  border-radius: 8px;
 }

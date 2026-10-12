@@ -16,6 +16,7 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const { spawn, execFile } = require('node:child_process');
 const os = require('node:os');
+const { createHash } = require('node:crypto');
 const net = require('node:net');
 const { pathToFileURL, fileURLToPath } = require('node:url');
 const { modelName, request, readStream } = require('./ollama.cjs');
@@ -958,7 +959,7 @@ async function resolveHuggingFace(address) {
 }
 // Empreinte SHA-256 d'un fichier, lue par morceaux (fichiers de plusieurs Go).
 async function fileSha256(file) {
-  const hash = crypto.createHash('sha256');
+  const hash = createHash('sha256');
   for await (const chunk of require('node:fs').createReadStream(file)) hash.update(chunk);
   return hash.digest('hex');
 }
@@ -1036,6 +1037,142 @@ handle('catalog-download', async (id) => {
 });
 handle('hf-download', async (address) => installModel(await resolveHuggingFace(address)));
 handle('download-cancel', () => currentDownload?.controller.abort());
+// Modèle sur une clé USB (ou tout fichier GGUF) : installé sans Internet. Copie avec calcul de
+// l'empreinte au fil de l'eau ; un fichier du catalogue est reconnu par son empreinte (licence et
+// nom du catalogue), un autre est enregistré comme « fichier local » après un essai du moteur.
+async function copyWithHash(source, dest, id, signal) {
+  const { createReadStream, createWriteStream } = require('node:fs');
+  const total = (await fs.stat(source)).size;
+  const hash = createHash('sha256');
+  let received = 0;
+  let last = 0;
+  const part = dest + '.copie';
+  try {
+    await require('node:stream/promises').pipeline(
+      createReadStream(source),
+      async function* (chunks) {
+        for await (const chunk of chunks) {
+          hash.update(chunk);
+          received += chunk.length;
+          if (received - last > 50e6 || received === total) {
+            last = received;
+            send({ kind: 'download', data: { id, phase: 'copie', received, total } });
+          }
+          yield chunk;
+        }
+      },
+      createWriteStream(part, { mode: 0o600 }),
+      { signal },
+    );
+    await fs.rename(part, dest);
+  } catch (error) {
+    await fs.rm(part, { force: true });
+    throw error;
+  }
+  return hash.digest('hex');
+}
+handle('model-from-file', async () => {
+  if (currentDownload) throw new Error('Un téléchargement ou une copie est déjà en cours.');
+  const result = await dialog.showOpenDialog(window, {
+    title: 'Installer un modèle depuis un fichier',
+    properties: ['openFile'],
+    filters: [{ name: 'Modèle GGUF', extensions: ['gguf'] }],
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+  const source = result.filePaths[0];
+  const file = path.basename(source);
+  if (/-\d{5}-of-\d{5}\.gguf$/i.test(file))
+    throw new Error(
+      'Modèle en plusieurs morceaux : non pris en charge, choisissez un fichier unique.',
+    );
+  const fd = await fs.open(source, 'r');
+  const magic = Buffer.alloc(4);
+  await fd.read(magic, 0, 4, 0);
+  await fd.close();
+  if (magic.toString('latin1') !== 'GGUF') throw new Error('Ce fichier n’est pas un modèle GGUF.');
+  const size = (await fs.stat(source)).size;
+  await fs.mkdir(modelsDir(), { recursive: true });
+  const disk = await fs.statfs(modelsDir()).catch(() => null);
+  if (disk && disk.bavail * disk.bsize < size + 2e9)
+    throw new Error(
+      `Place insuffisante : il faut ${Math.ceil((size + 2e9) / 1e9)} Go libres sur le disque.`,
+    );
+  const dest = path.join(modelsDir(), file);
+  const id = file
+    .replace(/\.gguf$/i, '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .slice(0, 80);
+  const controller = new AbortController();
+  currentDownload = { id, controller };
+  let sha256;
+  try {
+    // Même fichier déjà copié (même taille et même empreinte) : pas de seconde copie.
+    const existing = (await fs.stat(dest).catch(() => null))?.size === size;
+    sha256 = existing ? await fileSha256(dest) : null;
+    if (!existing || sha256 !== (await fileSha256(source)))
+      sha256 = await copyWithHash(source, dest, id, controller.signal);
+  } catch (error) {
+    if (controller.signal.aborted) return { cancelled: true, copy: true };
+    throw error;
+  } finally {
+    currentDownload = null;
+  }
+  const known = CATALOG.find((m) => m.sha256 === sha256);
+  if (known) {
+    // Nom du fichier du catalogue : le moteur et la Bibliothèque le retrouvent comme téléchargé.
+    const named = path.join(modelsDir(), known.file);
+    if (named !== dest) await fs.rename(dest, named);
+    return registerModel(known, named, 'fichier');
+  }
+  return registerModel(
+    {
+      id,
+      label: file,
+      repo: 'fichier local',
+      file,
+      size,
+      sha256,
+      license: 'inconnue (fichier local)',
+    },
+    dest,
+    'fichier',
+  );
+});
+// Copie d'un modèle du moteur intégré vers une clé USB, avec son empreinte, pour l'installer sur
+// un autre ordinateur sans Internet.
+handle('model-to-file', async (name) => {
+  if (currentDownload) throw new Error('Un téléchargement ou une copie est déjà en cours.');
+  const model = (await readRegistry()).find((m) => m.name === name);
+  if (!model) throw new Error('Modèle introuvable.');
+  const result = await dialog.showOpenDialog(window, {
+    title: 'Choisir la clé USB ou le dossier de destination',
+    properties: ['openDirectory', 'createDirectory'],
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+  const dest = path.join(result.filePaths[0], path.basename(model.file));
+  const disk = await fs.statfs(result.filePaths[0]).catch(() => null);
+  if (disk && disk.bavail * disk.bsize < model.size)
+    throw new Error(
+      `Place insuffisante sur la destination : il faut ${Math.ceil(model.size / 1e9)} Go.`,
+    );
+  const controller = new AbortController();
+  currentDownload = { id: name, controller };
+  try {
+    const sha256 = await copyWithHash(model.file, dest, name, controller.signal);
+    if (model.digest && model.digest !== `sha256:${sha256}`)
+      throw new Error('La copie ne correspond pas au modèle : recommencez.');
+    await fs.writeFile(dest + '.sha256', `${sha256}  ${path.basename(dest)}\n`);
+  } catch (error) {
+    if (controller.signal.aborted) return { cancelled: true, copy: true };
+    throw error;
+  } finally {
+    currentDownload = null;
+  }
+  return { file: dest };
+});
 // Guide de démarrage : Ollama installé et actif, modèles, mémoire et place libre sur le disque.
 handle('setup-status', async () => {
   const [version, tags, disk] = await Promise.all([

@@ -431,6 +431,21 @@
               /><button type="submit">Télécharger</button>
             </div>
           </form>
+          <div class="usb-models">
+            <h4>Sans Internet : clé USB</h4>
+            <p class="muted">
+              Installez un modèle (fichier .gguf) copié depuis un autre ordinateur, ou copiez un
+              modèle installé ici vers une clé USB pour le partager. Le fichier est vérifié et
+              essayé avant d’être utilisé.
+            </p>
+            <div class="input-row">
+              <button id="usb-import" type="button">Installer depuis un fichier…</button>
+            </div>
+            <div id="usb-export-row" class="input-row" hidden>
+              <select id="usb-model" aria-label="Modèle à copier"></select
+              ><button id="usb-export" type="button">Copier vers une clé USB…</button>
+            </div>
+          </div>
         </section>
         <h3>Avec Ollama (facultatif)</h3>
         <p class="muted">

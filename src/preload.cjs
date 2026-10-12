@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('localia', {
   catalogStatus: () => invoke('catalog-status'),
   catalogDownload: (id) => invoke('catalog-download', id),
   hfDownload: (url) => invoke('hf-download', url),
+  modelFromFile: () => invoke('model-from-file'),
+  modelToFile: (name) => invoke('model-to-file', name),
   downloadCancel: () => invoke('download-cancel'),
   pcScan: () => invoke('pc-scan'),
   pcMeasure: (model) => invoke('pc-measure', model),

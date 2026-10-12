@@ -454,6 +454,12 @@ const EN = {
   'Joindre une photo': 'Attach a photo',
   'Joindre un fichier : PDF (même scanné), Word (.docx), Excel (.xlsx), consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message.':
     'Attach a file: PDF (even scanned), Word (.docx), Excel (.xlsx), instructions (.txt, .md), code (.py, .R, .sql…) or data (.csv, .tsv, .json). For a web page, paste its address in the message.',
+  'Sans Internet : clé USB': 'Without Internet: USB drive',
+  'Installez un modèle (fichier .gguf) copié depuis un autre ordinateur, ou copiez un modèle installé ici vers une clé USB pour le partager. Le fichier est vérifié et essayé avant d’être utilisé.':
+    'Install a model (.gguf file) copied from another computer, or copy a model installed here to a USB drive to share it. The file is checked and tried before use.',
+  'Installer depuis un fichier…': 'Install from a file…',
+  'Copier vers une clé USB…': 'Copy to a USB drive…',
+  'Modèle à copier': 'Model to copy',
   Dicter: 'Dictate',
   'Terminer la dictée': 'Finish dictation',
   'Dicter la question : votre voix est transcrite sur cet ordinateur, sans Internet. Cliquez de nouveau pour terminer.':

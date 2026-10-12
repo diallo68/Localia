@@ -1390,6 +1390,51 @@ const readJson = async (profile, name) => {
     );
     assert.equal(await qwenCard.locator('button').textContent(), 'Installé ✓');
 
+    // Sans Internet : modèle installé depuis une « clé USB », puis recopié vers une autre.
+    const usb = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-usb-'));
+    const usbModel = path.join(usb, 'Mon Modèle-Q4.gguf');
+    await fs.writeFile(usbModel, Buffer.concat([Buffer.from('GGUF'), Buffer.alloc(4096, 7)]));
+    await fs.writeFile(path.join(usb, 'pas-un-modele.gguf'), 'bonjour');
+    await app.evaluate(
+      ({ dialog }, files) => {
+        dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [files.shift()] });
+      },
+      [path.join(usb, 'pas-un-modele.gguf'), usbModel, path.join(usb, 'autre-cle')],
+    );
+    await page.locator('#usb-import').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#hf-status').textContent.includes('pas un modèle GGUF'),
+    );
+    await page.locator('#usb-import').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#hf-status').textContent.includes('integre/mon-modele-q4 est prêt'),
+    );
+    const usbEntry = (await readJson(profile, 'modeles-integres.json')).find(
+      (m) => m.name === 'integre/mon-modele-q4',
+    );
+    assert.equal(usbEntry.source, 'fichier');
+    assert.equal(usbEntry.origin, 'fichier local/Mon Modèle-Q4.gguf');
+    assert.equal(usbEntry.license, 'inconnue (fichier local)');
+    assert.equal(usbEntry.file, path.join(profile, 'modeles', 'Mon Modèle-Q4.gguf'));
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll('#usb-model option')].some(
+        (o) => o.value === 'integre/mon-modele-q4',
+      ),
+    );
+    await fs.mkdir(path.join(usb, 'autre-cle'));
+    await page.locator('#usb-model').selectOption('integre/mon-modele-q4');
+    await page.locator('#usb-export').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#hf-status').textContent.includes('Copie terminée'),
+    );
+    const copiedModel = path.join(usb, 'autre-cle', 'Mon Modèle-Q4.gguf');
+    assert.deepEqual(await fs.readFile(copiedModel), await fs.readFile(usbModel));
+    assert.match(
+      await fs.readFile(copiedModel + '.sha256', 'utf8'),
+      new RegExp(`^${usbEntry.digest.slice(7)}  Mon Modèle-Q4\\.gguf\\n$`),
+    );
+    await fs.rm(usb, { recursive: true, force: true });
+
     // Accès depuis un autre appareil : serveur activé, clé exigée, question posée « depuis le
     // téléphone », réponse reçue au fil de l'écriture, conversation visible sur le Mac.
     const base = 'http://127.0.0.1:47899';

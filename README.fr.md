@@ -10,7 +10,7 @@ Localia est une application de bureau pour macOS, Windows et Linux, pour utilise
 
 | Mode simple | Mode avancé : accueil |
 |---|---|
-| ![Mode simple : une question directe, avec le modèle conseillé pour votre métier](docs/simple.png) | ![Mode avancé : actions, modèle conseillé, travail récent et état du système](docs/home.png) |
+| ![Mode simple : choix du domaine, question, idée ou document, avec le modèle conseillé par votre Benchmark, et reprise d’un projet](docs/simple.png) | ![Mode avancé : actions, modèle conseillé, travail récent et état du système](docs/home.png) |
 | **Conversation** | **Benchmark** |
 | ![Conversation avec un modèle local](docs/chat.png) | ![Benchmark : résultats par modèle](docs/benchmark.png) |
 | **Comparaison d'une série de questions** | **Graphiques du Benchmark** |

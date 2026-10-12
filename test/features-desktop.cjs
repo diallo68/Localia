@@ -1136,6 +1136,17 @@ const readJson = async (profile, name) => {
       document.querySelector('#notice').textContent.includes('reponse.pdf'),
     );
     assert.equal((await fs.readFile(pdfOut)).subarray(0, 5).toString(), '%PDF-');
+    const docxOut = path.join(dataDir, 'reponse.docx');
+    await app.evaluate(({ dialog }, file) => {
+      dialog.showSaveDialog = async () => ({ canceled: false, filePath: file });
+    }, docxOut);
+    await answer.locator('.answer-action', { hasText: 'Exporter en Word' }).click();
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('reponse.docx'),
+    );
+    const wordText = require('../src/office.cjs').docxText(await fs.readFile(docxOut));
+    assert.match(wordText, /Question : Quelle pluie en juillet \?/);
+    assert.ok(wordText.includes(copied.split('\n')[0].trim().slice(0, 30)), 'texte de la réponse');
 
     // Dictée vocale : accord pour le modèle, enregistrement (faux micro), texte ajouté au message.
     await app.evaluate(({ systemPreferences }) => {

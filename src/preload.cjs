@@ -38,6 +38,7 @@ contextBridge.exposeInMainWorld('localia', {
   openQuestions: () => invoke('open-questions'),
   exportFile: (name, extension, content) => invoke('export-file', name, extension, content),
   exportPdf: (payload) => invoke('export-pdf', payload),
+  exportDocx: (payload) => invoke('export-docx', payload),
   dictationStatus: () => invoke('dictation-status'),
   dictationDownload: () => invoke('dictation-download'),
   dictationCancel: () => invoke('dictation-cancel'),

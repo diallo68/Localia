@@ -67,6 +67,7 @@ const tables = require('./tables.js');
 const skillsLogic = require('./skills.js');
 const web = require('./web.cjs');
 const office = require('./office.cjs');
+const { answerDocx } = require('./docx-writer.cjs');
 const remote = require('./remote.cjs');
 const localEngine = require('./local-engine.cjs');
 const foundry = require('./foundry.cjs');
@@ -208,6 +209,32 @@ footer{margin-top:24px;border-top:1px solid #ccc;padding-top:6px;font-size:8.5pt
     printer.destroy();
     await fs.rm(temp, { force: true });
   }
+  return path.basename(result.filePath);
+});
+// Réponse exportée en Word : blocs préparés par la page, document écrit par docx-writer.cjs.
+handle('export-docx', async (payload) => {
+  const { title, question, blocks, model } = payload || {};
+  const name = String(title || 'reponse').slice(0, 80);
+  const result = await dialog.showSaveDialog(window, {
+    title: 'Exporter la réponse en Word',
+    defaultPath: path.join(
+      app.getPath('documents'),
+      name.replace(/[^\p{L}\p{N} ._-]+/gu, '_').trim() + '.docx',
+    ),
+    filters: [{ name: 'Document Word', extensions: ['docx'] }],
+  });
+  if (result.canceled || !result.filePath) return null;
+  const date = new Date().toLocaleDateString('fr-FR', { dateStyle: 'long' });
+  await fs.writeFile(
+    result.filePath,
+    answerDocx({
+      title: name,
+      date,
+      question: String(question || '').slice(0, 20000),
+      blocks,
+      model,
+    }),
+  );
   return path.basename(result.filePath);
 });
 handle('open-grades', async () => {

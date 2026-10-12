@@ -329,7 +329,61 @@ function speak(button, text) {
     speechSynthesis.speak(utterance);
   });
 }
-// Sous chaque réponse : copier le texte, l'écouter, l'exporter en PDF.
+// Réponse affichée → blocs simples pour l'export Word : titres, paragraphes, listes, code,
+// citations et tableaux ; dans le texte, gras, italique et code.
+function inlineRuns(node, style = {}, out = []) {
+  for (const child of node.childNodes) {
+    if (child.nodeType === Node.TEXT_NODE) {
+      if (child.nodeValue) out.push({ text: child.nodeValue, ...style });
+      continue;
+    }
+    if (child.nodeType !== Node.ELEMENT_NODE) continue;
+    const tag = child.tagName.toLowerCase();
+    if (tag === 'br') out.push({ text: '\n', ...style });
+    else if (tag === 'ul' || tag === 'ol')
+      out.push({ text: ' ' + child.innerText.replace(/\s+/g, ' ') });
+    else
+      inlineRuns(
+        child,
+        {
+          ...style,
+          ...(['strong', 'b'].includes(tag) && { bold: true }),
+          ...(['em', 'i'].includes(tag) && { italic: true }),
+          ...(tag === 'code' && { code: true }),
+        },
+        out,
+      );
+  }
+  return out;
+}
+function answerBlocks(container) {
+  const blocks = [];
+  for (const el of container.children) {
+    const tag = el.tagName.toLowerCase();
+    if (/^h[1-6]$/.test(tag))
+      blocks.push({ type: 'heading', level: Number(tag[1]), runs: inlineRuns(el) });
+    else if (tag === 'ul' || tag === 'ol')
+      blocks.push({
+        type: 'list',
+        ordered: tag === 'ol',
+        items: [...el.children].map((li) => inlineRuns(li)),
+      });
+    else if (tag === 'pre') blocks.push({ type: 'code', text: el.innerText.replace(/\n$/, '') });
+    else if (tag === 'blockquote')
+      blocks.push({ type: 'quote', runs: [{ text: el.innerText.trim() }] });
+    else if (tag === 'table')
+      blocks.push({
+        type: 'table',
+        rows: [...el.querySelectorAll('tr')].map((tr) =>
+          [...tr.children].map((cell) => cell.innerText.trim()),
+        ),
+      });
+    else if (tag !== 'hr' && el.innerText.trim())
+      blocks.push({ type: 'paragraph', runs: inlineRuns(el) });
+  }
+  return blocks;
+}
+// Sous chaque réponse : copier le texte, l'écouter, l'exporter en PDF ou en Word.
 function answerActions(message, question, content) {
   const bar = element('div', 'answer-actions');
   const action = (label, title, fn) => {
@@ -357,6 +411,19 @@ function answerActions(message, question, content) {
         title: current?.title || 'Réponse de Localia',
         question: question?.role === 'user' ? question.content : '',
         html: content.innerHTML,
+        model: message.model || current?.model || '',
+      });
+      if (saved) notice(`${tr('Réponse enregistrée :')} ${saved}`);
+    },
+  );
+  action(
+    'Exporter en Word',
+    'Enregistrer la question et la réponse dans un fichier Word',
+    async () => {
+      const saved = await window.localia.exportDocx({
+        title: current?.title || 'Réponse de Localia',
+        question: question?.role === 'user' ? question.content : '',
+        blocks: answerBlocks(content),
         model: message.model || current?.model || '',
       });
       if (saved) notice(`${tr('Réponse enregistrée :')} ${saved}`);

@@ -481,6 +481,9 @@ const EN = {
   Écouter: 'Listen',
   'Arrêter la lecture': 'Stop reading',
   'Exporter en PDF': 'Export as PDF',
+  'Exporter en Word': 'Export as Word',
+  'Enregistrer la question et la réponse dans un fichier Word':
+    'Save the question and the answer in a Word file',
   'Copier le texte de la réponse': 'Copy the answer text',
   'Lire la réponse à voix haute (voix de l’ordinateur)': 'Read the answer aloud (computer voice)',
   'Enregistrer la question et la réponse dans un fichier PDF':

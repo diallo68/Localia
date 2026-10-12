@@ -10,6 +10,7 @@ const {
   Notification,
   utilityProcess,
   session,
+  systemPreferences,
 } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs/promises');
@@ -71,6 +72,7 @@ const foundry = require('./foundry.cjs');
 const appleFm = require('./apple-fm.cjs');
 const { CATALOG, catalogEntry, downloadUrl } = require('./catalog.js');
 const { downloadFile } = require('./download.cjs');
+const { createDictation, fake: fakeDictation } = require('./dictation.cjs');
 const QRCode = require('qrcode');
 const { detectInjection } = require('./verify.js');
 const dns = require('node:dns');
@@ -866,6 +868,25 @@ handle('local-remove', async (name) => {
 
 // --- Téléchargement des modèles depuis Hugging Face ------------------------------------------------
 const modelsDir = () => dataPath('modeles');
+// --- Dictée vocale (Whisper sur l'ordinateur) ---------------------------------------------------
+let dictationInstance = null;
+const dictation = () =>
+  (dictationInstance ??= createDictation({
+    dir: dataPath('dictee'),
+    ...(process.env.LOCALIA_FAKE_WHISPER === '1' ? fakeDictation : { downloadFile }),
+  }));
+handle('dictation-status', () => dictation().status());
+handle('dictation-download', () =>
+  dictation().download((p) => send({ kind: 'dictation', data: p })),
+);
+handle('dictation-cancel', () => dictation().cancel());
+handle('dictation-transcribe', (pcm, lang) => dictation().transcribe(pcm, lang));
+// Micro : sur macOS, l'autorisation du système est demandée au premier usage.
+handle('microphone-access', async () => {
+  if (process.platform !== 'darwin') return true;
+  if (systemPreferences.getMediaAccessStatus('microphone') === 'granted') return true;
+  return systemPreferences.askForMediaAccess('microphone');
+});
 let currentDownload = null; // { id, controller }
 const partialSize = (file) =>
   fs.stat(file + '.part').then(
@@ -2380,6 +2401,15 @@ function createWindow() {
   window.loadFile(path.join(__dirname, 'index.html'));
 }
 app.whenReady().then(async () => {
+  // Micro et caméra : seulement le son (dictée), et seulement pour la page de Localia.
+  session.defaultSession.setPermissionRequestHandler((contents, permission, callback, details) => {
+    if (permission !== 'media') return callback(true);
+    callback(
+      details.requestingUrl === page &&
+        (details.mediaTypes || []).length > 0 &&
+        details.mediaTypes.every((type) => type === 'audio'),
+    );
+  });
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
       { label: 'Localia', submenu: [{ role: 'about' }, { role: 'quit' }] },

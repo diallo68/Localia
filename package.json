@@ -56,7 +56,10 @@
           "from": "native/apple-fm/bin",
           "to": "apple-fm"
         }
-      ]
+      ],
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Localia utilise le micro pour la dictée vocale : votre voix est transcrite sur cet ordinateur, sans Internet."
+      }
     },
     "win": {
       "target": [
@@ -88,7 +91,8 @@
       "node_modules/@napi-rs/**",
       "node_modules/tesseract.js/**",
       "node_modules/tesseract.js-core/**",
-      "node_modules/@tesseract.js-data/**"
+      "node_modules/@tesseract.js-data/**",
+      "node_modules/smart-whisper/**"
     ]
   },
   "devDependencies": {
@@ -105,6 +109,7 @@
     "node-llama-cpp": "^3.22.1",
     "pdfjs-dist": "^6.4.299",
     "qrcode": "^1.5.4",
+    "smart-whisper": "0.8.1",
     "tesseract.js": "7.0.0",
     "undici": "7.29.1"
   },

@@ -454,6 +454,18 @@ const EN = {
   'Joindre une photo': 'Attach a photo',
   'Joindre un fichier : PDF (même scanné), Word (.docx), Excel (.xlsx), consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message.':
     'Attach a file: PDF (even scanned), Word (.docx), Excel (.xlsx), instructions (.txt, .md), code (.py, .R, .sql…) or data (.csv, .tsv, .json). For a web page, paste its address in the message.',
+  Dicter: 'Dictate',
+  'Terminer la dictée': 'Finish dictation',
+  'Dicter la question : votre voix est transcrite sur cet ordinateur, sans Internet. Cliquez de nouveau pour terminer.':
+    'Dictate your question: your voice is transcribed on this computer, without Internet. Click again to finish.',
+  'Téléchargement du modèle de dictée…': 'Downloading the dictation model…',
+  'Accès au micro refusé : autorisez Localia dans les réglages du système (Confidentialité › Micro).':
+    'Microphone access denied: allow Localia in the system settings (Privacy › Microphone).',
+  'Transcription de la dictée sur cet ordinateur…': 'Transcribing your dictation on this computer…',
+  'Aucune parole reconnue : rapprochez-vous du micro et réessayez.':
+    'No speech recognised: move closer to the microphone and try again.',
+  'Parlez… Cliquez de nouveau sur le micro pour terminer (2 minutes au plus).':
+    'Speak… Click the microphone again to finish (2 minutes at most).',
   Copier: 'Copy',
   'Copié ✓': 'Copied ✓',
   Écouter: 'Listen',

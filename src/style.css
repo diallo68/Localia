@@ -3692,3 +3692,24 @@ img.logo {
 .text-size button:nth-child(3) {
   font-size: 18px;
 }
+
+/* Dictée vocale : micro rouge pendant l'enregistrement */
+#dictate.recording {
+  background: #d93a3a;
+  border-color: #d93a3a;
+  color: #fff;
+  animation: dictate-pulse 1.2s ease-in-out infinite;
+}
+#dictate.busy {
+  opacity: 0.6;
+}
+@keyframes dictate-pulse {
+  50% {
+    box-shadow: 0 0 0 6px rgba(217, 58, 58, 0.25);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #dictate.recording {
+    animation: none;
+  }
+}

@@ -75,12 +75,14 @@ const readJson = async (profile, name) => {
       ]),
     );
     app = await electron.launch({
-      args: [path.resolve('.')],
+      // Faux micro de Chromium (un son de test) pour la dictée vocale.
+      args: [path.resolve('.'), '--use-fake-device-for-media-stream'],
       env: {
         ...process.env,
         LOCALIA_TEST_DATA: profile,
         LOCALIA_REMOTE_PORT: '47899',
         LOCALIA_FAKE_LLAMA: '1',
+        LOCALIA_FAKE_WHISPER: '1',
         OLLAMA_MODELS: path.join(profile, 'ollama-models'),
       },
     });
@@ -1134,6 +1136,30 @@ const readJson = async (profile, name) => {
       document.querySelector('#notice').textContent.includes('reponse.pdf'),
     );
     assert.equal((await fs.readFile(pdfOut)).subarray(0, 5).toString(), '%PDF-');
+
+    // Dictée vocale : accord pour le modèle, enregistrement (faux micro), texte ajouté au message.
+    await app.evaluate(({ systemPreferences }) => {
+      systemPreferences.askForMediaAccess = async () => true;
+      systemPreferences.getMediaAccessStatus = () => 'granted';
+    });
+    await page.locator('#prompt').fill('Question :');
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#dictate').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#dictate').classList.contains('recording'),
+    );
+    assert.ok(
+      (await fs.stat(path.join(profile, 'dictee', 'ggml-base-q5_1.bin'))).size > 0,
+      'modèle de dictée téléchargé',
+    );
+    await page.waitForTimeout(1200);
+    await page.locator('#dictate').click();
+    await page.waitForFunction(() =>
+      /^Question : Texte dicté en fr, \d/.test(document.querySelector('#prompt').value),
+    );
+    assert.doesNotMatch(await page.locator('#prompt').inputValue(), /Musique/);
+    assert.equal(await page.locator('#dictate').getAttribute('aria-pressed'), 'false');
+    await page.locator('#prompt').fill('');
 
     // Recherche dans les conversations : par le texte des messages, sans tenir compte des accents.
     await page.locator('#history-search').fill('PLUIE juillet');

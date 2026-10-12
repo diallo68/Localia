@@ -14,11 +14,11 @@ Localia is a desktop application for macOS, Windows and Linux for working with l
 
 | Simple mode | Advanced mode: home |
 |---|---|
-| ![Simple mode: choose your field, ask a question, explore an idea or analyse a document, with the model recommended by your Benchmark, and resume a project](docs/simple.png) | ![Advanced mode: actions, recommended model, recent work and system status](docs/home.png) |
+| ![Simple mode: choose your field, ask a question, explore an idea or analyse a document, with the model recommended by your Benchmark, and resume a project](docs/en/simple.png) | ![Advanced mode: actions, recommended model, recent work and system status](docs/en/home.png) |
 | **Chat** | **Benchmark** |
-| ![Chat with a local model](docs/chat.png) | ![Benchmark: per-model results](docs/benchmark.png) |
+| ![Chat with a local model](docs/en/chat.png) | ![Benchmark: per-model results](docs/en/benchmark.png) |
 | **Comparison of a question series** | **Benchmark charts** |
-| ![Comparison overview](docs/comparison.png) | ![Benchmark charts](docs/benchmark-charts.png) |
+| ![Comparison overview](docs/en/comparison.png) | ![Benchmark charts](docs/en/benchmark-charts.png) |
 
 *Screenshots use demonstration data, not real benchmark results.*
 

@@ -10,7 +10,7 @@ const iso = (h) => new Date(now - h * 3600e3).toISOString();
 const write = (name, data) => fs.writeFileSync(path.join(dir, name), JSON.stringify(data));
 
 write('settings.json', {
-  metier: 'enseignement',
+  metier: 'finance',
   mode: 'avance',
   firstName: 'Awa',
   lang: 'fr',
@@ -21,36 +21,42 @@ write('settings.json', {
   remote: { enabled: false },
 });
 
-const docId = 'demo-doc-mildiou';
+const docId = 'demo-doc-bilan';
 fs.writeFileSync(
   path.join(dir, 'documents', docId + '.json'),
   JSON.stringify({
     id: docId,
-    name: 'Rapport_mildiou_2025.pdf',
-    pages: [{ number: 1, text: 'Rapport de campagne 2025. Suivi du mildiou sur 12 parcelles.' }],
+    name: 'Bilan_2025_Boulangerie_Durand.pdf',
+    pages: [
+      {
+        number: 1,
+        text: 'Bilan d’activité 2025 – Boulangerie Durand (entreprise fictive). Chiffre d’affaires : 412 000 €.',
+      },
+    ],
   }),
 );
-const answer = `Le mildiou (*Phytophthora infestans*) se développe surtout quand trois conditions durent ensemble :
+const answer = `D’après le bilan, l’année 2025 se résume ainsi :
 
-| Mesure | Seuil d’alerte |
-|---|---|
-| Température | 10 à 25 °C |
-| Humidité relative | > 90 % |
-| Feuillage mouillé | > 10 h de suite |
+| Indicateur | 2025 | Évolution |
+|---|---|---|
+| Chiffre d’affaires | 412 000 € | +6 % |
+| Vente en ligne | 9 % des ventes | 3 % en 2024 |
+| Marge | −2 points | électricité +18 % |
 
-- Le rapport signale **4 épisodes** de ce type entre juin et août (p. 3).
-- Le risque est le plus fort quand ces conditions durent **48 à 72 heures** sans période sèche.
+- Le bilan prévoit **45 000 €** d’investissements en 2026, surtout pour le four (p. 4).
+- Le financement associe un **prêt de 30 000 €** et **15 000 €** de trésorerie (p. 5).
 
-Vérifiez ces seuils avec les relevés de votre propre station.`;
+Vérifiez ces montants avec les comptes annuels.`;
 write('conversations.json', [
   {
     id: 'demo-c1',
-    title: 'Mildiou : conditions favorables',
+    title: 'Bilan 2025 : chiffres clés',
     model: 'qwen3:8b',
     updatedAt: iso(1),
+    projectId: 'demo-p1',
     document: {
       id: docId,
-      name: 'Rapport_mildiou_2025.pdf',
+      name: 'Bilan_2025_Boulangerie_Durand.pdf',
       pageCount: 6,
       characters: 8200,
       emptyPages: [],
@@ -58,36 +64,36 @@ write('conversations.json', [
     messages: [
       {
         role: 'user',
-        content:
-          'D’après ce rapport, dans quelles conditions le mildiou de la pomme de terre se développe-t-il ?',
+        content: 'D’après ce bilan, quels sont les chiffres clés de 2025 ?',
       },
       { role: 'assistant', content: answer, model: 'qwen3:8b', interrupted: false },
     ],
   },
   {
     id: 'demo-c2',
-    title: 'Plan du chapitre 2',
+    title: 'Courriel de relance client',
     model: 'gemma3:12b',
     updatedAt: iso(26),
     messages: [
       {
         role: 'user',
-        content: 'Propose un plan pour un chapitre sur les données météorologiques.',
+        content: 'Aide-moi à relancer poliment un client qui n’a pas payé sa facture.',
       },
       {
         role: 'assistant',
-        content: '1. Sources des données\n2. Contrôle qualité\n3. Variables dérivées',
+        content:
+          'Objet : Facture n° 2025-118 en attente de règlement\n\nBonjour Madame Martin,\n\nSauf erreur de notre part…',
         model: 'gemma3:12b',
       },
     ],
   },
   {
     id: 'demo-c3',
-    title: 'Résumé d’un article',
+    title: 'Résumé d’un contrat de location',
     model: 'qwen3:8b',
     updatedAt: iso(70),
     messages: [
-      { role: 'user', content: 'Résume cet article en cinq points.' },
+      { role: 'user', content: 'Résume ce contrat de location en cinq points.' },
       { role: 'assistant', content: 'Voici les cinq points principaux…', model: 'qwen3:8b' },
     ],
   },
@@ -95,24 +101,26 @@ write('conversations.json', [
 write('projects.json', [
   {
     id: 'demo-p1',
-    name: 'Thèse – prévision du mildiou',
-    description: 'Données, modèles et chapitres.',
+    name: 'Bilan 2025 – Boulangerie Durand',
+    description: 'Bilan annuel et projets 2026.',
     createdAt: iso(400),
     notes: [
       {
         id: 'n1',
-        title: 'Seuils retenus',
-        text: 'Humidité > 90 % pendant 10 h.',
+        title: 'Points à vérifier',
+        text: 'Montant de l’aide régionale pour le four : à confirmer.',
         createdAt: iso(5),
       },
     ],
+    documents: [],
   },
   {
     id: 'demo-p2',
-    name: 'Cours – IA et agriculture',
+    name: 'Site web de l’association',
     description: '',
     createdAt: iso(300),
     notes: [],
+    documents: [],
   },
 ]);
 

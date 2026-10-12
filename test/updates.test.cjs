@@ -1,5 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const path = require('node:path');
 const {
   compareVersions,
   pickMacAsset,
@@ -50,11 +51,11 @@ test('Mac non signé : image disque de ce processeur, avec empreinte, téléchar
   assert.equal(found.version, '0.6.0');
   assert.equal(found.asset, undefined, 'détails du fichier gardés côté processus principal');
   await updater.download();
-  assert.equal(downloads[0].dest, '/tmp/telechargements/Localia-0.6.0-mac-x64.dmg');
+  assert.equal(downloads[0].dest, path.join('/tmp/telechargements', 'Localia-0.6.0-mac-x64.dmg'));
   assert.equal(downloads[0].sha256, SHA);
   assert.equal(downloads[0].allowedHosts, GITHUB_HOSTS);
   assert.deepEqual(await updater.install(), { opened: 'Localia-0.6.0-mac-x64.dmg' });
-  assert.deepEqual(opened, ['/tmp/telechargements/Localia-0.6.0-mac-x64.dmg']);
+  assert.deepEqual(opened, [path.join('/tmp/telechargements', 'Localia-0.6.0-mac-x64.dmg')]);
 });
 
 test('Mac : déjà à jour, aucune publication, ou version de développement', async () => {

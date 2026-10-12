@@ -115,16 +115,21 @@ jobs:
           LOCALIA_PACKAGED: '1'
       - name: Keep screenshots
         if: ${{ always() && (!inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family) }}
+        # Quota de stockage GitHub atteint : les tests restent valables, l'envoi ne bloque rien.
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: screenshots-${{ matrix.os }}
           path: test-results/
           if-no-files-found: ignore
+          retention-days: 3
       - if: ${{ !inputs.systemes || inputs.systemes == 'tous' || inputs.systemes == matrix.family }}
         name: Keep the application
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: Localia-${{ matrix.os }}
+          retention-days: 5
           path: |
             dist/*.zip
             dist/*.exe

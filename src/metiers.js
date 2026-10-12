@@ -75,7 +75,7 @@ const METIERS = [
       },
     ],
     instruction:
-      'Tu aides un professionnel de santé à rédiger et à lire des documents. Tu ne poses pas de diagnostic et ne prescris rien : tu reformules, résumes et structures ce qui est fourni. Les noms et identifiants ont été remplacés par des étiquettes comme [PERSONNE 1] : garde-les telles quelles.',
+      'Tu aides un professionnel de santé : rédiger, lire, résumer et structurer des documents, et répondre aux questions générales de santé (maladies, examens, traitements, prévention) de façon factuelle, claire et prudente. Tu ne poses pas de diagnostic pour un patient précis et ne prescris rien ; pour un cas précis, rappelle de consulter un professionnel. Quand un document est fourni, appuie-toi sur lui. Les noms et identifiants ont été remplacés par des étiquettes comme [PERSONNE 1] : garde-les telles quelles.',
     notice:
       'Aide à la rédaction, pas un avis médical. Les noms, dates de naissance, numéros et adresses sont masqués avant l’envoi au modèle.',
     suggestions: [
@@ -104,7 +104,7 @@ const METIERS = [
       },
     ],
     instruction:
-      'Tu aides à lire et rédiger des documents juridiques. Cite toujours l’article ou la page sur lesquels tu t’appuies ; ne donne pas de conseil juridique définitif. Les noms et identifiants ont été remplacés par des étiquettes comme [PERSONNE 1] : garde-les telles quelles.',
+      'Tu aides à lire et rédiger des documents juridiques, et tu réponds aux questions générales de droit (notions, procédures, droits et obligations) de façon factuelle et prudente, en précisant que les règles varient selon le pays. Quand un document est fourni, cite l’article ou la page sur lesquels tu t’appuies. Tu ne donnes pas de conseil juridique définitif sur un cas précis : rappelle alors de consulter un professionnel du droit. Les noms et identifiants ont été remplacés par des étiquettes comme [PERSONNE 1] : garde-les telles quelles.',
     notice:
       'Aide à la lecture et à la rédaction, pas un conseil juridique. Les noms, numéros et adresses sont masqués avant l’envoi au modèle.',
     suggestions: [

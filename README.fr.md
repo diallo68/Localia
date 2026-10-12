@@ -8,6 +8,8 @@
 
 Localia est une application de bureau pour macOS, Windows et Linux, pour utiliser des modèles de langage locaux — avec son **moteur intégré** (llama.cpp, modèles téléchargés depuis Hugging Face) ou avec [Ollama](https://ollama.com) — et surtout pour **les comparer de façon mesurable sur vos propres tâches**. Tout reste sur votre machine : aucun modèle cloud, aucune télémétrie.
 
+<p align="center"><img src="docs/demo.gif" width="880" alt="Démonstration : un projet avec un rapport Word, une question, et la réponse de Gemma 4 E4B, calculée sur l’ordinateur, qui cite le document"></p>
+
 | Mode simple | Mode avancé : accueil |
 |---|---|
 | ![Mode simple : choix du domaine, question, idée ou document, avec le modèle conseillé par votre Benchmark, et reprise d’un projet](docs/simple.png) | ![Mode avancé : actions, modèle conseillé, travail récent et état du système](docs/home.png) |

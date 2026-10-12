@@ -6,6 +6,7 @@ function applyMode() {
   document.body.dataset.mode = isAdvanced() ? 'avance' : 'simple';
   $('mode-switch').textContent = isAdvanced() ? 'Passer en mode simple' : 'Passer en mode avancé';
   $('home-tab').hidden = !isAdvanced();
+  setComposeMode('question');
   updateComposerAdvice();
 }
 
@@ -30,6 +31,10 @@ function greeting(node) {
 function updateComposerAdvice() {
   const box = $('composer-advice');
   box.hidden = isAdvanced();
+  if (typeof updateModelPill === 'function')
+    updateModelPill(
+      isAdvanced() || typeof recommendedModel !== 'function' ? null : recommendedModel(),
+    );
   if (box.hidden) return;
   const text = $('composer-advice-text');
   text.replaceChildren();
@@ -37,7 +42,8 @@ function updateComposerAdvice() {
   rememberFullNames(comparisons);
   const active = $('model').value;
   const choice = typeof recommendedModel === 'function' ? recommendedModel() : null;
-  if (choice) {
+  // Modèle conseillé déjà actif : la pastille de la zone de saisie suffit.
+  if (choice && active !== choice.name) {
     const advice = element('span', 'composer-choice');
     advice.title = choice.why;
     advice.append(
@@ -45,8 +51,7 @@ function updateComposerAdvice() {
       ' ' + metier.label + ' · ',
       element('span', 'composer-model', shortModel(choice.name)),
     );
-    const ready = active === choice.name;
-    advice.append(element('span', ready ? 'state ready' : 'state', ready ? 'actif' : 'non activé'));
+    advice.append(element('span', 'state', 'non activé'));
     text.append(advice);
   }
   if (active && active !== choice?.name)

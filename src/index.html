@@ -52,7 +52,7 @@
         <div>Localia<small>L’IA, chez vous.</small></div>
       </div>
       <div class="display-settings" role="group" aria-label="Affichage">
-        <div class="segmented" role="group" aria-label="Langue">
+        <div class="segmented sidebar-lang" role="group" aria-label="Langue">
           <button type="button" data-lang="fr" aria-pressed="true" title="Français">FR</button
           ><button type="button" data-lang="en" aria-pressed="false" title="English">EN</button>
         </div>
@@ -81,6 +81,27 @@
       </button>
       <button id="mode-switch" class="mode-switch" type="button"></button>
       <button id="new" class="primary"><i data-icon="plus"></i>Nouvelle conversation</button>
+      <div class="simple-nav nav-group">
+        <button id="simple-home" class="nav" type="button"><i data-icon="home"></i>Accueil</button
+        ><button id="simple-pc" class="nav" type="button">
+          <i data-icon="monitor"></i>Analyser votre PC
+        </button>
+      </div>
+      <div class="simple-projects">
+        <div class="simple-head">
+          <span>PROJETS</span
+          ><button
+            id="simple-new-project"
+            class="icon-button"
+            type="button"
+            aria-label="Nouveau projet"
+            title="Nouveau projet"
+          >
+            <i data-icon="plus"></i>
+          </button>
+        </div>
+        <div id="simple-project-list" class="nav-group"></div>
+      </div>
       <div class="nav-section" data-section="travail">
         <button class="section-toggle" type="button" aria-expanded="true">
           ESPACE DE TRAVAIL<i data-icon="chevron"></i>
@@ -155,6 +176,11 @@
           <h1 id="heading">Conversations</h1>
         </div>
         <div class="connection">
+          <span id="ready-pill" class="ready-pill" role="status"></span>
+          <div class="segmented header-lang" role="group" aria-label="Langue">
+            <button type="button" data-lang="fr" aria-pressed="true" title="Français">FR</button
+            ><button type="button" data-lang="en" aria-pressed="false" title="English">EN</button>
+          </div>
           <span id="status" role="status">Vérification…</span
           ><button id="connect">Démarrer Ollama</button
           ><button id="refresh" aria-label="Actualiser la connexion">↻</button>
@@ -335,6 +361,7 @@
                 Rédigez, analysez un document ou posez une question : tout se passe sur cet
                 ordinateur.
               </p>
+              <div class="domain-bar" role="group" aria-label="Votre domaine"></div>
               <div class="suggestions">
                 <button data-prompt="Aide-moi à rédiger un e-mail professionnel.">
                   <span class="suggestion-icon"><i data-icon="pencil"></i></span
@@ -350,6 +377,20 @@
             </div>
           </div>
           <form id="composer">
+            <div
+              id="composer-modes"
+              class="composer-modes"
+              role="group"
+              aria-label="Type de demande"
+            >
+              <button type="button" data-compose="question" aria-pressed="true">
+                Poser une question</button
+              ><button type="button" data-compose="document" aria-pressed="false">
+                Analyser un document</button
+              ><button type="button" data-compose="idee" aria-pressed="false">
+                Explorer une idée
+              </button>
+            </div>
             <div id="attachment" hidden>
               <div><strong id="attachment-name"></strong><small id="attachment-info"></small></div>
               <button
@@ -377,7 +418,7 @@
                 aria-label="Joindre un fichier"
                 title="Joindre un fichier : PDF (même scanné), Word (.docx), Excel (.xlsx), consignes (.txt, .md), code (.py, .R, .sql…) ou données (.csv, .tsv, .json). Pour une page web, collez son adresse dans le message."
               >
-                <i data-icon="paperclip"></i></button
+                <i data-icon="paperclip"></i><span class="simple-label">Joindre</span></button
               ><button
                 id="photo"
                 class="round"
@@ -394,7 +435,7 @@
                 aria-pressed="false"
                 title="Dicter la question : votre voix est transcrite sur cet ordinateur, sans Internet. Cliquez de nouveau pour terminer."
               >
-                <i data-icon="mic"></i></button
+                <i data-icon="mic"></i><span class="simple-label">Dicter</span></button
               ><input
                 id="photo-input"
                 type="file"
@@ -404,6 +445,11 @@
               /><span id="hint"
                 >Entrée pour envoyer · Maj + Entrée pour revenir à la ligne · une adresse https://…
                 collée est lue comme page web</span
+              ><button id="model-pill" class="model-pill" type="button" hidden>
+                <span class="model-pill-icon"><i data-icon="trophy"></i></span
+                ><span id="model-pill-name"></span
+                ><span id="model-pill-badge" class="model-pill-badge"></span
+                ><i data-icon="chevron"></i></button
               ><button type="button" id="stop" hidden>Arrêter</button
               ><button class="primary" id="send" type="submit">
                 Envoyer<i data-icon="send"></i>
@@ -415,6 +461,16 @@
             ><button id="composer-advanced" class="link-button" type="button">
               <i data-icon="settings"></i>Réglages avancés
             </button>
+          </div>
+          <div id="welcome-after" class="welcome-after">
+            <div id="welcome-suggestions" class="welcome-suggestions"></div>
+            <section class="resume-projects" aria-labelledby="resume-title">
+              <div class="resume-head">
+                <h3 id="resume-title">Reprendre un projet</h3>
+                <button id="resume-all" class="link-button" type="button">Voir tout →</button>
+              </div>
+              <div id="resume-cards" class="resume-cards"></div>
+            </section>
           </div>
           <footer>
             Les réponses de l’IA peuvent contenir des erreurs. Vérifiez les informations
@@ -1255,6 +1311,7 @@
     <script src="performance-view.js"></script>
     <script src="catalog-view.js"></script>
     <script src="model-choice.js"></script>
+    <script src="accueil-view.js"></script>
     <script src="dictation-view.js"></script>
     <script src="updates-view.js"></script>
     <script src="start.js"></script>

@@ -1533,9 +1533,13 @@ const readJson = async (profile, name) => {
       });
       await refresh();
     });
-    // Mode simple : langue, taille du texte et contraste restent accessibles dans la colonne.
+    // Mode simple : langue (en haut à droite), taille du texte et contraste restent accessibles.
+    await page.evaluate(() => {
+      applyMode();
+      view('chat');
+    });
     for (const selector of [
-      '.display-settings [data-lang="en"]',
+      'header [data-lang="en"]',
       '[data-text-size="1.3"]',
       '#contrast-toggle',
     ])
@@ -1544,7 +1548,45 @@ const readJson = async (profile, name) => {
     assert.ok(advised, 'un modèle conseillé parmi les modèles installés');
     await page.waitForFunction((name) => document.querySelector('#model').value === name, advised);
     assert.equal((await readJson(profile, 'settings.json')).modelChoice, undefined, 'automatique');
-    await page.locator('#chat-tab').click();
+
+    // Accueil du mode simple : domaines (métier et profil), type de demande, modèle conseillé dans
+    // la zone de saisie, projets, et « Analyser votre PC » dans la colonne.
+    const metierBefore = await page.evaluate(() => settings.metier);
+    await page.locator('#simple-home').click();
+    await page.waitForSelector('#welcome .domain-chip');
+    assert.match(await page.locator('#ready-pill').textContent(), /^(Prêt|Démarrage…)$/);
+    await page.locator('#welcome .domain-chip', { hasText: 'Santé' }).click();
+    await page.waitForFunction(() => settings.metier === 'sante');
+    await page.locator('#welcome .domain-more .domain-chip').click();
+    await page.locator('#welcome .domain-menu button', { hasText: 'Chercheur' }).click();
+    await page.waitForFunction(() => settings.profil === 'Chercheur');
+    const domainSettings = await readJson(profile, 'settings.json');
+    assert.deepEqual([domainSettings.metier, domainSettings.profil], ['enseignement', 'Chercheur']);
+    assert.match(
+      await page.locator('#welcome .domain-more .domain-chip').textContent(),
+      /Chercheur/,
+    );
+    assert.ok((await page.locator('#welcome-suggestions .welcome-chip').count()) > 0);
+    await page.locator('[data-compose="idee"]').click();
+    assert.match(await page.locator('#prompt').getAttribute('placeholder'), /Décrivez votre idée/);
+    await page.locator('[data-compose="question"]').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#model-pill-badge').textContent.includes('Conseillé'),
+    );
+    assert.ok(await page.locator('.resume-new').isVisible());
+    await page.locator('#simple-pc').click();
+    await page.waitForFunction(() => !document.querySelector('#performance-view').hidden);
+    await page.locator('#simple-home').click();
+    await page.waitForFunction(() => !document.querySelector('#chat-view').hidden);
+    // Retour au métier du début, pour la suite (modèle conseillé de ce métier).
+    await page.evaluate(async (metier) => {
+      const { profil, ...rest } = settings;
+      settings = await window.localia.saveSettings({ ...rest, metier });
+      applyAutoModel();
+      applyMetier();
+    }, metierBefore);
+    await page.waitForFunction((name) => document.querySelector('#model').value === name, advised);
+    await page.evaluate(() => view('chat'));
     await page.evaluate(() => setChatPanel(true));
     const other =
       advised === 'integre/mon-modele-q4' ? 'integre/qwen3-4b' : 'integre/mon-modele-q4';
@@ -1568,6 +1610,7 @@ const readJson = async (profile, name) => {
     assert.equal((await readJson(profile, 'settings.json')).modelChoice, undefined);
     await page.evaluate(async () => {
       settings = await window.localia.saveSettings({ ...settings, mode: 'avance' });
+      applyMode();
     });
 
     // Accès depuis un autre appareil : serveur activé, clé exigée, question posée « depuis le

@@ -94,3 +94,13 @@ test('réglages : carte graphique automatique sauf « toujours » ou « jamais �
   assert.equal(normalizeSettings({ gpu: 'auto' }).gpu, undefined);
   assert.equal(normalizeSettings({ gpu: 'cuda' }).gpu, undefined);
 });
+
+test('réglages : profil gardé seulement s’il existe dans le métier choisi', () => {
+  assert.equal(
+    normalizeSettings({ metier: 'enseignement', profil: 'Chercheur' }).profil,
+    'Chercheur',
+  );
+  assert.equal(normalizeSettings({ metier: 'enseignement', profil: 'Pirate' }).profil, undefined);
+  assert.equal(normalizeSettings({ metier: 'sante', profil: 'Chercheur' }).profil, undefined);
+  assert.equal(normalizeSettings({ profil: 'Chercheur' }).profil, undefined);
+});

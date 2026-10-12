@@ -28,6 +28,7 @@ async function persistProjects() {
 
 // Menu « Projet » des conversations.
 function fillProjectSelect() {
+  if (typeof renderSimpleProjects === 'function') renderSimpleProjects();
   const select = $('project');
   const previous = select.value;
   select.replaceChildren(new Option('Aucun', ''));

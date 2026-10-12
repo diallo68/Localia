@@ -67,6 +67,9 @@ function normalizeSettings(raw) {
   // Métier choisi au premier lancement, et langue de l'interface.
   if (metierById(raw.metier)) settings.metier = raw.metier;
   if (LANGS.includes(raw.lang)) settings.lang = raw.lang;
+  // Profil dans le métier (ex. Enseignant ou Chercheur), choisi parmi les domaines de l'accueil.
+  if (settings.metier && metierById(settings.metier).groups?.some((g) => g.label === raw.profil))
+    settings.profil = raw.profil;
   // Taille du texte de l'interface (zoom de la fenêtre).
   if (TEXT_SIZES.includes(raw.textSize) && raw.textSize !== 1) settings.textSize = raw.textSize;
   // Interface : simple (conversation d'abord) ou avancée (tableau de bord et tous les outils).

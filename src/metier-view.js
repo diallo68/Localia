@@ -148,15 +148,34 @@ function fillSuggestions(box) {
   welcomeBox.querySelector('h2 + p').textContent = metier.simple
     ? 'Demandez à Localia. Vous pouvez joindre un document ou une photo.'
     : 'Rédigez, analysez un document ou posez une question : tout se passe sur cet ordinateur.';
-  // Mode simple : salutation et quatre suggestions, sans groupes ni tâches communes.
-  const simpleUi = !metier.simple && !isAdvanced();
+  // Mode simple : salutation, domaines, et suggestions du profil choisi sous la zone de saisie
+  // (accueil-view.js), sans groupes ni tâches communes.
+  const simpleUi = !isAdvanced();
   if (simpleUi) {
-    greeting(welcomeBox.querySelector('h2'));
-    welcomeBox.querySelector('h2 + p').textContent = 'Que puis-je faire pour vous ?';
+    const title = welcomeBox.querySelector('h2');
+    greeting(title);
+    title.append(', que voulez-vous faire ?');
+    welcomeBox.querySelector('h2 + p').textContent =
+      'Posez une question, explorez une idée ou analysez un document.';
+    fillDomainBar(welcomeBox.querySelector('.domain-bar'));
   }
-  const suggestions = simpleUi
-    ? metier.suggestions.slice(0, 4).map((s) => ({ ...s, group: '' }))
-    : metier.suggestions;
+  const apply = (s) => {
+    const task = taskById(s.task);
+    if (!metier.simple && [...$('task').options].some((o) => o.value === s.task)) {
+      $('task').value = s.task;
+      $('task').dispatchEvent(new Event('change'));
+    }
+    $('prompt').value = tr(s.prompt) || taskText(task, 2);
+    $('prompt').focus();
+  };
+  if (simpleUi) {
+    fillWelcomeSuggestions(
+      metier.suggestions.filter((s) => !settings.profil || !s.group || s.group === settings.profil),
+      apply,
+    );
+    return;
+  }
+  const suggestions = metier.suggestions;
   const groups = [...new Set(suggestions.map((s) => s.group || ''))];
   for (const group of groups) {
     const section = element('div', 'suggestion-group');
@@ -167,22 +186,14 @@ function fillSuggestions(box) {
       button.type = 'button';
       button.append(element('strong', '', s.title));
       if (s.sub) button.append(element('span', '', s.sub));
-      button.onclick = () => {
-        const task = taskById(s.task);
-        if (!metier.simple && [...$('task').options].some((o) => o.value === s.task)) {
-          $('task').value = s.task;
-          $('task').dispatchEvent(new Event('change'));
-        }
-        $('prompt').value = tr(s.prompt) || taskText(task, 2);
-        $('prompt').focus();
-      };
+      button.onclick = () => apply(s);
       row.append(button);
     }
     section.append(row);
     box.append(section);
   }
   // Bande « Pour tous les métiers » : tâches communes (sauf pour la question directe).
-  if (metier.simple || simpleUi) return;
+  if (metier.simple) return;
   const band = element('div', 'common-band');
   band.append(element('span', 'eyebrow', 'POUR TOUS LES MÉTIERS'));
   for (const id of COMMON_TASKS.filter((t) => t !== 'question')) {

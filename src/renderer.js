@@ -676,6 +676,7 @@ function engineCard() {
         ? 'Ollama arrêté'
         : 'Vérification…';
   $('engine-state').classList.toggle('ready', ready);
+  if (typeof updateReadyPill === 'function') updateReadyPill();
   $('engine-detail').textContent =
     text.replace(/^[●○]\s*/, '') +
     (ready ? ' — les réponses sont calculées sur ce Mac, sans Internet.' : '');
@@ -1570,7 +1571,9 @@ function showTaskAdvice(choose) {
       : `Ex. ${chosenTask.example} (Tab pour l’utiliser)`
     : skill
       ? `Décrivez ce que vous attendez : la compétence « ${skill.name} » s’applique.`
-      : tr('Posez votre question, ou collez l’adresse d’une page web…');
+      : typeof composePlaceholder === 'function'
+        ? composePlaceholder()
+        : tr('Posez votre question, ou collez l’adresse d’une page web…');
   box.hidden = !advice && !skill && !chosenTask && !metierNotice;
   if (box.hidden) return;
   const parts = metierNotice ? [tr(metierNotice)] : [];

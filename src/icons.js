@@ -1,6 +1,9 @@
 // Icônes au trait, dessinées pour Localia (grille de 24, couleur du texte). Un élément
 // <i data-icon="nom"></i> est remplacé par l'icône ; aucune ressource extérieure.
 const ICONS = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  trophy:
+    '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3"/>',
   message: '<path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.1A8.5 8.5 0 1 1 21 12z"/>',
   compare: '<path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/>',
   chart: '<path d="M5 20V11M10 20V4M15 20v-8M20 20v-5"/>',

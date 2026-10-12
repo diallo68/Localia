@@ -952,6 +952,21 @@ const readJson = async (profile, name) => {
     await page.locator('#performance-tab').click();
     await page.waitForFunction(() => document.querySelectorAll('.pc-card').length === 6);
     assert.match(await page.locator('#pc-cards').textContent(), /Mémoire vive\d+ Go au total/);
+    // Carte graphique du moteur intégré : indication, puis réglage enregistré.
+    await page.waitForFunction(() =>
+      document.querySelector('#gpu-engine').textContent.startsWith('Carte graphique utilisée'),
+    );
+    assert.equal(await page.locator('#gpu-mode').inputValue(), 'auto');
+    await page.locator('#gpu-mode').selectOption('jamais');
+    await page.waitForFunction(() =>
+      document.querySelector('#gpu-engine').textContent.includes('« Jamais »'),
+    );
+    assert.equal((await readJson(profile, 'settings.json')).gpu, 'jamais');
+    await page.locator('#gpu-mode').selectOption('auto');
+    await page.waitForFunction(
+      () => !document.querySelector('#gpu-engine').textContent.includes('« Jamais »'),
+    );
+    assert.equal((await readJson(profile, 'settings.json')).gpu, undefined);
     assert.match(
       await page.locator('#pc-advice').textContent(),
       /le modèle idéal pour commencer est/,

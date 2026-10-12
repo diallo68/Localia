@@ -125,8 +125,44 @@ async function renderPerformance() {
   );
 }
 
+// Carte graphique réellement utilisée par le moteur intégré, et réglage « Automatique / Toujours /
+// Jamais ». Le moteur démarre pour répondre : l'indication arrive après les cartes.
+const GPU_NAMES = { metal: 'Metal', cuda: 'CUDA (NVIDIA)', vulkan: 'Vulkan' };
+function gpuText(info) {
+  if (info.gpu) {
+    const devices = info.devices?.length ? info.devices.join(', ') : 'carte graphique';
+    const memory = info.vramGB ? ` · ${gb(info.vramGB)} de mémoire graphique` : '';
+    return (
+      `Carte graphique utilisée : ${devices} (${GPU_NAMES[info.gpu] || info.gpu})${memory}. ` +
+      (info.mode === 'toujours'
+        ? 'Tout le modèle est placé sur la carte : s’il ne tient pas dans sa mémoire, le chargement échoue.'
+        : 'La partie du modèle qui tient dans sa mémoire y est placée, le reste sur le processeur.')
+    );
+  }
+  if (info.mode === 'jamais')
+    return 'Carte graphique utilisée : non (réglage « Jamais ») : le moteur calcule sur le processeur.';
+  return 'Carte graphique utilisée : non : aucune carte prise en charge par le moteur sur cet ordinateur, le calcul se fait sur le processeur.';
+}
+async function renderGpu() {
+  $('gpu-mode').value = settings.gpu || 'auto';
+  $('gpu-engine').textContent = tr('Vérification de la carte graphique…');
+  try {
+    $('gpu-engine').textContent = tr(gpuText(await window.localia.engineGpu()));
+  } catch (error) {
+    $('gpu-engine').textContent =
+      tr('Carte graphique : vérification impossible : ') + error.message;
+  }
+}
+$('gpu-mode').onchange = guard(async () => {
+  const value = $('gpu-mode').value;
+  const { gpu, ...rest } = settings;
+  settings = await window.localia.saveSettings(value === 'auto' ? rest : { ...rest, gpu: value });
+  await renderGpu();
+});
+
 $('performance-tab').onclick = guard(async () => {
   view('performance');
+  renderGpu();
   await renderPerformance();
 });
 $('pc-rescan').onclick = guard(renderPerformance);

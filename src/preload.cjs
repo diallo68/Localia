@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld('localia', {
   modelToFile: (name) => invoke('model-to-file', name),
   downloadCancel: () => invoke('download-cancel'),
   pcScan: () => invoke('pc-scan'),
+  engineGpu: () => invoke('engine-gpu'),
   pcMeasure: (model) => invoke('pc-measure', model),
   openOllamaDownload: () => invoke('open-ollama-download'),
   skillsList: () => invoke('skills-list'),

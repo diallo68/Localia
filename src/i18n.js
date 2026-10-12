@@ -759,6 +759,16 @@ const EN = {
   'Localia analyse le processeur, la mémoire et la carte graphique, puis indique quels modèles tiennent dans la mémoire et à quelle vitesse ils répondent.':
     'Localia analyses the processor, memory and graphics card, then shows which models fit in memory and how fast they answer.',
   'Analyser à nouveau': 'Analyse again',
+  'Carte graphique du moteur intégré': 'Graphics card for the built-in engine',
+  'Automatique (conseillé)': 'Automatic (recommended)',
+  Toujours: 'Always',
+  'Jamais (processeur seulement)': 'Never (processor only)',
+  'Vérification de la carte graphique…': 'Checking the graphics card…',
+  'Carte graphique : vérification impossible : ': 'Graphics card: check failed: ',
+  'Carte graphique utilisée : non (réglage « Jamais ») : le moteur calcule sur le processeur.':
+    'Graphics card used: no (“Never” setting): the engine computes on the processor.',
+  'Carte graphique utilisée : non : aucune carte prise en charge par le moteur sur cet ordinateur, le calcul se fait sur le processeur.':
+    'Graphics card used: no: no card supported by the engine on this computer, the processor does the work.',
   'Vos modèles': 'Your models',
   'Le verdict est une estimation à partir de la taille du modèle et de la mémoire. La vitesse vient de vos séries du Benchmark (usage réel, avec documents), ou d’un test rapide (« Mesurer » : une courte réponse, puis le modèle est déchargé). Le test rapide donne la meilleure vitesse ; avec un long document ou une longue réponse, elle baisse.':
     'The verdict is an estimate from the model size and memory. The speed comes from your Benchmark series (real use, with documents), or from a quick test (“Measure”: a short answer, then the model is unloaded). The quick test gives the best speed; with a long document or a long answer, it drops.',
@@ -938,6 +948,22 @@ const EN_PATTERNS = [
   ],
   [/^([\d,]+) \/ ([\d,]+) Go$/, (text) => text.replace(/,/g, '.').replace(/ Go$/, ' GB')],
   [/^Localia : (.*)$/, 'Localia: $1'],
+  [
+    /^Carte graphique utilisée : (.*) \((.*)\)(.*)\. (Tout le modèle|La partie du modèle)/,
+    (text) =>
+      text
+        .replace(/^Carte graphique utilisée : /, 'Graphics card used: ')
+        .replace(/ de mémoire graphique/, ' of graphics memory')
+        .replace(/ Go/, ' GB')
+        .replace(
+          /Tout le modèle est placé sur la carte : s’il ne tient pas dans sa mémoire, le chargement échoue\./,
+          'The whole model is placed on the card: if it does not fit in its memory, loading fails.',
+        )
+        .replace(
+          /La partie du modèle qui tient dans sa mémoire y est placée, le reste sur le processeur\./,
+          'The part of the model that fits in its memory goes there, the rest on the processor.',
+        ),
+  ],
   // Ligne d'informations d'un modèle (Réglages).
   [
     /^Famille /,

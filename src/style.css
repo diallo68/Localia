@@ -2011,6 +2011,21 @@ progress {
   margin: 4px 0 0;
   color: var(--muted);
 }
+.pc-gpu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+.pc-gpu label {
+  font-weight: 600;
+}
+.pc-gpu p {
+  flex-basis: 100%;
+  margin: 0;
+}
 .pc-advice {
   background: var(--accent-soft);
   border-left: 4px solid var(--accent);

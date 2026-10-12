@@ -90,7 +90,11 @@ function createEngine({ utilityProcess, workerPath, env }) {
   const pending = new Map(); // id → { onChunk, resolve, reject }
   function start() {
     if (ready) return ready;
-    child = utilityProcess.fork(workerPath, [], { serviceName: 'Localia — moteur intégré', env });
+    child = utilityProcess.fork(workerPath, [], {
+      serviceName: 'Localia — moteur intégré',
+      // env peut être une fonction : relu à chaque démarrage (réglage de la carte graphique).
+      env: typeof env === 'function' ? env() : env,
+    });
     ready = new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('Le moteur intégré ne démarre pas.')), 30000);
       child.on('message', (message) => {
@@ -163,6 +167,7 @@ function createEngine({ utilityProcess, workerPath, env }) {
     },
     check: (file) => send({ type: 'check', path: file }),
     capabilities: (file) => send({ type: 'capabilities', path: file }),
+    gpuInfo: () => send({ type: 'engine' }),
     unload: () => child?.postMessage({ type: 'unload' }),
     stop: () => child?.kill(),
   };

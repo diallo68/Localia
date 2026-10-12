@@ -902,6 +902,15 @@
           ><span id="pc-status" class="muted" role="status"></span>
         </div>
         <div id="pc-cards" class="pc-cards"></div>
+        <div class="pc-gpu">
+          <label for="gpu-mode">Carte graphique du moteur intégré</label>
+          <select id="gpu-mode">
+            <option value="auto">Automatique (conseillé)</option>
+            <option value="toujours">Toujours</option>
+            <option value="jamais">Jamais (processeur seulement)</option>
+          </select>
+          <p id="gpu-engine" class="muted" role="status"></p>
+        </div>
         <p id="pc-advice" class="pc-advice"></p>
         <h3>Vos modèles</h3>
         <p class="muted">

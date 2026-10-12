@@ -75,6 +75,8 @@ function normalizeSettings(raw) {
   if (raw.updates === 'off') settings.updates = 'off';
   // Contraste : « fort » choisi, ou « normal » pour ignorer le réglage du système.
   if (['fort', 'normal'].includes(raw.contrast)) settings.contrast = raw.contrast;
+  // Carte graphique du moteur intégré : automatique, sauf « toujours » ou « jamais » choisi.
+  if (['toujours', 'jamais'].includes(raw.gpu)) settings.gpu = raw.gpu;
   // Modèle choisi par l'utilisateur lui-même : Localia ne le change plus automatiquement.
   if (raw.modelChoice === 'manuel') settings.modelChoice = 'manuel';
   // Prénom facultatif, pour l'accueil (« Bonjour … »).

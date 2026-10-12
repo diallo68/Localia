@@ -821,12 +821,22 @@ const readRegistry = async () =>
     await readJson('modeles-integres.json', [], 'Liste des modèles du moteur intégré illisible.'),
   );
 let engineInstance = null;
+// Réglage de la carte graphique, lu au démarrage et mis à jour à chaque enregistrement des réglages.
+let gpuMode = 'auto';
 const engine = () =>
   (engineInstance ||= localEngine.createEngine({
     utilityProcess,
     workerPath: path.join(__dirname, 'llama-worker.mjs'),
-    env: { ...process.env },
+    env: () => ({ ...process.env, LOCALIA_GPU: gpuMode }),
   }));
+// Le moteur lit le réglage à son démarrage : il est arrêté, et redémarre à la demande suivante.
+function setGpuMode(mode) {
+  if (mode === gpuMode) return;
+  gpuMode = mode;
+  engineInstance?.stop();
+  engineInstance = null;
+}
+handle('engine-gpu', async () => ({ ...(await engine().gpuInfo()), mode: gpuMode }));
 // Version des règles de détection de la réflexion (llama-worker.mjs, canThink) : à augmenter
 // quand elles changent, pour que les modèles déjà enregistrés soient relus.
 const THINKING_CHECK = 2;
@@ -1995,6 +2005,7 @@ handle('load-settings', readSettings);
 handle('save-settings', async (settings) => {
   const normalized = normalizeSettings(settings);
   await writeJson('settings.json', normalized, 'Réglages trop volumineux.');
+  setGpuMode(normalized.gpu || 'auto');
   return normalized;
 });
 handle('load-comparisons', () =>
@@ -2604,6 +2615,8 @@ function createWindow() {
   window.loadFile(path.join(__dirname, 'index.html'));
 }
 app.whenReady().then(async () => {
+  // Réglage de la carte graphique, avant le premier démarrage du moteur intégré.
+  gpuMode = (await readSettings()).gpu || 'auto';
   // Micro et caméra : seulement le son (dictée), et seulement pour la page de Localia.
   session.defaultSession.setPermissionRequestHandler((contents, permission, callback, details) => {
     if (permission !== 'media') return callback(true);

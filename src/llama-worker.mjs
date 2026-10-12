@@ -5,6 +5,12 @@ import { availableParallelism } from 'node:os';
 // au même format (message.content, message.thinking, puis statistiques finales).
 // LOCALIA_FAKE_LLAMA=1 (tests automatiques) : réponses simulées, sans modèle ni moteur natif.
 const fake = process.env.LOCALIA_FAKE_LLAMA === '1';
+// Carte graphique (réglage de Localia) : « auto » (llama.cpp l'utilise si elle est prise en charge
+// et place sur elle ce qui tient dans sa mémoire), « toujours » (tout le modèle sur la carte) ou
+// « jamais » (processeur seulement).
+const gpuMode = ['toujours', 'jamais'].includes(process.env.LOCALIA_GPU)
+  ? process.env.LOCALIA_GPU
+  : 'auto';
 let llamaModule = null;
 let llama = null;
 let threads = 1; // fils de calcul de llama.cpp (voir engine)
@@ -27,7 +33,7 @@ const ns = (from, to) => Number(to - from);
 async function engine() {
   if (!llama) {
     llamaModule = await import('node-llama-cpp');
-    llama = await llamaModule.getLlama();
+    llama = await llamaModule.getLlama(gpuMode === 'jamais' ? { gpu: false } : undefined);
     // Fils de calcul : au moins la moitié des cœurs logiques. Sous Windows, llama.cpp ne voyait
     // parfois qu'un cœur utile (machine de test à 4 cœurs : environ 25 s par jeton).
     threads = Math.max(llama.cpuMathCores || 1, Math.floor(availableParallelism() / 2) || 1);
@@ -47,6 +53,44 @@ async function engine() {
   return llama;
 }
 
+// Chargement d'un fichier de modèle selon le réglage de la carte graphique.
+async function loadModelFile(path) {
+  const l = await engine();
+  if (gpuMode !== 'toujours') return l.loadModel({ modelPath: path });
+  if (!l.gpu)
+    throw new Error(
+      'Aucune carte graphique utilisable par le moteur sur cet ordinateur : choisissez « Automatique » ou « Jamais » dans Performances.',
+    );
+  return l.loadModel({ modelPath: path, gpuLayers: 'max' });
+}
+
+// Carte graphique réellement utilisée par le moteur : type (metal, cuda, vulkan) ou false.
+async function engineInfo({ id }) {
+  try {
+    if (fake)
+      return post({
+        type: 'checked',
+        id,
+        info: { mode: gpuMode, gpu: false, devices: [], vramGB: null },
+      });
+    const l = await engine();
+    const devices = l.gpu ? await l.getGpuDeviceNames().catch(() => []) : [];
+    const vram = l.gpu ? await l.getVramState().catch(() => null) : null;
+    post({
+      type: 'checked',
+      id,
+      info: {
+        mode: gpuMode,
+        gpu: l.gpu || false,
+        devices,
+        vramGB: vram?.total ? Math.round((vram.total / 2 ** 30) * 10) / 10 : null,
+      },
+    });
+  } catch (error) {
+    post({ type: 'error', id, message: error?.message || String(error) });
+  }
+}
+
 async function unload() {
   clearTimeout(unloadTimer);
   if (!loaded) return;
@@ -62,8 +106,7 @@ async function prepare(path, contextSize) {
   let loadNs = 0;
   if (loaded && loaded.path !== path) await unload();
   if (!loaded) {
-    const l = await engine();
-    const model = await l.loadModel({ modelPath: path });
+    const model = await loadModelFile(path);
     loaded = { path, model, context: null, contextSize: 0 };
     loadNs = ns(started, now());
   }
@@ -300,8 +343,7 @@ async function check({ id, path }) {
     // Chargement complet (sans contexte) : une lecture partielle ne voit pas toutes les
     // incompatibilités (ex. paramètres absents des fichiers convertis par Ollama pour Gemma 3).
     await unload();
-    const l = await engine();
-    const model = await l.loadModel({ modelPath: path });
+    const model = await loadModelFile(path);
     await model.dispose();
     const arch = info.metadata?.general?.architecture;
     post({
@@ -327,6 +369,7 @@ process.parentPort.on('message', ({ data }) => {
   if (data.type === 'chat') chat(data);
   else if (data.type === 'check') check(data);
   else if (data.type === 'capabilities') capabilities(data);
+  else if (data.type === 'engine') engineInfo(data);
   else if (data.type === 'abort') running.get(data.id)?.abort();
   else if (data.type === 'unload') unload();
 });

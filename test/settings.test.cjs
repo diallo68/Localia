@@ -86,3 +86,11 @@ test('réglages : mode de l’interface et prénom facultatif', () => {
   assert.equal(normalizeSettings({ firstName: 42 }).firstName, undefined);
   assert.equal(normalizeSettings({ firstName: 'x'.repeat(80) }).firstName.length, 40);
 });
+
+test('réglages : carte graphique automatique sauf « toujours » ou « jamais »', () => {
+  assert.equal(normalizeSettings({}).gpu, undefined);
+  assert.equal(normalizeSettings({ gpu: 'toujours' }).gpu, 'toujours');
+  assert.equal(normalizeSettings({ gpu: 'jamais' }).gpu, 'jamais');
+  assert.equal(normalizeSettings({ gpu: 'auto' }).gpu, undefined);
+  assert.equal(normalizeSettings({ gpu: 'cuda' }).gpu, undefined);
+});

@@ -135,6 +135,39 @@ const step = async (name, work, ms = 180000) => {
         ),
       );
     assert.deepEqual(burst, Array(6).fill('ok'), `questions enchaînées : ${burst.join(' | ')}`);
+    // Carte graphique : indication du moteur, puis réglages « Jamais » et « Toujours ».
+    const ask = () =>
+      page.evaluate(() =>
+        window.localia
+          .run('chat', {
+            model: 'integre/smollm2:135m',
+            messages: [{ role: 'user', content: 'Say hi.' }],
+          })
+          .then((r) => (r.text.trim() ? 'ok' : 'vide'))
+          .catch((e) => e.message),
+      );
+    const setGpu = (gpu) =>
+      page.evaluate(
+        async (value) =>
+          window.localia.saveSettings({ ...(await window.localia.loadSettings()), gpu: value }),
+        gpu,
+      );
+    const auto = await step('carte graphique (automatique)', () =>
+      page.evaluate(() => window.localia.engineGpu()),
+    );
+    console.log(`  carte graphique : ${auto.gpu || 'aucune'} ${auto.devices.join(', ')}`);
+    assert.equal(auto.mode, 'auto');
+    await setGpu('jamais');
+    const never = await step('carte graphique (jamais)', () =>
+      page.evaluate(() => window.localia.engineGpu()),
+    );
+    assert.deepEqual([never.mode, never.gpu], ['jamais', false]);
+    assert.equal(await step('question sans carte graphique', ask), 'ok');
+    await setGpu('toujours');
+    const always = await step('question avec « Toujours »', ask);
+    if (auto.gpu) assert.equal(always, 'ok');
+    else assert.match(always, /Aucune carte graphique utilisable par le moteur/);
+    await setGpu(undefined);
     const speed = result.stats.outputTokens / (result.stats.outputMs / 1000);
     console.log(
       `PASS moteur intégré réel (${process.platform}-${process.arch}${process.env.LOCALIA_PACKAGED ? ', application construite' : ''}) : ${result.stats.outputTokens} tokens à ${speed.toFixed(0)} tokens/s en ${((Date.now() - started) / 1000).toFixed(1)} s — « ${result.text.trim().slice(0, 60)} »`,

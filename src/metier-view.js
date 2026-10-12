@@ -92,15 +92,9 @@ async function closeMetierView(id) {
         ),
       );
   }
-  // Nouveau métier : le modèle le mieux noté pour ce métier devient le modèle actif, s'il est
-  // installé (il reste modifiable dans les réglages avancés).
-  if (changed) {
-    const best = BENCH_METIERS[id] && metierAdvice(comparisons, BENCH_METIERS[id])?.best;
-    if (best && installed(best.model) && $('model').value !== best.model) {
-      selectModel(best.model);
-      $('model').dispatchEvent(new Event('change'));
-    }
-  }
+  // Nouveau métier : le modèle conseillé pour ce métier devient le modèle actif, s'il est
+  // installé et si l'utilisateur n'a pas choisi lui-même son modèle (model-choice.js).
+  if (changed) applyAutoModel();
   applyMetier();
   if (isAdvanced()) openHome();
   else view('chat');

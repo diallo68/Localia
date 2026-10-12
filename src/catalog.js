@@ -151,7 +151,49 @@ function recommendCatalog(memoryGB) {
   const [best, ...rest] = ids.map(catalogEntry);
   return { best, alternatives: rest.slice(0, 2) };
 }
+// Choix automatique selon l'ordinateur et le métier. Ordre de préférence par métier, tiré du
+// Benchmark de l'auteur (octobre 2026, 4 modèles, 2 à 3 correcteurs) : Gemma 4 E4B le plus juste
+// et celui qui invente le moins (85 % de réponses correctes, 3 % d'inventions, 57 s) ;
+// Qwen 3.5 9B meilleur en code (83 %) mais plus lent et plus inventif ; MedGemma faible même en
+// santé (51 %) : jamais conseillé d'office. Les plus petits modèles servent de repli.
+const GENERAL = ['gemma-4-e4b', 'qwen3.5-9b', 'gemma-4-e2b', 'qwen3.5-4b', 'gemma-3-1b'];
+const METIER_PREFERENCES = {
+  ingenierie: ['qwen3.5-9b', 'gemma-4-e4b', 'qwen3.5-4b', 'gemma-4-e2b', 'gemma-3-1b'],
+};
+const METIER_REASONS = {
+  ingenierie: 'en Ingénierie, Qwen 3.5 9B écrit le meilleur code dans nos essais',
+};
+// Sans puce Apple ni carte graphique, un modèle de plus de 5 Go répond 2 à 3 fois plus lentement :
+// réservé aux ordinateurs d'au moins 32 Go.
+const SLOW_LIMIT = 5.0e9;
+function recommendFor({ memoryGB = 0, platform, arch, freeDiskGB = null, metier } = {}) {
+  const fast = platform === 'darwin' && arch === 'arm64';
+  const order = METIER_PREFERENCES[metier] || GENERAL;
+  const reasons = [`${memoryGB} Go de mémoire`];
+  if (!fast && memoryGB < 32)
+    reasons.push('sans puce Apple : modèles de moins de 5 Go, plus rapides');
+  const fits = (m) =>
+    m &&
+    memoryGB >= m.minMemoryGB &&
+    (fast || memoryGB >= 32 || m.size <= SLOW_LIMIT) &&
+    (freeDiskGB == null || freeDiskGB >= m.size / 1e9 + 2);
+  const ranked = order.map(catalogEntry).filter(fits);
+  const best = ranked[0] || catalogEntry('gemma-3-1b');
+  if (METIER_REASONS[metier] && best.id === order[0]) reasons.push(METIER_REASONS[metier]);
+  else if (best.id === 'gemma-4-e4b')
+    reasons.push('Gemma 4 E4B : le plus juste et celui qui invente le moins dans nos essais');
+  // Choix réduit par la place libre : dit à l'utilisateur, qui peut libérer de l'espace.
+  const withoutDisk =
+    freeDiskGB == null ? best : recommendFor({ memoryGB, platform, arch, metier }).best;
+  if (withoutDisk.id !== best.id)
+    reasons.push(
+      `peu de place libre sur le disque : ${best.label} plutôt que ${withoutDisk.label}`,
+    );
+  if (freeDiskGB != null && freeDiskGB < best.size / 1e9 + 2)
+    reasons.push('place libre insuffisante : libérez de l’espace sur le disque');
+  return { best, alternatives: ranked.slice(1, 3), order, reasons };
+}
 const downloadUrl = (m) => `https://huggingface.co/${m.repo}/resolve/main/${m.file}`;
 
 if (typeof module !== 'undefined')
-  module.exports = { CATALOG, catalogEntry, downloadUrl, recommendCatalog };
+  module.exports = { CATALOG, catalogEntry, downloadUrl, recommendCatalog, recommendFor };

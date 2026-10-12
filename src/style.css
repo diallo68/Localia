@@ -3713,3 +3713,11 @@ img.logo {
     animation: none;
   }
 }
+
+/* Mode simple : modèle conseillé, modèle choisi, changer de modèle */
+#composer-advice-text .link-button {
+  margin-left: 6px;
+}
+.composer-choice {
+  cursor: help;
+}

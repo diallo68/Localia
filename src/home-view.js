@@ -25,7 +25,8 @@ function greeting(node) {
   node.replaceChildren('Bonjour', settings.firstName ? ' ' + settings.firstName : '');
 }
 
-// Mode simple : sous la zone de saisie, le modèle conseillé pour le métier et son état.
+// Mode simple : sous la zone de saisie, le modèle conseillé (selon le Benchmark, l'ordinateur et
+// le métier), le modèle actif s'il est différent, et de quoi en changer.
 function updateComposerAdvice() {
   const box = $('composer-advice');
   box.hidden = isAdvanced();
@@ -33,24 +34,38 @@ function updateComposerAdvice() {
   const text = $('composer-advice-text');
   text.replaceChildren();
   const metier = currentMetier();
-  const label = BENCH_METIERS[metier.id];
-  const best = label ? metierAdvice(comparisons, label)?.best : null;
   rememberFullNames(comparisons);
   const active = $('model').value;
-  if (best) {
-    text.append(
+  const choice = typeof recommendedModel === 'function' ? recommendedModel() : null;
+  if (choice) {
+    const advice = element('span', 'composer-choice');
+    advice.title = choice.why;
+    advice.append(
       element('span', '', 'Modèle conseillé pour'),
       ' ' + metier.label + ' · ',
-      element('span', 'composer-model', shortModel(best.model)),
+      element('span', 'composer-model', shortModel(choice.name)),
     );
-    const ready = installed(best.model) && active === best.model;
-    text.append(element('span', ready ? 'state ready' : 'state', ready ? 'prêt' : 'non activé'));
-  } else if (active) {
+    const ready = active === choice.name;
+    advice.append(element('span', ready ? 'state ready' : 'state', ready ? 'actif' : 'non activé'));
+    text.append(advice);
+  }
+  if (active && active !== choice?.name)
     text.append(
-      element('span', '', 'Modèle actif'),
+      element('span', '', choice ? ' · Modèle choisi' : 'Modèle actif'),
       ' · ',
       element('span', 'composer-model', active.replace(/^integre\//, '')),
     );
+  if (models.length) {
+    const change = element('button', 'link-button', 'Changer de modèle');
+    change.type = 'button';
+    change.onclick = () => openModelPicker();
+    text.append(' ', change);
+  }
+  if (choice && active !== choice.name && settings.modelChoice === 'manuel') {
+    const back = element('button', 'link-button', 'Revenir au modèle conseillé');
+    back.type = 'button';
+    back.onclick = guard(useRecommendedModel);
+    text.append(' ', back);
   }
 }
 $('composer-advanced').onclick = () =>

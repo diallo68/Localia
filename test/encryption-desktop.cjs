@@ -60,7 +60,7 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
       await page.waitForFunction(() => !document.querySelector('#guide-view').hidden);
       // Conseil écrit une fois la mémoire mesurée : attendu, pas lu tout de suite (machine lente).
       await page.waitForFunction(() =>
-        /Go de mémoire : nous conseillons/.test(
+        /Pour cet ordinateur et le métier .* nous conseillons/.test(
           document.querySelector('#guide-model .guide-state')?.textContent || '',
         ),
       );

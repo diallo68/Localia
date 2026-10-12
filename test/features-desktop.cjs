@@ -1435,6 +1435,51 @@ const readJson = async (profile, name) => {
     );
     await fs.rm(usb, { recursive: true, force: true });
 
+    // Choix automatique du modèle (ordinateur et métier), puis choix de l'utilisateur respecté.
+    const registry = await readJson(profile, 'modeles-integres.json');
+    await fs.writeFile(
+      path.join(profile, 'modeles-integres.json'),
+      JSON.stringify([...registry, { ...usbEntry, name: 'integre/gemma-4-e4b' }]),
+    );
+    await page.evaluate(async () => {
+      computer = { memoryGB: 16, platform: 'darwin', arch: 'arm64', freeDiskGB: 100 };
+      settings = await window.localia.saveSettings({
+        ...settings,
+        mode: 'simple',
+        modelChoice: 'auto',
+      });
+      await refresh();
+    });
+    const advised = await page.evaluate(() => recommendedModel()?.name);
+    assert.ok(advised, 'un modèle conseillé parmi les modèles installés');
+    await page.waitForFunction((name) => document.querySelector('#model').value === name, advised);
+    assert.equal((await readJson(profile, 'settings.json')).modelChoice, undefined, 'automatique');
+    await page.locator('#chat-tab').click();
+    await page.evaluate(() => setChatPanel(true));
+    const other =
+      advised === 'integre/mon-modele-q4' ? 'integre/qwen3-4b' : 'integre/mon-modele-q4';
+    await page.locator('#model').selectOption(other);
+    await page.evaluate(() => setChatPanel(false));
+    await page.waitForFunction(() =>
+      document.querySelector('#composer-advice-text').textContent.includes('Revenir au modèle'),
+    );
+    assert.equal((await readJson(profile, 'settings.json')).modelChoice, 'manuel');
+    // Choix manuel : un nouveau rafraîchissement ne change plus le modèle.
+    await page.evaluate(() => refresh());
+    assert.equal(await page.locator('#model').inputValue(), other);
+    await page.locator('#composer-advice-text button', { hasText: 'Changer de modèle' }).click();
+    assert.ok(
+      await page.evaluate(() =>
+        document.querySelector('#chat-view').classList.contains('panel-open'),
+      ),
+    );
+    await page.locator('#composer-advice-text button', { hasText: 'Revenir au modèle' }).click();
+    await page.waitForFunction((name) => document.querySelector('#model').value === name, advised);
+    assert.equal((await readJson(profile, 'settings.json')).modelChoice, undefined);
+    await page.evaluate(async () => {
+      settings = await window.localia.saveSettings({ ...settings, mode: 'avance' });
+    });
+
     // Accès depuis un autre appareil : serveur activé, clé exigée, question posée « depuis le
     // téléphone », réponse reçue au fil de l'écriture, conversation visible sur le Mac.
     const base = 'http://127.0.0.1:47899';

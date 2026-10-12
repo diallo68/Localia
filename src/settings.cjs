@@ -71,6 +71,8 @@ function normalizeSettings(raw) {
   if (TEXT_SIZES.includes(raw.textSize) && raw.textSize !== 1) settings.textSize = raw.textSize;
   // Interface : simple (conversation d'abord) ou avancée (tableau de bord et tous les outils).
   if (raw.mode === 'avance') settings.mode = 'avance';
+  // Modèle choisi par l'utilisateur lui-même : Localia ne le change plus automatiquement.
+  if (raw.modelChoice === 'manuel') settings.modelChoice = 'manuel';
   // Prénom facultatif, pour l'accueil (« Bonjour … »).
   const firstName = typeof raw.firstName === 'string' ? raw.firstName.trim() : '';
   if (firstName) settings.firstName = firstName.slice(0, 40);

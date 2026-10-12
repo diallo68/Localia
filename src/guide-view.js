@@ -39,8 +39,8 @@ async function renderGuide() {
   const linux = s.platform === 'linux';
   const installed = models.length;
 
-  // 1. Modèle du catalogue conseillé selon la mémoire, téléchargé pour le moteur intégré.
-  const { best, alternatives } = recommendCatalog(catalog.memoryGB);
+  // 1. Modèle du catalogue conseillé selon l'ordinateur et le métier, pour le moteur intégré.
+  const { best, alternatives, reasons } = recommendFor({ ...catalog, metier: currentMetier().id });
   if (installed)
     guideStep(
       'guide-model',
@@ -56,7 +56,7 @@ async function renderGuide() {
       'guide-model',
       false,
       localText(
-        `Ce Mac a ${catalog.memoryGB} Go de mémoire : nous conseillons ${best.label} (${formatGB(Math.round(best.size / 1e8) / 10)}). ${best.note}${disk}`,
+        `Pour cet ordinateur et le métier ${currentMetier().label}, nous conseillons ${best.label} (${formatGB(Math.round(best.size / 1e8) / 10)}) : ${reasons.join(' ; ')}. ${best.note}${disk} Vous pourrez changer de modèle à tout moment.`,
       ),
       [best, ...alternatives].map((m, i) => ({
         label: `Télécharger ${m.label} (${formatGB(Math.round(m.size / 1e8) / 10)})${i ? '' : ' — conseillé'}`,

@@ -3739,6 +3739,7 @@ img.logo {
 
 /* Recherche dans les conversations */
 #history-search {
+  flex: none;
   margin: 4px 8px 6px;
   padding: 6px 10px;
   font-size: 12px;

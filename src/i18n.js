@@ -291,6 +291,10 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  Bibliothèque: 'Library',
+  'Installé ✓': 'Installed ✓',
+  Taille: 'Size',
+  Pourquoi: 'Why',
   'Gemma 4 conçu pour les petits ordinateurs : léger et rapide.':
     'Gemma 4 built for small computers: light and fast.',
   'Gemma 4 pour ordinateurs moyens : bon compromis entre qualité et vitesse.':
@@ -1124,6 +1128,31 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [
+    /^Sur ce (Mac|PC|ordinateur) de (\d+) Go de mémoire, nous conseillons (.*)\.$/,
+    (t) =>
+      t.replace(
+        /^Sur ce (Mac|PC|ordinateur) de (\d+) Go de mémoire, nous conseillons (.*)\.$/,
+        (m, a, n, b) =>
+          `On this ${a === 'ordinateur' ? 'computer' : a} with ${n} GB of memory, we recommend ${b}.`,
+      ),
+  ],
+  [
+    /^([\d,]+) Go · licence (.*)$/,
+    (t) =>
+      t
+        .replace(/^([\d,]+) Go · licence/, (m, n) => `${n.replace(',', '.')} GB · licence`)
+        .replace('(conditions propres à lire)', '(own terms, read them)'),
+  ],
+  [
+    /^(Confortable|Possible, mémoire juste|Trop gros) — (.*)$/,
+    (t) =>
+      t.replace(
+        /^(Confortable|Possible, mémoire juste|Trop gros) — (.*)$/,
+        (m, a, b) => `${tr(a)} — ${tr(b)}`,
+      ),
+  ],
+  [/^([\d,]+) Go$/, (t) => `${t.replace(',', '.').replace(' Go', ' GB')}`],
   [/^(\d+) cœurs physiques, (\d+) logiques · (.*)$/, '$1 physical cores, $2 logical · $3'],
   [/^(\d+) Go au total$/, '$1 GB in total'],
   [

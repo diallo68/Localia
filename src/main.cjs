@@ -1649,6 +1649,7 @@ handle('run', async (kind, payload) => {
           loaded.filter((d) => d.pages.length),
           payload.messages.at(-1)?.content || '',
           budget,
+          appSettings.lang,
         );
         if (context) {
           system = [system, context.text].filter(Boolean).join('\n\n');

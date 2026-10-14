@@ -121,4 +121,9 @@ test('contexte du projet : tout s’il tient, sinon les passages proches de la q
   assert.deepEqual(some.used, [{ name: 'a.pdf', places: [2] }]);
   assert.match(some.text, /EXTRAITS/);
   assert.equal(projectDocumentsContext(project, [], 'x', 1000), null);
+  // Interface en anglais : repères et consigne en anglais, recopiés par le modèle.
+  const en = projectDocumentsContext(project, docs, 'Budget?', 10000, 'en');
+  assert.match(en.text, /\[b\.pptx — slide 3\]/);
+  assert.match(en.text, /not instructions/);
+  assert.doesNotMatch(en.text, /diapositive|pas des instructions/);
 });

@@ -291,6 +291,50 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  'Gemma 4 conçu pour les petits ordinateurs : léger et rapide.':
+    'Gemma 4 built for small computers: light and fast.',
+  'Gemma 4 pour ordinateurs moyens : bon compromis entre qualité et vitesse.':
+    'Gemma 4 for mid-range computers: a good balance of quality and speed.',
+  'Le plus capable des Gemma 4 proposés ; lent sans carte graphique.':
+    'The most capable Gemma 4 offered; slow without a graphics card.',
+  'Très léger : pour découvrir Localia sur un petit ordinateur.':
+    'Very light: to try Localia on a small computer.',
+  'Léger et multilingue.': 'Light and multilingual.',
+  'Le plus fiable dans les essais menés avec Localia (le moins d’inventions), mais lent.':
+    'The most reliable in Localia’s tests (fewest made-up facts), but slow.',
+  'Rapide ; raisonne avant de répondre (réflexion désactivable).':
+    'Fast; reasons before answering (thinking can be turned off).',
+  'Bon en raisonnement et en code.': 'Good at reasoning and code.',
+  'Version officielle de Qwen 3.5, petit modèle.': 'Official Qwen 3.5 release, small model.',
+  'Version officielle de Qwen 3.5 (à comparer avec la version « abliterated »).':
+    'Official Qwen 3.5 release (to compare with the “abliterated” version).',
+  'Microsoft : petit modèle fort en raisonnement et en calcul (finance, ingénierie).':
+    'Microsoft: small model strong at reasoning and calculation (finance, engineering).',
+  'Google, spécialisé santé (janvier 2026). Licence propre à Google : à lire avant tout usage hors test.':
+    'Google, specialised in health (January 2026). Google’s own licence: read it before any use beyond testing.',
+  'Mémoire vive': 'Memory (RAM)',
+  'Carte(s) graphique(s)': 'Graphics card(s)',
+  'Accélération des modèles': 'Model acceleration',
+  'Système et Ollama': 'System and Ollama',
+  'Modèle installé': 'Installed model',
+  'Vitesse de réponse': 'Response speed',
+  'non mesurée': 'not measured',
+  'Mesurer (1 min)': 'Measure (1 min)',
+  'Mesurer à nouveau': 'Measure again',
+  'Possible, mémoire juste': 'Possible, memory is tight',
+  Confortable: 'Comfortable',
+  'Trop gros': 'Too large',
+  'Non détectée': 'Not detected',
+  Processeur: 'Processor',
+  Disque: 'Disk',
+  'Mac Intel : Ollama n’utilise pas ces cartes graphiques, les modèles tournent sur le processeur.':
+    'Intel Mac: Ollama does not use these graphics cards, models run on the processor.',
+  'Aucune carte graphique utilisable par Ollama : les modèles tournent sur le processeur.':
+    'No graphics card usable by Ollama: models run on the processor.',
+  'Ollama arrêté ou absent (voir le Guide de démarrage)':
+    'Ollama stopped or missing (see the Getting started guide)',
+  'Aucun modèle installé.': 'No model installed.',
+  'Les modèles conseillés sont déjà installés.': 'The recommended models are already installed.',
   Rang: 'Rank',
   Chargement: 'Loading',
   'Tous les correcteurs (moyenne)': 'All graders (average)',
@@ -1080,6 +1124,122 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [/^(\d+) cœurs physiques, (\d+) logiques · (.*)$/, '$1 physical cores, $2 logical · $3'],
+  [/^(\d+) Go au total$/, '$1 GB in total'],
+  [
+    /^([\d,]+) Go libres en ce moment$/,
+    (t) =>
+      t.replace(
+        /^([\d,]+) Go libres en ce moment$/,
+        (m, n) => `${n.replace(',', '.')} GB free right now`,
+      ),
+  ],
+  [
+    /^([\d,]+) Go libres$/,
+    (t) => t.replace(/^([\d,]+) Go libres$/, (m, n) => `${n.replace(',', '.')} GB free`),
+  ],
+  [
+    /^(.*) · ([\d,]+) Go partagés$/,
+    (t) =>
+      t.replace(
+        /^(.*) · ([\d,]+) Go partagés$/,
+        (m, a, n) => `${a} · ${n.replace(',', '.')} GB shared`,
+      ),
+  ],
+  [/^Ollama actif · (\d+) modèle\(s\)$/, 'Ollama running · $1 model(s)'],
+  [/^En mémoire maintenant : (.*)$/, 'In memory now: $1'],
+  [/^(.*) — conseillé$/, '$1 — recommended'],
+  [
+    /^([\d,]+) tokens\/s — (rapide|confortable|lent|très lent)/,
+    (t) =>
+      t
+        .replace(/^([\d,]+)/, (n) => n.replace(',', '.'))
+        .replace('rapide, plus vite que la lecture', 'fast, quicker than reading')
+        .replace(
+          'confortable, à peu près la vitesse de lecture',
+          'comfortable, about reading speed',
+        )
+        .replace('lent, réponses longues à attendre', 'slow, long waits for answers')
+        .replace('très lent', 'very slow')
+        .replace(/\(Benchmark, (\d+) réponses\)/, '(Benchmark, $1 answers)')
+        .replace('(test rapide)', '(quick test)'),
+  ],
+  [
+    /^(Environ ([\d,]+) Go de mémoire sur (\d+)\.|Il faudrait environ ([\d,]+) Go de mémoire ; l’ordinateur en a (\d+)\.)/,
+    (t) =>
+      t
+        .replace(/(\d),(\d)/g, '$1.$2')
+        .replace(/^Environ ([\d.]+) Go de mémoire sur (\d+)\./, 'About $1 GB of memory out of $2.')
+        .replace(
+          /^Il faudrait environ ([\d.]+) Go de mémoire ; l’ordinateur en a (\d+)\./,
+          'It would need about $1 GB of memory; the computer has $2.',
+        )
+        .replace(' Tient dans la carte graphique : rapide.', ' Fits in the graphics card: fast.')
+        .replace(' Accéléré par la puce Apple.', ' Accelerated by the Apple chip.')
+        .replace(
+          ' Dépasse la mémoire de la carte graphique : en partie sur le processeur, plus lent.',
+          ' Exceeds the graphics card memory: partly on the processor, slower.',
+        )
+        .replace(
+          ' Sur le processeur : comptez quelques mots par seconde.',
+          ' On the processor: expect a few words per second.',
+        )
+        .replace(
+          ' Fermez les autres applications pendant l’utilisation.',
+          ' Close other applications while using it.',
+        ),
+  ],
+  [
+    /^Pour ce (Mac|PC|ordinateur) \((\d+) Go, (calcul sur le processeur|accélération graphique)\), le modèle idéal pour commencer est (.*) \(([\d,]+) Go\)\. /,
+    (t) =>
+      t
+        .replace(
+          /^Pour ce (Mac|PC|ordinateur) \((\d+) Go, (calcul sur le processeur|accélération graphique)\), le modèle idéal pour commencer est (.*) \(([\d,]+) Go\)\. /,
+          (m, machine, ram, how, model, size) =>
+            `For this ${machine === 'ordinateur' ? 'computer' : machine} (${ram} GB, ${how === 'calcul sur le processeur' ? 'running on the processor' : 'graphics acceleration'}), the ideal model to start with is ${model} (${size.replace(',', '.')} GB). `,
+        )
+        .replace(
+          'Sans accélération graphique, un modèle plus petit répond plus vite mais se trompe plus souvent ; le Benchmark vous dira lequel est le meilleur compromis pour vos tâches.',
+          'Without graphics acceleration, a smaller model answers faster but makes more mistakes; the Benchmark will tell you which is the best trade-off for your tasks.',
+        )
+        .replace(
+          'Les modèles qui tiennent dans la mémoire graphique répondent nettement plus vite.',
+          'Models that fit in graphics memory answer much faster.',
+        ),
+  ],
+  [
+    /^Anonymisation : (.*) remplacés par des étiquettes avant l’envoi au modèle\.$/,
+    (t) =>
+      t.replace(
+        /^Anonymisation : (.*) remplacés par des étiquettes avant l’envoi au modèle\.$/,
+        (m, list) =>
+          `Anonymisation: ${list
+            .replace(
+              /(\d+) numéros? de dossier ou de pièce/g,
+              (x, n) => `${n} file or document number${n > 1 ? 's' : ''}`,
+            )
+            .replace(
+              /(\d+) numéros? de sécurité sociale/g,
+              (x, n) => `${n} social security number${n > 1 ? 's' : ''}`,
+            )
+            .replace(/(\d+) numéros? de carte/g, (x, n) => `${n} card number${n > 1 ? 's' : ''}`)
+            .replace(/(\d+) adresses? e-mail/g, (x, n) => `${n} email address${n > 1 ? 'es' : ''}`)
+            .replace(
+              /(\d+) dates? de naissance/g,
+              (x, n) => `${n} date${n > 1 ? 's' : ''} of birth`,
+            )
+            .replace(/(\d+) adresses?/g, (x, n) => `${n} address${n > 1 ? 'es' : ''}`)
+            .replace(/(\d+) téléphones?/g, (x, n) => `${n} phone number${n > 1 ? 's' : ''}`)
+            .replace(
+              /(\d+) mots? de votre liste/g,
+              (x, n) => `${n} word${n > 1 ? 's' : ''} from your list`,
+            )
+            .replace(
+              /(\d+) personnes?/g,
+              (x, n) => `${n} person${n > 1 ? 's' : ''}`,
+            )} replaced with labels before being sent to the model.`,
+      ),
+  ],
   [
     /^(.*) · (.*) · (\d+) question\(s\) × (\d+) modèle\(s\) × (\d+) répétition\(s\) · (\d+)\/(\d+) réponses notées$/,
     '$1 · $2 · $3 question(s) × $4 model(s) × $5 repetition(s) · $6/$7 graded answers',
@@ -1275,6 +1435,7 @@ const EN_PATTERNS = [
     (text) =>
       text
         .replace(/^Documents du projet « (.*) » transmis/, 'Documents of project “$1” sent')
+        .replace(/ Anonymisation : .*$/, (m) => ` ${tr(m.trim())}`)
         .replace(/ : /, ': ')
         .replace(
           ' (passages les plus proches de la question)',

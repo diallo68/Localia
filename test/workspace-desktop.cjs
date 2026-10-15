@@ -215,6 +215,8 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
 
     // Proposition de note : décision écrite par l'utilisateur dans une conversation du projet.
     await page.locator('#project-conversations .overview-row').first().click();
+    // Panneau de la conversation : documents du projet relié.
+    assert.match(await page.locator('#chat-project-docs').textContent(), /releves\.txt/);
     await page.locator('#prompt').fill('On retient la station de Dalaba pour toute l’étude.');
     await page.locator('#send').click();
     await page.waitForSelector('.memory-proposal');

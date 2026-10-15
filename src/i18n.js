@@ -291,6 +291,7 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  'Ouvrir la page du projet': 'Open the project page',
   'Tâche, compétence ou parcours : que choisir ?': 'Task, skill or path: which to choose?',
   'Le type de travail attendu (résumer, extraire, calculer, relire…) : une consigne fournie par Localia, qui sert aussi à conseiller un modèle.':
     'The kind of work expected (summarise, extract, calculate, review…): an instruction provided by Localia, also used to recommend a model.',
@@ -1332,6 +1333,12 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [/^Projet « (.*) »$/, 'Project “$1”'],
+  [
+    /^(\d+) document\(s\) et (\d+) note\(s\) envoyés au modèle selon la question\.$/,
+    '$1 document(s) and $2 note(s) sent to the model depending on the question.',
+  ],
+  [/^Et (\d+) autre\(s\) document\(s\)\.$/, 'And $1 other document(s).'],
   [
     /^Sauvegarde enregistrée et relue : (.*) — (\d+) fichier\(s\) de données et (\d+) document\(s\), sauvegarde du (.*)\. Gardez la phrase de passe à part : elle ne peut pas être retrouvée\.$/,
     'Backup saved and read back: $1 — $2 data file(s) and $3 document(s), backup of $4. Keep the passphrase separately: it cannot be recovered.',

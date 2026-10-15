@@ -234,7 +234,38 @@ function syncComposerProject() {
   );
   select.value = $('project').value;
   select.closest('.project-choice').classList.toggle('chosen', Boolean(select.value));
+  renderChatProject();
 }
+// Panneau de la conversation : documents et notes du projet relié, chaque document lisible.
+function renderChatProject() {
+  const project = projectById($('project').value);
+  $('chat-project').hidden = !project;
+  if (!project) return;
+  $('chat-project-title').textContent = `Projet « ${project.name} »`;
+  $('chat-project-info').textContent =
+    `${project.documents.length} document(s) et ${project.notes.length} note(s) envoyés au modèle selon la question.`;
+  const list = $('chat-project-docs');
+  list.replaceChildren();
+  for (const d of [...project.documents].reverse().slice(0, 8)) {
+    const row = element('button', 'overview-row');
+    row.type = 'button';
+    row.title = `Lire ${d.name}`;
+    row.append(element('strong', '', d.name), element('small', 'muted', 'Lire'));
+    row.onclick = guard(async () => {
+      openProjectId = project.id;
+      view('projects');
+      renderProjects();
+      await openDocumentReader(project, d.id, 1);
+    });
+    list.append(row);
+  }
+  if (project.documents.length > 8)
+    list.append(element('p', 'muted', `Et ${project.documents.length - 8} autre(s) document(s).`));
+}
+$('chat-project-open').onclick = () => {
+  openProjectId = $('project').value;
+  $('projects-tab').click();
+};
 $('composer-project').onchange = () => {
   $('project').value = $('composer-project').value;
   $('project').dispatchEvent(new Event('change'));

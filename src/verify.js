@@ -382,7 +382,7 @@ function checkProjectSources(answer, docs) {
   const lineStart = (i) => text.lastIndexOf('\n', i - 1) + 1;
   const tidy = (raw) =>
     raw
-      .replace(/^[\s\])]*[,;.]?\s*/, '')
+      .replace(/^[\s\])*]*[,;.:]?\s*/, '')
       .replace(/[*_`#>]/g, '')
       .replace(/^\s*(?:[-•]|\d+[.)])\s+/gm, '')
       .replace(/[[(]\s*$/, '')
@@ -393,9 +393,26 @@ function checkProjectSources(answer, docs) {
     const previous = found[i - 1];
     const from = Math.max(lineStart(c.start), previous ? previous.end : 0);
     let claim = tidy(text.slice(from, c.start));
+    // Source annoncée avant le contenu (« Selon le document [doc — page 2], les modèles… »,
+    // « **Dans l'article (doc — page 4)** : » suivi d'une liste) : le texte qui suit, jusqu'à la
+    // citation suivante ou la fin du paragraphe.
+    const next = found[i + 1];
+    // Une phrase qui se termine par « : » annonce, elle aussi, ce qui suit.
+    const announces =
+      genericReference(claim, c.doc?.name || c.missing) ||
+      /:$/.test(claim) ||
+      /^[\s\])*]*:/.test(text.slice(c.end, c.end + 8));
+    // Texte qui suit : le premier paragraphe, et le suivant s'il se termine par « : » (liste).
+    let after = '';
+    if (announces) {
+      const blocks = text.slice(c.end, next ? next.start : text.length).split(/\n\s*\n/);
+      after = tidy(blocks.shift() || '');
+      while (/:$/.test(after) && blocks.length) after = tidy(after + '\n' + blocks.shift());
+    }
+    if (after && !genericReference(after, c.doc?.name || c.missing)) claim = after.slice(0, 600);
     // Renvoi seul sur sa ligne (« Ces informations sont tirées de [doc — page 4] ») : il porte
     // sur le paragraphe qui précède, jusqu'à la citation précédente.
-    if (genericReference(claim, c.doc?.name || c.missing) && from === lineStart(c.start)) {
+    else if (genericReference(claim, c.doc?.name || c.missing) && from === lineStart(c.start)) {
       // Lignes de renvoi (« Ces informations sont tirées de : ») sautées, puis le paragraphe.
       const lines = text.slice(previous ? previous.end : 0, from).split('\n');
       while (lines.length && genericReference(tidy(lines.at(-1)), c.doc?.name)) lines.pop();
@@ -445,6 +462,7 @@ function checkProjectSources(answer, docs) {
   const uncited = [];
   if (citations.length) {
     let at = 0;
+    let underSource = false; // lignes d'un bloc annoncé par « … (source) : »
     for (const line of text.split('\n')) {
       const start = at;
       at += line.length + 1;
@@ -452,7 +470,15 @@ function checkProjectSources(answer, docs) {
         .replace(/[*_`#>|]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
-      if (!clean || found.some((c) => c.start >= start && c.start < at)) continue;
+      if (!clean) {
+        underSource = false;
+        continue;
+      }
+      if (found.some((c) => c.start >= start && c.start < at)) {
+        underSource = /:$/.test(clean);
+        continue;
+      }
+      if (underSource) continue;
       // Phrase d'introduction (« … en 2026 : ») ou seule année : pas une affirmation chiffrée.
       const figures = valuesOf(clean).filter(
         (f) => !f.values.every((x) => Number.isInteger(x) && x >= 1900 && x <= 2100),

@@ -47,12 +47,14 @@ function questions(text, docName) {
     .filter(Boolean);
 }
 
+// Réponse lue en flux : sans flux, Node abandonne une requête dont l'en-tête tarde plus de
+// 5 minutes (longue réponse d'un gros modèle sur processeur).
 async function ask(model, system, question) {
   const response = await fetch('http://127.0.0.1:11434/api/chat', {
     method: 'POST',
     body: JSON.stringify({
       model,
-      stream: false,
+      stream: true,
       think: false,
       options: { temperature: 0, num_ctx: 8192, num_predict: 700 },
       messages: [
@@ -62,7 +64,17 @@ async function ask(model, system, question) {
     }),
   });
   if (!response.ok) throw new Error(`Ollama : ${response.status}`);
-  return (await response.json()).message.content;
+  let text = '';
+  let buffer = '';
+  const decoder = new TextDecoder();
+  for await (const chunk of response.body) {
+    buffer += decoder.decode(chunk, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for (const line of lines) if (line.trim()) text += JSON.parse(line).message?.content || '';
+  }
+  if (buffer.trim()) text += JSON.parse(buffer).message?.content || '';
+  return text;
 }
 
 (async () => {

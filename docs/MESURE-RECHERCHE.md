@@ -61,52 +61,69 @@ Coûts :
   le modèle reçoit une consigne d’avertissement et l’utilisateur voit « Aucun extrait ne contient
   les mots de la question… ». Les passages transmis sont indiqués (document et pages).
 
-## Citations des réponses d’un vrai modèle (budget de 3 000 caractères)
+## Citations des réponses d’un vrai modèle
 
-Mesure du 15 octobre 2026 avec `qwen3:8b` (Ollama, température 0, réflexion désactivée) : les 23
-questions posées avec les extraits choisis par chaque méthode, puis chaque citation de la réponse
-vérifiée par Localia (`checkProjectSources`, la vérification affichée sous les réponses).
-Commande : `--modele=qwen3:8b --methodes=mots,bm25 --budgets=3000 --cache=…`.
+Mesure du 15 octobre 2026 avec `qwen3:8b` (Ollama, température 0, réflexion désactivée, 700
+jetons au plus) : les 23 questions posées avec les extraits choisis par chaque méthode, aux deux
+budgets, puis chaque citation de la réponse vérifiée par Localia (`checkProjectSources`, la
+vérification affichée sous les réponses). 81 réponses distinctes (une réponse identique pour les
+mêmes extraits n’est pas reposée). Commande :
+`node scripts/mesure-recherche.cjs --modele=qwen3:8b --methodes=mots,bm25 --cache=… --json=…`.
 
-| Méthode         | Citations | Retrouvées | Partielles | Document seulement | Non retrouvées | Réponses sans citation | Page attendue citée | Temps médian |
-| --------------- | --------- | ---------- | ---------- | ------------------ | -------------- | ---------------------- | ------------------- | ------------ |
-| mots (actuelle) | 22        | 15         | 1          | 2                  | 4              | 3/23                   | 17/23               | 52 s         |
-| bm25            | 23        | 17         | 2          | 3                  | 1              | 4/23                   | 16/23               | 45 s         |
+| Budget | Méthode         | Citations | Retrouvées | Partielles | Document seulement | Non retrouvées | Réponses sans citation | Page attendue citée | Temps médian |
+| ------ | --------------- | --------- | ---------- | ---------- | ------------------ | -------------- | ---------------------- | ------------------- | ------------ |
+| 3 000  | mots (actuelle) | 22        | 17         | 2          | 1                  | 2              | 3/23                   | 17/23               | 52 s         |
+| 3 000  | bm25            | 23        | 20         | 3          | 0                  | 0              | 4/23                   | 16/23               | 45 s         |
+| 6 000  | mots (actuelle) | 26        | 21         | 3          | 1                  | 1              | 1/23                   | 20/23               | 114 s        |
+| 6 000  | bm25            | 30        | 27         | 1          | 1                  | 1              | 1/23                   | 20/23               | 111 s        |
 
-Relecture des citations signalées (méthode `mots`) :
+Chiffres obtenus avec le vérificateur corrigé (voir plus bas). Chaque citation non retrouvée ou
+partielle a été relue à la main :
 
-- **2 vraies erreurs du modèle** : A03, « 36 jours » attribué à la page 4 (il figure page 5) ;
-  B14, une limite attribuée à la page 4 au lieu de la page 5, et surtout une réponse construite
-  avec les limites du _rapport_ (document A) alors que la question porte sur l’_article_
-  (document B). Ce second défaut — bon passage, mauvais document pour la question — n’est pas
-  détectable par une comparaison de texte.
-- **2 fausses alertes du vérificateur** : une phrase d’introduction suivie d’une liste
-  (« Voici une vérification… : », « … comme indiqué dans les documents suivants : »).
-- Les partielles (A10) portent sur un écart calculé par le modèle (100 mm), absent du document :
-  le signalement est juste.
+- **Vraies imprécisions du modèle** : A03 (budget 3 000, mots), « 36 jours » attribué à la page 4
+  alors qu’il figure page 5 ; A10, écart de 100 mm calculé par le modèle, absent du document
+  (partielle, signalement juste) ; B07, période d’évaluation donnée avec une page approximative.
+- **Erreur que la vérification ne peut pas voir** : B14 au budget de 3 000, réponse construite
+  avec les limites du _rapport_ alors que la question porte sur l’_article_ ; les citations
+  renvoient bien aux pages d’où vient le texte. Au budget de 6 000, la même question reçoit une
+  réponse juste, document par document.
+- **Fausses alertes restantes** : B09 (3 cas), une phrase d’introduction (« Voici une
+  vérification des auteurs… : ») dont la liste n’est pas rattachée à la citation.
+- Les réponses sans citation (B08, C02) disent honnêtement que l’information n’est pas dans les
+  extraits : elles suivent les questions dont la page attendue n’a pas été retenue. Plus de
+  contexte (6 000 caractères) en laisse une seule.
 
-Défaut du vérificateur trouvé par cette mesure et corrigé : un renvoi seul sur sa ligne
-(« Ces informations sont tirées de [document — page 4] ») était comparé à ses propres mots, donc
-signalé « non retrouvé ». Il porte désormais sur le paragraphe qui précède. Avant cette
-correction, la méthode `mots` comptait 14 citations retrouvées et 4 « non retrouvées », dont la
-moitié à tort.
+### Défauts du vérificateur trouvés par cette mesure, corrigés
 
-Autres constats :
+Le modèle annonce souvent la source autrement qu’à la fin de la phrase ; le vérificateur
+comparait alors au passage cité un texte qui n’était pas l’affirmation :
 
-- 19 à 20 lignes chiffrées sans source par série de 23 réponses : le modèle cite souvent une fois
-  par paragraphe ou à la fin, pas à chaque ligne ; ce signal est donc bruyant.
-- Les réponses sans citation (B08, C02) sont des réponses honnêtes « l’information n’est pas dans
-  les extraits » : elles suivent les questions dont la page attendue n’a pas été retenue.
-- Deux durées faussées par une mise en veille de l’ordinateur : d’où le temps médian.
+1. renvoi seul sur sa ligne (« Ces informations sont tirées de [document — page 4] ») : vérifié
+   contre le paragraphe qui précède ;
+2. source annoncée avant le contenu (« Selon le document [document — page 2], les modèles… »,
+   « **Dans l’article (document — page 4)** : » suivi d’une liste) : vérifiée contre le texte
+   qui suit, liste comprise ;
+3. lignes d’une liste placée sous une source annoncée : plus comptées comme « chiffres sans
+   source ».
 
-Conclusion : à ce budget, aucune différence nette entre les deux méthodes (2 vraies erreurs
-contre 1, sur 22 et 23 citations). La méthode actuelle reste en place. Le budget de 6 000
-caractères n’est pas encore mesuré avec le modèle (environ 45 réponses restantes) : la commande
-reprend là où la mesure s’est arrêtée grâce au fichier `--cache`.
+Avant ces corrections, sur les mêmes 101 citations, 14 étaient signalées « non retrouvées » ;
+il en reste 4. Les 10 autres sont désormais retrouvées ou partielles, dont toutes les citations
+correctes de B14 au budget de 6 000.
+
+### Conclusion
+
+- Aucune différence nette entre les deux méthodes : 2 citations non retrouvées sur 22 contre 0
+  sur 23 au budget de 3 000, 1 sur 26 contre 1 sur 30 au budget de 6 000. La méthode actuelle
+  reste en place.
+- Le budget compte plus que la méthode : à 6 000 caractères, la page attendue est citée dans
+  20 réponses sur 23 (contre 16 ou 17) et une seule réponse reste sans citation (contre 3 ou 4),
+  pour un temps de réponse doublé sur cette machine (processeur seul).
+- Le signal « lignes chiffrées sans source » reste élevé (19 à 24 par série de 23 réponses) : le
+  modèle cite souvent une fois par paragraphe. Il est utile comme alerte, pas comme mesure.
 
 ## Limites et suites
 
 - 23 questions et des documents courts : un corpus plus grand, avec des questions reformulées,
   est nécessaire pour conclure.
-- Un seul modèle (`qwen3:8b`) et un seul budget mesurés avec le modèle ; la justesse des
-  réponses n’est pas notée ici (voir le Benchmark pour la notation humaine).
+- Un seul modèle (`qwen3:8b`) mesuré ; la justesse des réponses n’est pas notée ici (voir le
+  Benchmark pour la notation humaine).

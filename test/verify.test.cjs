@@ -229,3 +229,47 @@ test('sources du projet : un renvoi seul sur sa ligne vaut pour le paragraphe qu
   ).citations;
   assert.equal(d.status, 'non-trouve');
 });
+
+test('sources du projet : source annoncée avant le contenu (phrase ou titre suivi d’une liste)', () => {
+  const { checkProjectSources } = require('../src/verify.js');
+  const docs = [
+    {
+      name: 'a.pdf',
+      pages: [{ number: 1, text: 'Les modèles sont entraînés de 2014 à 2020 (2 557 jours).' }],
+    },
+    {
+      name: 'b.pdf',
+      pages: [
+        {
+          number: 4,
+          text: 'Limites : un seul site, 2 stations et une seule source météorologique.',
+        },
+      ],
+    },
+  ];
+  const report = checkProjectSources(
+    'Selon le document [a.pdf — page 1], les modèles sont entraînés de 2014 à 2020, soit 2 557 jours.\n\n' +
+      '**Dans l’article (b.pdf — page 4)** :\n- Un seul site.\n- Une seule source météorologique.\n- Données de 2 stations.',
+    docs,
+  );
+  assert.deepEqual(
+    report.citations.map((c) => c.status),
+    ['confirme', 'confirme'],
+  );
+  assert.deepEqual(report.uncited, [], 'lignes de la liste couvertes par la source annoncée');
+});
+
+test('sources du projet : phrase d’introduction terminée par « : » suivie de la liste', () => {
+  const { checkProjectSources } = require('../src/verify.js');
+  const docs = [
+    {
+      name: 'a.pdf',
+      pages: [{ number: 1, text: 'Traoré [7] ; la référence 7 est de Bah et Kouyaté.' }],
+    },
+  ];
+  const [c] = checkProjectSources(
+    'Voici une vérification des auteurs cités dans le texte [a.pdf — page 1] :\n- Traoré [7] ne correspond pas : la référence 7 est de Bah et Kouyaté.',
+    docs,
+  ).citations;
+  assert.equal(c.status, 'confirme');
+});

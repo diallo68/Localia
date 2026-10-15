@@ -63,6 +63,15 @@ const out = path.join(__dirname, '..', 'docs', lang === 'en' ? 'en' : '');
     .click()
     .catch(() => {});
   await shot('projects.png');
+  await page.evaluate((query) => openSearch(query), lang === 'en' ? 'oven' : 'four');
+  await page.waitForTimeout(800);
+  await shot('search.png');
+  await page.locator('#routines-tab').click();
+  await page.locator('.run-row').first().click();
+  await page.evaluate(() =>
+    document.querySelector('#routines-view h3')?.scrollIntoView({ block: 'start' }),
+  );
+  await shot('routines.png');
   await page.locator('#settings-tab').click();
   await shot('settings.png');
   await page.locator('#security-tab').click();

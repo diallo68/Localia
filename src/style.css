@@ -4457,11 +4457,13 @@ body[data-mode='simple'] .composer-footer {
 }
 .search-excerpt mark,
 .reader-text mark {
+  padding: 0 2px;
   background: var(--accent-soft);
   color: var(--fg);
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 3px;
-  outline: 1px solid var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
 }
 .search-hit {
   outline: 2px solid var(--accent);
@@ -4988,4 +4990,8 @@ input:not([type='checkbox']):not([type='radio']) {
 }
 .chat-project .link-button {
   margin-left: 0;
+}
+
+.run-detail .input-row {
+  justify-content: flex-start;
 }

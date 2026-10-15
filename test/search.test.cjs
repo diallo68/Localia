@@ -100,3 +100,23 @@ test('extrait : centré sur le mot trouvé, coupé aux espaces', () => {
   assert.match(excerpt, /^….*Dalaba.*…$/);
   assert.ok(excerpt.length <= 64);
 });
+
+test('extraits sans mise en forme Markdown', () => {
+  const [found] = searchConversations(
+    [
+      {
+        id: 'c',
+        title: 'T',
+        messages: [
+          {
+            role: 'assistant',
+            content: '## Bilan\n| A | B |\n|---|---|\n- **45 000 €** pour le four',
+          },
+        ],
+      },
+    ],
+    searchWords('four'),
+  );
+  assert.doesNotMatch(found.excerpt, /\*\*|##|---/);
+  assert.match(found.excerpt, /45 000 € pour le four/);
+});

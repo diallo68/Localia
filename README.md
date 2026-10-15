@@ -14,7 +14,9 @@ Localia is a desktop application for macOS, Windows and Linux for working with l
 
 | Simple mode | Advanced mode: home |
 |---|---|
-| ![Simple mode: choose your field, ask a question, explore an idea or analyse a document, with the model recommended by your Benchmark, and resume a project](docs/en/simple.png) | ![Advanced mode: actions, recommended model, recent work and system status](docs/en/home.png) |
+| ![Simple mode: choose your field, ask a question, explore an idea or analyse a document, with the model recommended by your Benchmark, and resume a project](docs/en/simple.png) | ![Advanced mode: actions, work to resume, results to handle and folded technical status](docs/en/home.png) |
+| **Common search** | **Automations** |
+| ![Search across conversations, notes and project documents, words highlighted](docs/en/search.png) | ![Routine: sourced summary of an added document, citations checked, result to review](docs/en/routines.png) |
 | **Chat** | **Benchmark** |
 | ![Chat with a local model](docs/en/chat.png) | ![Benchmark: per-model results](docs/en/benchmark.png) |
 | **Comparison of a question series** | **Benchmark charts** |
@@ -28,10 +30,16 @@ Localia is a desktop application for macOS, Windows and Linux for working with l
 - **PDF questions**: text is extracted locally (PDF.js); for long documents, relevant excerpts are selected and the pages sent to the model are shown.
 - **Automatic checks**, without any model, under every answer: calculations recomputed, impossible page references, quotations not found in the document, numbers absent from it; PDFs containing instructions addressed to an AI are flagged on import.
 - **Research assistant**: a task menu selects the model recommended by your Benchmark and adds a task instruction; project memory sends your own notes to the model as context.
+- **Projects**: documents (PDFs, even scanned, Word, Excel, PowerPoint, CSV, text, photos) and notes; at the top of each project, the next step you write down, its conversations, kept results and latest documents, readable page by page. In a project conversation, each cited source is compared with the document passage, labelled with what was found (figures, keywords or only the document): a text match, not a guarantee of correctness.
+- **Reviewed memory**: an answer enters a project's memory only after you review it, with its source (conversation, question, model, date); decisions you write (“we keep…”) are offered as notes to save, correct or ignore.
+- **Common search** (⌘K): conversations, notes and project document text, filtered by project and type; each result opens at its place (message, note, document page).
+- **Automations**: a routine watches a project; each added document is read, summarised with its sources by the chosen model, its citations checked, then offered for review. Real step shown, stop and pause; your conversations come first; an interrupted job resumes at the next start.
+- **Home** in advanced mode: resume (last conversation, active projects and their next step), to do (results to review, errors, new watch articles, missed scheduled start), current activity, folded technical status.
 - **Files, with your consent**: the model proposes a plan (sort, rename, create folders or a note) in a folder you authorized; Localia checks each action, you tick what to apply; nothing is overwritten or permanently deleted, every operation can be undone.
 - **Optional encryption** of all Localia data on disk (AES-256-GCM, key in the macOS Keychain, recovery key).
+- **Backup and restore**: all data in a single `.localia` file, encrypted with a passphrase (AES-256-GCM, scrypt), independent of the keychain; each item's fingerprint checked; before a restore, current data is copied into an “avant-restauration” folder.
 - **Zotero** (local, read-only): search your library, compare an article's references with it, ask questions about an item's PDF.
-- **Literature watch and scheduled series**: new articles on your topics (OpenAlex, optional), benchmark series started at a set time with the Mac kept awake.
+- **Literature watch and scheduled series**: new articles on your topics (OpenAlex, optional), benchmark series started at a set time with the Mac kept awake; a scheduled start is kept if Localia closes, and reported as missed if its time has passed (never started behind your back).
 - **Skills**: reusable Markdown instructions, chosen in the Task menu or called with `/name` at the start of a message; step-by-step paths for raw data, articles, theses and app development.
 - **Data files**: attach instructions, code or a CSV to a conversation; tables are summarized (columns, types, missing values, ranges) instead of being sent in full; you run the generated code yourself.
 - **Bibliography**: author citations (“Name [n]”) checked offline against the article's reference list; optionally (off by default, the only feature that uses the Internet) reference existence checked with Crossref and article search with OpenAlex.
@@ -80,9 +88,17 @@ Mac builds are signed *ad hoc* (required on Apple Silicon), not with an Apple de
 npm test                 # unit tests (no Electron, no Ollama)
 npm run test:features    # desktop app, Ollama simulated
 npm run test:pdf         # desktop app, real PDF import, simulated answers and services
+npm run test:workspace   # search, projects, memory, routines, backup; simulated Ollama
 npm run test:encryption  # data encryption, simulated key store
 npm run test:engine      # integrated engine, real llama.cpp with a 105 MB test model (downloaded once)
 npm run test:desktop     # desktop app, requires a running Ollama with one model
+```
+
+Two reproducible measurements complete the tests:
+
+```sh
+node scripts/mesure-recherche.cjs        # choice of document passages (docs/MESURE-RECHERCHE.md, in French)
+node scripts/audit-accessibilite.cjs     # contrast, keyboard, 200% zoom, targets (docs/ACCESSIBILITE.md, in French)
 ```
 
 The GitHub workflow runs these tests and builds the application on macOS Apple Silicon, macOS Intel and Windows.
@@ -98,7 +114,7 @@ A series is a `.txt` or `.md` file. Questions are separated by a line containing
 - **Access from your other devices is off by default.** When enabled (Settings), a small web server lets a phone or computer use Localia after scanning a QR code that carries a secret key; requests without the key are refused, repeated wrong keys are blocked, foreign Host headers are rejected. On the local network the traffic is not encrypted (use a trusted Wi-Fi); from outside, use Tailscale (encrypted private network) rather than opening the computer to the Internet.
 - **Web pages are fetched only when you paste an address** (pasted into the message, or `/web address`): local and private network addresses are refused, redirects included; only the page's text is kept, nothing is displayed or executed.
 - **Online services are off by default.** Once allowed in the Bibliography tab, only the text of a search, a reference to check or a watched topic is sent, and only to `api.openalex.org` and `api.crossref.org`. Documents, notes and conversations never leave the computer.
-- Data (history, settings, comparisons, projects, extracted PDF text, action log, literature watch) is stored in Electron's user data folder. It can be **encrypted** (AES-256-GCM, key protected by the macOS Keychain or Windows data protection, exportable recovery key).
+- Data (history, settings, comparisons, projects, extracted PDF text, action log, literature watch, routines) is stored in Electron's user data folder. It can be **encrypted** (AES-256-GCM, key protected by the macOS Keychain or Windows data protection, exportable recovery key).
 - File actions only touch folders you authorize, after you approve each action; nothing is overwritten or permanently deleted.
 - The Electron renderer is sandboxed and isolated, with no Node access and no remote content.
 
@@ -107,7 +123,9 @@ A series is a `.txt` or `.md` file. Questions are separated by a line containing
 - On computers without a supported GPU, models run on the CPU: expect a few tokens per second for 4–12B models.
 - Long PDFs are sent as keyword-selected excerpts (10,000 characters), not in full.
 - The application is not notarized by Apple nor signed for Windows: the system warns on first launch (macOS: right-click → Open; Windows: “More info” → “Run anyway”).
-- Scheduled tasks (literature watch, scheduled series) run only while Localia is open.
+- Scheduled tasks (literature watch, scheduled series, routines) run only while Localia is open.
+- Project document passages are chosen by the words of the question: a question phrased differently can miss the right passage (Localia says so when no extract contains its words). Measurement and limits in [`docs/MESURE-RECHERCHE.md`](docs/MESURE-RECHERCHE.md).
+- Accessibility is checked automatically (contrast, keyboard, zoom), not yet with a screen reader: see [`docs/ACCESSIBILITE.md`](docs/ACCESSIBILITE.md).
 - Grades are human (or external) judgements: the benchmark computes statistics, it does not grade answers automatically.
 
 ## License and citation

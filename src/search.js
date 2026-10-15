@@ -25,6 +25,15 @@ function searchExcerpt(text, words, size = 180) {
   return (start > 0 ? '…' : '') + raw.slice(start, end).trim() + (end < raw.length ? '…' : '');
 }
 
+// Texte des réponses sans la mise en forme Markdown (gras, titres, tableaux, code), pour les extraits.
+const plainText = (text) =>
+  String(text || '')
+    .replace(/```[a-z]*\n?/gi, '')
+    .replace(/(\*\*|__|`)/g, '')
+    .replace(/^\s{0,3}(#{1,6}\s+|[-*]\s+|>\s?)/gm, '')
+    .replace(/^\s*\|?[\s:|-]+\|[\s:|-]*$/gm, '')
+    .replace(/\s*\|\s*/g, ' · ');
+
 // Filtre de projet : '' = tous, 'none' = sans projet, sinon l'identifiant du projet.
 const inProject = (projectId, filter) =>
   !filter || (filter === 'none' ? !projectId : projectId === filter);
@@ -51,7 +60,7 @@ function searchConversations(conversations, words, filter = '') {
         index,
         role: m.role,
         at: c.updatedAt || null,
-        excerpt: searchExcerpt(m.content, words),
+        excerpt: searchExcerpt(plainText(m.content), words),
       });
     });
     if (titleMatch && !found && results.length < SEARCH_LIMIT)
@@ -62,7 +71,7 @@ function searchConversations(conversations, words, filter = '') {
         projectId: c.projectId || null,
         index: null,
         at: c.updatedAt || null,
-        excerpt: searchExcerpt(c.messages?.[0]?.content || '', words),
+        excerpt: searchExcerpt(plainText(c.messages?.[0]?.content), words),
       });
   }
   return results;
@@ -83,7 +92,7 @@ function searchNotes(projects, words, filter = '') {
         noteId: n.id,
         title: n.title || 'Note',
         at: n.updatedAt || n.createdAt || null,
-        excerpt: searchExcerpt(n.text, words),
+        excerpt: searchExcerpt(plainText(n.text), words),
       });
     }
   }

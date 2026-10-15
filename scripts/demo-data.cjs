@@ -142,8 +142,28 @@ write('projects.json', [
     id: 'demo-p1',
     name: t('Bilan 2025 – Boulangerie Durand', '2025 Report – Durand Bakery'),
     description: t('Bilan annuel et projets 2026.', 'Annual report and 2026 plans.'),
+    nextStep: t(
+      'Confirmer le montant de l’aide régionale pour le four',
+      'Confirm the amount of the regional grant for the oven',
+    ),
     createdAt: iso(400),
     notes: [
+      {
+        id: 'n0',
+        title: t('Chiffre d’affaires 2025', '2025 revenue'),
+        text: t(
+          'Chiffre d’affaires 2025 : 412 000 €, en hausse de 6 %.',
+          '2025 revenue: €412,000, up 6%.',
+        ),
+        createdAt: iso(30),
+        source: {
+          kind: 'reponse',
+          conversationId: 'demo-c1',
+          conversationTitle: t('Bilan 2025 : chiffres clés', '2025 report: key figures'),
+          model: 'qwen3:8b',
+          at: iso(30),
+        },
+      },
       {
         id: 'n1',
         title: t('Points à vérifier', 'To check'),
@@ -165,6 +185,62 @@ write('projects.json', [
     documents: [],
   },
 ]);
+
+// Routine du projet : chaque document ajouté est résumé avec ses sources, puis relu.
+write('routines.json', {
+  routines: [
+    {
+      id: 'demo-r1',
+      name: t(
+        'Synthèse des nouveaux documents de « Bilan 2025 – Boulangerie Durand »',
+        'Summary of new documents of “2025 Report – Durand Bakery”',
+      ),
+      trigger: 'document-ajoute',
+      projectId: 'demo-p1',
+      model: 'qwen3:8b',
+      enabled: true,
+      createdAt: iso(48),
+    },
+  ],
+  runs: [
+    {
+      id: 'demo-run1',
+      routineId: 'demo-r1',
+      projectId: 'demo-p1',
+      docId: docId,
+      docName: DOC_NAME,
+      state: 'a-relire',
+      model: 'qwen3:8b',
+      createdAt: iso(2),
+      startedAt: iso(2),
+      endedAt: iso(1.9),
+      text: t(
+        `- Chiffre d’affaires 2025 : 412 000 € [${DOC_NAME} — page 1].\n- Le document ne compte qu’une page : les investissements prévus en 2026 et leur financement n’y figurent pas.`,
+        `- 2025 revenue: €412,000 [${DOC_NAME} — page 1].\n- The document has a single page: the investments planned for 2026 and their funding are not in it.`,
+      ),
+      checks: {
+        sources: {
+          citations: [
+            {
+              name: DOC_NAME,
+              docId,
+              place: 'page',
+              number: 1,
+              status: 'confirme',
+              basis: 'chiffres',
+              claim: t('Chiffre d’affaires 2025 : 412 000 €', '2025 revenue: €412,000'),
+              excerpt: t(
+                'Bilan d’activité 2025 – Boulangerie Durand (entreprise fictive). Chiffre d’affaires : 412 000 €.',
+                'Annual report 2025 – Durand Bakery (fictional business). Revenue: €412,000.',
+              ),
+            },
+          ],
+          uncited: [],
+        },
+      },
+    },
+  ],
+});
 
 const QUESTIONS_FR = [
   ['E01 QCM sur un texte', 'Rédaction'],

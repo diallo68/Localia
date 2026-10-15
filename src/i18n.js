@@ -291,6 +291,33 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  'Rechercher dans ce projet': 'Search this project',
+  'Autres actions du projet': 'Other project actions',
+  Actions: 'Actions',
+  'Renommer et décrire': 'Rename and describe',
+  'Prochaine étape': 'Next step',
+  'Par exemple : relire le chapitre 2 et vérifier les chiffres':
+    'For example: reread chapter 2 and check the figures',
+  'Conversations du projet': 'Project conversations',
+  'Résultats conservés': 'Kept results',
+  'Derniers documents': 'Latest documents',
+  'Nom et description du projet': 'Project name and description',
+  'Aucune étape notée.': 'No step noted.',
+  Modifier: 'Edit',
+  'Noter la prochaine étape': 'Note the next step',
+  'Aucune conversation reliée à ce projet.': 'No conversation linked to this project.',
+  'Les réponses ajoutées à la mémoire apparaîtront ici.':
+    'Answers added to the memory will appear here.',
+  'Ouvrir la conversation': 'Open the conversation',
+  Titre: 'Title',
+  'Texte à retenir (corrigez-le si besoin)': 'Text to remember (correct it if needed)',
+  'Cette note sera envoyée au modèle dans les conversations du projet. Vérifiez qu’elle est juste avant de l’enregistrer.':
+    "This note will be sent to the model in the project's conversations. Check that it is correct before saving it.",
+  'Enregistrer la note': 'Save the note',
+  'Ne pas enregistrer': "Don't save",
+  'À mémoriser ?': 'Remember this?',
+  Corriger: 'Correct',
+  Ignorer: 'Ignore',
   'Rechercher (⌘K)': 'Search (⌘K)',
   'RETROUVER UNE INFORMATION': 'FIND INFORMATION',
   'Rechercher.': 'Search.',
@@ -1189,6 +1216,19 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [/^Ajouter à la mémoire du projet « (.*) »$/, 'Add to the memory of project “$1”'],
+  [/^Note ajoutée à la mémoire du projet « (.*) »\.$/, 'Note added to the memory of project “$1”.'],
+  [/^Voir les (\d+) conversations$/, 'See the $1 conversations'],
+  [
+    /^Provenance : /,
+    (text) =>
+      text
+        .replace(/^Provenance : /, 'Source: ')
+        .replace('Proposée par Localia', 'Proposed by Localia')
+        .replace('Réponse enregistrée', 'Saved answer')
+        .replace(/conversation « (.*?) »/, 'conversation “$1”')
+        .replace(/ · modèle /, ' · model '),
+  ],
   [
     /^Sources utilisées : (\d+) retrouvée\(s\) dans le passage, (\d+) document\(s\) seulement, (\d+) partielle\(s\), (\d+) à vérifier$/,
     'Sources used: $1 found in the passage, $2 document(s) only, $3 partial, $4 to check',

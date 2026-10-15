@@ -23,6 +23,20 @@ const words = (text) => [
   ),
 ];
 
+// Provenance d'une note enregistrée depuis une réponse : conversation, question, modèle, date.
+function noteSource(source) {
+  if (!source || typeof source !== 'object') return undefined;
+  const short = (value, max) => (typeof value === 'string' ? value.slice(0, max) : undefined);
+  return {
+    kind: source.kind === 'proposition' ? 'proposition' : 'reponse',
+    conversationId: short(source.conversationId, 100),
+    conversationTitle: short(source.conversationTitle, 200),
+    question: short(source.question, 300),
+    model: short(source.model, 200),
+    at: short(source.at, 40),
+  };
+}
+
 // Projets reçus de l'interface : structure vérifiée, tailles bornées.
 function normalizeProjects(raw) {
   if (!Array.isArray(raw)) throw new Error('Projets invalides.');
@@ -46,6 +60,8 @@ function normalizeProjects(raw) {
       id: p.id,
       name,
       description: text(p.description, LIMITS.description, 'Description'),
+      // Prochaine étape choisie par l'utilisateur (page du projet).
+      nextStep: text(p.nextStep, 500, 'Prochaine étape').trim() || undefined,
       createdAt: typeof p.createdAt === 'string' ? p.createdAt : new Date().toISOString(),
       notes: notes.map((n) => {
         if (!n || typeof n.id !== 'string') throw new Error('Note sans identifiant.');
@@ -57,6 +73,7 @@ function normalizeProjects(raw) {
           text: body,
           createdAt: typeof n.createdAt === 'string' ? n.createdAt : new Date().toISOString(),
           updatedAt: typeof n.updatedAt === 'string' ? n.updatedAt : undefined,
+          source: noteSource(n.source),
         };
       }),
       // Documents ajoutés au projet : fiche seulement (le texte est dans le dossier des documents).
@@ -126,5 +143,18 @@ function buildMemory(project, question, budget = MEMORY_BUDGET) {
   };
 }
 
+// Décisions ou informations à retenir, repérées dans un message de l'utilisateur
+// (« on retient… », « décision : … », « définition : … ») : proposées comme notes, jamais
+// enregistrées sans son accord.
+const PROPOSAL_MARKERS =
+  /\b(on retient|je retiens|nous retenons|retenons|[àa] retenir|on garde|nous gardons|d[ée]cid[ée]s?\b|d[ée]cidons|d[ée]cision|d[ée]finition|on choisit|nous choisissons|j[’']ai choisi|on a choisi|we decided|decision|to remember|definition)/i;
+function memoryProposals(text) {
+  const sentences = String(text || '')
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((x) => x.replace(/\s+/g, ' ').trim())
+    .filter((x) => x.length >= 12 && x.length <= 400);
+  return sentences.filter((x) => PROPOSAL_MARKERS.test(x)).slice(0, 2);
+}
+
 if (typeof module !== 'undefined')
-  module.exports = { MEMORY_BUDGET, normalizeProjects, buildMemory };
+  module.exports = { MEMORY_BUDGET, normalizeProjects, buildMemory, memoryProposals };

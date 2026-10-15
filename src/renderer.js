@@ -651,12 +651,62 @@ function messageNode(message, question) {
       remember.className = 'remember';
       remember.textContent = tr('＋ Mémoire du projet');
       remember.title = tr('Ajouter cette réponse aux notes du projet de la conversation');
-      remember.onclick = guard(() => addToMemory(message.content, question?.content));
+      remember.onclick = guard(() => addToMemory(message.content, question?.content, message));
       node.append(remember);
+      const proposals = proposalCard(message, question);
+      if (proposals) node.append(proposals);
     }
   }
   $('messages').append(node);
   return content;
+}
+// Propositions de notes : décisions ou informations à retenir écrites par l'utilisateur dans une
+// conversation de projet. Enregistrer, corriger (fenêtre de relecture) ou ignorer ; le choix est
+// gardé dans la réponse pour ne plus reproposer.
+function proposalCard(message, question) {
+  if (!current?.projectId || !projectById(current.projectId) || !question) return null;
+  const pending = memoryProposals(question.content).filter(
+    (text) => !(message.memoryDone || []).includes(text),
+  );
+  if (!pending.length) return null;
+  const box = element('div', 'memory-proposal');
+  box.append(element('strong', '', tr('À mémoriser ?')));
+  const done = async (text) => {
+    message.memoryDone = [...(message.memoryDone || []), text];
+    await persist();
+    render();
+  };
+  for (const text of pending) {
+    const line = element('div', 'proposal-line');
+    line.append(element('span', '', `« ${text} »`));
+    const actions = element('span', 'proposal-actions');
+    const button = (label, onclick, primary) => {
+      const b = element('button', primary ? 'primary' : '', label);
+      b.type = 'button';
+      b.onclick = guard(onclick);
+      actions.append(b);
+    };
+    const source = () => sourceOf('proposition', question.content, message);
+    button(
+      'Enregistrer',
+      async () => {
+        const project = memoryProject();
+        if (!project) return;
+        await saveMemoryNote(project, text.slice(0, 80), text, source());
+        await done(text);
+      },
+      true,
+    );
+    button('Corriger', async () => {
+      const project = memoryProject();
+      if (project && (await reviewMemory(project, text.slice(0, 80), text, source())))
+        await done(text);
+    });
+    button('Ignorer', () => done(text));
+    line.append(actions);
+    box.append(line);
+  }
+  return box;
 }
 const welcome = $('welcome').cloneNode(true);
 function renderAttachment() {

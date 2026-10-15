@@ -70,8 +70,41 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
       env: { ...process.env, LOCALIA_TEST_DATA: profile, LOCALIA_FAKE_LLAMA: '1' },
     });
     const page = await app.firstWindow();
+    page.setDefaultTimeout(15000);
     page.on('pageerror', (error) => errors.push(error.message));
     await page.waitForFunction(() => typeof openSearch === 'function' && projectsLoaded);
+    // Ollama simulé : un modèle ; réponse fixée par global.chatReply, requêtes capturées.
+    await app.evaluate(() => {
+      global.requests = [];
+      global.fetch = async (url, options) => {
+        const endpoint = new URL(String(url)).pathname;
+        const body = options?.body ? JSON.parse(options.body) : null;
+        if (endpoint === '/api/version') return Response.json({ version: '0.35.0' });
+        if (endpoint === '/api/tags')
+          return Response.json({ models: [{ name: 'petit:1b', size: 1e9 }] });
+        if (endpoint === '/api/show')
+          return Response.json({
+            capabilities: ['completion'],
+            parameters: 'num_ctx 8192',
+            model_info: { 'test.context_length': 32768 },
+            details: { family: 'test', parameter_size: '1B', quantization_level: 'Q4_K_M' },
+          });
+        if (endpoint === '/api/ps') return Response.json({ models: [] });
+        if (endpoint === '/api/chat') {
+          if (global.chatDelay) await new Promise((r) => setTimeout(r, global.chatDelay));
+          global.requests.push(body);
+          const lines = [
+            { message: { content: global.chatReply ?? 'Réponse simulée.' } },
+            { done: true, done_reason: 'stop', eval_count: 10, eval_duration: 1e9 },
+          ];
+          return new Response(lines.map((l) => JSON.stringify(l)).join('\n') + '\n');
+        }
+        throw new Error('unexpected endpoint ' + endpoint);
+      };
+    });
+    await page.locator('#refresh').dispatchEvent('click');
+    await page.waitForFunction(() => document.querySelector('#model').options.length === 1);
+    const settle = () => page.evaluate(() => window.localia.loadProjects());
 
     // Projets récents : la conversation d'il y a 5 minutes place « Thèse » avant « Bilan ».
     await page.locator('#home-tab').click();
@@ -144,9 +177,53 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
     await page.locator('.search-result', { hasText: 'Site d’étude' }).click();
     await page.waitForSelector('.note-card.search-hit');
 
+    // Page du projet : vue de synthèse, prochaine étape, suppression dans le menu « Actions ».
+    assert.equal(await page.locator('#project-heading').textContent(), 'Thèse');
+    assert.match(await page.locator('#project-conversations').textContent(), /Pluies de juillet/);
+    assert.match(await page.locator('#project-recent-docs').textContent(), /releves\.txt/);
+    assert.equal(await page.locator('#project-delete').isVisible(), false);
+    await page.locator('#project-next-edit').click();
+    await page.locator('#project-next-input').fill('Vérifier les relevés d’août');
+    await page.locator('#project-next-form button[type=submit]').click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#project-next-text').textContent === 'Vérifier les relevés d’août',
+    );
+    assert.equal(
+      (await settle()).find((p) => p.id === 'p-these').nextStep,
+      'Vérifier les relevés d’août',
+    );
+
+    // Proposition de note : décision écrite par l'utilisateur dans une conversation du projet.
+    await page.locator('#project-conversations .overview-row').first().click();
+    await page.locator('#prompt').fill('On retient la station de Dalaba pour toute l’étude.');
+    await page.locator('#send').click();
+    await page.waitForSelector('.memory-proposal');
+    assert.match(
+      await page.locator('.memory-proposal').textContent(),
+      /On retient la station de Dalaba/,
+    );
+    await page.locator('.memory-proposal button', { hasText: 'Corriger' }).click();
+    await page.waitForFunction(() => document.querySelector('#memory-dialog').open);
+    assert.match(await page.locator('#memory-provenance').textContent(), /Proposée par Localia/);
+    await page.locator('#memory-note-text').fill('Station retenue : Dalaba (toute l’étude).');
+    await page.locator('#memory-save').click();
+    await page.waitForFunction(() => !document.querySelector('.memory-proposal'));
+    const saved = (await settle()).find((p) => p.id === 'p-these').notes.at(-1);
+    assert.equal(saved.text, 'Station retenue : Dalaba (toute l’étude).');
+    assert.equal(saved.source.kind, 'proposition');
+    assert.equal(saved.source.conversationId, 'c-pluie');
+    // Résultat conservé visible dans la vue de synthèse, provenance sur la note.
+    await page.locator('#projects-tab').click();
+    assert.match(await page.locator('#project-kept').textContent(), /On retient la station/);
+    assert.match(
+      await page.locator('.note-card', { hasText: 'Station retenue' }).textContent(),
+      /Proposée par Localia · conversation « Pluies de juillet »/,
+    );
+
     assert.deepEqual(errors, []);
     console.log(
-      'PASS espace de travail : projets récents, recherche commune (conversations, notes, documents, filtres, ouverture dans le contexte).',
+      'PASS espace de travail : projets récents, recherche commune (conversations, notes, documents, filtres, ouverture dans le contexte), page du projet (synthèse, prochaine étape, menu), propositions de notes avec provenance.',
     );
   } finally {
     await app?.close();

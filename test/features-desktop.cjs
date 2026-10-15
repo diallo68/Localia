@@ -344,13 +344,19 @@ const readJson = async (profile, name) => {
     );
     const projectId = (await readJson(profile, 'projects.json'))[0].id;
     assert.equal((await readJson(profile, 'conversations.json'))[0].projectId, projectId);
+    // Réponse relue avant d'être enregistrée (fenêtre de relecture), avec sa provenance.
     await page.locator('.message.assistant .remember').last().click();
+    await page.waitForFunction(() => document.querySelector('#memory-dialog').open);
+    assert.match(await page.locator('#memory-provenance').textContent(), /Réponse enregistrée/);
+    await page.locator('#memory-save').click();
     await page.waitForFunction(() =>
       document.querySelector('#notice').textContent.includes('ajoutée à la mémoire'),
     );
     let savedProjects = await readJson(profile, 'projects.json');
     assert.equal(savedProjects[0].notes.length, 2);
     assert.equal(savedProjects[0].notes[1].title, 'Où se situe le site d’étude ?');
+    assert.equal(savedProjects[0].notes[1].source.kind, 'reponse');
+    assert.equal(savedProjects[0].notes[1].source.question, 'Où se situe le site d’étude ?');
     await page.locator('#projects-tab').click();
     await page.locator('.project-row').first().click();
     await page.locator('.note-card').first().locator('button', { hasText: 'Modifier' }).click();
@@ -439,6 +445,7 @@ const readJson = async (profile, name) => {
     await page.locator('#projects-tab').click();
     await fs.rm(projectFiles, { recursive: true, force: true });
     page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#project-menu summary').click();
     await page.locator('#project-delete').click();
     await page.waitForFunction(() => document.querySelector('#project-detail').hidden);
     assert.deepEqual(await readJson(profile, 'projects.json'), []);

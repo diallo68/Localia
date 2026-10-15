@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeProjects, buildMemory } = require('../src/memory.js');
+const { normalizeProjects, buildMemory, memoryProposals } = require('../src/memory.js');
 
 const note = (id, title, text, createdAt = '2026-10-01') => ({ id, title, text, createdAt });
 const project = {
@@ -60,4 +60,34 @@ test('note unique trop longue : tronquée ; projet sans note : aucune mémoire',
   assert.ok(memory.text.endsWith('…'));
   assert.equal(buildMemory({ ...project, notes: [] }, 'x'), null);
   assert.equal(buildMemory(null, 'x'), null);
+});
+
+test('prochaine étape et provenance des notes : gardées, bornées', () => {
+  const [p] = normalizeProjects([
+    {
+      ...project,
+      nextStep: '  Relire le chapitre 2  ',
+      notes: [
+        {
+          ...project.notes[0],
+          source: { kind: 'reponse', conversationId: 'c1', question: 'x'.repeat(900), extra: 1 },
+        },
+      ],
+    },
+  ]);
+  assert.equal(p.nextStep, 'Relire le chapitre 2');
+  assert.equal(p.notes[0].source.kind, 'reponse');
+  assert.equal(p.notes[0].source.question.length, 300);
+  assert.equal(p.notes[0].source.extra, undefined);
+  assert.equal(normalizeProjects([project])[0].nextStep, undefined);
+});
+
+test('propositions de notes : décisions et définitions écrites par l’utilisateur', () => {
+  assert.deepEqual(
+    memoryProposals(
+      'Bonjour. On retient ResNet-50 pour la détection. Quelle pluie ?\nDécision : période 2014-2024.',
+    ),
+    ['On retient ResNet-50 pour la détection.', 'Décision : période 2014-2024.'],
+  );
+  assert.deepEqual(memoryProposals('Quelle pluie en juillet à Dalaba ?'), []);
 });

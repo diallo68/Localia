@@ -4497,3 +4497,174 @@ body[data-mode='simple'] .composer-footer {
   font-size: 13px;
   line-height: 1.55;
 }
+
+/* Page d'un projet : en-tête, vue de synthèse, menu d'actions, réglages repliés */
+.project-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+  margin: 18px 0 12px;
+}
+.project-head h3 {
+  margin: 0;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+.project-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.action-menu {
+  position: relative;
+}
+.action-menu > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.action-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.action-menu-list {
+  position: absolute;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  min-width: 210px;
+  margin-top: 4px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+.action-menu-list button {
+  text-align: left;
+  border: 0;
+  background: none;
+}
+.action-menu-list button:hover {
+  background: var(--hover);
+}
+.action-menu-list .danger {
+  color: var(--danger);
+}
+.project-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.overview-card {
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+}
+.overview-card h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.overview-next {
+  border-color: var(--accent);
+}
+.overview-next p {
+  margin: 0 0 6px;
+}
+.overview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.overview-list p {
+  margin: 0;
+  font-size: 13px;
+}
+.overview-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  text-align: left;
+  color: var(--fg);
+}
+.overview-row:hover {
+  background: var(--hover);
+}
+.overview-row strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.overview-row small {
+  flex: none;
+}
+.project-settings {
+  margin-top: 22px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.project-settings > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.note-source {
+  display: block;
+  color: var(--muted);
+}
+/* Relecture d'une note avant son enregistrement dans la mémoire du projet */
+.memory-dialog {
+  width: min(640px, calc(100vw - 32px));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--fg);
+  box-shadow: var(--shadow);
+}
+.memory-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+.memory-dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.memory-dialog h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.memory-proposal {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px dashed var(--accent);
+  border-radius: 10px;
+  background: var(--accent-soft);
+  font-size: 13px;
+}
+.proposal-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.proposal-actions {
+  display: flex;
+  gap: 6px;
+}

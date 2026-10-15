@@ -51,6 +51,7 @@ function renderProjects() {
     button.onclick = () => {
       openProjectId = p.id;
       editingNoteId = null;
+      closeNextForm();
       renderProjects();
     };
     list.append(button);
@@ -58,6 +59,8 @@ function renderProjects() {
   const project = projectById(openProjectId);
   $('project-detail').hidden = !project;
   if (!project) return;
+  $('project-heading').textContent = project.name;
+  renderOverview(project);
   if (document.activeElement !== $('project-title')) $('project-title').value = project.name;
   if (document.activeElement !== $('project-description'))
     $('project-description').value = project.description || '';
@@ -87,6 +90,7 @@ function renderProjects() {
           (n.updatedAt ? ' (modifiée)' : ''),
       ),
     );
+    if (n.source) card.append(provenanceLine(n.source));
     const row = element('div', 'input-row');
     const edit = element('button', '', 'Modifier');
     edit.type = 'button';
@@ -149,6 +153,7 @@ $('project-save').onclick = guard(async () => {
 });
 $('project-delete').onclick = guard(async () => {
   const project = projectById(openProjectId);
+  $('project-menu').open = false;
   if (!project) return;
   if (
     !confirm(
@@ -183,22 +188,172 @@ $('note-form').onsubmit = guard(async (event) => {
   await persistProjects();
 });
 
-// « ＋ Mémoire du projet » sous une réponse : la réponse devient une note du projet de la conversation.
-async function addToMemory(text, question) {
+// « ＋ Mémoire du projet » sous une réponse, ou proposition de Localia : le texte est relu, corrigé
+// au besoin, puis enregistré comme note avec sa provenance ; rien n'est enregistré sans accord.
+function memoryProject() {
   const project = projectById(current?.projectId || $('project').value);
-  if (!project) {
+  if (!project)
     notice(
       'Choisissez d’abord un projet pour cette conversation (menu « Projet »), ou créez-en un dans l’onglet Projets.',
     );
-    return;
-  }
-  const title = question ? question.replace(/\s+/g, ' ').slice(0, 80) : 'Réponse enregistrée';
-  project.notes.push({ id: crypto.randomUUID(), title, text, createdAt: new Date().toISOString() });
-  await persistProjects();
-  notice(
-    `Réponse ajoutée à la mémoire du projet « ${project.name} ». Relisez-la et corrigez-la si besoin dans l’onglet Projets.`,
-  );
+  return project;
 }
+function sourceOf(kind, question, message) {
+  return {
+    kind,
+    conversationId: current?.id,
+    conversationTitle: current?.title,
+    question: question ? question.replace(/\s+/g, ' ').slice(0, 300) : undefined,
+    model: message?.model || current?.model,
+    at: new Date().toISOString(),
+  };
+}
+async function saveMemoryNote(project, title, text, source) {
+  project.notes.push({
+    id: crypto.randomUUID(),
+    title,
+    text,
+    createdAt: new Date().toISOString(),
+    source,
+  });
+  await persistProjects();
+  notice(`Note ajoutée à la mémoire du projet « ${project.name} ».`);
+}
+// Fenêtre de relecture : renvoie true si la note a été enregistrée.
+function reviewMemory(project, title, text, source) {
+  const dialog = $('memory-dialog');
+  $('memory-dialog-title').textContent = `Ajouter à la mémoire du projet « ${project.name} »`;
+  $('memory-provenance').textContent = provenanceText(source);
+  $('memory-note-title').value = title;
+  $('memory-note-text').value = text;
+  dialog.returnValue = '';
+  dialog.showModal();
+  $('memory-note-text').focus();
+  return new Promise((resolve) => {
+    dialog.onclose = guard(async () => {
+      const body = $('memory-note-text').value.trim();
+      if (dialog.returnValue !== 'save' || !body) return resolve(false);
+      await saveMemoryNote(project, $('memory-note-title').value.trim(), body, source);
+      resolve(true);
+    });
+  });
+}
+async function addToMemory(text, question, message) {
+  const project = memoryProject();
+  if (!project) return;
+  const title = question ? question.replace(/\s+/g, ' ').slice(0, 80) : 'Réponse enregistrée';
+  await reviewMemory(project, title, text, sourceOf('reponse', question, message));
+}
+// Provenance affichée : conversation d'origine (ouvrable), question, modèle, date.
+function provenanceText(source) {
+  const parts = [
+    source.kind === 'proposition' ? 'Proposée par Localia' : 'Réponse enregistrée',
+    source.conversationTitle ? `conversation « ${source.conversationTitle} »` : '',
+    source.model ? `modèle ${source.model}` : '',
+    source.at ? new Date(source.at).toLocaleString('fr-FR') : '',
+  ];
+  return 'Provenance : ' + parts.filter(Boolean).join(' · ');
+}
+function provenanceLine(source) {
+  const line = element('small', 'note-source', provenanceText(source));
+  const c = conversations.find((x) => x.id === source.conversationId);
+  if (c) {
+    const open = element('button', 'link-button', 'Ouvrir la conversation');
+    open.type = 'button';
+    open.onclick = () => openConversation(c);
+    line.append(' ', open);
+  }
+  return line;
+}
+
+// Vue de synthèse du projet : prochaine étape, conversations liées, résultats conservés, documents.
+function renderOverview(project) {
+  const next = project.nextStep || '';
+  $('project-next-text').textContent = next || tr('Aucune étape notée.');
+  $('project-next-text').classList.toggle('muted', !next);
+  $('project-next-edit').textContent = tr(next ? 'Modifier' : 'Noter la prochaine étape');
+  const linked = conversations
+    .filter((c) => c.projectId === project.id)
+    .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+  const list = (box, items, empty) => {
+    box.replaceChildren();
+    if (!items.length) box.append(element('p', 'muted', empty));
+    for (const item of items) box.append(item);
+  };
+  const row = (title, detail, onclick) => {
+    const b = element('button', 'overview-row');
+    b.type = 'button';
+    b.append(element('strong', '', title), element('small', 'muted', detail));
+    b.onclick = onclick;
+    return b;
+  };
+  const shownConversations = linked
+    .slice(0, 4)
+    .map((c) => row(c.title, shortDate(c.updatedAt), () => openConversation(c)));
+  if (linked.length > 4) {
+    const all = element('button', 'link-button', `Voir les ${linked.length} conversations`);
+    all.type = 'button';
+    all.onclick = () => {
+      $('search-project').value = project.id;
+      openSearch();
+    };
+    shownConversations.push(all);
+  }
+  list($('project-conversations'), shownConversations, 'Aucune conversation reliée à ce projet.');
+  const kept = project.notes
+    .filter((n) => n.source)
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+    .slice(0, 3)
+    .map((n) =>
+      row(n.title || 'Note', shortDate(n.createdAt), () => {
+        const card = document.querySelector(`.note-card[data-note-id="${CSS.escape(n.id)}"]`);
+        if (card) flash(card);
+      }),
+    );
+  list($('project-kept'), kept, 'Les réponses ajoutées à la mémoire apparaîtront ici.');
+  const docs = [...project.documents]
+    .sort((a, b) => String(b.addedAt).localeCompare(String(a.addedAt)))
+    .slice(0, 3)
+    .map((d) =>
+      row(
+        d.name,
+        shortDate(d.addedAt),
+        guard(() => openDocumentReader(project, d.id, 1)),
+      ),
+    );
+  list($('project-recent-docs'), docs, 'Aucun document pour l’instant.');
+}
+$('project-next-edit').onclick = () => {
+  const project = projectById(openProjectId);
+  $('project-next-input').value = project?.nextStep || '';
+  $('project-next-form').hidden = false;
+  $('project-next-edit').hidden = true;
+  $('project-next-input').focus();
+};
+const closeNextForm = () => {
+  $('project-next-form').hidden = true;
+  $('project-next-edit').hidden = false;
+};
+$('project-next-cancel').onclick = closeNextForm;
+$('project-next-form').onsubmit = guard(async (event) => {
+  event.preventDefault();
+  const project = projectById(openProjectId);
+  if (!project) return;
+  project.nextStep = $('project-next-input').value.trim() || undefined;
+  closeNextForm();
+  await persistProjects();
+});
+$('project-search').onclick = () => {
+  fillSearchProjects();
+  $('search-project').value = openProjectId;
+  openSearch('');
+};
+$('project-settings-open').onclick = () => {
+  $('project-menu').open = false;
+  $('project-settings').open = true;
+  $('project-settings').scrollIntoView({ block: 'nearest' });
+  $('project-title').focus();
+};
 
 // Documents du projet : liste, ajout (bouton ou dépôt de plusieurs fichiers), retrait.
 const DOC_TYPES = {

@@ -46,6 +46,27 @@
         >
       </div>
     </section>
+    <dialog id="memory-dialog" class="memory-dialog" aria-labelledby="memory-dialog-title">
+      <form id="memory-form" method="dialog">
+        <h2 id="memory-dialog-title"></h2>
+        <p id="memory-provenance" class="muted"></p>
+        <label for="memory-note-title">Titre</label>
+        <input id="memory-note-title" maxlength="200" />
+        <label for="memory-note-text">Texte à retenir (corrigez-le si besoin)</label>
+        <textarea id="memory-note-text" rows="10" maxlength="20000" required></textarea>
+        <p class="muted">
+          Cette note sera envoyée au modèle dans les conversations du projet. Vérifiez qu’elle est
+          juste avant de l’enregistrer.
+        </p>
+        <div class="input-row">
+          <button id="memory-save" class="primary" type="submit" value="save">
+            Enregistrer la note</button
+          ><button id="memory-reject" type="submit" value="cancel" formnovalidate>
+            Ne pas enregistrer
+          </button>
+        </div>
+      </form>
+    </dialog>
     <aside>
       <div class="brand">
         <img class="logo" src="assets/logo.svg" alt="" />
@@ -796,17 +817,53 @@
         </form>
         <div id="projects-list"></div>
         <section id="project-detail" hidden>
-          <div class="input-row">
-            <label class="sr-only" for="project-title">Nom du projet</label
-            ><input id="project-title" maxlength="120" /><button id="project-save" type="button">
-              Enregistrer</button
-            ><button id="project-ask" class="primary" type="button">
-              Poser une question sur ce projet</button
-            ><button id="project-delete" type="button">Supprimer le projet</button>
+          <div class="project-head">
+            <h3 id="project-heading"></h3>
+            <div class="project-head-actions">
+              <button id="project-ask" class="primary" type="button">
+                Poser une question sur ce projet</button
+              ><button id="project-search" type="button">
+                <i data-icon="search"></i>Rechercher dans ce projet
+              </button>
+              <details id="project-menu" class="action-menu">
+                <summary aria-label="Autres actions du projet">Actions</summary>
+                <div class="action-menu-list">
+                  <button id="project-settings-open" type="button">Renommer et décrire</button
+                  ><button id="project-delete" class="danger" type="button">
+                    Supprimer le projet
+                  </button>
+                </div>
+              </details>
+            </div>
           </div>
-          <label for="project-description">Description (envoyée avec la mémoire)</label>
-          <textarea id="project-description" rows="2" maxlength="2000"></textarea>
-          <p id="project-budget" class="muted"></p>
+          <div class="project-overview">
+            <section class="overview-card overview-next" aria-labelledby="next-title">
+              <h4 id="next-title">Prochaine étape</h4>
+              <p id="project-next-text"></p>
+              <form id="project-next-form" class="input-row" hidden>
+                <label class="sr-only" for="project-next-input">Prochaine étape</label
+                ><input
+                  id="project-next-input"
+                  maxlength="500"
+                  placeholder="Par exemple : relire le chapitre 2 et vérifier les chiffres"
+                /><button class="primary" type="submit">Enregistrer</button
+                ><button id="project-next-cancel" type="button">Annuler</button>
+              </form>
+              <button id="project-next-edit" class="link-button" type="button"></button>
+            </section>
+            <section class="overview-card" aria-labelledby="linked-title">
+              <h4 id="linked-title">Conversations du projet</h4>
+              <div id="project-conversations" class="overview-list"></div>
+            </section>
+            <section class="overview-card" aria-labelledby="kept-title">
+              <h4 id="kept-title">Résultats conservés</h4>
+              <div id="project-kept" class="overview-list"></div>
+            </section>
+            <section class="overview-card" aria-labelledby="recent-docs-title">
+              <h4 id="recent-docs-title">Derniers documents</h4>
+              <div id="project-recent-docs" class="overview-list"></div>
+            </section>
+          </div>
           <h3>Documents</h3>
           <div id="project-drop" class="project-drop">
             <button id="project-add-docs" class="primary" type="button">
@@ -848,6 +905,18 @@
             </div>
           </form>
           <div id="notes-list"></div>
+          <details id="project-settings" class="project-settings">
+            <summary>Nom et description du projet</summary>
+            <div class="input-row">
+              <label class="sr-only" for="project-title">Nom du projet</label
+              ><input id="project-title" maxlength="120" /><button id="project-save" type="button">
+                Enregistrer
+              </button>
+            </div>
+            <label for="project-description">Description (envoyée avec la mémoire)</label>
+            <textarea id="project-description" rows="2" maxlength="2000"></textarea>
+            <p id="project-budget" class="muted"></p>
+          </details>
         </section>
       </section>
       <section id="bibliography-view" class="page" hidden>

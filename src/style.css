@@ -906,6 +906,7 @@ small,
 }
 .input-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
   justify-content: space-between;
@@ -4927,4 +4928,45 @@ button.home-item:hover {
 }
 .vocab-help p {
   margin: 4px 0 0;
+}
+
+/* Cibles d'au moins 24 × 24 px (WCAG 2.2, critère 2.5.8) */
+button,
+select,
+summary,
+input:not([type='checkbox']):not([type='radio']) {
+  min-height: 24px;
+}
+.segmented button {
+  min-width: 24px;
+}
+.link-button {
+  min-height: 24px;
+}
+/* Numéro de l'étape du Benchmark : texte foncé sur fond gris (contraste 4,5:1 au moins) */
+.step-number {
+  color: var(--fg);
+  background: var(--hover);
+  border: 1px solid var(--line);
+}
+/* Zoom à 200 % : chemins longs coupés, rangées de boutons renvoyées à la ligne */
+#skills-dir {
+  overflow-wrap: anywhere;
+}
+.project-head-actions {
+  flex-wrap: wrap;
+}
+/* Contraste renforcé : la couleur des bordures (foncée) n'est jamais un fond derrière du texte */
+:root[data-contrast='fort']
+  :is(.project-row.selected, .skill-tag, #skill-suggest button:focus-visible, .metier-or span) {
+  background: var(--hover);
+  color: var(--fg);
+}
+#project-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.overview-next .link-button {
+  margin-left: 0;
 }

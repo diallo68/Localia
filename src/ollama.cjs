@@ -61,4 +61,15 @@ async function readStream(body, onData) {
   buffer += decoder.decode();
   consume(buffer);
 }
-module.exports = { modelName, request, readStream };
+// Modèles d'embeddings (transformation de texte en vecteurs, sans conversation) : écartés de la
+// liste des modèles, ils ne savent pas répondre (familles BERT, RoBERTa ; « embed » dans le nom).
+const isEmbeddingModel = (m) =>
+  /bert|roberta/i.test([m?.details?.family, ...(m?.details?.families || [])].join(' ')) ||
+  /embed/i.test(m?.name || '');
+
+module.exports = {
+  isEmbeddingModel,
+  modelName,
+  request,
+  readStream,
+};

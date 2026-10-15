@@ -55,3 +55,13 @@ test('délai dépassé : message distinct de « Ollama inaccessible »', async (
     global.fetch = original;
   }
 });
+
+test('modèles d’embeddings écartés : ils ne savent pas converser', () => {
+  const { isEmbeddingModel } = require('../src/ollama.cjs');
+  assert.equal(isEmbeddingModel({ name: 'bge-m3:latest', details: { family: 'bert' } }), true);
+  assert.equal(isEmbeddingModel({ name: 'nomic-embed-text:latest', details: {} }), true);
+  assert.equal(
+    isEmbeddingModel({ name: 'qwen3:8b', details: { family: 'qwen3', families: ['qwen3'] } }),
+    false,
+  );
+});

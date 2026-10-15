@@ -19,7 +19,7 @@ const os = require('node:os');
 const { createHash } = require('node:crypto');
 const net = require('node:net');
 const { pathToFileURL, fileURLToPath } = require('node:url');
-const { modelName, request, readStream } = require('./ollama.cjs');
+const { modelName, request, readStream, isEmbeddingModel } = require('./ollama.cjs');
 const {
   importPdf,
   importWord,
@@ -904,7 +904,7 @@ handle('models', async () => {
   let ollamaError = null;
   try {
     ollama = (await (await request('/api/tags')).json()).models.filter(
-      (m) => !m.remote_host && !/cloud/i.test(m.name),
+      (m) => !m.remote_host && !/cloud/i.test(m.name) && !isEmbeddingModel(m),
     );
   } catch (error) {
     ollamaError = error;

@@ -293,11 +293,15 @@ const METIERS_EN = {
 const EN = {
   'Anonymisation active : aucune donnée personnelle repérée. Vérifiez votre texte, et ajoutez au besoin des mots à masquer dans les réglages.':
     'Anonymisation on: no personal data found. Check your text, and add words to mask in the settings if needed.',
-  Confirmée: 'Confirmed',
+  Retrouvée: 'Found',
+  'Chiffres retrouvés': 'Figures found',
+  'Mots-clés retrouvés': 'Keywords found',
+  'Document retrouvé': 'Document found',
+  'Comparaison automatique du texte : elle retrouve les chiffres et les mots dans le passage cité, sans garantir que l’affirmation soit juste.':
+    'Automatic text comparison: it finds the figures and words in the cited passage, without guaranteeing that the statement is correct.',
   Partielle: 'Partial',
   'Non retrouvée': 'Not found',
   Introuvable: 'Missing',
-  Citée: 'Cited',
   'Sans source': 'No source',
   diapositive: 'slide',
   'Voir le passage': 'Show the passage',
@@ -1153,8 +1157,8 @@ if (typeof METIERS !== 'undefined')
 // Textes avec une partie variable.
 const EN_PATTERNS = [
   [
-    /^Sources utilisées : (\d+) confirmée\(s\), (\d+) partielle\(s\), (\d+) à vérifier$/,
-    'Sources used: $1 confirmed, $2 partial, $3 to check',
+    /^Sources utilisées : (\d+) retrouvée\(s\) dans le passage, (\d+) document\(s\) seulement, (\d+) partielle\(s\), (\d+) à vérifier$/,
+    'Sources used: $1 found in the passage, $2 document(s) only, $3 partial, $4 to check',
   ],
   [
     /^Cet endroit n’existe pas : le document compte (\d+) (page|section|diapositive|photo)\(s\)\.$/,

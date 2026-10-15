@@ -423,11 +423,11 @@ const readJson = async (profile, name) => {
     await sources.waitFor();
     assert.equal(
       await sources.locator('summary').textContent(),
-      'Sources utilisées : 2 confirmée(s), 0 partielle(s), 1 à vérifier',
+      'Sources utilisées : 2 retrouvée(s) dans le passage, 0 document(s) seulement, 0 partielle(s), 1 à vérifier',
     );
     assert.deepEqual(await sources.locator('.source-state').allTextContents(), [
-      'Confirmée',
-      'Confirmée',
+      'Chiffres retrouvés',
+      'Chiffres retrouvés',
       'Introuvable',
     ]);
     assert.match(

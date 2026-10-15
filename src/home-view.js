@@ -79,11 +79,13 @@ $('model').addEventListener('change', updateComposerAdvice);
 modelListeners.push(updateComposerAdvice);
 
 // Accueil du mode avancé : actions, modèle conseillé, projets récents, état du système.
+// Dernière activité d'un projet : création, notes, documents et conversations liées.
 function lastActivity(project) {
   return [
     project.createdAt,
     ...project.notes.flatMap((n) => [n.createdAt, n.updatedAt]),
     ...(project.documents || []).map((d) => d.addedAt),
+    ...conversations.filter((c) => c.projectId === project.id).map((c) => c.updatedAt),
   ]
     .filter(Boolean)
     .sort()

@@ -357,13 +357,18 @@ function checksPanel(report) {
 }
 // Sources utilisées par une réponse de projet : chaque citation comparée au passage du document
 // (vérification sans modèle : endroit existant, chiffres et mots-clés retrouvés).
+// Libellés selon la force de la preuve : retrouver chiffres ou mots-clés n'est pas valider le sens.
 const SOURCE_STATES = {
-  confirme: ['ok', 'Confirmée'],
+  confirme: ['ok', 'Retrouvée'],
   partiel: ['partial', 'Partielle'],
   'non-trouve': ['warn', 'Non retrouvée'],
   introuvable: ['warn', 'Introuvable'],
-  present: ['info', 'Citée'],
+  present: ['info', 'Document retrouvé'],
 };
+function sourceState(c) {
+  if (c.status !== 'confirme') return SOURCE_STATES[c.status];
+  return ['ok', c.basis === 'chiffres' ? 'Chiffres retrouvés' : 'Mots-clés retrouvés'];
+}
 function sourceDetail(c) {
   if (c.status === 'introuvable')
     return c.reason === 'absent'
@@ -391,11 +396,18 @@ function sourcesPanel(sources) {
   box.open = true;
   const summary = document.createElement('summary');
   summary.textContent = tr(
-    `Sources utilisées : ${count('confirme', 'present')} confirmée(s), ${count('partiel')} partielle(s), ${count('non-trouve', 'introuvable') + (sources.uncited?.length || 0)} à vérifier`,
+    `Sources utilisées : ${count('confirme')} retrouvée(s) dans le passage, ${count('present')} document(s) seulement, ${count('partiel')} partielle(s), ${doubtful - count('partiel')} à vérifier`,
+  );
+  const scope = element(
+    'p',
+    'muted source-scope',
+    tr(
+      'Comparaison automatique du texte : elle retrouve les chiffres et les mots dans le passage cité, sans garantir que l’affirmation soit juste.',
+    ),
   );
   const list = document.createElement('ul');
   for (const c of citations) {
-    const [level, label] = SOURCE_STATES[c.status];
+    const [level, label] = sourceState(c);
     const li = document.createElement('li');
     li.className = 'source ' + level;
     const state = element('span', 'source-state', tr(label));
@@ -435,7 +447,7 @@ function sourcesPanel(sources) {
     li.append(element('span', 'source-state', tr('Sans source')), body);
     list.append(li);
   }
-  box.append(summary, list);
+  box.append(summary, scope, list);
   return box;
 }
 // Lecture à voix haute avec les voix de l'ordinateur (aucun envoi sur Internet), phrase par

@@ -1560,6 +1560,10 @@ progress {
 }
 
 /* Sources utilisées par une réponse de projet */
+.checks.sources .source-scope {
+  margin: 4px 0 6px;
+  font-size: 12px;
+}
 .checks.sources li.source {
   align-items: flex-start;
   gap: 8px;

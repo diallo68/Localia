@@ -20,7 +20,9 @@ const SERIES = [
   ['serie-B-article.txt', 'doc-B-article-prevision-mildiou.pdf'],
   ['serie-C-note.txt', 'doc-C-note-technique-donnees-meteo.pdf'],
 ];
-const METHODS = ['mots', 'bm25', 'hybride'];
+const METHODS = (
+  process.argv.find((a) => a.startsWith('--methodes='))?.slice(11) || 'mots,bm25,hybride'
+).split(',');
 const BUDGETS = [3000, 6000];
 const option = (name) =>
   process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3) || null;
@@ -50,7 +52,7 @@ async function ask(model, system, question) {
       model,
       stream: false,
       think: false,
-      options: { temperature: 0, num_ctx: 8192 },
+      options: { temperature: 0, num_ctx: 8192, num_predict: 700 },
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: question },
@@ -88,6 +90,16 @@ async function ask(model, system, question) {
   const model = option('modele');
   const project = { name: 'Banque du Benchmark' };
   const results = [];
+  // Réponses déjà obtenues, par modèle, consigne et question. Avec --cache=fichier, chacune est
+  // enregistrée dès qu'elle arrive : une mesure arrêtée reprend là où elle s'était arrêtée.
+  const cacheFile = option('cache');
+  const answers = new Map(
+    cacheFile
+      ? Object.entries(JSON.parse(await fs.readFile(cacheFile, 'utf8').catch(() => '{}')))
+      : [],
+  );
+  const details = [];
+  let asked = 0;
   for (const budget of BUDGETS)
     for (const method of METHODS) {
       let found = 0;
@@ -95,6 +107,11 @@ async function ask(model, system, question) {
       let insufficient = 0;
       let citations = 0;
       let wrongCitations = 0;
+      const statuses = {};
+      let uncitedLines = 0;
+      let withoutCitation = 0;
+      let citedExpected = 0;
+      let askMs = 0;
       const misses = [];
       const heapBefore = process.memoryUsage().heapUsed;
       const start = process.hrtime.bigint();
@@ -129,12 +146,52 @@ async function ask(model, system, question) {
         const rank = order.findIndex((c) => c.name === q.docName && q.pages.includes(c.page));
         if (rank >= 0) reciprocal += 1 / (rank + 1);
         if (model) {
-          const answer = await ask(model, context.text, q.question);
-          const report = checkProjectSources(answer, docs);
+          // Même consigne et mêmes extraits qu'une méthode déjà mesurée : réponse reprise
+          // (température 0), pas reposée.
+          const key = `${model}\n\n${context.text}\n\n${q.question}`;
+          let entry = answers.get(key);
+          if (!entry) {
+            const started = Date.now();
+            const answer = await ask(model, context.text, q.question);
+            entry = { answer, ms: Date.now() - started };
+            answers.set(key, entry);
+            if (cacheFile) {
+              await fs.writeFile(cacheFile + '.tmp', JSON.stringify(Object.fromEntries(answers)));
+              await fs.rename(cacheFile + '.tmp', cacheFile);
+            }
+            asked++;
+            process.stderr.write(
+              `  ${asked} réponse(s) · ${q.id} · ${method} · ${budget} car. · ${Math.round(entry.ms / 1000)} s\n`,
+            );
+          }
+          askMs += entry.ms;
+          const report = checkProjectSources(entry.answer, docs);
           citations += report.citations.length;
+          for (const c of report.citations) statuses[c.status] = (statuses[c.status] || 0) + 1;
           wrongCitations += report.citations.filter((c) =>
             ['non-trouve', 'introuvable'].includes(c.status),
           ).length;
+          uncitedLines += report.uncited.length;
+          if (!report.citations.length) withoutCitation++;
+          const good = report.citations.some(
+            (c) => c.name === q.docName && (!c.number || q.pages.includes(c.number)),
+          );
+          if (good) citedExpected++;
+          details.push({
+            budget,
+            method,
+            id: q.id,
+            expected: q.pages,
+            citations: report.citations.map((c) => ({
+              name: c.name,
+              place: c.place,
+              number: c.number,
+              status: c.status,
+              claim: c.claim,
+            })),
+            uncited: report.uncited,
+            answer: entry.answer,
+          });
         }
       }
       const row = {
@@ -146,7 +203,17 @@ async function ask(model, system, question) {
         ms: elapsed / all.length,
         heapKo: Math.round(heap / 1024),
         misses,
-        ...(model ? { citations, wrongCitations } : {}),
+        ...(model
+          ? {
+              citations,
+              wrongCitations,
+              statuses,
+              uncitedLines,
+              withoutCitation,
+              citedExpected,
+              secondsPerAnswer: Math.round(askMs / all.length / 1000),
+            }
+          : {}),
       };
       results.push(row);
       console.log(
@@ -155,7 +222,11 @@ async function ask(model, system, question) {
           `contexte signalé insuffisant ${insufficient} · ${row.ms.toFixed(1)} ms/question · ` +
           `mémoire +${row.heapKo} Ko` +
           (model
-            ? ` · citations non retrouvées ou introuvables ${wrongCitations}/${citations}`
+            ? `\n    réponses : ${citations} citation(s) (${Object.entries(statuses)
+                .map(([k, v]) => `${k} ${v}`)
+                .join(', ')}) ; non retrouvées ou introuvables ${wrongCitations}/${citations} ; ` +
+              `lignes chiffrées sans source ${uncitedLines} ; réponses sans citation ${withoutCitation}/${all.length} ; ` +
+              `page attendue citée ${citedExpected}/${all.length} ; ${row.secondsPerAnswer} s par réponse`
             : '') +
           (misses.length ? `\n    manquées : ${misses.join(', ')}` : ''),
       );
@@ -240,7 +311,7 @@ async function ask(model, system, question) {
   if (output)
     await fs.writeFile(
       output,
-      JSON.stringify({ date: new Date().toISOString(), model, results }, null, 2),
+      JSON.stringify({ date: new Date().toISOString(), model, results, details }, null, 2),
     );
 })().catch((error) => {
   console.error(error);

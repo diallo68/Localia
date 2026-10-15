@@ -78,6 +78,7 @@ if (!ON_MAC) {
 }
 const VIEWS = {
   home: 'Accueil',
+  search: 'Rechercher',
   chat: 'Conversations',
   models: 'Bibliothèque',
   compare: 'Benchmark',
@@ -191,6 +192,20 @@ $('history-delete').onclick = guard(async () => {
   const list = conversations.filter((c) => selectedIds.has(c.id));
   if (await deleteConversations(list)) setSelecting(false);
 });
+// Ouvre une conversation (historique, recherche, page d'un projet).
+function openConversation(c) {
+  current = c;
+  selectModel(c.model);
+  const choice = conversationChoices(c);
+  keepTaskOption(choice.task);
+  $('task').value = choice.task;
+  $('skill').value = choice.skill;
+  $('project').value = c.projectId && projectById(c.projectId) ? c.projectId : '';
+  showTaskAdvice(false);
+  closeRename();
+  render();
+  view('chat');
+}
 function history() {
   $('history').replaceChildren();
   const words = fold($('history-search').value).split(/\s+/).filter(Boolean);
@@ -248,17 +263,7 @@ function history() {
         selectedIds.has(c.id) ? selectedIds.delete(c.id) : selectedIds.add(c.id);
         return history();
       }
-      current = c;
-      selectModel(c.model);
-      const choice = conversationChoices(c);
-      keepTaskOption(choice.task);
-      $('task').value = choice.task;
-      $('skill').value = choice.skill;
-      $('project').value = c.projectId && projectById(c.projectId) ? c.projectId : '';
-      showTaskAdvice(false);
-      closeRename();
-      render();
-      view('chat');
+      openConversation(c);
     };
     // Corbeille : supprime cette conversation (confirmation demandée).
     const remove = document.createElement('button');

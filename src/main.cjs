@@ -59,6 +59,7 @@ function anonymap(raw) {
 }
 const { taskById } = require('./tasks.js');
 const { normalizeProjects, buildMemory } = require('./memory.js');
+const search = require('./search.js');
 const bibliography = require('./bibliography.js');
 const { formatListing, checkPlanAnswer } = require('./actions.js');
 const files = require('./files.cjs');
@@ -840,6 +841,37 @@ async function loadProjectDocuments(project) {
     });
   return loaded;
 }
+// Recherche commune : pages des documents des projets contenant tous les mots de la recherche
+// (filtre : '' = tous les projets, sinon l'identifiant d'un projet).
+handle('search-documents', async (query, filter) => {
+  const words = search.searchWords(typeof query === 'string' ? query.slice(0, 500) : '');
+  if (!words.length) return [];
+  const projects = normalizeProjects(await readJson('projects.json', [], 'Projets illisibles.'));
+  const docs = [];
+  for (const project of projects) {
+    if (filter && project.id !== filter) continue;
+    for (const d of await loadProjectDocuments(project))
+      docs.push({ ...d, projectId: project.id, projectName: project.name });
+  }
+  return search.searchPages(docs, words);
+});
+// Une page (section, diapositive) d'un document de projet, pour la lire dans son contexte.
+handle('document-page', async (projectId, docId, number) => {
+  const projects = normalizeProjects(await readJson('projects.json', [], 'Projets illisibles.'));
+  const project = projects.find((p) => p.id === projectId);
+  const card = project?.documents.find((d) => d.id === docId);
+  if (!card) throw new Error('Ce document ne fait plus partie du projet.');
+  const doc = await loadDocument(documentsPath(), docId, documentCodec);
+  const page = doc.pages.find((p) => p.number === number) || doc.pages[0];
+  if (!page) throw new Error('Ce document ne contient pas de texte.');
+  return {
+    name: card.name,
+    type: card.type,
+    number: page.number,
+    count: doc.pages.length,
+    text: page.text,
+  };
+});
 // Vérifications automatiques d'une réponse (calculs ; avec document : pages, citations, chiffres ;
 // avec projet : chaque source citée comparée au passage du document).
 handle('verify-answer', async (payload) => {

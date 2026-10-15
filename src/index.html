@@ -108,6 +108,8 @@
         </button>
         <div class="nav-group">
           <button id="home-tab" class="nav"><i data-icon="grid"></i>Accueil</button
+          ><button id="search-tab" class="nav" title="Rechercher (⌘K)">
+            <i data-icon="search"></i>Rechercher</button
           ><button id="chat-tab" class="nav active"><i data-icon="message"></i>Conversations</button
           ><button id="projects-tab" class="nav"><i data-icon="folder"></i>Projets</button
           ><button id="bench-nav" class="nav"><i data-icon="chart"></i>Benchmark</button>
@@ -259,6 +261,41 @@
             <ul id="home-status"></ul>
           </section>
         </div>
+      </section>
+      <section id="search-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">RETROUVER UNE INFORMATION</span>
+          <h2>Rechercher.</h2>
+          <p>
+            Une seule recherche dans vos conversations, les notes de vos projets et le texte de
+            leurs documents. Chaque résultat s’ouvre à son endroit : le message, la note ou la page
+            du document. Tout reste sur cet ordinateur.
+          </p>
+        </div>
+        <form id="search-form" class="search-bar" role="search">
+          <label class="sr-only" for="search-input">Mots à rechercher</label
+          ><input
+            id="search-input"
+            type="search"
+            placeholder="Mots à retrouver, par exemple mildiou Dalaba"
+            maxlength="500"
+            autocomplete="off"
+          /><label class="sr-only" for="search-project">Projet</label
+          ><select id="search-project"></select>
+        </form>
+        <div
+          id="search-kinds"
+          class="segmented search-kinds"
+          role="group"
+          aria-label="Type de résultat"
+        >
+          <button type="button" data-kind="" aria-pressed="true">Tout</button
+          ><button type="button" data-kind="conversation" aria-pressed="false">Conversations</button
+          ><button type="button" data-kind="note" aria-pressed="false">Notes</button
+          ><button type="button" data-kind="document" aria-pressed="false">Documents</button>
+        </div>
+        <p id="search-status" class="muted" role="status"></p>
+        <div id="search-results" class="search-results"></div>
       </section>
       <section id="chat-view">
         <div id="chat-panel" class="chat-panel" aria-label="Réglages de la réponse">
@@ -782,6 +819,17 @@
             <span id="project-docs-status" class="project-docs-status" role="status"></span>
           </div>
           <div id="project-docs" class="project-docs"></div>
+          <section id="project-reader" class="project-reader" hidden aria-labelledby="reader-title">
+            <div class="reader-head">
+              <h4 id="reader-title"></h4>
+              <span class="reader-nav"
+                ><button id="reader-prev" type="button" aria-label="Page précédente">‹</button
+                ><button id="reader-next" type="button" aria-label="Page suivante">›</button
+                ><button id="reader-close" class="link-button" type="button">Fermer</button></span
+              >
+            </div>
+            <div id="reader-text" class="reader-text" tabindex="0"></div>
+          </section>
           <h3>Notes</h3>
           <form id="note-form">
             <label class="sr-only" for="note-title">Titre de la note</label
@@ -1311,6 +1359,7 @@
     <script src="metiers.js"></script>
     <script src="i18n.js"></script>
     <script src="memory.js"></script>
+    <script src="search.js"></script>
     <script src="bibliography.js"></script>
     <script src="actions.js"></script>
     <script src="skills.js"></script>
@@ -1334,6 +1383,7 @@
     <script src="catalog-view.js"></script>
     <script src="model-choice.js"></script>
     <script src="accueil-view.js"></script>
+    <script src="search-view.js"></script>
     <script src="dictation-view.js"></script>
     <script src="updates-view.js"></script>
     <script src="start.js"></script>

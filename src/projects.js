@@ -68,11 +68,13 @@ function renderProjects() {
       ? ` Au-delà de ${MEMORY_BUDGET.toLocaleString('fr-FR')}, seules les notes les plus proches de chaque question sont envoyées au modèle.`
       : ` Tout est envoyé au modèle (limite : ${MEMORY_BUDGET.toLocaleString('fr-FR')} caractères).`);
   renderProjectDocuments(project);
+  showReader();
   const notes = $('notes-list');
   notes.replaceChildren();
   if (!project.notes.length) notes.append(element('p', 'muted', 'Aucune note.'));
   for (const n of [...project.notes].reverse()) {
     const card = element('article', 'note-card');
+    card.dataset.noteId = n.id;
     card.append(element('strong', '', n.title || 'Note'));
     const body = element('div', 'markdown');
     showMarkdown(body, n.text);
@@ -253,7 +255,12 @@ function renderProjectDocuments(project) {
       await persistProjects();
       await window.localia.deleteDocument(d.id).catch(() => {});
     });
-    row.append(icon, text, element('small', 'muted', shortDate(d.addedAt)), remove);
+    const read = element('button', 'link-button', 'Lire');
+    read.type = 'button';
+    read.setAttribute('aria-label', `Lire ${d.name}`);
+    read.onclick = guard(() => openDocumentReader(project, d.id, 1));
+    row.dataset.docId = d.id;
+    row.append(icon, text, element('small', 'muted', shortDate(d.addedAt)), read, remove);
     list.append(row);
   }
   placeIcons(list);
@@ -321,3 +328,38 @@ drop.addEventListener(
     await addProjectDocuments(() => window.localia.projectDocumentsDrop(items));
   }),
 );
+
+// Lecteur d'un document du projet : une page (section, diapositive) à la fois, mots recherchés
+// surlignés ; ouvert depuis la liste des documents ou un résultat de la recherche.
+let reader = null;
+async function openDocumentReader(project, docId, number, words = []) {
+  const page = await window.localia.documentPage(project.id, docId, number);
+  reader = { projectId: project.id, docId, words, ...page };
+  showReader();
+  $('project-reader').scrollIntoView({ block: 'nearest' });
+  $('reader-text').focus({ preventScroll: true });
+}
+function showReader() {
+  const box = $('project-reader');
+  box.hidden = !reader || reader.projectId !== openProjectId;
+  if (box.hidden) return;
+  const place = PLACES[reader.type] || 'section';
+  $('reader-title').textContent =
+    `${reader.name} — ${tr(place)} ${reader.number} ${tr('sur')} ${reader.count}`;
+  markWords($('reader-text'), reader.text, reader.words);
+  $('reader-prev').disabled = reader.number <= 1;
+  $('reader-next').disabled = reader.number >= reader.count;
+  $('reader-text').querySelector('mark')?.scrollIntoView({ block: 'center' });
+}
+const turnPage = (step) =>
+  guard(async () => {
+    const project = projectById(reader?.projectId);
+    if (project)
+      await openDocumentReader(project, reader.docId, reader.number + step, reader.words);
+  });
+$('reader-prev').onclick = turnPage(-1);
+$('reader-next').onclick = turnPage(1);
+$('reader-close').onclick = () => {
+  reader = null;
+  showReader();
+};

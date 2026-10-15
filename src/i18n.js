@@ -291,6 +291,39 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  'Rechercher (⌘K)': 'Search (⌘K)',
+  'RETROUVER UNE INFORMATION': 'FIND INFORMATION',
+  'Rechercher.': 'Search.',
+  'Une seule recherche dans vos conversations, les notes de vos projets et le texte de leurs documents. Chaque résultat s’ouvre à son endroit : le message, la note ou la page du document. Tout reste sur cet ordinateur.':
+    'One search across your conversations, your project notes and the text of their documents. Each result opens at its place: the message, the note or the page of the document. Everything stays on this computer.',
+  'Mots à rechercher': 'Words to search for',
+  'Mots à retrouver, par exemple mildiou Dalaba': 'Words to find, for example mildew Dalaba',
+  'Type de résultat': 'Result type',
+  Tout: 'All',
+  'Tous les projets': 'All projects',
+  Conversation: 'Conversation',
+  Note: 'Note',
+  Document: 'Document',
+  'Notes des projets': 'Project notes',
+  'Documents des projets': 'Project documents',
+  'Tapez au moins un mot de deux lettres.': 'Type at least one word of two letters.',
+  'Recherche dans les documents…': 'Searching the documents…',
+  'résultat(s)': 'result(s)',
+  'seuls les 50 premiers de chaque type sont affichés : précisez la recherche.':
+    'only the first 50 of each type are shown: refine the search.',
+  'Aucun résultat. Essayez d’autres mots ou un autre projet.':
+    'No results. Try other words or another project.',
+  'Documents non consultés :': 'Documents not searched:',
+  'Cette conversation n’existe plus.': 'This conversation no longer exists.',
+  'Ce projet n’existe plus.': 'This project no longer exists.',
+  Lire: 'Read',
+  'Page précédente': 'Previous page',
+  'Page suivante': 'Next page',
+  sur: 'of',
+  page: 'page',
+  section: 'section',
+  'Ce document ne fait plus partie du projet.': 'This document is no longer part of the project.',
+  'Ce document ne contient pas de texte.': 'This document contains no text.',
   'Anonymisation active : aucune donnée personnelle repérée. Vérifiez votre texte, et ajoutez au besoin des mots à masquer dans les réglages.':
     'Anonymisation on: no personal data found. Check your text, and add words to mask in the settings if needed.',
   Retrouvée: 'Found',

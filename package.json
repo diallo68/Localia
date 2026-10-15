@@ -17,6 +17,7 @@
     "format:check": "prettier --check src test",
     "vendor": "cp node_modules/markdown-it/dist/browser/markdown-it.umd.min.js src/vendor/markdown-it.min.js && cp node_modules/markdown-it/LICENSE src/vendor/markdown-it.LICENSE",
     "test:features": "node test/features-desktop.cjs",
+    "test:workspace": "node test/workspace-desktop.cjs",
     "test:encryption": "node test/encryption-desktop.cjs",
     "package:mac-arm64": "electron-builder --mac dir --arm64",
     "package:win": "electron-builder --win dir --x64",

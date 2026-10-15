@@ -295,8 +295,10 @@ function renderOverview(project) {
     const all = element('button', 'link-button', `Voir les ${linked.length} conversations`);
     all.type = 'button';
     all.onclick = () => {
+      fillSearchProjects();
       $('search-project').value = project.id;
-      openSearch();
+      $('search-kinds').querySelector('[data-kind=""]').click();
+      openSearch('');
     };
     shownConversations.push(all);
   }

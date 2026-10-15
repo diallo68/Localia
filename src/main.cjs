@@ -2085,6 +2085,23 @@ async function documentFiles() {
     return [];
   }
 }
+// Copies faites avant une restauration (dossiers « avant-restauration-… ») : chiffrées ou
+// déchiffrées avec le reste, pour ne jamais rester en clair ni devenir illisibles.
+async function snapshotFiles() {
+  const files = [];
+  const entries = await fs
+    .readdir(app.getPath('userData'), { withFileTypes: true })
+    .catch(() => []);
+  for (const entry of entries) {
+    if (!entry.isDirectory() || !entry.name.startsWith('avant-restauration-')) continue;
+    const dir = dataPath(entry.name);
+    for (const name of await fs.readdir(dir).catch(() => []))
+      if (name.endsWith('.json')) files.push(path.join(dir, name));
+    for (const name of await fs.readdir(path.join(dir, 'documents')).catch(() => []))
+      if (name.endsWith('.json')) files.push(path.join(dir, 'documents', name));
+  }
+  return files;
+}
 // Tous les fichiers de données réécrits selon l'état actuel (chiffrés ou en clair).
 async function rewriteAll() {
   for (const name of DATA_FILES)
@@ -2096,7 +2113,7 @@ async function rewriteAll() {
         throw error;
       }
     });
-  for (const file of await documentFiles()) {
+  for (const file of [...(await documentFiles()), ...(await snapshotFiles())]) {
     const text = storage.decrypt(await fs.readFile(file), dataKey);
     await fs.writeFile(file + '.tmp', encodeData(text), { mode: 0o600 });
     await fs.rename(file + '.tmp', file);
@@ -2105,7 +2122,11 @@ async function rewriteAll() {
 async function encryptionStatus() {
   const all = [
     ...(await Promise.all(DATA_FILES.map((n) => fs.readFile(dataPath(n)).catch(() => null)))),
-    ...(await Promise.all((await documentFiles()).map((f) => fs.readFile(f).catch(() => null)))),
+    ...(await Promise.all(
+      [...(await documentFiles()), ...(await snapshotFiles())].map((f) =>
+        fs.readFile(f).catch(() => null),
+      ),
+    )),
   ].filter(Boolean);
   const fileVault = await platform.diskEncryption();
   return {
@@ -2285,10 +2306,21 @@ handle('backup-restore', async (passphrase) => {
   await settleWrites();
   const keep = dataPath(`avant-restauration-${new Date().toISOString().replace(/[:.]/g, '-')}`);
   await fs.mkdir(path.join(keep, 'documents'), { recursive: true, mode: 0o700 });
-  for (const name of DATA_FILES)
-    await fs.copyFile(dataPath(name), path.join(keep, name)).catch(() => {});
-  for (const file of await documentFiles())
-    await fs.copyFile(file, path.join(keep, 'documents', path.basename(file)));
+  // Copie complète obligatoire : un fichier absent est sauté, toute autre erreur arrête la
+  // restauration avant le moindre remplacement.
+  try {
+    for (const name of DATA_FILES)
+      await fs.copyFile(dataPath(name), path.join(keep, name)).catch((error) => {
+        if (error.code !== 'ENOENT') throw error;
+      });
+    for (const file of await documentFiles())
+      await fs.copyFile(file, path.join(keep, 'documents', path.basename(file)));
+  } catch (error) {
+    await fs.rm(keep, { recursive: true, force: true }).catch(() => {});
+    throw new Error(
+      `Copie des données actuelles impossible (${error.message}) : rien n’a été restauré.`,
+    );
+  }
   // Remplacement : fichiers absents de la sauvegarde retirés, documents remplacés.
   for (const name of DATA_FILES) {
     if (Object.hasOwn(data.files, name)) await queueWrite(name, () => data.files[name]);
@@ -2298,6 +2330,14 @@ handle('backup-restore', async (passphrase) => {
   await fs.mkdir(documentsPath(), { recursive: true });
   for (const [id, text] of Object.entries(data.documents))
     await fs.writeFile(path.join(documentsPath(), id + '.json'), encodeData(text), { mode: 0o600 });
+  await settleWrites();
+  // État gardé en mémoire aligné sur les données restaurées : accès à distance (clé et
+  // activation lues dans distance.json et settings.json), carte graphique.
+  const restored = await readSettings();
+  await stopRemote();
+  remoteState = null;
+  if (restored.remote.enabled) await startRemote();
+  setGpuMode(restored.gpu || 'auto');
   setTimeout(() => window?.webContents.reload(), 300);
   return { ...backupSummary(data), kept: path.basename(keep) };
 });

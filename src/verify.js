@@ -411,13 +411,13 @@ function checkProjectSources(answer, docs) {
       genericReference(claim, c.doc?.name || c.missing) &&
       /^\s*#{1,6}\s/.test(text.slice(lineStart(c.start), c.start)) &&
       !tidy(text.slice(c.end, lineEnd < 0 ? text.length : lineEnd));
-    if (heading) after = tidy(text.slice(c.end, next ? next.start : text.length)).slice(0, 600);
+    if (heading) after = tidy(text.slice(c.end, next ? next.start : text.length));
     else if (announces) {
       const blocks = text.slice(c.end, next ? next.start : text.length).split(/\n\s*\n/);
       after = tidy(blocks.shift() || '');
       while (/:$/.test(after) && blocks.length) after = tidy(after + '\n' + blocks.shift());
     }
-    if (after && !genericReference(after, c.doc?.name || c.missing)) claim = after.slice(0, 600);
+    if (after && !genericReference(after, c.doc?.name || c.missing)) claim = after;
     // Renvoi seul sur sa ligne (« Ces informations sont tirées de [doc — page 4] ») : il porte
     // sur le paragraphe qui précède, jusqu'à la citation précédente.
     else if (genericReference(claim, c.doc?.name || c.missing) && from === lineStart(c.start)) {
@@ -426,10 +426,16 @@ function checkProjectSources(answer, docs) {
       while (lines.length && genericReference(tidy(lines.at(-1)), c.doc?.name)) lines.pop();
       const paragraph = [];
       while (lines.length && lines.at(-1).trim()) paragraph.unshift(lines.pop());
-      if (paragraph.length) claim = tidy(paragraph.join('\n')).slice(-600);
+      if (paragraph.length) claim = tidy(paragraph.join('\n'));
     }
     const place = c.place ? (/slide/i.test(c.place) ? 'diapositive' : c.place.toLowerCase()) : null;
-    const base = { claim: claim.slice(0, 240), place, number: c.number || null };
+    // Tout le texte rattaché à la citation est vérifié (chiffres compris) ; seul l'affichage est
+    // abrégé.
+    const base = {
+      claim: claim.length > 240 ? claim.slice(0, 239) + '…' : claim,
+      place,
+      number: c.number || null,
+    };
     if (c.missing) return { ...base, name: c.missing, status: 'introuvable', reason: 'absent' };
     const doc = c.doc;
     const page = c.number ? doc.pages.find((p) => p.number === c.number) : null;

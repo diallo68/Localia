@@ -125,6 +125,7 @@ async function ask(model, system, question) {
       let uncitedLines = 0;
       let withoutCitation = 0;
       let citedExpected = 0;
+      let citedWithoutPage = 0;
       const askTimes = [];
       const misses = [];
       const heapBefore = process.memoryUsage().heapUsed;
@@ -187,10 +188,12 @@ async function ask(model, system, question) {
           ).length;
           uncitedLines += report.uncited.length;
           if (!report.citations.length) withoutCitation++;
-          const good = report.citations.some(
-            (c) => c.name === q.docName && (!c.number || q.pages.includes(c.number)),
-          );
-          if (good) citedExpected++;
+          // Page attendue citée : bon document et bonne page ; document attendu cité sans page :
+          // compté à part.
+          if (report.citations.some((c) => c.name === q.docName && q.pages.includes(c.number)))
+            citedExpected++;
+          else if (report.citations.some((c) => c.name === q.docName && !c.number))
+            citedWithoutPage++;
           details.push({
             budget,
             method,
@@ -225,6 +228,7 @@ async function ask(model, system, question) {
               uncitedLines,
               withoutCitation,
               citedExpected,
+              citedWithoutPage,
               // Médiane : une mise en veille de l'ordinateur fausse quelques durées.
               secondsPerAnswer: Math.round(
                 [...askTimes].sort((a, b) => a - b)[askTimes.length >> 1] / 1000,
@@ -243,7 +247,7 @@ async function ask(model, system, question) {
                 .map(([k, v]) => `${k} ${v}`)
                 .join(', ')}) ; non retrouvées ou introuvables ${wrongCitations}/${citations} ; ` +
               `lignes chiffrées sans source ${uncitedLines} ; réponses sans citation ${withoutCitation}/${all.length} ; ` +
-              `page attendue citée ${citedExpected}/${all.length} ; ${row.secondsPerAnswer} s par réponse (médiane)`
+              `page attendue citée ${citedExpected}/${all.length} (document attendu sans page : ${citedWithoutPage}) ; ${row.secondsPerAnswer} s par réponse (médiane)`
             : '') +
           (misses.length ? `\n    manquées : ${misses.join(', ')}` : ''),
       );

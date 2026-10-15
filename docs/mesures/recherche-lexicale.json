@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-15T19:24:47.084Z",
+  "model": null,
+  "results": [
+    {
+      "budget": 3000,
+      "method": "mots",
+      "recall": 0.8260869565217391,
+      "mrr": 0.7533444816053511,
+      "insufficient": 0,
+      "ms": 0.7154990869565218,
+      "heapKo": 212,
+      "misses": ["A09", "B02", "B08", "C02"]
+    },
+    {
+      "budget": 3000,
+      "method": "bm25",
+      "recall": 0.8260869565217391,
+      "mrr": 0.7739130434782607,
+      "insufficient": 0,
+      "ms": 2.64715,
+      "heapKo": 1227,
+      "misses": ["A09", "B04", "B09", "C02"]
+    },
+    {
+      "budget": 3000,
+      "method": "hybride",
+      "recall": 0.8260869565217391,
+      "mrr": 0.7801759834368529,
+      "insufficient": 0,
+      "ms": 2.721130913043478,
+      "heapKo": 0,
+      "misses": ["A09", "B02", "B09", "C02"]
+    },
+    {
+      "budget": 6000,
+      "method": "mots",
+      "recall": 0.9130434782608695,
+      "mrr": 0.7533444816053511,
+      "insufficient": 0,
+      "ms": 0.5455021739130435,
+      "heapKo": 1831,
+      "misses": ["B02", "C02"]
+    },
+    {
+      "budget": 6000,
+      "method": "bm25",
+      "recall": 0.9130434782608695,
+      "mrr": 0.7739130434782607,
+      "insufficient": 0,
+      "ms": 2.1815446086956523,
+      "heapKo": 0,
+      "misses": ["A09", "B09"]
+    },
+    {
+      "budget": 6000,
+      "method": "hybride",
+      "recall": 0.8695652173913043,
+      "mrr": 0.7801759834368529,
+      "insufficient": 0,
+      "ms": 2.7412348695652176,
+      "heapKo": 190,
+      "misses": ["A09", "B02", "B09"]
+    }
+  ],
+  "details": []
+}

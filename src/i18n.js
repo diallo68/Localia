@@ -1333,6 +1333,7 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [/^(\d+) conversation\(s\) du projet « (.*) »$/, '$1 conversation(s) of project “$2”'],
   [/^Projet « (.*) »$/, 'Project “$1”'],
   [
     /^(\d+) document\(s\) et (\d+) note\(s\) envoyés au modèle selon la question\.$/,

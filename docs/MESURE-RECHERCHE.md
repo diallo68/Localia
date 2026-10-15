@@ -70,12 +70,17 @@ vérification affichée sous les réponses). 81 réponses distinctes (une répon
 mêmes extraits n’est pas reposée). Commande :
 `node scripts/mesure-recherche.cjs --modele=qwen3:8b --methodes=mots,bm25 --cache=… --json=…`.
 
-| Budget | Méthode         | Citations | Retrouvées | Partielles | Document seulement | Non retrouvées | Réponses sans citation | Page attendue citée | Temps médian |
-| ------ | --------------- | --------- | ---------- | ---------- | ------------------ | -------------- | ---------------------- | ------------------- | ------------ |
-| 3 000  | mots (actuelle) | 22        | 18         | 2          | 1                  | 1              | 3/23                   | 17/23               | 52 s         |
-| 3 000  | bm25            | 23        | 20         | 3          | 0                  | 0              | 4/23                   | 16/23               | 45 s         |
-| 6 000  | mots (actuelle) | 26        | 22         | 3          | 1                  | 0              | 1/23                   | 20/23               | 114 s        |
-| 6 000  | bm25            | 30        | 28         | 1          | 1                  | 0              | 1/23                   | 20/23               | 111 s        |
+| Budget | Méthode         | Citations | Retrouvées | Partielles | Document seulement | Non retrouvées | Réponses sans citation | Document attendu cité¹ | Temps médian |
+| ------ | --------------- | --------- | ---------- | ---------- | ------------------ | -------------- | ---------------------- | ---------------------- | ------------ |
+| 3 000  | mots (actuelle) | 22        | 18         | 2          | 1                  | 1              | 3/23                   | 17/23                  | 52 s         |
+| 3 000  | bm25            | 23        | 20         | 3          | 0                  | 0              | 4/23                   | 16/23                  | 45 s         |
+| 6 000  | mots (actuelle) | 26        | 22         | 3          | 1                  | 0              | 1/23                   | 20/23                  | 114 s        |
+| 6 000  | bm25            | 30        | 28         | 1          | 1                  | 0              | 1/23                   | 20/23                  | 111 s        |
+
+¹ Une réponse est comptée quand elle cite le document attendu à la page attendue **ou sans
+numéro de page** (définition du script au moment de la mesure). Le script distingue désormais les
+deux cas ; ces chiffres n’ont pas été recalculés, faute des réponses brutes (voir « Données
+brutes »).
 
 Chiffres obtenus avec le vérificateur corrigé (voir plus bas). Chaque citation non retrouvée ou
 partielle a été relue à la main :
@@ -107,8 +112,10 @@ comparait alors au passage cité un texte qui n’était pas l’affirmation :
 4. lignes d’une liste placée sous une source annoncée : plus comptées comme « chiffres sans
    source ».
 
-Une affirmation fausse reste signalée dans chacune de ces dispositions (tests
-`test/verify.test.cjs`).
+Une affirmation fausse reste signalée dans chacune de ces dispositions, y compris un chiffre faux
+placé loin dans un long bloc sous une source (défaut trouvé par une relecture de Codex, corrigé en
+0.7.1 : le texte vérifié était coupé à 600 caractères). Ce sont les dispositions couvertes par
+`test/verify.test.cjs`, pas toutes les dispositions possibles.
 
 Avant ces corrections, sur les mêmes 101 citations, 14 étaient signalées « non retrouvées » ;
 il en reste 1, une vraie imprécision du modèle (A03). Les 13 autres sont désormais retrouvées ou partielles, dont toutes les citations
@@ -119,11 +126,20 @@ correctes de B14 au budget de 6 000.
 - Aucune différence nette entre les deux méthodes : 1 citation non retrouvée sur 22 contre 0
   sur 23 au budget de 3 000, aucune sur 26 et 30 au budget de 6 000. La méthode actuelle
   reste en place.
-- Le budget compte plus que la méthode : à 6 000 caractères, la page attendue est citée dans
+- Le budget compte plus que la méthode : à 6 000 caractères, le document attendu est cité¹ dans
   20 réponses sur 23 (contre 16 ou 17) et une seule réponse reste sans citation (contre 3 ou 4),
   pour un temps de réponse doublé sur cette machine (processeur seul).
 - Le signal « lignes chiffrées sans source » reste élevé (19 à 24 par série de 23 réponses) : le
   modèle cite souvent une fois par paragraphe. Il est utile comme alerte, pas comme mesure.
+
+## Données brutes
+
+`docs/mesures/` contient les résultats bruts régénérables sans modèle : choix des passages
+(`recherche-lexicale.json`, `node scripts/mesure-recherche.cjs --methodes=mots,bm25,hybride
+--json=…`). Les réponses de `qwen3:8b` et le détail des citations ont été supprimés lors d’un
+nettoyage après la mesure : les chiffres des citations ci-dessus ne peuvent donc pas être vérifiés
+indépendamment sans refaire la mesure (environ 1 h 30 sur cette machine). Les résultats
+sémantiques demandent le modèle `bge-m3`, désinstallé depuis.
 
 ## Limites et suites
 

@@ -76,6 +76,7 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
           LOCALIA_FAKE_LLAMA: '1',
           LOCALIA_TEST_KEYCHAIN: 'ok',
           LOCALIA_TEST_BACKUP: path.join(profile, 'test.localia'),
+          LOCALIA_REMOTE_PORT: '47897',
         },
       });
       page = await app.firstWindow();
@@ -212,6 +213,32 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
       (await settle()).find((p) => p.id === 'p-these').nextStep,
       'Vérifier les relevés d’août',
     );
+
+    // « Voir les N conversations » : recherche vide filtrée sur le projet, qui les liste toutes.
+    await page.evaluate(() => {
+      for (let i = 0; i < 4; i++)
+        conversations.push({
+          id: 'extra-' + i,
+          title: 'Conversation ' + i,
+          projectId: 'p-these',
+          updatedAt: new Date(Date.now() - 3600000 * (i + 2)).toISOString(),
+          messages: [{ role: 'user', content: 'Question ' + i }],
+        });
+      renderProjects();
+    });
+    await page
+      .locator('#project-conversations button', { hasText: 'Voir les 5 conversations' })
+      .click();
+    await page.waitForFunction(() => document.querySelectorAll('.search-result').length === 5);
+    assert.match(
+      await page.locator('#search-status').textContent(),
+      /5 conversation\(s\) du projet « Thèse »/,
+    );
+    await page.evaluate(() => {
+      conversations = conversations.filter((c) => !c.id.startsWith('extra-'));
+      $('search-project').value = '';
+    });
+    await page.locator('#projects-tab').click();
 
     // Proposition de note : décision écrite par l'utilisateur dans une conversation du projet.
     await page.locator('#project-conversations .overview-row').first().click();
@@ -382,6 +409,9 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
       await persistProjects();
     });
     assert.equal((await settle()).length, 1);
+    // Accès à distance activé après la sauvegarde : coupé par la restauration (réglages restaurés).
+    await page.evaluate(() => window.localia.remoteEnable(true));
+    assert.equal((await page.evaluate(() => window.localia.remoteStatus())).running, true);
     page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#backup-restore').click();
     await page.waitForEvent('load');
@@ -396,6 +426,12 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
     assert.ok((await fs.readdir(path.join(profile, kept, 'documents'))).length >= 3);
     const restored = await fs.readFile(path.join(profile, 'projects.json'));
     assert.ok(restored.subarray(0, 17).toString() === 'LOCALIA-CHIFFRE-1', 'rechiffré avec la clé');
+    assert.equal((await page.evaluate(() => window.localia.remoteStatus())).running, false);
+    // Copie « avant-restauration » chiffrée comme le reste, puis déchiffrée avec lui.
+    const keptProjects = path.join(profile, kept, 'projects.json');
+    assert.equal((await fs.readFile(keptProjects)).subarray(0, 17).toString(), 'LOCALIA-CHIFFRE-1');
+    await page.evaluate(() => window.localia.encryptionDisable());
+    assert.equal(JSON.parse(await fs.readFile(keptProjects, 'utf8')).length, 1);
 
     assert.deepEqual(errors, []);
     console.log(

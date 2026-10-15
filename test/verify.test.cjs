@@ -306,3 +306,20 @@ test('sources du projet : une affirmation fausse reste signalée, quelle que soi
     'non-trouve',
   );
 });
+
+test('sources du projet : un chiffre faux loin dans un long bloc sous une source est signalé', () => {
+  const { checkProjectSources } = require('../src/verify.js');
+  const docs = [
+    {
+      name: 'a.pdf',
+      pages: [{ number: 1, text: 'Le budget est de 100 euros pour la campagne de terrain.' }],
+    },
+  ];
+  const filler = 'Le budget de la campagne de terrain est décrit ici. '.repeat(14);
+  const [c] = checkProjectSources(
+    `**Selon le rapport (a.pdf — page 1)** :\n- ${filler}\n- Le budget est de 100 euros.\n- Le budget total est de 999999 euros.`,
+    docs,
+  ).citations;
+  assert.equal(c.status, 'partiel');
+  assert.ok(c.claim.length <= 240, 'texte affiché abrégé');
+});

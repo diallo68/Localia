@@ -110,7 +110,33 @@ async function runSearch() {
   const status = $('search-status');
   if (!words.length) {
     box.replaceChildren();
-    status.textContent = tr('Tapez au moins un mot de deux lettres.');
+    // Sans mots, filtrée sur un projet : les conversations du projet (« Voir les N conversations »).
+    const project = projectById(filter);
+    if (!project || searchKind === 'note' || searchKind === 'document') {
+      status.textContent = tr('Tapez au moins un mot de deux lettres.');
+      return;
+    }
+    const linked = conversations
+      .filter((c) => c.projectId === project.id)
+      .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+    status.textContent = `${linked.length} conversation(s) du projet « ${project.name} »`;
+    const group = element('section', 'search-group');
+    for (const c of linked)
+      group.append(
+        resultRow(
+          {
+            kind: 'conversation',
+            conversationId: c.id,
+            title: c.title,
+            projectId: c.projectId,
+            index: null,
+            at: c.updatedAt,
+            excerpt: searchExcerpt(plainText(c.messages?.[0]?.content), []),
+          },
+          [],
+        ),
+      );
+    box.append(group);
     return;
   }
   const wants = (kind) => !searchKind || searchKind === kind;

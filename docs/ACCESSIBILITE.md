@@ -34,6 +34,21 @@ thème clair, thème sombre, contraste renforcé, zoom à 200 % (mise en page de
 - Zoom à 200 % : la page Compétences (chemin du dossier non coupé), la page Confidentialité et la
   Bibliographie (rangées de boutons et de champs sur une seule ligne) défilaient horizontalement.
 
+## Heuristiques du script
+
+Les résultats ci-dessus valent pour ces règles, qui ne couvrent pas tout le critère WCAG :
+
+- **cibles** : cases à cocher et boutons radio exclus, ainsi que les éléments affichés en ligne
+  (liens dans une phrase) ; taille mesurée, espacement non mesuré ;
+- **focus visible** : un contour ou une ombre suffit ; leur contraste et leur épaisseur ne sont pas
+  mesurés (critère 2.4.13 non contrôlé) ;
+- **focus non masqué** : seul le centre de l’élément est testé ;
+- **contraste** : couleur du texte contre la superposition des fonds de ses ancêtres ; images de
+  fond, dégradés et textes sur image non pris en compte.
+
+Résultat brut : `docs/mesures/audit-accessibilite.json` (`node scripts/audit-accessibilite.cjs
+--json=…`).
+
 ## Ce qui n’est pas vérifié
 
 - Lecture par un lecteur d’écran : ordre de lecture, annonces des zones `role="status"`, fenêtre

@@ -126,6 +126,7 @@ if (typeof module !== 'undefined')
   module.exports = {
     SEARCH_LIMIT,
     foldText,
+    plainText,
     searchWords,
     searchExcerpt,
     searchConversations,

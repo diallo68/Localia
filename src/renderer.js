@@ -335,9 +335,11 @@ function checksPanel(report) {
   box.className = 'checks' + (alerts ? ' has-alerts' : '');
   box.open = alerts > 0;
   const summary = document.createElement('summary');
-  summary.textContent = alerts
-    ? `Vérifications automatiques : ${alerts} alerte(s)`
-    : 'Vérifications automatiques : aucun problème détecté';
+  summary.textContent = tr(
+    alerts
+      ? `Vérifications automatiques : ${alerts} alerte(s)`
+      : 'Vérifications automatiques : aucun problème détecté',
+  );
   const list = document.createElement('ul');
   const icons = { ok: '✓', warn: '⚠', info: 'ℹ' };
   for (const [level, text] of items) {
@@ -347,7 +349,90 @@ function checksPanel(report) {
     icon.className = 'icon';
     icon.textContent = icons[level];
     icon.setAttribute('aria-hidden', 'true');
-    li.append(icon, text);
+    li.append(icon, tr(text));
+    list.append(li);
+  }
+  box.append(summary, list);
+  return box;
+}
+// Sources utilisées par une réponse de projet : chaque citation comparée au passage du document
+// (vérification sans modèle : endroit existant, chiffres et mots-clés retrouvés).
+const SOURCE_STATES = {
+  confirme: ['ok', 'Confirmée'],
+  partiel: ['partial', 'Partielle'],
+  'non-trouve': ['warn', 'Non retrouvée'],
+  introuvable: ['warn', 'Introuvable'],
+  present: ['info', 'Citée'],
+};
+function sourceDetail(c) {
+  if (c.status === 'introuvable')
+    return c.reason === 'absent'
+      ? 'Ce document ne fait pas partie du projet.'
+      : `Cet endroit n’existe pas : le document compte ${c.count} ${c.place || 'section'}(s).`;
+  if (c.status === 'present') return 'Document cité ; la phrase ne contient rien à comparer.';
+  const missing = c.missingFigures?.length
+    ? `Chiffre(s) absent(s) du passage cité : ${c.missingFigures.join(' ; ')}.`
+    : '';
+  if (c.basis === 'chiffres')
+    return c.status === 'confirme' ? 'Chiffres retrouvés dans le passage cité.' : missing;
+  return {
+    confirme: 'Mots-clés retrouvés dans le passage cité.',
+    partiel: 'Une partie seulement des mots-clés figure dans le passage cité.',
+    'non-trouve': 'Les mots-clés de la phrase ne figurent pas dans le passage cité.',
+  }[c.status];
+}
+function sourcesPanel(sources) {
+  const citations = sources?.citations || [];
+  if (!citations.length) return null;
+  const count = (...states) => citations.filter((c) => states.includes(c.status)).length;
+  const doubtful = count('partiel', 'non-trouve', 'introuvable') + (sources.uncited?.length || 0);
+  const box = document.createElement('details');
+  box.className = 'checks sources' + (doubtful ? ' has-alerts' : '');
+  box.open = true;
+  const summary = document.createElement('summary');
+  summary.textContent = tr(
+    `Sources utilisées : ${count('confirme', 'present')} confirmée(s), ${count('partiel')} partielle(s), ${count('non-trouve', 'introuvable') + (sources.uncited?.length || 0)} à vérifier`,
+  );
+  const list = document.createElement('ul');
+  for (const c of citations) {
+    const [level, label] = SOURCE_STATES[c.status];
+    const li = document.createElement('li');
+    li.className = 'source ' + level;
+    const state = element('span', 'source-state', tr(label));
+    const where = c.number ? `${c.name} — ${tr(c.place || 'section')} ${c.number}` : c.name;
+    const body = element('div', 'source-body');
+    body.append(element('strong', '', where));
+    if (c.claim) body.append(element('span', 'source-claim', `« ${c.claim} »`));
+    const detail = sourceDetail(c);
+    if (detail) body.append(element('small', 'muted', tr(detail)));
+    if (c.excerpt) {
+      const passage = element('blockquote', 'source-passage', c.excerpt);
+      passage.hidden = true;
+      const toggle = element('button', 'link', tr('Voir le passage'));
+      toggle.type = 'button';
+      toggle.onclick = () => {
+        passage.hidden = !passage.hidden;
+        toggle.textContent = tr(passage.hidden ? 'Voir le passage' : 'Masquer le passage');
+      };
+      body.append(toggle, passage);
+    }
+    li.append(state, body);
+    list.append(li);
+  }
+  for (const line of sources.uncited || []) {
+    const li = document.createElement('li');
+    li.className = 'source warn';
+    const body = element('div', 'source-body');
+    body.append(
+      element('strong', '', tr('Chiffres sans source citée')),
+      element('span', 'source-claim', `« ${line} »`),
+      element(
+        'small',
+        'muted',
+        tr('Calculés ou repris d’ailleurs : à vérifier dans les documents.'),
+      ),
+    );
+    li.append(element('span', 'source-state', tr('Sans source')), body);
     list.append(li);
   }
   box.append(summary, list);
@@ -538,6 +623,8 @@ function messageNode(message, question) {
   }
   node.append(content);
   if (message.role === 'assistant') {
+    const sources = sourcesPanel(message.checks?.sources);
+    if (sources) node.append(sources);
     const panel = checksPanel(message.checks);
     if (panel) node.append(panel);
     if (message.content) node.append(answerActions(message, question, content));
@@ -1391,6 +1478,7 @@ async function sendPrompt({ remoteId } = {}) {
           answer: saved.content,
           question: content,
           documentId: conversation.document?.id,
+          projectId: conversation.projectId,
         })
         .catch(() => undefined);
     } else {

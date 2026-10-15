@@ -291,6 +291,30 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  'Anonymisation active : aucune donnée personnelle repérée. Vérifiez votre texte, et ajoutez au besoin des mots à masquer dans les réglages.':
+    'Anonymisation on: no personal data found. Check your text, and add words to mask in the settings if needed.',
+  Confirmée: 'Confirmed',
+  Partielle: 'Partial',
+  'Non retrouvée': 'Not found',
+  Introuvable: 'Missing',
+  Citée: 'Cited',
+  'Sans source': 'No source',
+  diapositive: 'slide',
+  'Voir le passage': 'Show the passage',
+  'Masquer le passage': 'Hide the passage',
+  'Chiffres sans source citée': 'Figures without a cited source',
+  'Calculés ou repris d’ailleurs : à vérifier dans les documents.':
+    'Calculated or taken from elsewhere: check them in the documents.',
+  'Ce document ne fait pas partie du projet.': 'This document is not part of the project.',
+  'Document cité ; la phrase ne contient rien à comparer.':
+    'Document cited; the sentence contains nothing to compare.',
+  'Chiffres retrouvés dans le passage cité.': 'Figures found in the cited passage.',
+  'Mots-clés retrouvés dans le passage cité.': 'Keywords found in the cited passage.',
+  'Une partie seulement des mots-clés figure dans le passage cité.':
+    'Only some of the keywords appear in the cited passage.',
+  'Les mots-clés de la phrase ne figurent pas dans le passage cité.':
+    'The sentence’s keywords do not appear in the cited passage.',
+  'Vérifications automatiques : aucun problème détecté': 'Automatic checks: no problem detected',
   Bibliothèque: 'Library',
   'Installé ✓': 'Installed ✓',
   Taille: 'Size',
@@ -1128,6 +1152,42 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [
+    /^Sources utilisées : (\d+) confirmée\(s\), (\d+) partielle\(s\), (\d+) à vérifier$/,
+    'Sources used: $1 confirmed, $2 partial, $3 to check',
+  ],
+  [
+    /^Cet endroit n’existe pas : le document compte (\d+) (page|section|diapositive|photo)\(s\)\.$/,
+    (t) =>
+      t.replace(
+        /^Cet endroit n’existe pas : le document compte (\d+) (page|section|diapositive|photo)\(s\)\.$/,
+        (m, n, p) =>
+          `This place does not exist: the document has ${n} ${p === 'diapositive' ? 'slide' : p}(s).`,
+      ),
+  ],
+  [
+    /^Chiffre\(s\) absent\(s\) du passage cité : (.*)\.$/,
+    'Figure(s) missing from the cited passage: $1.',
+  ],
+  [/^Vérifications automatiques : (\d+) alerte\(s\)$/, 'Automatic checks: $1 alert(s)'],
+  [/^Calcul faux : (.*)\. Résultat exact : (.*)\.$/, 'Wrong calculation: $1. Exact result: $2.'],
+  [
+    /^(\d+) calcul\(s\) refait\(s\) par Localia : juste\(s\)\.$/,
+    '$1 calculation(s) redone by Localia: correct.',
+  ],
+  [/^Référence impossible : « (.*) » \((.*)\)\.$/, 'Impossible reference: “$1” ($2).'],
+  [
+    /^(\d+) citation\(s\) retrouvée\(s\) mot pour mot \(page\(s\) (.*)\)\.$/,
+    '$1 quote(s) found word for word (page(s) $2).',
+  ],
+  [
+    /^Citation introuvable mot pour mot : « (.*) » \(traduction, reformulation ou invention \?\)\.$/,
+    'Quote not found word for word: “$1” (translation, rewording or invention?).',
+  ],
+  [
+    /^Nombres absents du document, calculés ou inventés, à vérifier : (.*)$/,
+    'Numbers absent from the document, calculated or made up, to check: $1',
+  ],
   [
     /^Sur ce (Mac|PC|ordinateur) de (\d+) Go de mémoire, nous conseillons (.*)\.$/,
     (t) =>

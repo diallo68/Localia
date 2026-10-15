@@ -828,7 +828,20 @@ handle('open-source', async (value) => {
   await shell.openExternal(url.href);
 });
 handle('delete-document', (id) => deleteDocument(documentsPath(), id));
-// Vérifications automatiques d'une réponse (calculs ; avec document : pages, citations, chiffres).
+// Texte des documents d'un projet (document illisible ou supprimé : sans pages).
+async function loadProjectDocuments(project) {
+  const loaded = [];
+  for (const d of project.documents)
+    loaded.push({
+      ...(await loadDocument(documentsPath(), d.id, documentCodec).catch(() => ({ pages: [] }))),
+      id: d.id,
+      name: d.name,
+      type: d.type,
+    });
+  return loaded;
+}
+// Vérifications automatiques d'une réponse (calculs ; avec document : pages, citations, chiffres ;
+// avec projet : chaque source citée comparée au passage du document).
 handle('verify-answer', async (payload) => {
   const answer = payload?.answer;
   const question = typeof payload?.question === 'string' ? payload.question.slice(0, 100000) : '';
@@ -836,7 +849,14 @@ handle('verify-answer', async (payload) => {
   const doc = payload.documentId
     ? await loadDocument(documentsPath(), payload.documentId, documentCodec)
     : null;
-  const report = verifyAnswer({ answer, question, doc });
+  let projectDocs = null;
+  if (typeof payload.projectId === 'string') {
+    const projects = normalizeProjects(await readJson('projects.json', [], 'Projets illisibles.'));
+    const project = projects.find((p) => p.id === payload.projectId);
+    if (project?.documents.length)
+      projectDocs = (await loadProjectDocuments(project)).filter((d) => d.pages.length);
+  }
+  const report = verifyAnswer({ answer, question, doc, projectDocs });
   // Question décrivant un dossier (Benchmark « Actions sur fichiers ») : plan vérifié.
   const plan = checkPlanAnswer(answer, question);
   if (plan) report.plan = plan;
@@ -1626,15 +1646,7 @@ handle('run', async (kind, payload) => {
       // conversation a aussi son propre document).
       let system = baseSystem;
       if (withProjectDocuments) {
-        const loaded = [];
-        for (const d of project.documents)
-          loaded.push({
-            ...(await loadDocument(documentsPath(), d.id, documentCodec).catch(() => ({
-              pages: [],
-            }))),
-            name: d.name,
-            type: d.type,
-          });
+        const loaded = await loadProjectDocuments(project);
         const budget = withDocument
           ? 6000
           : Math.max(

@@ -299,8 +299,141 @@ function detectInjection(pages) {
   return alerts;
 }
 
-// Rapport complet pour une réponse (doc facultatif).
-function verifyAnswer({ answer, question = '', doc = null }) {
+// --- Sources des documents d'un projet ------------------------------------------------------------
+// Le modèle cite « [nom — page 2] », « (nom — diapositive 1) » ou « nom » seul. Chaque citation est
+// comparée au passage cité : document et endroit existants, chiffres et mots de la phrase présents.
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const DOC_NAME_RE =
+  /[[(]([^\][()\n]{1,160}?\.(?:pdf|docx|xlsx|pptx|csv|tsv|txt|md|json|png|jpe?g|webp|gif))\s*(?:[—–-]\s*(page|section|diapositive|slide|photo)\s*(\d+))?[^\][()\n]{0,40}[\])]/gi;
+const valuesOf = (text) => {
+  const values = [];
+  for (const token of String(text).match(NUMBER_RE) || []) {
+    const v = numberCandidates(token);
+    // Petits entiers (listes, étapes) : rien à vérifier.
+    if (v.length && !v.every((x) => Number.isInteger(x) && Math.abs(x) < 10))
+      values.push({ token: token.trim(), values: v });
+  }
+  return values;
+};
+const round4 = (v) => Math.round(v * 10000) / 10000;
+const WORD_RE = /[a-z0-9]{5,}/g;
+// Passage montré à l'utilisateur : autour du premier chiffre retrouvé, sinon début du passage.
+function excerptAround(text, token) {
+  const clean = String(text).replace(/\s+/g, ' ').trim();
+  const at = token ? clean.indexOf(token) : -1;
+  const start = Math.max(0, (at >= 0 ? at : 0) - 160);
+  return (
+    (start ? '…' : '') + clean.slice(start, start + 420) + (clean.length > start + 420 ? '…' : '')
+  );
+}
+
+function checkProjectSources(answer, docs) {
+  // Échappements Markdown du modèle (« Bilan\_2025.docx ») retirés avant la comparaison.
+  const text = String(answer).replace(/\\([\\_*[\]()#`~|-])/g, '$1');
+  const found = [];
+  const overlaps = (s, e) => found.some((c) => s < c.end && e > c.start);
+  // Citations des documents du projet, par nom (le plus long d'abord : « a.pdf » dans « data.pdf »).
+  for (const doc of [...docs].sort((a, b) => b.name.length - a.name.length)) {
+    const re = new RegExp(
+      `${escapeRe(doc.name)}(?:\\s*[—–-]\\s*(page|section|diapositive|slide|photo)\\s*(\\d+))?`,
+      'gi',
+    );
+    for (const m of text.matchAll(re)) {
+      const end = m.index + m[0].length;
+      if (!overlaps(m.index, end))
+        found.push({ start: m.index, end, doc, place: m[1], number: m[2] && Number(m[2]) });
+    }
+  }
+  // Noms de fichiers cités entre crochets ou parenthèses qui ne sont pas dans le projet.
+  for (const m of text.matchAll(DOC_NAME_RE)) {
+    const end = m.index + m[0].length;
+    if (!overlaps(m.index, end))
+      found.push({
+        start: m.index,
+        end,
+        missing: m[1].trim(),
+        place: m[2],
+        number: m[3] && Number(m[3]),
+      });
+  }
+  found.sort((a, b) => a.start - b.start);
+  const lineStart = (i) => text.lastIndexOf('\n', i - 1) + 1;
+  const citations = found.map((c, i) => {
+    // Affirmation : depuis la citation précédente de la même ligne (ou le début de la ligne).
+    const previous = found[i - 1];
+    const from = Math.max(lineStart(c.start), previous ? previous.end : 0);
+    const claim = text
+      .slice(from, c.start)
+      .replace(/^[\s\])]*[,;.]?\s*/, '')
+      .replace(/[*_`#>]/g, '')
+      .replace(/^\s*(?:[-•]|\d+[.)])\s+/, '')
+      .replace(/[[(]\s*$/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const place = c.place ? (/slide/i.test(c.place) ? 'diapositive' : c.place.toLowerCase()) : null;
+    const base = { claim: claim.slice(0, 240), place, number: c.number || null };
+    if (c.missing) return { ...base, name: c.missing, status: 'introuvable', reason: 'absent' };
+    const doc = c.doc;
+    const page = c.number ? doc.pages.find((p) => p.number === c.number) : null;
+    if (c.number && !page)
+      return {
+        ...base,
+        name: doc.name,
+        docId: doc.id,
+        status: 'introuvable',
+        reason: 'endroit',
+        count: doc.pages.length,
+      };
+    const passage = page ? page.text : doc.pages.map((p) => p.text).join('\n');
+    const known = new Set();
+    for (const v of valuesOf(passage)) for (const x of v.values) known.add(round4(x));
+    const figures = valuesOf(claim);
+    const ok = figures.filter((f) => f.values.some((x) => known.has(round4(x))));
+    const words = [...new Set(normalizeText(claim).match(WORD_RE) || [])];
+    const own = normalizeText(passage);
+    const share = words.length ? words.filter((w) => own.includes(w)).length / words.length : 0;
+    let status;
+    if (figures.length)
+      status = ok.length === figures.length ? 'confirme' : ok.length ? 'partiel' : 'non-trouve';
+    else if (words.length >= 2)
+      status = share >= 0.5 ? 'confirme' : share >= 0.25 ? 'partiel' : 'non-trouve';
+    else status = 'present';
+    return {
+      ...base,
+      name: doc.name,
+      docId: doc.id,
+      status,
+      basis: figures.length ? 'chiffres' : words.length >= 2 ? 'mots' : null,
+      missingFigures: figures.filter((f) => !ok.includes(f)).map((f) => f.token),
+      excerpt: excerptAround(passage, ok[0]?.token),
+    };
+  });
+  // Lignes avec des chiffres et sans aucune source, seulement si la réponse cite ses sources.
+  const uncited = [];
+  if (citations.length) {
+    let at = 0;
+    for (const line of text.split('\n')) {
+      const start = at;
+      at += line.length + 1;
+      const clean = line
+        .replace(/[*_`#>|]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!clean || found.some((c) => c.start >= start && c.start < at)) continue;
+      // Phrase d'introduction (« … en 2026 : ») ou seule année : pas une affirmation chiffrée.
+      const figures = valuesOf(clean).filter(
+        (f) => !f.values.every((x) => Number.isInteger(x) && x >= 1900 && x <= 2100),
+      );
+      // Calcul (« a + b = c ») : déjà refait par la vérification des calculs.
+      if (figures.length && !/:$/.test(clean) && !/=/.test(clean))
+        uncited.push(clean.slice(0, 160));
+    }
+  }
+  return { citations: citations.slice(0, 40), uncited: uncited.slice(0, 10) };
+}
+
+// Rapport complet pour une réponse (doc et documents de projet facultatifs).
+function verifyAnswer({ answer, question = '', doc = null, projectDocs = null }) {
   const report = { calculations: checkCalculations(answer) };
   if (doc) {
     report.pages = checkPageReferences(answer, doc);
@@ -308,6 +441,7 @@ function verifyAnswer({ answer, question = '', doc = null }) {
     report.numbers = checkNumbers(answer, doc, question);
     report.documentAlerts = detectInjection(doc.pages);
   }
+  if (projectDocs?.length) report.sources = checkProjectSources(answer, projectDocs);
   return report;
 }
 
@@ -320,5 +454,6 @@ if (typeof module !== 'undefined')
     checkQuotes,
     checkNumbers,
     detectInjection,
+    checkProjectSources,
     verifyAnswer,
   };

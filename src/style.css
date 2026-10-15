@@ -1559,6 +1559,63 @@ progress {
   color: var(--muted);
 }
 
+/* Sources utilisées par une réponse de projet */
+.checks.sources li.source {
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid var(--line);
+}
+.checks.sources li.source:first-child {
+  border-top: 0;
+}
+.source-state {
+  flex: none;
+  min-width: 92px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.source.ok .source-state {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.source.partial .source-state,
+.source.warn .source-state {
+  color: var(--warn);
+  border-color: var(--warn-line);
+}
+.source-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.source-claim {
+  color: var(--fg);
+}
+.source-body button.link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+  font-size: 11px;
+  cursor: pointer;
+}
+.source-passage {
+  margin: 4px 0 2px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  white-space: pre-wrap;
+}
+
 /* Assistant de recherche : conseil de modèle */
 .task-advice {
   margin: 0 36px 10px;

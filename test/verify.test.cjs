@@ -126,3 +126,76 @@ test('rapport complet, avec ou sans document', () => {
   assert.equal(report.documentAlerts.length, 1);
   assert.deepEqual(report.pages, []);
 });
+
+// Documents d'un projet : chaque citation comparée au passage cité.
+const projectDocs = [
+  {
+    id: 'd1',
+    name: 'Bilan_2025.docx',
+    pages: [
+      {
+        number: 1,
+        text: 'Chiffre d’affaires 2025 : 412 000 €. Budget 2026 : 45 000 €, dont un prêt de 30 000 € et 15 000 € de trésorerie.',
+      },
+    ],
+  },
+  {
+    id: 'd2',
+    name: 'Plan_2026.pptx',
+    pages: [
+      { number: 1, text: 'Nouveau four en mars' },
+      { number: 2, text: 'Ouverture le dimanche matin à partir d’avril' },
+    ],
+  },
+  { id: 'd3', name: 'Devis_four.png', pages: [{ number: 1, text: 'Four à sole : 38 000 EUR' }] },
+];
+const states = (answer) =>
+  v.checkProjectSources(answer, projectDocs).citations.map((c) => `${c.status} ${c.name}`);
+
+test('sources de projet : chiffres retrouvés, absents, endroit ou document inexistant', () => {
+  const answer = [
+    'Les investissements prévus :',
+    '- Le four coûte 38 000 € (Devis_four.png).',
+    '- Ouverture le dimanche matin dès avril [Plan_2026.pptx — diapositive 2].',
+    '- Budget de 45 000 € (Bilan_2025.docx — section 1), prêt de 32 000 € et 15 000 € de trésorerie (Bilan_2025.docx — section 1).',
+    '- Embauche prévue (Plan_2026.pptx — slide 7).',
+    '- Comptes annuels [Comptes_2025.pdf — page 3].',
+    'Subvention attendue : 11 400 €.',
+  ].join('\n');
+  assert.deepEqual(states(answer), [
+    'confirme Devis_four.png',
+    'confirme Plan_2026.pptx',
+    'confirme Bilan_2025.docx',
+    'partiel Bilan_2025.docx',
+    'introuvable Plan_2026.pptx',
+    'introuvable Comptes_2025.pdf',
+  ]);
+  const report = v.checkProjectSources(answer, projectDocs);
+  assert.deepEqual(report.citations[3].missingFigures, ['32 000']);
+  assert.equal(report.citations[4].reason, 'endroit');
+  assert.equal(report.citations[4].place, 'diapositive');
+  assert.equal(report.citations[5].reason, 'absent');
+  assert.match(report.citations[0].excerpt, /38 000 EUR/);
+  // Seule la ligne chiffrée sans source est signalée (pas l'introduction).
+  assert.deepEqual(report.uncited, ['Subvention attendue : 11 400 €.']);
+});
+
+test('sources de projet : rien sans citation, et verifyAnswer les ajoute au rapport', () => {
+  assert.deepEqual(v.checkProjectSources('Réponse sans source : 12 €.', projectDocs), {
+    citations: [],
+    uncited: [],
+  });
+  const report = v.verifyAnswer({ answer: 'Prix : 38 000 € (Devis_four.png).', projectDocs });
+  assert.equal(report.sources.citations[0].status, 'confirme');
+  assert.equal(v.verifyAnswer({ answer: 'x' }).sources, undefined);
+});
+
+test('sources de projet : noms échappés en Markdown, lignes de calcul non signalées', () => {
+  const report = v.checkProjectSources(
+    'Prix : 38 000 € (Devis\\_four.png).\nTotal : 30 000 + 15 000 = 45 000 €.',
+    projectDocs,
+  );
+  assert.equal(report.citations[0].status, 'confirme');
+  assert.equal(report.citations[0].name, 'Devis_four.png');
+  assert.deepEqual(report.uncited, []);
+});

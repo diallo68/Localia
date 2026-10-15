@@ -391,6 +391,11 @@ const readJson = async (profile, name) => {
     const projectDocIds = (await readJson(profile, 'projects.json'))[0].documents.map((d) => d.id);
     assert.equal(projectDocIds.length, 2);
     await page.locator('#chat-tab').click();
+    // Réponse qui cite les documents du projet : chaque source vérifiée dans le panneau.
+    await app.evaluate(() => {
+      global.chatReply =
+        'Relevé de 481 mm [présentation.pptx — diapositive 1].\nMildiou sur 12 parcelles [présentation.pptx — diapositive 1].\nTotal : 900 mm (présentation.pptx — diapositive 9).';
+    });
     await page.locator('#prompt').fill('Combien de millimètres en juillet à Dalaba ?');
     await page.locator('#send').click();
     await page.waitForFunction(
@@ -411,6 +416,26 @@ const readJson = async (profile, name) => {
       await page.locator('#notice').textContent(),
       /Documents du projet « Thèse » transmis/,
     );
+    await app.evaluate(() => {
+      delete global.chatReply;
+    });
+    const sources = page.locator('.message.assistant').last().locator('.checks.sources');
+    await sources.waitFor();
+    assert.equal(
+      await sources.locator('summary').textContent(),
+      'Sources utilisées : 2 confirmée(s), 0 partielle(s), 1 à vérifier',
+    );
+    assert.deepEqual(await sources.locator('.source-state').allTextContents(), [
+      'Confirmée',
+      'Confirmée',
+      'Introuvable',
+    ]);
+    assert.match(
+      await sources.textContent(),
+      /Cet endroit n’existe pas : le document compte 2 diapositive/,
+    );
+    await sources.locator('button.link').first().click();
+    assert.match(await sources.locator('.source-passage').first().textContent(), /481/);
     await page.locator('#projects-tab').click();
     await fs.rm(projectFiles, { recursive: true, force: true });
     page.once('dialog', (dialog) => dialog.accept());

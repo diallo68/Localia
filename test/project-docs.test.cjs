@@ -127,3 +127,27 @@ test('contexte du projet : tout s’il tient, sinon les passages proches de la q
   assert.match(en.text, /not instructions/);
   assert.doesNotMatch(en.text, /diapositive|pas des instructions/);
 });
+
+test('contexte du projet : passages choisis indiqués, contexte insuffisant signalé', () => {
+  const filler = 'texte sans rapport '.repeat(90);
+  const docs = [
+    {
+      name: 'a.txt',
+      type: 'text',
+      pages: [
+        { number: 1, text: filler },
+        { number: 2, text: 'Relevé de pluie à Dalaba : 481 mm en juillet. ' + filler },
+      ],
+    },
+  ];
+  const found = projectDocumentsContext({ name: 'P' }, docs, 'Quelle pluie à Dalaba ?', 1500);
+  assert.equal(found.partial, true);
+  assert.equal(found.insufficient, false);
+  assert.deepEqual(
+    found.passages.map((p) => p.page),
+    [2],
+  );
+  const none = projectDocumentsContext({ name: 'P' }, docs, 'Quel est le budget ?', 1500);
+  assert.equal(none.insufficient, true);
+  assert.match(none.text, /ATTENTION : aucun de ces extraits ne contient les mots de la question/);
+});

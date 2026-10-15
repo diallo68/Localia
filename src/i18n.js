@@ -291,6 +291,20 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  'Tâche, compétence ou parcours : que choisir ?': 'Task, skill or path: which to choose?',
+  'Le type de travail attendu (résumer, extraire, calculer, relire…) : une consigne fournie par Localia, qui sert aussi à conseiller un modèle.':
+    'The kind of work expected (summarise, extract, calculate, review…): an instruction provided by Localia, also used to recommend a model.',
+  'Une consigne précise et réutilisable, écrite dans un fichier du dossier Compétences ; on l’appelle aussi en tapant son appel, par exemple /article-resume. Elle s’appuie sur une tâche.':
+    'A precise, reusable instruction written in a file of the Skills folder; you can also call it by typing its call, for example /article-resume. It builds on a task.',
+  'Une compétence en plusieurs étapes, à enchaîner dans l’ordre ; chaque étape peut aussi être appelée seule.':
+    'A skill in several steps, to be chained in order; each step can also be called on its own.',
+  'Pour une simple question, laissez « Libre » et « Aucune ».':
+    'For a simple question, leave “Free” and “None”.',
+  Parcours: 'Path',
+  'Une compétence donne au modèle des consignes précises pour un type de travail ; elle s’appuie sur une tâche (résumer, extraire, calculer…), la consigne générale fournie par Localia. Un parcours enchaîne plusieurs compétences, étape par étape.':
+    'A skill gives the model precise instructions for a kind of work; it builds on a task (summarise, extract, calculate…), the general instruction provided by Localia. A path chains several skills, step by step.',
+  OUTILS: 'TOOLS',
+  RÉGLAGES: 'SETTINGS',
   'Sauvegarde et restauration': 'Backup and restore',
   'Une sauvegarde réunit dans un seul fichier vos conversations, projets, documents, comparaisons, routines et réglages. Elle est chiffrée par une phrase de passe que vous choisissez : sans elle, personne ne peut la lire, pas même vous. Elle ne dépend pas du trousseau de ce Mac et se restaure aussi sur un autre ordinateur. Les modèles et le dossier Compétences n’en font pas partie.':
     "A backup gathers your conversations, projects, documents, comparisons, routines and settings into a single file. It is encrypted with a passphrase you choose: without it, nobody can read it, not even you. It does not depend on this Mac's keychain and can also be restored on another computer. Models and the Skills folder are not included.",
@@ -641,8 +655,6 @@ const EN = {
   'L’IA, chez vous.': 'AI, at home.',
   'Nouvelle conversation': 'New conversation',
   'ESPACE DE TRAVAIL': 'WORKSPACE',
-  RESSOURCES: 'RESOURCES',
-  SYSTÈME: 'SYSTEM',
   Conversations: 'Conversations',
   Benchmark: 'Benchmark',
   'Bibliothèque de modèles': 'Model library',

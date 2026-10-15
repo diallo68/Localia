@@ -4001,6 +4001,8 @@ body[data-mode='simple'] .privacy {
   white-space: nowrap;
 }
 body[data-mode='simple'][data-view='performance'] #simple-pc,
+body[data-mode='simple'][data-view='search'] #simple-search,
+body[data-mode='simple'][data-view='routines'] #simple-routines,
 body[data-mode='simple'][data-view='chat']:has(#welcome) #simple-home {
   background: var(--accent-soft);
   color: var(--accent);
@@ -4901,4 +4903,28 @@ button.home-item:hover {
 }
 #backup-status.warn {
   color: var(--warn);
+}
+
+/* Réglages de la réponse : tâche, compétence ou parcours */
+.vocab-help {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+}
+.vocab-help summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+}
+.vocab-help dl {
+  margin: 8px 0 4px;
+}
+.vocab-help dt {
+  font-weight: 600;
+}
+.vocab-help dd {
+  margin: 0 0 6px;
+  color: var(--muted);
+}
+.vocab-help p {
+  margin: 4px 0 0;
 }

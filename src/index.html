@@ -104,6 +104,10 @@
       <button id="new" class="primary"><i data-icon="plus"></i>Nouvelle conversation</button>
       <div class="simple-nav nav-group">
         <button id="simple-home" class="nav" type="button"><i data-icon="home"></i>Accueil</button
+        ><button id="simple-search" class="nav" type="button">
+          <i data-icon="search"></i>Rechercher</button
+        ><button id="simple-routines" class="nav" type="button">
+          <i data-icon="routine"></i>Automatisations</button
         ><button id="simple-pc" class="nav" type="button">
           <i data-icon="monitor"></i>Analyser votre PC
         </button>
@@ -131,18 +135,18 @@
           <button id="home-tab" class="nav"><i data-icon="grid"></i>Accueil</button
           ><button id="search-tab" class="nav" title="Rechercher (⌘K)">
             <i data-icon="search"></i>Rechercher</button
-          ><button id="chat-tab" class="nav active"><i data-icon="message"></i>Conversations</button
           ><button id="projects-tab" class="nav"><i data-icon="folder"></i>Projets</button
-          ><button id="routines-tab" class="nav"><i data-icon="routine"></i>Automatisations</button
-          ><button id="bench-nav" class="nav"><i data-icon="chart"></i>Benchmark</button>
+          ><button id="chat-tab" class="nav active"><i data-icon="message"></i>Conversations</button
+          ><button id="routines-tab" class="nav"><i data-icon="routine"></i>Automatisations</button>
         </div>
       </div>
       <div class="nav-section" data-section="ressources">
         <button class="section-toggle" type="button" aria-expanded="true">
-          RESSOURCES<i data-icon="chevron"></i>
+          OUTILS<i data-icon="chevron"></i>
         </button>
         <div class="nav-group">
-          <button id="models-tab" class="nav">
+          <button id="bench-nav" class="nav"><i data-icon="chart"></i>Benchmark</button
+          ><button id="models-tab" class="nav">
             <i data-icon="library"></i>Bibliothèque de modèles</button
           ><button id="bibliography-tab" class="nav"><i data-icon="book"></i>Bibliographie</button
           ><button id="files-tab" class="nav"><i data-icon="file"></i>Fichiers</button
@@ -151,7 +155,7 @@
       </div>
       <div class="nav-section" data-section="systeme">
         <button class="section-toggle" type="button" aria-expanded="true">
-          SYSTÈME<i data-icon="chevron"></i>
+          RÉGLAGES<i data-icon="chevron"></i>
         </button>
         <div class="nav-group">
           <button id="performance-tab" class="nav">
@@ -334,6 +338,28 @@
       <section id="chat-view">
         <div id="chat-panel" class="chat-panel" aria-label="Réglages de la réponse">
           <h2 class="chat-panel-title"><i data-icon="settings"></i>Réglages de la réponse</h2>
+          <details class="vocab-help">
+            <summary>Tâche, compétence ou parcours : que choisir ?</summary>
+            <dl>
+              <dt>Tâche</dt>
+              <dd>
+                Le type de travail attendu (résumer, extraire, calculer, relire…) : une consigne
+                fournie par Localia, qui sert aussi à conseiller un modèle.
+              </dd>
+              <dt>Compétence</dt>
+              <dd>
+                Une consigne précise et réutilisable, écrite dans un fichier du dossier Compétences
+                ; on l’appelle aussi en tapant son appel, par exemple /article-resume. Elle s’appuie
+                sur une tâche.
+              </dd>
+              <dt>Parcours</dt>
+              <dd>
+                Une compétence en plusieurs étapes, à enchaîner dans l’ordre ; chaque étape peut
+                aussi être appelée seule.
+              </dd>
+            </dl>
+            <p class="muted">Pour une simple question, laissez « Libre » et « Aucune ».</p>
+          </details>
           <div class="toolbar">
             <label class="pick" for="project"
               ><i data-icon="folder"></i
@@ -1253,8 +1279,9 @@
           <span class="eyebrow">RECETTES RÉUTILISABLES</span>
           <h2>Compétences.</h2>
           <p>
-            Une compétence donne au modèle des consignes précises pour un type de travail. Un
-            parcours enchaîne plusieurs compétences, étape par étape.
+            Une compétence donne au modèle des consignes précises pour un type de travail ; elle
+            s’appuie sur une tâche (résumer, extraire, calculer…), la consigne générale fournie par
+            Localia. Un parcours enchaîne plusieurs compétences, étape par étape.
           </p>
         </div>
         <div class="skills-help">

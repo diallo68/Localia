@@ -219,6 +219,8 @@ $('simple-home').onclick = () => {
   $('prompt').focus();
 };
 $('simple-pc').onclick = () => $('performance-tab').click();
+$('simple-search').onclick = () => $('search-tab').click();
+$('simple-routines').onclick = () => $('routines-tab').click();
 $('simple-new-project').onclick = newProject;
 $('resume-all').onclick = () => $('projects-tab').click();
 modelListeners.push(updateReadyPill);

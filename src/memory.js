@@ -28,7 +28,7 @@ function noteSource(source) {
   if (!source || typeof source !== 'object') return undefined;
   const short = (value, max) => (typeof value === 'string' ? value.slice(0, max) : undefined);
   return {
-    kind: source.kind === 'proposition' ? 'proposition' : 'reponse',
+    kind: ['proposition', 'routine'].includes(source.kind) ? source.kind : 'reponse',
     conversationId: short(source.conversationId, 100),
     conversationTitle: short(source.conversationTitle, 200),
     question: short(source.question, 300),

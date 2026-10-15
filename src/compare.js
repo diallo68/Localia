@@ -852,6 +852,7 @@ async function runRecord(record, prefix) {
 // template : { groupId, repetitions, document, questions, models, title? }.
 async function runSeries(template, existing, startRepetition) {
   comparing = true;
+  await yieldRoutine();
   // Mac maintenu éveillé pendant toute la série (remplace « caffeinate »).
   await window.localia.keepAwake(true).catch(() => {});
   stopRequested = false;
@@ -907,6 +908,7 @@ async function runSeries(template, existing, startRepetition) {
   } finally {
     comparing = false;
     compareTarget = null;
+    pumpRoutines();
     if (!scheduledStart) await window.localia.keepAwake(false).catch(() => {});
     $('compare-status').textContent = stopRequested
       ? 'Série en pause. Cliquez « Reprendre » dans les comparaisons enregistrées pour la terminer.'
@@ -947,16 +949,22 @@ function nextOccurrence(time, now = new Date()) {
   if (at <= now) at.setDate(at.getDate() + 1);
   return at;
 }
-function scheduleSeries(template, time) {
-  const at = nextOccurrence(time);
+// Le départ est enregistré (routines.json) : après une fermeture de Localia, il est reprogrammé
+// s'il est à venir, ou signalé comme manqué sur l'accueil (jamais lancé sans l'utilisateur).
+function scheduleSeries(template, time, at = nextOccurrence(time)) {
   scheduledStart = {
     at,
-    timer: setTimeout(() => {
-      scheduledStart = null;
-      $('compare-unschedule').hidden = true;
-      notice('');
-      runSeries(template, [], 1).catch((error) => notice(error.message));
-    }, at - new Date()),
+    template,
+    timer: setTimeout(
+      () => {
+        scheduledStart = null;
+        $('compare-unschedule').hidden = true;
+        notice('');
+        rememberSchedule(null).catch(() => {});
+        runSeries(template, [], 1).catch((error) => notice(error.message));
+      },
+      Math.max(0, at - new Date()),
+    ),
   };
   window.localia.keepAwake(true).catch(() => {});
   $('compare-unschedule').hidden = false;
@@ -964,6 +972,31 @@ function scheduleSeries(template, time) {
   $('compare-status').textContent =
     `Départ programmé ${at.toLocaleString('fr-FR', { weekday: 'long', hour: '2-digit', minute: '2-digit' })} (dans ${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, '0')}). Laissez Localia ouverte et le Mac branché, couvercle ouvert : il ne se mettra pas en veille.`;
   controls();
+  rememberSchedule({ at: at.toISOString(), template }).catch((error) => notice(error.message));
+}
+async function rememberSchedule(value) {
+  if (typeof routinesData === 'undefined' || !routinesLoaded) return;
+  routinesData.scheduled = value || undefined;
+  await saveRoutines();
+}
+// Démarrage : départ enregistré reprogrammé (à venir) ou laissé en « manqué » (passé).
+function restoreScheduledSeries() {
+  const saved = routinesData.scheduled;
+  if (!saved || scheduledStart) return;
+  const at = new Date(saved.at);
+  if (at > new Date()) scheduleSeries(saved.template, null, at);
+}
+const missedSchedule = () =>
+  routinesData.scheduled && !scheduledStart && new Date(routinesData.scheduled.at) <= new Date()
+    ? routinesData.scheduled
+    : null;
+async function runMissedSchedule() {
+  const missed = missedSchedule();
+  if (!missed) return;
+  await rememberSchedule(null);
+  lastBenchStep = 'compare';
+  $('bench-nav').click();
+  await runSeries(missed.template, [], 1);
 }
 $('compare-unschedule').onclick = guard(async () => {
   if (!scheduledStart) return;
@@ -972,6 +1005,7 @@ $('compare-unschedule').onclick = guard(async () => {
   $('compare-unschedule').hidden = true;
   $('compare-status').textContent = 'Départ programmé annulé.';
   await window.localia.keepAwake(false);
+  await rememberSchedule(null);
   controls();
 });
 

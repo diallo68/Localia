@@ -133,6 +133,7 @@
             <i data-icon="search"></i>Rechercher</button
           ><button id="chat-tab" class="nav active"><i data-icon="message"></i>Conversations</button
           ><button id="projects-tab" class="nav"><i data-icon="folder"></i>Projets</button
+          ><button id="routines-tab" class="nav"><i data-icon="routine"></i>Automatisations</button
           ><button id="bench-nav" class="nav"><i data-icon="chart"></i>Benchmark</button>
         </div>
       </div>
@@ -258,30 +259,42 @@
             ><span>Mesurer la justesse des modèles sur vos propres questions.</span>
           </button>
         </div>
-        <div id="home-advice"></div>
-        <section class="home-card" aria-labelledby="home-continue-title">
-          <div class="home-card-head">
-            <h3 id="home-continue-title"><i data-icon="clock"></i>Continuer votre travail</h3>
-          </div>
-          <div id="home-continue" class="home-continue"></div>
-        </section>
-        <div class="home-columns">
-          <section class="home-card" aria-labelledby="home-projects-title">
+        <div class="home-grid">
+          <section class="home-card home-resume-card" aria-labelledby="home-continue-title">
             <div class="home-card-head">
-              <h3 id="home-projects-title"><i data-icon="folder"></i>Projets récents</h3>
+              <h3 id="home-continue-title"><i data-icon="clock"></i>Reprendre</h3>
               <button id="home-all-projects" class="link-button" type="button">
                 Voir tous les projets
               </button>
             </div>
+            <div id="home-continue" class="home-continue"></div>
+            <h4 class="home-subhead">Projets actifs</h4>
             <div id="home-projects"></div>
           </section>
-          <section class="home-card" aria-labelledby="home-status-title">
+          <section class="home-card" aria-labelledby="home-todo-title">
             <div class="home-card-head">
-              <h3 id="home-status-title"><i data-icon="settings"></i>État du système</h3>
+              <h3 id="home-todo-title"><i data-icon="inbox"></i>À traiter</h3>
             </div>
-            <ul id="home-status"></ul>
+            <div id="home-todo" class="home-todo"></div>
+          </section>
+          <section id="home-activity-card" class="home-card" aria-labelledby="home-activity-title">
+            <div class="home-card-head">
+              <h3 id="home-activity-title"><i data-icon="routine"></i>Activité</h3>
+              <button id="home-routines" class="link-button" type="button">Automatisations</button>
+            </div>
+            <div id="home-activity" class="home-todo"></div>
           </section>
         </div>
+        <details id="home-tech" class="home-card home-tech">
+          <summary>
+            <i data-icon="settings"></i><span>État technique</span>
+            <span id="home-tech-summary" class="muted"></span>
+          </summary>
+          <div class="home-tech-body">
+            <ul id="home-status"></ul>
+            <div id="home-advice"></div>
+          </div>
+        </details>
       </section>
       <section id="search-view" class="page" hidden>
         <div class="library-intro">
@@ -919,6 +932,60 @@
           </details>
         </section>
       </section>
+      <section id="routines-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">TRAVAIL AUTOMATIQUE</span>
+          <h2>Automatisations.</h2>
+          <p>
+            Une routine part d’un déclencheur et prépare un résultat à relire. Elle ne tourne que
+            lorsque Localia est ouverte ; un traitement interrompu (Localia fermée, arrêt) reprend
+            au démarrage suivant. Vos conversations passent avant : une routine en cours s’efface et
+            reprend après. Rien n’est enregistré dans la mémoire d’un projet sans votre accord.
+          </p>
+        </div>
+        <div id="routine-activity" class="routine-activity" role="status">
+          <span id="routine-activity-text"></span>
+          <span class="routine-activity-actions"
+            ><button id="routine-stop" type="button" hidden>Arrêter</button
+            ><button id="routines-pause" type="button"></button
+          ></span>
+        </div>
+        <section class="routine-new" aria-labelledby="routine-new-title">
+          <h3 id="routine-new-title">Nouvelle routine</h3>
+          <ol class="routine-steps">
+            <li><strong>Déclencheur</strong> : un document est ajouté au projet</li>
+            <li><strong>Lecture</strong> du texte du document, sur cet ordinateur</li>
+            <li><strong>Synthèse sourcée</strong> par le modèle choisi</li>
+            <li><strong>Vérification</strong> automatique des citations</li>
+            <li><strong>Résultat à relire</strong> ici et sur l’accueil</li>
+          </ol>
+          <form id="routine-form" class="input-row">
+            <label class="sr-only" for="routine-project">Projet surveillé</label
+            ><select id="routine-project" required></select
+            ><label class="sr-only" for="routine-model">Modèle de la synthèse</label
+            ><select id="routine-model"></select
+            ><button class="primary" type="submit">Créer la routine</button>
+          </form>
+        </section>
+        <h3>Routines</h3>
+        <div id="routines-list" class="routines-list"></div>
+        <section id="run-detail" class="run-detail" hidden aria-labelledby="run-title">
+          <div class="reader-head">
+            <h3 id="run-title"></h3>
+            <button id="run-close" class="link-button" type="button">Fermer</button>
+          </div>
+          <p id="run-meta" class="muted"></p>
+          <div id="run-text" class="markdown"></div>
+          <div id="run-checks"></div>
+          <div class="input-row">
+            <button id="run-reviewed" class="primary" type="button">Marquer comme relu</button
+            ><button id="run-memory" type="button">Ajouter à la mémoire du projet</button
+            ><button id="run-retry" type="button">Relancer</button>
+          </div>
+        </section>
+        <h3>Historique des exécutions</h3>
+        <div id="runs-list" class="runs-list"></div>
+      </section>
       <section id="bibliography-view" class="page" hidden>
         <div class="library-intro">
           <span class="eyebrow">SOURCES FIABLES</span>
@@ -1429,6 +1496,7 @@
     <script src="i18n.js"></script>
     <script src="memory.js"></script>
     <script src="search.js"></script>
+    <script src="routines.js"></script>
     <script src="bibliography.js"></script>
     <script src="actions.js"></script>
     <script src="skills.js"></script>
@@ -1453,6 +1521,7 @@
     <script src="model-choice.js"></script>
     <script src="accueil-view.js"></script>
     <script src="search-view.js"></script>
+    <script src="routines-view.js"></script>
     <script src="dictation-view.js"></script>
     <script src="updates-view.js"></script>
     <script src="start.js"></script>

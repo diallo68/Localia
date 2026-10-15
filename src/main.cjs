@@ -60,6 +60,7 @@ function anonymap(raw) {
 const { taskById } = require('./tasks.js');
 const { normalizeProjects, buildMemory } = require('./memory.js');
 const search = require('./search.js');
+const routinesModule = require('./routines.js');
 const bibliography = require('./bibliography.js');
 const { formatListing, checkPlanAnswer } = require('./actions.js');
 const files = require('./files.cjs');
@@ -1581,6 +1582,11 @@ handle('run', async (kind, payload) => {
   const chatLike = kind !== 'pull';
   // Onglet Fichiers : la question est construite ici, avec le contenu réel du dossier autorisé.
   if (kind === 'files') payload = await filesPayload(payload);
+  if (kind === 'routine') payload = await routinePayload(payload);
+  // Étapes réelles du traitement, affichées pendant l'attente : lecture des documents,
+  // chargement du modèle, génération.
+  const step = (name) => chatLike && send({ kind: 'step', data: { task: kind, step: name } });
+  if (payload?.projectId || payload?.documentId) step('lecture');
   if (chatLike) validateMessages(payload.messages);
   const controller = new AbortController();
   tasks.set(key, controller);
@@ -1672,7 +1678,11 @@ handle('run', async (kind, payload) => {
       const numCtx = contextSize(
         modelSettings,
         info,
-        withDocument || withProjectDocuments || kind === 'files' || files.length > 0,
+        withDocument ||
+          withProjectDocuments ||
+          kind === 'files' ||
+          kind === 'routine' ||
+          files.length > 0,
       );
       // Documents du projet : passages les plus proches de la question (moins de place si la
       // conversation a aussi son propre document).
@@ -1699,7 +1709,12 @@ handle('run', async (kind, payload) => {
           system = [system, context.text].filter(Boolean).join('\n\n');
           send({
             kind: 'project-documents',
-            data: { project: project.name, used: context.used, partial: context.partial },
+            data: {
+              project: project.name,
+              used: context.used,
+              partial: context.partial,
+              insufficient: context.insufficient,
+            },
           });
         }
       }
@@ -1805,7 +1820,12 @@ handle('run', async (kind, payload) => {
     }
     // Question venue d'un autre appareil : le texte lui est aussi envoyé au fil de l'écriture.
     const remoteEmit = payload?.remoteId ? remoteStreams.get(payload.remoteId) : null;
+    let generating = false;
     const onData = (data) => {
+      if (!generating && (data.message?.content || data.message?.thinking)) {
+        generating = true;
+        step('generation');
+      }
       if (remoteEmit && data.message?.content) remoteEmit('texte', { delta: data.message.content });
       if (chatLike) {
         responseText += data.message?.content || '';
@@ -1814,6 +1834,7 @@ handle('run', async (kind, payload) => {
       }
       send({ kind, data });
     };
+    step('chargement');
     if (chatLike && appleFm.isApple(model)) {
       used.engine = 'apple';
       await appleFm.chat({ body, signal: controller.signal, onData });
@@ -1997,6 +2018,7 @@ const DATA_FILES = [
   'folders.json',
   'actions-journal.json',
   'watch.json',
+  'routines.json',
   'performance.json',
   'distance.json',
   'modeles-integres.json',
@@ -2202,6 +2224,51 @@ handle('save-comparisons', (comparisons) => {
   if (!Array.isArray(comparisons)) throw new Error('Comparaisons invalides.');
   return writeJson('comparisons.json', comparisons, 'Comparaisons trop volumineuses.');
 });
+// Routines et historique de leurs exécutions (une exécution restée en cours est reprise).
+handle('load-routines', async () =>
+  routinesModule.resumeInterrupted(
+    routinesModule.normalizeRoutines(
+      await readJson(
+        'routines.json',
+        {},
+        'Routines illisibles. Le fichier existant a été conservé.',
+      ),
+    ),
+  ),
+);
+handle('save-routines', async (data) => {
+  const clean = routinesModule.normalizeRoutines(data);
+  await writeJson('routines.json', clean, 'Historique des routines trop volumineux.');
+  return clean;
+});
+// Routine « synthèse d'un document ajouté » : la question est construite ici, avec le texte du
+// document (extraits si le document est long).
+async function routinePayload(payload) {
+  const projects = normalizeProjects(await readJson('projects.json', [], 'Projets illisibles.'));
+  const project = projects.find((p) => p.id === payload?.projectId);
+  const card = project?.documents.find((d) => d.id === payload?.docId);
+  if (!card) throw new Error('Ce document ne fait plus partie du projet.');
+  send({ kind: 'step', data: { task: 'routine', step: 'lecture' } });
+  const doc = await loadDocument(documentsPath(), card.id, documentCodec);
+  if (!doc.pages?.length) throw new Error('Ce document ne contient pas de texte.');
+  const lang = (await readSettings()).lang === 'en' ? 'en' : 'fr';
+  const context = projectDocs.projectDocumentsContext(
+    project,
+    [{ ...doc, id: card.id, name: card.name, type: card.type }],
+    'résumé synthèse conclusion résultats chiffres summary results conclusion',
+    12000,
+    lang,
+  );
+  return {
+    model: payload.model,
+    messages: [
+      {
+        role: 'user',
+        content: routinesModule.routinePrompt(card.name, lang) + '\n\n' + context.text,
+      },
+    ],
+  };
+}
 handle('load-projects', async () =>
   normalizeProjects(
     await readJson('projects.json', [], 'Projets illisibles. Le fichier existant a été conservé.'),

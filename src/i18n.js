@@ -291,6 +291,81 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  Reprendre: 'Resume',
+  'Projets actifs': 'Active projects',
+  'À traiter': 'To do',
+  Activité: 'Activity',
+  'État technique': 'Technical status',
+  'Rien à traiter.': 'Nothing to do.',
+  'Départ programmé manqué': 'Missed scheduled start',
+  'Série du Benchmark programmée': 'Benchmark series scheduled',
+  'Série du Benchmark en cours': 'Benchmark series running',
+  Automatisations: 'Automations',
+  'TRAVAIL AUTOMATIQUE': 'AUTOMATIC WORK',
+  'Automatisations.': 'Automations.',
+  'Une routine part d’un déclencheur et prépare un résultat à relire. Elle ne tourne que lorsque Localia est ouverte ; un traitement interrompu (Localia fermée, arrêt) reprend au démarrage suivant. Vos conversations passent avant : une routine en cours s’efface et reprend après. Rien n’est enregistré dans la mémoire d’un projet sans votre accord.':
+    "A routine starts from a trigger and prepares a result to review. It only runs while Localia is open; an interrupted job (Localia closed, stopped) resumes at the next start. Your conversations come first: a running routine steps aside and resumes afterwards. Nothing is saved in a project's memory without your consent.",
+  'Nouvelle routine': 'New routine',
+  Déclencheur: 'Trigger',
+  ': un document est ajouté au projet': ': a document is added to the project',
+  Lecture: 'Reading',
+  'du texte du document, sur cet ordinateur': "of the document's text, on this computer",
+  'Synthèse sourcée': 'Sourced summary',
+  'par le modèle choisi': 'by the chosen model',
+  Vérification: 'Check',
+  'automatique des citations': 'of the citations, automatically',
+  'Résultat à relire': 'Result to review',
+  'ici et sur l’accueil': 'here and on the home page',
+  'Projet surveillé': 'Watched project',
+  'Modèle de la synthèse': 'Summary model',
+  'Créer la routine': 'Create the routine',
+  Routines: 'Routines',
+  'Historique des exécutions': 'Run history',
+  'Marquer comme relu': 'Mark as reviewed',
+  'Ajouter à la mémoire du projet': 'Add to the project memory',
+  Relancer: 'Run again',
+  'En attente': 'Waiting',
+  'En cours': 'Running',
+  'À relire': 'To review',
+  Relu: 'Reviewed',
+  Erreur: 'Error',
+  Arrêtée: 'Stopped',
+  'lecture du document': 'reading the document',
+  'chargement du modèle en mémoire': 'loading the model into memory',
+  'rédaction de la synthèse': 'writing the summary',
+  'vérification des citations': 'checking the citations',
+  préparation: 'preparing',
+  'en attente': 'waiting',
+  'Routines suspendues': 'Routines paused',
+  'aucun modèle installé.': 'no model installed.',
+  'départ dès que le modèle est libre.': 'starts as soon as the model is free.',
+  'Aucun traitement en cours.': 'Nothing running.',
+  'Reprendre les routines': 'Resume the routines',
+  'Suspendre les routines': 'Pause the routines',
+  'Projet surveillé…': 'Watched project…',
+  'Modèle des conversations': 'Conversation model',
+  'modèle des conversations': 'conversation model',
+  'Aucune routine. Créez-en une ci-dessus.': 'No routine. Create one above.',
+  supprimé: 'deleted',
+  'projet supprimé': 'deleted project',
+  'quand un document est ajouté': 'when a document is added',
+  Active: 'Active',
+  'Lancer sur les documents existants': 'Run on existing documents',
+  'Supprimer cette routine ? Son historique est conservé.':
+    'Delete this routine? Its history is kept.',
+  'Ces documents ont déjà été traités : utilisez « Relancer » dans l’historique.':
+    'These documents have already been processed: use “Run again” in the history.',
+  'Aucune exécution pour l’instant.': 'No runs yet.',
+  'Synthèse de': 'Summary of',
+  'reprise après interruption': 'resumed after an interruption',
+  'Aucune synthèse.': 'No summary.',
+  'Pas encore de résultat.': 'No result yet.',
+  'Choisissez le projet à surveiller.': 'Choose the project to watch.',
+  'La routine a été supprimée.': 'The routine has been deleted.',
+  'Le modèle n’a écrit aucune synthèse.': 'The model wrote no summary.',
+  'Lecture des documents…': 'Reading the documents…',
+  'Chargement du modèle en mémoire…': 'Loading the model into memory…',
+  'Synthèse d’une routine': 'Routine summary',
   'Rechercher dans ce projet': 'Search this project',
   'Autres actions du projet': 'Other project actions',
   Actions: 'Actions',
@@ -1216,6 +1291,33 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [/^(\d+) autre\(s\) résultat\(s\)$/, '$1 other result(s)'],
+  [/^(\d+) nouvel\(s\) article\(s\) de la veille$/, '$1 new article(s) from the watch'],
+  [
+    /^moteur (prêt|non prêt) · (\d+) modèles?$/,
+    (t) =>
+      t
+        .replace('moteur prêt', 'engine ready')
+        .replace('moteur non prêt', 'engine not ready')
+        .replace(/modèles?$/, (m) => (m === 'modèles' ? 'models' : 'model')),
+  ],
+  [
+    /^Série du Benchmark prévue (.*) : Localia était fermée\. Cliquez pour la lancer maintenant\.$/,
+    'Benchmark series planned $1: Localia was closed. Click to start it now.',
+  ],
+  [/^Synthèse de (.*)$/, 'Summary of $1'],
+  [
+    /^En cours — (.*)$/,
+    (t) => 'Running — ' + tr(t.replace(/^En cours — /, '').replace(/…$/, '')) + '…',
+  ],
+  [/^À relire · (.*)$/, 'To review · $1'],
+  [/^Erreur : (.*)$/, 'Error: $1'],
+  [/^(\d+) document\(s\) mis en attente\.$/, '$1 document(s) queued.'],
+  [
+    /^Routine créée : chaque document ajouté à « (.*) » sera résumé et vérifié, puis proposé à la relecture\.$/,
+    'Routine created: each document added to “$1” will be summarised and checked, then offered for review.',
+  ],
+  [/^Synthèse des nouveaux documents de « (.*) »$/, 'Summary of new documents of “$1”'],
   [/^Ajouter à la mémoire du projet « (.*) »$/, 'Add to the memory of project “$1”'],
   [/^Note ajoutée à la mémoire du projet « (.*) »\.$/, 'Note added to the memory of project “$1”.'],
   [/^Voir les (\d+) conversations$/, 'See the $1 conversations'],
@@ -1225,6 +1327,7 @@ const EN_PATTERNS = [
       text
         .replace(/^Provenance : /, 'Source: ')
         .replace('Proposée par Localia', 'Proposed by Localia')
+        .replace('Synthèse d’une routine', 'Routine summary')
         .replace('Réponse enregistrée', 'Saved answer')
         .replace(/conversation « (.*?) »/, 'conversation “$1”')
         .replace(/ · modèle /, ' · model '),
@@ -1606,6 +1709,10 @@ const EN_PATTERNS = [
         .replace(
           ' (passages les plus proches de la question)',
           ' (passages closest to the question)',
+        )
+        .replace(
+          ' Aucun extrait ne contient les mots de la question : la réponse risque de manquer d’appui ; reformulez ou précisez le document.',
+          ' No extract contains the words of the question: the answer may lack support; rephrase or name the document.',
         ),
   ],
   [

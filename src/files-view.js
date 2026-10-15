@@ -100,6 +100,7 @@ $('files-form').onsubmit = guard(async (event) => {
   setPlanning(true);
   $('files-status').textContent = 'Le modèle prépare un plan…';
   let result;
+  await yieldRoutine();
   try {
     result = await window.localia.run('files', {
       model: $('files-model').value,
@@ -108,6 +109,7 @@ $('files-form').onsubmit = guard(async (event) => {
     });
   } finally {
     setPlanning(false);
+    pumpRoutines();
   }
   if (result.cancelled) {
     $('files-status').textContent = 'Arrêté.';

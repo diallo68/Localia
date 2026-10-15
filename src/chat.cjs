@@ -1,7 +1,7 @@
 const { documentContext } = require('./documents.cjs');
 const { KEEP_ALIVE, modelContext } = require('./settings.cjs');
 
-const KINDS = ['chat', 'compare', 'pull', 'files'];
+const KINDS = ['chat', 'compare', 'pull', 'files', 'routine'];
 const MAX_MESSAGES = 400;
 const MAX_MESSAGE_LENGTH = 100000;
 const MAX_IMAGES = 4;

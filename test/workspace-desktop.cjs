@@ -11,6 +11,7 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
 (async () => {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-workspace-'));
   let app;
+  let page;
   const errors = [];
   try {
     await fs.writeFile(
@@ -65,45 +66,57 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
         },
       ]),
     );
-    app = await electron.launch({
-      args: [path.resolve('.')],
-      env: { ...process.env, LOCALIA_TEST_DATA: profile, LOCALIA_FAKE_LLAMA: '1' },
-    });
-    const page = await app.firstWindow();
-    page.setDefaultTimeout(15000);
-    page.on('pageerror', (error) => errors.push(error.message));
-    await page.waitForFunction(() => typeof openSearch === 'function' && projectsLoaded);
-    // Ollama simulé : un modèle ; réponse fixée par global.chatReply, requêtes capturées.
-    await app.evaluate(() => {
-      global.requests = [];
-      global.fetch = async (url, options) => {
-        const endpoint = new URL(String(url)).pathname;
-        const body = options?.body ? JSON.parse(options.body) : null;
-        if (endpoint === '/api/version') return Response.json({ version: '0.35.0' });
-        if (endpoint === '/api/tags')
-          return Response.json({ models: [{ name: 'petit:1b', size: 1e9 }] });
-        if (endpoint === '/api/show')
-          return Response.json({
-            capabilities: ['completion'],
-            parameters: 'num_ctx 8192',
-            model_info: { 'test.context_length': 32768 },
-            details: { family: 'test', parameter_size: '1B', quantization_level: 'Q4_K_M' },
-          });
-        if (endpoint === '/api/ps') return Response.json({ models: [] });
-        if (endpoint === '/api/chat') {
-          if (global.chatDelay) await new Promise((r) => setTimeout(r, global.chatDelay));
-          global.requests.push(body);
-          const lines = [
-            { message: { content: global.chatReply ?? 'Réponse simulée.' } },
-            { done: true, done_reason: 'stop', eval_count: 10, eval_duration: 1e9 },
-          ];
-          return new Response(lines.map((l) => JSON.stringify(l)).join('\n') + '\n');
-        }
-        throw new Error('unexpected endpoint ' + endpoint);
-      };
-    });
-    await page.locator('#refresh').dispatchEvent('click');
-    await page.waitForFunction(() => document.querySelector('#model').options.length === 1);
+    // Lancement de Localia sur le profil de test, avec Ollama simulé.
+    const start = async () => {
+      app = await electron.launch({
+        args: [path.resolve('.')],
+        env: { ...process.env, LOCALIA_TEST_DATA: profile, LOCALIA_FAKE_LLAMA: '1' },
+      });
+      page = await app.firstWindow();
+      page.setDefaultTimeout(15000);
+      page.on('pageerror', (error) => errors.push(error.message));
+      await page.waitForFunction(() => typeof openSearch === 'function' && projectsLoaded);
+      // Ollama simulé : un modèle ; réponse fixée par global.chatReply, requêtes capturées.
+      await app.evaluate(() => {
+        global.requests = [];
+        global.fetch = async (url, options) => {
+          const endpoint = new URL(String(url)).pathname;
+          const body = options?.body ? JSON.parse(options.body) : null;
+          if (endpoint === '/api/version') return Response.json({ version: '0.35.0' });
+          if (endpoint === '/api/tags')
+            return Response.json({ models: [{ name: 'petit:1b', size: 1e9 }] });
+          if (endpoint === '/api/show')
+            return Response.json({
+              capabilities: ['completion'],
+              parameters: 'num_ctx 8192',
+              model_info: { 'test.context_length': 32768 },
+              details: { family: 'test', parameter_size: '1B', quantization_level: 'Q4_K_M' },
+            });
+          if (endpoint === '/api/ps') return Response.json({ models: [] });
+          if (endpoint === '/api/chat') {
+            // Réponse lente facultative, interrompue si la requête est annulée.
+            if (global.chatDelay)
+              await new Promise((resolve, reject) => {
+                const timer = setTimeout(resolve, global.chatDelay);
+                options.signal?.addEventListener('abort', () => {
+                  clearTimeout(timer);
+                  reject(new DOMException('annulée', 'AbortError'));
+                });
+              });
+            global.requests.push(body);
+            const lines = [
+              { message: { content: global.chatReply ?? 'Réponse simulée.' } },
+              { done: true, done_reason: 'stop', eval_count: 10, eval_duration: 1e9 },
+            ];
+            return new Response(lines.map((l) => JSON.stringify(l)).join('\n') + '\n');
+          }
+          throw new Error('unexpected endpoint ' + endpoint);
+        };
+      });
+      await page.locator('#refresh').dispatchEvent('click');
+      await page.waitForFunction(() => document.querySelector('#model').options.length === 1);
+    };
+    await start();
     const settle = () => page.evaluate(() => window.localia.loadProjects());
 
     // Projets récents : la conversation d'il y a 5 minutes place « Thèse » avant « Bilan ».
@@ -221,9 +234,116 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
       /Proposée par Localia · conversation « Pluies de juillet »/,
     );
 
+    // Routine : document ajouté → synthèse sourcée → vérification → résultat à relire.
+    await page.locator('#routines-tab').click();
+    await page.locator('#routine-project').selectOption('p-these');
+    await page.locator('#routine-form button[type=submit]').click();
+    await page.waitForSelector('.routine-row');
+    await app.evaluate(() => {
+      global.chatReply = '- Août : 455 mm à Dalaba [aout.txt — section 1].';
+    });
+    await page.evaluate(() => {
+      openProjectId = 'p-these';
+      return addProjectDocuments(() =>
+        window.localia.projectDocumentsDrop([
+          { name: 'aout.txt', bytes: new TextEncoder().encode('Août : 455 mm à Dalaba.') },
+        ]),
+      );
+    });
+    await page.locator('#routines-tab').click();
+    await page.waitForSelector('.run-row.state-a-relire');
+    let request = await app.evaluate(() => global.requests.at(-1));
+    assert.match(request.messages.at(-1).content, /synthèse sourcée du document « aout\.txt »/);
+    assert.match(request.messages.at(-1).content, /Août : 455 mm à Dalaba/);
+    await page.locator('.run-row.state-a-relire').click();
+    assert.match(await page.locator('#run-text').textContent(), /455 mm/);
+    assert.deepEqual(await page.locator('#run-checks .source-state').allTextContents(), [
+      'Chiffres retrouvés',
+    ]);
+    // À traiter sur l'accueil, puis relu.
+    await page.locator('#home-tab').click();
+    assert.match(await page.locator('#home-todo').textContent(), /Synthèse de aout\.txt/);
+    await page.locator('#home-todo button', { hasText: 'aout.txt' }).click();
+    await page.locator('#run-reviewed').click();
+    await page.waitForSelector('.run-row.state-relu');
+
+    // Une conversation passe avant une routine en cours ; la routine reprend ensuite.
+    await app.evaluate(() => {
+      global.chatDelay = 1500;
+      global.chatReply = '- Septembre : 302 mm [sept.txt — section 1].';
+    });
+    await page.evaluate(() =>
+      addProjectDocuments(() =>
+        window.localia.projectDocumentsDrop([
+          { name: 'sept.txt', bytes: new TextEncoder().encode('Septembre : 302 mm.') },
+        ]),
+      ),
+    );
+    await page.waitForSelector('.run-row.state-en-cours');
+    await page.evaluate(() => openConversation(conversations.find((c) => c.id === 'c-pain')));
+    await page.locator('#prompt').fill('Et le croissant ?');
+    await page.locator('#send').click();
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('.message.assistant').length === 1 &&
+        document.querySelector('#stop').hidden,
+    );
+    await page.locator('#routines-tab').click();
+    await page.waitForSelector('.run-row.state-a-relire', { timeout: 20000 });
+    assert.match(
+      await page.locator('.run-row.state-a-relire').textContent(),
+      /reprise après interruption/,
+    );
+    await app.evaluate(() => {
+      delete global.chatDelay;
+      delete global.chatReply;
+    });
+    const savedRoutines = JSON.parse(
+      await fs.readFile(path.join(profile, 'routines.json'), 'utf8'),
+    );
+    assert.equal(savedRoutines.routines.length, 1);
+    assert.deepEqual(
+      savedRoutines.runs.map((r) => [r.docName, r.state]),
+      [
+        ['aout.txt', 'relu'],
+        ['sept.txt', 'a-relire'],
+      ],
+    );
+
+    // Redémarrage : exécution restée en cours reprise, départ programmé passé signalé comme manqué.
+    await app.close();
+    const stored = JSON.parse(await fs.readFile(path.join(profile, 'routines.json'), 'utf8'));
+    stored.paused = true;
+    stored.runs.push({
+      ...stored.runs[0],
+      id: 'interrompue',
+      state: 'en-cours',
+      step: 'generation',
+      text: undefined,
+      checks: undefined,
+    });
+    stored.scheduled = {
+      at: iso(30),
+      template: { questions: [{ label: 'Q1', text: 'Question' }], models: ['petit:1b'] },
+    };
+    await fs.writeFile(path.join(profile, 'routines.json'), JSON.stringify(stored));
+    await start();
+    await page.locator('#home-tab').click();
+    assert.match(await page.locator('#home-todo').textContent(), /Départ programmé manqué/);
+    await page.locator('#routines-tab').click();
+    assert.match(
+      await page.locator('.run-row.state-en-attente').textContent(),
+      /reprise après interruption/,
+    );
+    await page.locator('#routines-pause').click();
+    await page.waitForFunction(() => !document.querySelector('.run-row.state-en-attente'));
+    await page.waitForFunction(
+      () => document.querySelectorAll('.run-row.state-a-relire').length === 2,
+    );
+
     assert.deepEqual(errors, []);
     console.log(
-      'PASS espace de travail : projets récents, recherche commune (conversations, notes, documents, filtres, ouverture dans le contexte), page du projet (synthèse, prochaine étape, menu), propositions de notes avec provenance.',
+      'PASS espace de travail : projets récents, recherche commune (conversations, notes, documents, filtres, ouverture dans le contexte), page du projet (synthèse, prochaine étape, menu), propositions de notes avec provenance, routines (déclencheur, synthèse vérifiée, à relire, priorité aux conversations, reprise après redémarrage), départ programmé manqué.',
     );
   } finally {
     await app?.close();

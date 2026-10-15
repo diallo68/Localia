@@ -99,6 +99,8 @@ contextBridge.exposeInMainWorld('localia', {
   saveSettings: (data) => invoke('save-settings', data),
   loadComparisons: () => invoke('load-comparisons'),
   loadProjects: () => invoke('load-projects'),
+  loadRoutines: () => invoke('load-routines'),
+  saveRoutines: (data) => invoke('save-routines', data),
   saveProjects: (data) => invoke('save-projects', data),
   saveComparisons: (data) => invoke('save-comparisons', data),
   modelInfo: (name) => invoke('model-info', name),

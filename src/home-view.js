@@ -78,7 +78,7 @@ $('composer-advanced').onclick = () =>
 $('model').addEventListener('change', updateComposerAdvice);
 modelListeners.push(updateComposerAdvice);
 
-// Accueil du mode avancé : actions, modèle conseillé, projets récents, état du système.
+// Accueil du mode avancé, dans l'ordre : actions, reprendre, à traiter, activité, état technique.
 // Dernière activité d'un projet : création, notes, documents et conversations liées.
 function lastActivity(project) {
   return [
@@ -91,6 +91,21 @@ function lastActivity(project) {
     .sort()
     .pop();
 }
+// Ligne cliquable des zones « À traiter » et « Activité ».
+function homeItem(box, icon, title, detail, onclick, level = '') {
+  const row = element(onclick ? 'button' : 'div', `home-item ${level}`);
+  if (onclick) {
+    row.type = 'button';
+    row.onclick = onclick;
+  }
+  row.innerHTML = iconSvg(icon);
+  const text = element('span');
+  text.append(element('strong', '', title));
+  if (detail) text.append(element('small', 'muted', detail));
+  row.append(text);
+  box.append(row);
+}
+let watchNew = 0; // nouveaux articles de la veille, relus au démarrage et après chaque recherche
 
 function renderHome() {
   greeting($('home-greeting'));
@@ -99,18 +114,7 @@ function renderHome() {
   pill.className = 'home-pill' + (ready ? ' ready' : '');
   pill.textContent = ready ? 'Moteur local connecté' : $('engine-state').textContent;
 
-  const advice = $('home-advice');
-  advice.replaceChildren();
-  const card = adviceCard(currentMetier());
-  if (card) {
-    const compare = element('button', '', 'Comparer');
-    compare.type = 'button';
-    compare.onclick = () => $('bench-nav').click();
-    card.querySelector('.advice-foot').append(compare);
-    advice.append(card);
-  }
-
-  // Continuer : dernière conversation, dernier document analysé, dernier projet.
+  // Reprendre : dernière conversation, dernier document analysé, puis projets actifs.
   const resume = $('home-continue');
   resume.replaceChildren();
   const byDate = [...conversations].sort((a, b) =>
@@ -118,11 +122,6 @@ function renderHome() {
   );
   const lastConversation = byDate.find((c) => c.messages?.length);
   const withDocument = byDate.find((c) => c.document);
-  const lastProject = [...projects].sort((a, b) =>
-    String(lastActivity(b)).localeCompare(String(lastActivity(a))),
-  )[0];
-  const openConversation = (c) => () =>
-    document.querySelector(`#history button[data-id="${CSS.escape(c.id)}"]`)?.click();
   const tile = (icon, kind, title, detail, onclick) => {
     const button = element('button', 'home-resume');
     button.type = 'button';
@@ -140,21 +139,12 @@ function renderHome() {
       'Dernière conversation',
       lastConversation.title,
       shortDate(lastConversation.updatedAt),
-      openConversation(lastConversation),
+      () => openConversation(lastConversation),
     );
-  if (withDocument)
-    tile(
-      'file',
-      'Dernier document analysé',
-      withDocument.document.name,
-      withDocument.title,
+  if (withDocument && withDocument !== lastConversation)
+    tile('file', 'Dernier document analysé', withDocument.document.name, withDocument.title, () =>
       openConversation(withDocument),
     );
-  if (lastProject)
-    tile('folder', 'Dernier projet', lastProject.name, shortDate(lastActivity(lastProject)), () => {
-      openProjectId = lastProject.id;
-      $('projects-tab').click();
-    });
   if (!resume.childNodes.length)
     resume.append(element('p', 'muted', 'Votre travail récent apparaîtra ici.'));
 
@@ -167,10 +157,10 @@ function renderHome() {
   for (const project of recent) {
     const row = element('button', 'home-row');
     row.type = 'button';
-    row.append(
-      element('strong', '', project.name),
-      element('span', 'muted', shortDate(lastActivity(project))),
-    );
+    const name = element('span', 'home-row-name');
+    name.append(element('strong', '', project.name));
+    if (project.nextStep) name.append(element('small', 'muted', `→ ${project.nextStep}`));
+    row.append(name, element('span', 'muted', shortDate(lastActivity(project))));
     row.onclick = () => {
       openProjectId = project.id;
       $('projects-tab').click();
@@ -178,6 +168,82 @@ function renderHome() {
     list.append(row);
   }
 
+  // À traiter : seulement des événements enregistrés (résultats de routines, erreurs, veille,
+  // départ programmé manqué).
+  const todo = $('home-todo');
+  todo.replaceChildren();
+  const review = typeof runsToReview === 'function' ? runsToReview() : [];
+  for (const run of review.slice(-6).reverse())
+    homeItem(
+      todo,
+      run.state === 'erreur' ? 'refresh' : 'file',
+      runTitle(run),
+      run.state === 'erreur'
+        ? `${tr('Erreur')} : ${run.error || ''}`
+        : `${tr('À relire')} · ${projectById(run.projectId)?.name || ''}`,
+      () => openRun(run.id),
+      run.state === 'erreur' ? 'warn' : '',
+    );
+  if (review.length > 6)
+    homeItem(todo, 'routine', `${review.length - 6} autre(s) résultat(s)`, '', () =>
+      $('routines-tab').click(),
+    );
+  const missed = typeof missedSchedule === 'function' ? missedSchedule() : null;
+  if (missed)
+    homeItem(
+      todo,
+      'chart',
+      'Départ programmé manqué',
+      `Série du Benchmark prévue ${new Date(missed.at).toLocaleString('fr-FR', { weekday: 'long', hour: '2-digit', minute: '2-digit' })} : Localia était fermée. Cliquez pour la lancer maintenant.`,
+      guard(runMissedSchedule),
+      'warn',
+    );
+  if (watchNew)
+    homeItem(todo, 'book', `${watchNew} nouvel(s) article(s) de la veille`, '', () =>
+      $('bibliography-tab').click(),
+    );
+  if (!todo.childNodes.length) todo.append(element('p', 'muted', 'Rien à traiter.'));
+
+  // Activité : traitements en cours et prochains départs (zone masquée s'il n'y en a pas).
+  const activity = $('home-activity');
+  activity.replaceChildren();
+  if (typeof routineRunning !== 'undefined' && routineRunning)
+    homeItem(
+      activity,
+      'routine',
+      `${runTitle(routineRunning)}`,
+      `${tr('En cours')} — ${tr(STEP_LABELS[routineRunning.step] || 'préparation')}…`,
+      () => openRun(routineRunning.id),
+    );
+  const waiting =
+    typeof routinesData === 'undefined'
+      ? 0
+      : routinesData.runs.filter((r) => r.state === 'en-attente').length;
+  if (waiting)
+    homeItem(
+      activity,
+      'clock',
+      `${waiting} ${tr('en attente')}`,
+      routinesData.paused ? tr('Routines suspendues') : '',
+      () => $('routines-tab').click(),
+    );
+  if (typeof scheduledStart !== 'undefined' && scheduledStart)
+    homeItem(
+      activity,
+      'chart',
+      'Série du Benchmark programmée',
+      scheduledStart.at.toLocaleString('fr-FR', {
+        weekday: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      () => $('bench-nav').click(),
+    );
+  if (comparing)
+    homeItem(activity, 'chart', 'Série du Benchmark en cours', '', () => $('bench-nav').click());
+  $('home-activity-card').hidden = !activity.childNodes.length;
+
+  // État technique, replié : moteur, modèles, mémoire, modèle conseillé.
   const status = $('home-status');
   status.replaceChildren();
   const line = (ok, title, detail) => {
@@ -197,12 +263,54 @@ function renderHome() {
       'Mémoire utilisée',
       $('memory-text').textContent,
     );
+  $('home-tech-summary').textContent =
+    `${ready ? 'moteur prêt' : 'moteur non prêt'} · ${models.length + (models.length > 1 ? ' modèles' : ' modèle')}`;
+  const advice = $('home-advice');
+  advice.replaceChildren();
+  const card = adviceCard(currentMetier());
+  if (card) {
+    const compare = element('button', '', 'Comparer');
+    compare.type = 'button';
+    compare.onclick = () => $('bench-nav').click();
+    card.querySelector('.advice-foot').append(compare);
+    advice.append(card);
+  }
   placeIcons($('home-view'));
 }
+// État technique : ouvert ou replié, retenu sur cet ordinateur.
+try {
+  $('home-tech').open = localStorage.getItem('localia.homeTech') === 'open';
+} catch {
+  // Stockage indisponible : replié.
+}
+$('home-tech').ontoggle = () => {
+  try {
+    localStorage.setItem('localia.homeTech', $('home-tech').open ? 'open' : 'closed');
+  } catch {
+    // Stockage indisponible : l'état n'est pas retenu.
+  }
+};
+$('home-routines').onclick = () => $('routines-tab').click();
+function refreshWatchCount() {
+  window.localia
+    .watchLoad()
+    .then((w) => {
+      const count = w.items.filter((i) => i.status === 'new').length;
+      if (count === watchNew) return;
+      watchNew = count;
+      if (!$('home-view').hidden) renderHome();
+    })
+    .catch(() => {});
+}
+refreshWatchCount();
+window.localia.onProgress(({ kind }) => {
+  if (kind === 'watch') refreshWatchCount();
+});
 
 function openHome() {
   view('home');
   renderHome();
+  refreshWatchCount();
 }
 $('home-tab').onclick = openHome;
 $('home-ask').onclick = () => {

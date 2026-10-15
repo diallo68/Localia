@@ -25,6 +25,7 @@
   }
   const comparisonsReady = await loadComparisons();
   await loadProjects();
+  await loadRoutines();
   // Un fichier illisible pourrait référencer des documents : rien n'est effacé dans ce cas.
   if (historyReady && comparisonsReady && projectsLoaded)
     await window.localia
@@ -43,6 +44,8 @@
   applyLanguage();
   langButtons();
   await refresh();
+  pumpRoutines();
+  restoreScheduledSeries();
   if (isAdvanced() && settings.metier) openHome();
   // Données chiffrées sans clé : rien n'a été chargé ni ne sera enregistré ; on l'explique.
   const privacy = await window.localia.encryptionStatus().catch(() => null);

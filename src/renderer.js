@@ -86,6 +86,7 @@ const VIEWS = {
   security: 'Confidentialité et sécurité',
   benchmark: 'Benchmark',
   projects: 'Projets',
+  routines: 'Automatisations',
   bibliography: 'Bibliographie',
   files: 'Fichiers',
   skills: 'Compétences',
@@ -1484,6 +1485,8 @@ async function sendPrompt({ remoteId } = {}) {
   $('prompt').value = '';
   $('skill-suggest').hidden = true;
   chatting = true;
+  // Une routine en cours laisse passer la conversation (elle reprendra ensuite).
+  await yieldRoutine();
   render();
   controls();
   const answer = { role: 'assistant', content: '' };
@@ -1563,6 +1566,7 @@ async function sendPrompt({ remoteId } = {}) {
     render();
     controls();
     $('prompt').focus();
+    pumpRoutines();
   }
   return {
     ok: completed,
@@ -1661,7 +1665,10 @@ window.localia.onProgress(({ kind, data }) => {
     );
   if (kind === 'project-documents')
     runNotice(
-      `Documents du projet « ${data.project} » transmis${data.partial ? ' (passages les plus proches de la question)' : ''} : ${data.used.map((u) => u.name).join(', ')}.`,
+      `Documents du projet « ${data.project} » transmis${data.partial ? ' (passages les plus proches de la question)' : ''} : ${data.used.map((u) => (data.partial ? `${u.name} (${u.places.join(', ')})` : u.name)).join(', ')}.` +
+        (data.insufficient
+          ? ' Aucun extrait ne contient les mots de la question : la réponse risque de manquer d’appui ; reformulez ou précisez le document.'
+          : ''),
     );
   if (kind === 'skill') runNotice(`Compétence appliquée : ${data.name} (${data.call}).`);
   if (kind === 'anonymized')
@@ -1678,6 +1685,15 @@ window.localia.onProgress(({ kind, data }) => {
     runNotice(
       'Conversation longue : le modèle peut ne plus voir les premiers messages. Ouvrez une nouvelle conversation et rappelez les points importants si besoin.',
     );
+  }
+  // Étape réelle de la réponse en attente du premier mot.
+  if (kind === 'step' && data.task === 'chat' && reply && !reply.dataset.answer) {
+    const label = {
+      lecture: 'Lecture des documents…',
+      chargement: 'Chargement du modèle en mémoire…',
+      generation: 'Le modèle réfléchit…',
+    }[data.step];
+    if (label) reply.textContent = label;
   }
   if (kind === 'chat' && reply) {
     reply.dataset.answer = (reply.dataset.answer || '') + (data.message?.content || '');

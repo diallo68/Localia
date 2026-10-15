@@ -247,7 +247,8 @@ async function addToMemory(text, question, message) {
 // Provenance affichée : conversation d'origine (ouvrable), question, modèle, date.
 function provenanceText(source) {
   const parts = [
-    source.kind === 'proposition' ? 'Proposée par Localia' : 'Réponse enregistrée',
+    { proposition: 'Proposée par Localia', routine: 'Synthèse d’une routine' }[source.kind] ||
+      'Réponse enregistrée',
     source.conversationTitle ? `conversation « ${source.conversationTitle} »` : '',
     source.model ? `modèle ${source.model}` : '',
     source.at ? new Date(source.at).toLocaleString('fr-FR') : '',
@@ -436,6 +437,7 @@ async function addProjectDocuments(run) {
     const added = result.added.slice(0, room);
     project.documents.push(...added);
     await persistProjects();
+    if (added.length) await queueDocumentRoutines(project.id, added);
     const failed = result.errors.map((e) => `${e.name} : ${e.error}`);
     status.textContent =
       `${added.length} document${added.length > 1 ? 's' : ''} ajouté${added.length > 1 ? 's' : ''}.` +

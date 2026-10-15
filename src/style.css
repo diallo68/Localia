@@ -4891,3 +4891,14 @@ button.home-item:hover {
 .home-resume-card .home-continue {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+
+/* Sauvegarde et restauration */
+.backup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 520px;
+}
+#backup-status.warn {
+  color: var(--warn);
+}

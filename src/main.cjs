@@ -61,6 +61,7 @@ const { taskById } = require('./tasks.js');
 const { normalizeProjects, buildMemory } = require('./memory.js');
 const search = require('./search.js');
 const routinesModule = require('./routines.js');
+const backup = require('./backup.cjs');
 const bibliography = require('./bibliography.js');
 const { formatListing, checkPlanAnswer } = require('./actions.js');
 const files = require('./files.cjs');
@@ -2194,6 +2195,111 @@ handle('encryption-import-key', async () => {
   // conversations, comparaisons et projets sont relus avec la clé retrouvée.
   setTimeout(() => window?.webContents.reload(), 100);
   return encryptionStatus();
+});
+
+// --- Sauvegarde et restauration ---------------------------------------------------------------
+// Toutes les données (fichiers JSON et textes des documents), déchiffrées puis rechiffrées par une
+// phrase de passe dans un seul fichier. La clé de cet ordinateur (cle.bin) n'y est pas : la
+// sauvegarde ne dépend que de la phrase de passe.
+const DOCUMENT_FILE = /^[0-9a-f-]{36}\.json$/;
+const settleWrites = () => Promise.all([...writeQueues.values()].map((q) => q.catch(() => {})));
+// Tests automatiques seulement : fichier de sauvegarde fixé, sans fenêtre d'enregistrement.
+const testBackup = process.env.LOCALIA_TEST_DATA ? process.env.LOCALIA_TEST_BACKUP : null;
+async function collectData() {
+  await settleWrites();
+  const files = {};
+  for (const name of DATA_FILES) {
+    const buffer = await fs.readFile(dataPath(name)).catch(() => null);
+    if (buffer) files[name] = storage.decrypt(buffer, dataKey);
+  }
+  const documents = {};
+  for (const file of await documentFiles())
+    if (DOCUMENT_FILE.test(path.basename(file)))
+      documents[path.basename(file, '.json')] = storage.decrypt(await fs.readFile(file), dataKey);
+  return { files, documents };
+}
+const backupSummary = (data) => ({
+  createdAt: data.createdAt,
+  version: data.version,
+  files: Object.keys(data.files).length,
+  documents: Object.keys(data.documents).length,
+});
+async function readBackupFile(passphrase, title) {
+  const result = await dialog.showOpenDialog(window, {
+    title,
+    properties: ['openFile'],
+    filters: [{ name: 'Sauvegarde Localia', extensions: ['localia'] }],
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+  const file = result.filePaths[0];
+  if ((await fs.stat(file)).size > 2_000_000_000) throw new Error('Fichier trop volumineux.');
+  return backup.unpackBackup(await fs.readFile(file), passphrase);
+}
+handle('backup-create', async (passphrase) => {
+  if (encryptionEnabled && !dataKey)
+    throw new Error('Clé de chiffrement indisponible : importez d’abord la clé de secours.');
+  const day = new Date().toISOString().slice(0, 10);
+  const target =
+    testBackup ||
+    (
+      await dialog.showSaveDialog(window, {
+        title: 'Enregistrer la sauvegarde',
+        defaultPath: path.join(app.getPath('documents'), `localia-sauvegarde-${day}.localia`),
+        filters: [{ name: 'Sauvegarde Localia', extensions: ['localia'] }],
+      })
+    ).filePath;
+  if (!target) return null;
+  const data = await collectData();
+  const packed = backup.packBackup({ ...data, version: app.getVersion() }, passphrase);
+  await fs.writeFile(target + '.tmp', packed, { mode: 0o600 });
+  await fs.rename(target + '.tmp', target);
+  // Relecture immédiate : la sauvegarde écrite doit s'ouvrir avec la phrase de passe.
+  const check = backup.unpackBackup(await fs.readFile(target), passphrase);
+  return { name: path.basename(target), size: packed.length, ...backupSummary(check) };
+});
+handle('backup-verify', async (passphrase) => {
+  const data = testBackup
+    ? backup.unpackBackup(await fs.readFile(testBackup), passphrase)
+    : await readBackupFile(passphrase, 'Vérifier une sauvegarde');
+  return data && backupSummary(data);
+});
+handle('backup-restore', async (passphrase) => {
+  // Chiffrement actif sans clé : impossible de rechiffrer les données restaurées.
+  if (encryptionEnabled && !dataKey)
+    throw new Error('Clé de chiffrement indisponible : importez d’abord la clé de secours.');
+  const data = testBackup
+    ? backup.unpackBackup(await fs.readFile(testBackup), passphrase)
+    : await readBackupFile(passphrase, 'Restaurer une sauvegarde');
+  if (!data) return null;
+  // Contenu vérifié avant toute écriture : noms connus, JSON lisible.
+  for (const [name, text] of Object.entries(data.files)) {
+    if (!DATA_FILES.includes(name))
+      throw new Error(`Fichier inattendu dans la sauvegarde : ${name}.`);
+    JSON.parse(text);
+  }
+  for (const [id, text] of Object.entries(data.documents)) {
+    if (!DOCUMENT_FILE.test(id + '.json')) throw new Error('Document invalide dans la sauvegarde.');
+    JSON.parse(text);
+  }
+  // Données actuelles copiées telles quelles (chiffrées si elles l'étaient) avant remplacement.
+  await settleWrites();
+  const keep = dataPath(`avant-restauration-${new Date().toISOString().replace(/[:.]/g, '-')}`);
+  await fs.mkdir(path.join(keep, 'documents'), { recursive: true, mode: 0o700 });
+  for (const name of DATA_FILES)
+    await fs.copyFile(dataPath(name), path.join(keep, name)).catch(() => {});
+  for (const file of await documentFiles())
+    await fs.copyFile(file, path.join(keep, 'documents', path.basename(file)));
+  // Remplacement : fichiers absents de la sauvegarde retirés, documents remplacés.
+  for (const name of DATA_FILES) {
+    if (Object.hasOwn(data.files, name)) await queueWrite(name, () => data.files[name]);
+    else await fs.rm(dataPath(name), { force: true });
+  }
+  for (const file of await documentFiles()) await fs.rm(file, { force: true });
+  await fs.mkdir(documentsPath(), { recursive: true });
+  for (const [id, text] of Object.entries(data.documents))
+    await fs.writeFile(path.join(documentsPath(), id + '.json'), encodeData(text), { mode: 0o600 });
+  setTimeout(() => window?.webContents.reload(), 300);
+  return { ...backupSummary(data), kept: path.basename(keep) };
 });
 
 handle('load', () =>

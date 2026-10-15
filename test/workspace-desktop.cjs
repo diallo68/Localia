@@ -70,7 +70,13 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
     const start = async () => {
       app = await electron.launch({
         args: [path.resolve('.')],
-        env: { ...process.env, LOCALIA_TEST_DATA: profile, LOCALIA_FAKE_LLAMA: '1' },
+        env: {
+          ...process.env,
+          LOCALIA_TEST_DATA: profile,
+          LOCALIA_FAKE_LLAMA: '1',
+          LOCALIA_TEST_KEYCHAIN: 'ok',
+          LOCALIA_TEST_BACKUP: path.join(profile, 'test.localia'),
+        },
       });
       page = await app.firstWindow();
       page.setDefaultTimeout(15000);
@@ -341,9 +347,57 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
       () => document.querySelectorAll('.run-row.state-a-relire').length === 2,
     );
 
+    // Sauvegarde chiffrée par phrase de passe, puis restauration (chiffrement actif).
+    await page.evaluate(() => window.localia.encryptionEnable());
+    await page.locator('#security-tab').click();
+    await page.locator('#backup-passphrase').fill('phrase de passe de test');
+    await page.locator('#backup-confirm').fill('autre phrase de passe');
+    await page.locator('#backup-create').click();
+    await page.waitForFunction(() =>
+      /confirmation ne correspond pas/.test(document.querySelector('#backup-status').textContent),
+    );
+    await page.locator('#backup-confirm').fill('phrase de passe de test');
+    await page.locator('#backup-create').click();
+    await page.waitForFunction(() =>
+      /Sauvegarde enregistrée et relue/.test(document.querySelector('#backup-status').textContent),
+    );
+    const packed = await fs.readFile(path.join(profile, 'test.localia'));
+    assert.ok(packed.subarray(0, 20).toString().startsWith('LOCALIA-SAUVEGARDE-1'));
+    assert.ok(!packed.includes(Buffer.from('Bilan boulangerie')), 'sauvegarde chiffrée');
+    await page.locator('#backup-passphrase').fill('mauvaise phrase de passe');
+    await page.locator('#backup-verify').click();
+    await page.waitForFunction(() =>
+      /Phrase de passe incorrecte/.test(document.querySelector('#backup-status').textContent),
+    );
+    await page.locator('#backup-passphrase').fill('phrase de passe de test');
+    await page.locator('#backup-verify').click();
+    await page.waitForFunction(() =>
+      /Sauvegarde intacte/.test(document.querySelector('#backup-status').textContent),
+    );
+    // Projet supprimé après la sauvegarde, puis restauré.
+    await page.evaluate(async () => {
+      projects = projects.filter((p) => p.id !== 'p-bilan');
+      await persistProjects();
+    });
+    assert.equal((await settle()).length, 1);
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#backup-restore').click();
+    await page.waitForEvent('load');
+    await page.waitForFunction(() => typeof projectsLoaded !== 'undefined' && projectsLoaded);
+    assert.deepEqual(
+      (await settle()).map((p) => p.id),
+      ['p-these', 'p-bilan'],
+    );
+    const profileFiles = await fs.readdir(profile);
+    const kept = profileFiles.find((f) => f.startsWith('avant-restauration-'));
+    assert.ok(kept, 'données précédentes copiées');
+    assert.ok((await fs.readdir(path.join(profile, kept, 'documents'))).length >= 3);
+    const restored = await fs.readFile(path.join(profile, 'projects.json'));
+    assert.ok(restored.subarray(0, 17).toString() === 'LOCALIA-CHIFFRE-1', 'rechiffré avec la clé');
+
     assert.deepEqual(errors, []);
     console.log(
-      'PASS espace de travail : projets récents, recherche commune (conversations, notes, documents, filtres, ouverture dans le contexte), page du projet (synthèse, prochaine étape, menu), propositions de notes avec provenance, routines (déclencheur, synthèse vérifiée, à relire, priorité aux conversations, reprise après redémarrage), départ programmé manqué.',
+      'PASS espace de travail : projets récents, recherche commune (conversations, notes, documents, filtres, ouverture dans le contexte), page du projet (synthèse, prochaine étape, menu), propositions de notes avec provenance, routines (déclencheur, synthèse vérifiée, à relire, priorité aux conversations, reprise après redémarrage), départ programmé manqué, sauvegarde chiffrée et restauration.',
     );
   } finally {
     await app?.close();

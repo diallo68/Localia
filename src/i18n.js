@@ -291,6 +291,35 @@ const METIERS_EN = {
 
 // Textes fixes de l'interface (texte exact → anglais).
 const EN = {
+  'Sauvegarde et restauration': 'Backup and restore',
+  'Une sauvegarde réunit dans un seul fichier vos conversations, projets, documents, comparaisons, routines et réglages. Elle est chiffrée par une phrase de passe que vous choisissez : sans elle, personne ne peut la lire, pas même vous. Elle ne dépend pas du trousseau de ce Mac et se restaure aussi sur un autre ordinateur. Les modèles et le dossier Compétences n’en font pas partie.':
+    "A backup gathers your conversations, projects, documents, comparisons, routines and settings into a single file. It is encrypted with a passphrase you choose: without it, nobody can read it, not even you. It does not depend on this Mac's keychain and can also be restored on another computer. Models and the Skills folder are not included.",
+  'Une sauvegarde réunit dans un seul fichier vos conversations, projets, documents, comparaisons, routines et réglages. Elle est chiffrée par une phrase de passe que vous choisissez : sans elle, personne ne peut la lire, pas même vous. Elle ne dépend pas du coffre de clés du système et se restaure aussi sur un autre ordinateur. Les modèles et le dossier Compétences n’en font pas partie.':
+    'A backup gathers your conversations, projects, documents, comparisons, routines and settings into a single file. It is encrypted with a passphrase you choose: without it, nobody can read it, not even you. It does not depend on the system key store and can also be restored on another computer. Models and the Skills folder are not included.',
+  'Phrase de passe (10 caractères au moins)': 'Passphrase (at least 10 characters)',
+  'Confirmation (pour une nouvelle sauvegarde)': 'Confirmation (for a new backup)',
+  'Créer une sauvegarde…': 'Create a backup…',
+  'Vérifier une sauvegarde…': 'Check a backup…',
+  'Restaurer une sauvegarde…': 'Restore a backup…',
+  'Restaurer remplace toutes les données actuelles par celles de la sauvegarde ; elles sont d’abord copiées dans un dossier « avant-restauration » du dossier de Localia. Si le chiffrement est actif, les données restaurées sont chiffrées avec la clé de ce Mac.':
+    "Restoring replaces all current data with the backup's; it is first copied into an “avant-restauration” folder in Localia's folder. If encryption is on, the restored data is encrypted with this Mac's key.",
+  'Restaurer remplace toutes les données actuelles par celles de la sauvegarde ; elles sont d’abord copiées dans un dossier « avant-restauration » du dossier de Localia. Si le chiffrement est actif, les données restaurées sont chiffrées avec la clé de cet ordinateur.':
+    "Restoring replaces all current data with the backup's; it is first copied into an “avant-restauration” folder in Localia's folder. If encryption is on, the restored data is encrypted with this computer's key.",
+  'Phrase de passe trop courte : 10 caractères au moins.':
+    'Passphrase too short: at least 10 characters.',
+  'La confirmation ne correspond pas à la phrase de passe.':
+    'The confirmation does not match the passphrase.',
+  'Sauvegarde en cours…': 'Backing up…',
+  'Restauration…': 'Restoring…',
+  'Attendez la fin du traitement en cours avant de restaurer.':
+    'Wait for the current job to finish before restoring.',
+  'Remplacer toutes les données actuelles par celles de la sauvegarde ? Elles seront d’abord copiées dans un dossier « avant-restauration ». Localia se rechargera.':
+    "Replace all current data with the backup's? It will first be copied into an “avant-restauration” folder. Localia will reload.",
+  'Phrase de passe incorrecte, ou fichier de sauvegarde modifié ou incomplet.':
+    'Wrong passphrase, or backup file modified or incomplete.',
+  'Ce fichier n’est pas une sauvegarde Localia.': 'This file is not a Localia backup.',
+  'Clé de chiffrement indisponible : importez d’abord la clé de secours.':
+    'Encryption key unavailable: import the recovery key first.',
   Reprendre: 'Resume',
   'Projets actifs': 'Active projects',
   'À traiter': 'To do',
@@ -1291,6 +1320,22 @@ if (typeof METIERS !== 'undefined')
 
 // Textes avec une partie variable.
 const EN_PATTERNS = [
+  [
+    /^Sauvegarde enregistrée et relue : (.*) — (\d+) fichier\(s\) de données et (\d+) document\(s\), sauvegarde du (.*)\. Gardez la phrase de passe à part : elle ne peut pas être retrouvée\.$/,
+    'Backup saved and read back: $1 — $2 data file(s) and $3 document(s), backup of $4. Keep the passphrase separately: it cannot be recovered.',
+  ],
+  [
+    /^Sauvegarde intacte, phrase de passe correcte : (\d+) fichier\(s\) de données et (\d+) document\(s\), sauvegarde du (.*)\.$/,
+    'Backup intact, passphrase correct: $1 data file(s) and $2 document(s), backup of $3.',
+  ],
+  [
+    /^Restauration terminée : (\d+) fichier\(s\) de données et (\d+) document\(s\), sauvegarde du (.*)\. Données précédentes gardées dans « (.*) »\. Rechargement…$/,
+    'Restore complete: $1 data file(s) and $2 document(s), backup of $3. Previous data kept in “$4”. Reloading…',
+  ],
+  [
+    /^Sauvegarde endommagée : (\d+) élément\(s\) ne correspondent pas à leur empreinte\.$/,
+    'Damaged backup: $1 item(s) do not match their fingerprint.',
+  ],
   [/^(\d+) autre\(s\) résultat\(s\)$/, '$1 other result(s)'],
   [/^(\d+) nouvel\(s\) article\(s\) de la veille$/, '$1 new article(s) from the watch'],
   [

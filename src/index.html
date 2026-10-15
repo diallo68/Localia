@@ -1303,6 +1303,33 @@
             l’activation (sauvegardes Time Machine) ; FileVault chiffre tout le disque.
           </p>
         </section>
+        <section id="backup" aria-labelledby="backup-title">
+          <h3 id="backup-title">Sauvegarde et restauration</h3>
+          <p class="muted">
+            Une sauvegarde réunit dans un seul fichier vos conversations, projets, documents,
+            comparaisons, routines et réglages. Elle est chiffrée par une phrase de passe que vous
+            choisissez : sans elle, personne ne peut la lire, pas même vous. Elle ne dépend pas du
+            trousseau de ce Mac et se restaure aussi sur un autre ordinateur. Les modèles et le
+            dossier Compétences n’en font pas partie.
+          </p>
+          <form id="backup-form" class="backup-form" autocomplete="off">
+            <label for="backup-passphrase">Phrase de passe (10 caractères au moins)</label>
+            <input id="backup-passphrase" type="password" minlength="10" maxlength="500" />
+            <label for="backup-confirm">Confirmation (pour une nouvelle sauvegarde)</label>
+            <input id="backup-confirm" type="password" minlength="10" maxlength="500" />
+            <div class="input-row">
+              <button id="backup-create" class="primary" type="button">Créer une sauvegarde…</button
+              ><button id="backup-verify" type="button">Vérifier une sauvegarde…</button
+              ><button id="backup-restore" type="button">Restaurer une sauvegarde…</button>
+            </div>
+          </form>
+          <p id="backup-status" role="status"></p>
+          <p class="muted">
+            Restaurer remplace toutes les données actuelles par celles de la sauvegarde ; elles sont
+            d’abord copiées dans un dossier « avant-restauration » du dossier de Localia. Si le
+            chiffrement est actif, les données restaurées sont chiffrées avec la clé de ce Mac.
+          </p>
+        </section>
         <section id="anonymize" aria-labelledby="anonymize-title">
           <h3 id="anonymize-title">Anonymisation</h3>
           <p class="muted">
@@ -1522,6 +1549,7 @@
     <script src="accueil-view.js"></script>
     <script src="search-view.js"></script>
     <script src="routines-view.js"></script>
+    <script src="backup-view.js"></script>
     <script src="dictation-view.js"></script>
     <script src="updates-view.js"></script>
     <script src="start.js"></script>

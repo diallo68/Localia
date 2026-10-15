@@ -404,7 +404,15 @@ function checkProjectSources(answer, docs) {
       /^[\s\])*]*:/.test(text.slice(c.end, c.end + 8));
     // Texte qui suit : le premier paragraphe, et le suivant s'il se termine par « : » (liste).
     let after = '';
-    if (announces) {
+    // Citation en titre de section (« ### [doc — page 1] ») : la section qui suit, jusqu'à la
+    // citation suivante.
+    const lineEnd = text.indexOf('\n', c.end);
+    const heading =
+      genericReference(claim, c.doc?.name || c.missing) &&
+      /^\s*#{1,6}\s/.test(text.slice(lineStart(c.start), c.start)) &&
+      !tidy(text.slice(c.end, lineEnd < 0 ? text.length : lineEnd));
+    if (heading) after = tidy(text.slice(c.end, next ? next.start : text.length)).slice(0, 600);
+    else if (announces) {
       const blocks = text.slice(c.end, next ? next.start : text.length).split(/\n\s*\n/);
       after = tidy(blocks.shift() || '');
       while (/:$/.test(after) && blocks.length) after = tidy(after + '\n' + blocks.shift());

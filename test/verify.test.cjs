@@ -273,3 +273,36 @@ test('sources du projet : phrase d’introduction terminée par « : » suivie d
   ).citations;
   assert.equal(c.status, 'confirme');
 });
+
+test('sources du projet : citation en titre de section, vérifiée contre la section', () => {
+  const { checkProjectSources } = require('../src/verify.js');
+  const docs = [
+    {
+      name: 'a.pdf',
+      pages: [{ number: 1, text: 'Camara [2] propose des règles ; Diallo et Baldé [3].' }],
+    },
+  ];
+  const [c] = checkProjectSources(
+    'Voici une vérification des auteurs :\n\n### **[a.pdf — page 1]**\n\n- Camara [2] : correspondance correcte.\n- Diallo et Baldé [3] : correct.',
+    docs,
+  ).citations;
+  assert.equal(c.status, 'confirme');
+  assert.match(c.claim, /Camara/);
+});
+
+test('sources du projet : une affirmation fausse reste signalée, quelle que soit la disposition', () => {
+  const { checkProjectSources } = require('../src/verify.js');
+  const docs = [
+    { name: 'a.pdf', pages: [{ number: 1, text: 'Août : 455 mm de pluie à Dalaba.' }] },
+  ];
+  const status = (answer) => checkProjectSources(answer, docs).citations[0].status;
+  assert.equal(
+    status('Selon le document [a.pdf — page 1], il est tombé 999 mm en août.'),
+    'non-trouve',
+  );
+  assert.equal(status('### [a.pdf — page 1]\n\n- Août : 999 mm.'), 'non-trouve');
+  assert.equal(
+    status('Il est tombé 999 mm en août.\n\nCes informations sont tirées de [a.pdf — page 1].'),
+    'non-trouve',
+  );
+});

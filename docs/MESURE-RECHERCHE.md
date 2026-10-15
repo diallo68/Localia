@@ -72,10 +72,10 @@ mêmes extraits n’est pas reposée). Commande :
 
 | Budget | Méthode         | Citations | Retrouvées | Partielles | Document seulement | Non retrouvées | Réponses sans citation | Page attendue citée | Temps médian |
 | ------ | --------------- | --------- | ---------- | ---------- | ------------------ | -------------- | ---------------------- | ------------------- | ------------ |
-| 3 000  | mots (actuelle) | 22        | 17         | 2          | 1                  | 2              | 3/23                   | 17/23               | 52 s         |
+| 3 000  | mots (actuelle) | 22        | 18         | 2          | 1                  | 1              | 3/23                   | 17/23               | 52 s         |
 | 3 000  | bm25            | 23        | 20         | 3          | 0                  | 0              | 4/23                   | 16/23               | 45 s         |
-| 6 000  | mots (actuelle) | 26        | 21         | 3          | 1                  | 1              | 1/23                   | 20/23               | 114 s        |
-| 6 000  | bm25            | 30        | 27         | 1          | 1                  | 1              | 1/23                   | 20/23               | 111 s        |
+| 6 000  | mots (actuelle) | 26        | 22         | 3          | 1                  | 0              | 1/23                   | 20/23               | 114 s        |
+| 6 000  | bm25            | 30        | 28         | 1          | 1                  | 0              | 1/23                   | 20/23               | 111 s        |
 
 Chiffres obtenus avec le vérificateur corrigé (voir plus bas). Chaque citation non retrouvée ou
 partielle a été relue à la main :
@@ -87,8 +87,7 @@ partielle a été relue à la main :
   avec les limites du _rapport_ alors que la question porte sur l’_article_ ; les citations
   renvoient bien aux pages d’où vient le texte. Au budget de 6 000, la même question reçoit une
   réponse juste, document par document.
-- **Fausses alertes restantes** : B09 (3 cas), une phrase d’introduction (« Voici une
-  vérification des auteurs… : ») dont la liste n’est pas rattachée à la citation.
+- **Plus aucune fausse alerte** sur ces 101 citations après les corrections ci-dessous.
 - Les réponses sans citation (B08, C02) disent honnêtement que l’information n’est pas dans les
   extraits : elles suivent les questions dont la page attendue n’a pas été retenue. Plus de
   contexte (6 000 caractères) en laisse une seule.
@@ -103,17 +102,22 @@ comparait alors au passage cité un texte qui n’était pas l’affirmation :
 2. source annoncée avant le contenu (« Selon le document [document — page 2], les modèles… »,
    « **Dans l’article (document — page 4)** : » suivi d’une liste) : vérifiée contre le texte
    qui suit, liste comprise ;
-3. lignes d’une liste placée sous une source annoncée : plus comptées comme « chiffres sans
+3. citation en titre de section (« ### [document — page 1] ») : vérifiée contre la section qui
+   suit ;
+4. lignes d’une liste placée sous une source annoncée : plus comptées comme « chiffres sans
    source ».
 
+Une affirmation fausse reste signalée dans chacune de ces dispositions (tests
+`test/verify.test.cjs`).
+
 Avant ces corrections, sur les mêmes 101 citations, 14 étaient signalées « non retrouvées » ;
-il en reste 4. Les 10 autres sont désormais retrouvées ou partielles, dont toutes les citations
+il en reste 1, une vraie imprécision du modèle (A03). Les 13 autres sont désormais retrouvées ou partielles, dont toutes les citations
 correctes de B14 au budget de 6 000.
 
 ### Conclusion
 
-- Aucune différence nette entre les deux méthodes : 2 citations non retrouvées sur 22 contre 0
-  sur 23 au budget de 3 000, 1 sur 26 contre 1 sur 30 au budget de 6 000. La méthode actuelle
+- Aucune différence nette entre les deux méthodes : 1 citation non retrouvée sur 22 contre 0
+  sur 23 au budget de 3 000, aucune sur 26 et 30 au budget de 6 000. La méthode actuelle
   reste en place.
 - Le budget compte plus que la méthode : à 6 000 caractères, la page attendue est citée dans
   20 réponses sur 23 (contre 16 ou 17) et une seule réponse reste sans citation (contre 3 ou 4),

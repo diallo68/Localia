@@ -23,7 +23,9 @@ const SERIES = [
 const METHODS = (
   process.argv.find((a) => a.startsWith('--methodes='))?.slice(11) || 'mots,bm25,hybride'
 ).split(',');
-const BUDGETS = [3000, 6000];
+const BUDGETS = (process.argv.find((a) => a.startsWith('--budgets='))?.slice(10) || '3000,6000')
+  .split(',')
+  .map(Number);
 const option = (name) =>
   process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3) || null;
 
@@ -111,7 +113,7 @@ async function ask(model, system, question) {
       let uncitedLines = 0;
       let withoutCitation = 0;
       let citedExpected = 0;
-      let askMs = 0;
+      const askTimes = [];
       const misses = [];
       const heapBefore = process.memoryUsage().heapUsed;
       const start = process.hrtime.bigint();
@@ -164,7 +166,7 @@ async function ask(model, system, question) {
               `  ${asked} réponse(s) · ${q.id} · ${method} · ${budget} car. · ${Math.round(entry.ms / 1000)} s\n`,
             );
           }
-          askMs += entry.ms;
+          askTimes.push(entry.ms);
           const report = checkProjectSources(entry.answer, docs);
           citations += report.citations.length;
           for (const c of report.citations) statuses[c.status] = (statuses[c.status] || 0) + 1;
@@ -211,7 +213,10 @@ async function ask(model, system, question) {
               uncitedLines,
               withoutCitation,
               citedExpected,
-              secondsPerAnswer: Math.round(askMs / all.length / 1000),
+              // Médiane : une mise en veille de l'ordinateur fausse quelques durées.
+              secondsPerAnswer: Math.round(
+                [...askTimes].sort((a, b) => a - b)[askTimes.length >> 1] / 1000,
+              ),
             }
           : {}),
       };
@@ -226,7 +231,7 @@ async function ask(model, system, question) {
                 .map(([k, v]) => `${k} ${v}`)
                 .join(', ')}) ; non retrouvées ou introuvables ${wrongCitations}/${citations} ; ` +
               `lignes chiffrées sans source ${uncitedLines} ; réponses sans citation ${withoutCitation}/${all.length} ; ` +
-              `page attendue citée ${citedExpected}/${all.length} ; ${row.secondsPerAnswer} s par réponse`
+              `page attendue citée ${citedExpected}/${all.length} ; ${row.secondsPerAnswer} s par réponse (médiane)`
             : '') +
           (misses.length ? `\n    manquées : ${misses.join(', ')}` : ''),
       );

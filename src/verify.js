@@ -327,6 +327,28 @@ function excerptAround(text, token) {
   );
 }
 
+// Phrase qui ne fait que renvoyer à la source (« Ces informations sont tirées de », « Dans le
+// rapport de campagne ») : moins de deux mots de contenu une fois retirés les mots de renvoi et
+// ceux du nom du document, et aucun chiffre.
+const REFERENCE_WORDS = new Set(
+  (
+    'informations information donnees elements chiffres resultats points ces cette ceci cela sont ' +
+    'mentionnees mentionnes mentionne tirees tiree tires extraites extraits extrait issues issus ' +
+    'provenant proviennent indiquees indiques indique figurent figure trouvent trouvees selon apres ' +
+    'source sources document documents rapport article notes comme detaille precise voir dans ' +
+    'details detail present presentes extracts according mentioned taken stated found shown'
+  ).split(' '),
+);
+function genericReference(claim, docName = '') {
+  if (!claim) return true;
+  if (/\d/.test(claim)) return false;
+  const own = new Set(normalizeText(docName).match(WORD_RE) || []);
+  const words = (normalizeText(claim).match(WORD_RE) || []).filter(
+    (w) => !REFERENCE_WORDS.has(w) && !own.has(w),
+  );
+  return words.length < 2;
+}
+
 function checkProjectSources(answer, docs) {
   // Échappements Markdown du modèle (« Bilan\_2025.docx ») retirés avant la comparaison.
   const text = String(answer).replace(/\\([\\_*[\]()#`~|-])/g, '$1');
@@ -358,18 +380,29 @@ function checkProjectSources(answer, docs) {
   }
   found.sort((a, b) => a.start - b.start);
   const lineStart = (i) => text.lastIndexOf('\n', i - 1) + 1;
+  const tidy = (raw) =>
+    raw
+      .replace(/^[\s\])]*[,;.]?\s*/, '')
+      .replace(/[*_`#>]/g, '')
+      .replace(/^\s*(?:[-•]|\d+[.)])\s+/gm, '')
+      .replace(/[[(]\s*$/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   const citations = found.map((c, i) => {
     // Affirmation : depuis la citation précédente de la même ligne (ou le début de la ligne).
     const previous = found[i - 1];
     const from = Math.max(lineStart(c.start), previous ? previous.end : 0);
-    const claim = text
-      .slice(from, c.start)
-      .replace(/^[\s\])]*[,;.]?\s*/, '')
-      .replace(/[*_`#>]/g, '')
-      .replace(/^\s*(?:[-•]|\d+[.)])\s+/, '')
-      .replace(/[[(]\s*$/, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    let claim = tidy(text.slice(from, c.start));
+    // Renvoi seul sur sa ligne (« Ces informations sont tirées de [doc — page 4] ») : il porte
+    // sur le paragraphe qui précède, jusqu'à la citation précédente.
+    if (genericReference(claim, c.doc?.name || c.missing) && from === lineStart(c.start)) {
+      // Lignes de renvoi (« Ces informations sont tirées de : ») sautées, puis le paragraphe.
+      const lines = text.slice(previous ? previous.end : 0, from).split('\n');
+      while (lines.length && genericReference(tidy(lines.at(-1)), c.doc?.name)) lines.pop();
+      const paragraph = [];
+      while (lines.length && lines.at(-1).trim()) paragraph.unshift(lines.pop());
+      if (paragraph.length) claim = tidy(paragraph.join('\n')).slice(-600);
+    }
     const place = c.place ? (/slide/i.test(c.place) ? 'diapositive' : c.place.toLowerCase()) : null;
     const base = { claim: claim.slice(0, 240), place, number: c.number || null };
     if (c.missing) return { ...base, name: c.missing, status: 'introuvable', reason: 'absent' };

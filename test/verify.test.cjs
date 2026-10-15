@@ -199,3 +199,33 @@ test('sources de projet : noms échappés en Markdown, lignes de calcul non sign
   assert.equal(report.citations[0].name, 'Devis_four.png');
   assert.deepEqual(report.uncited, []);
 });
+
+test('sources du projet : un renvoi seul sur sa ligne vaut pour le paragraphe qui précède', () => {
+  const { checkProjectSources } = require('../src/verify.js');
+  const docs = [
+    {
+      name: 'rapport.pdf',
+      pages: [
+        { number: 1, text: 'Introduction.' },
+        { number: 2, text: 'Le premier symptôme est apparu sur la parcelle P2 le 8 juillet.' },
+      ],
+    },
+  ];
+  const answer =
+    'Le premier symptôme est apparu sur la parcelle P2, le 8 juillet.\n\nCes informations sont tirées de [rapport.pdf — page 2].';
+  const [c] = checkProjectSources(answer, docs).citations;
+  assert.equal(c.status, 'confirme');
+  assert.match(c.claim, /premier symptôme/);
+  // Renvoi suivi des citations à la ligne : le paragraphe d'avant le renvoi.
+  const [e] = checkProjectSources(
+    'Le premier symptôme est apparu sur la parcelle P2.\n\nCes informations sont tirées de :\n- [rapport.pdf — page 2]',
+    docs,
+  ).citations;
+  assert.equal(e.status, 'confirme');
+  // Une vraie affirmation sur la même ligne reste vérifiée telle quelle.
+  const [d] = checkProjectSources(
+    'Les semis tardifs réduisent nettement les rendements [rapport.pdf — page 2].',
+    docs,
+  ).citations;
+  assert.equal(d.status, 'non-trouve');
+});

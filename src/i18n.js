@@ -480,6 +480,7 @@ const EN = {
     'Automatic text comparison: it finds the figures and words in the cited passage, without guaranteeing that the statement is correct.',
   Partielle: 'Partial',
   'Non retrouvée': 'Not found',
+  'Sens contraire': 'Opposite meaning',
   Introuvable: 'Missing',
   'Sans source': 'No source',
   diapositive: 'slide',
@@ -1409,6 +1410,17 @@ const EN_PATTERNS = [
         (m, n, p) =>
           `This place does not exist: the document has ${n} ${p === 'diapositive' ? 'slide' : p}(s).`,
       ),
+  ],
+  [
+    /^Sens contraire dans le passage cité : (.*)\.$/,
+    (t) =>
+      t
+        .replace(
+          /^Sens contraire dans le passage cité : /,
+          'Opposite meaning in the cited passage: ',
+        )
+        .replaceAll(' dans la réponse, ', ' in the answer, ')
+        .replaceAll(' dans le document)', ' in the document)'),
   ],
   [
     /^Chiffre\(s\) absent\(s\) du passage cité : (.*)\.$/,

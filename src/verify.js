@@ -317,6 +317,93 @@ const valuesOf = (text) => {
 };
 const round4 = (v) => Math.round(v * 10000) / 10000;
 const WORD_RE = /[a-z0-9]{5,}/g;
+
+// Sens opposés : un chiffre retrouvé ne confirme rien si le document le rattache au sens contraire
+// (« bénéfice de 100 € » dans la réponse, « perte de 100 € » dans le document). Mots cherchés près
+// du chiffre, dans la même phrase.
+const OPPOSITES = [
+  [
+    'benefice benefices beneficiaire beneficiaires profit profits gain gains excedent excedents excedentaire excedentaires surplus',
+    'perte pertes deficit deficits deficitaire deficitaires loss losses',
+  ],
+  [
+    'hausse hausses augmentation augmentations augmente augmentent progression progresse progressent croissance increase increased increases rise rises',
+    'baisse baisses baissent diminution diminutions diminue diminuent recul recule reculent chute chutes chutent decrease decreased decreases drop dropped fall fell',
+  ],
+].map((pair) => pair.map((words) => new Set(words.split(' '))));
+const SENTENCE_END = /[!?;\n]|\.\s/;
+const NEGATIONS = new Set('ne n pas non ni jamais aucun aucune not no never'.split(' '));
+// Unité ou monnaie juste après un nombre : « 2000 € » est un montant, « en 2000 » une année.
+const UNIT_AFTER =
+  /^\s*(?:%|€|\$|£|k€|m€|(?:euros?|eur|dollars?|usd|fcfa|gnf|francs?|millions?|milliards?|tonnes?|kg|personnes|habitants)\b)/i;
+// Chiffres d'un texte, avec pour chaque paire de sens opposés le sens le plus proche du chiffre
+// dans la même proposition : { token, values, year, negated, senses: [[paire, côté, mot]] }.
+// À égale distance des deux sens, les deux sont gardés (ambigu).
+function figuresWithSense(text) {
+  const source = String(text);
+  const words = (t) => t.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const figures = [];
+  for (const m of source.matchAll(NUMBER_RE)) {
+    const values = numberCandidates(m[0]);
+    if (!values.length || values.every((x) => Number.isInteger(x) && Math.abs(x) < 10)) continue;
+    let before = source.slice(Math.max(0, m.index - 80), m.index);
+    const stop = [...before.matchAll(new RegExp(SENTENCE_END, 'g'))].at(-1);
+    if (stop) before = before.slice(stop.index + stop[0].length);
+    const rawAfter = source.slice(m.index + m[0].length, m.index + m[0].length + 60);
+    // Après le chiffre : jusqu'à la fin de la phrase ou la virgule suivante (« perte de 100 €,
+    // bénéfice de 200 € »).
+    const end = rawAfter.search(/[!?;\n]|\.\s|,\s/);
+    const after = end >= 0 ? rawAfter.slice(0, end) : rawAfter;
+    const left = words(before).slice(-6);
+    const right = words(after).slice(0, 4);
+    const near = [...left.map((w, i) => [w, left.length - i]), ...right.map((w, i) => [w, i + 1])];
+    const senses = [];
+    OPPOSITES.forEach((pair, p) => {
+      const closest = pair.map((set) =>
+        near
+          .filter(([w]) => set.has(normalizeText(w)))
+          .sort((a, b) => a[1] - b[1])
+          .at(0),
+      );
+      const [a, b] = closest;
+      if (a && (!b || a[1] <= b[1])) senses.push([p, 0, a[0].toLowerCase()]);
+      if (b && (!a || b[1] <= a[1])) senses.push([p, 1, b[0].toLowerCase()]);
+    });
+    figures.push({
+      token: m[0].trim(),
+      values,
+      year:
+        values.every((x) => Number.isInteger(x) && x >= 1900 && x <= 2100) &&
+        !UNIT_AFTER.test(rawAfter) &&
+        !/[€$£]\s*$/.test(before),
+      negated: left.some((w) => NEGATIONS.has(normalizeText(w))),
+      senses,
+    });
+  }
+  return figures;
+}
+// Chiffres de l'affirmation retrouvés dans le passage, mais avec le sens contraire. Ni les années
+// (elles situent la phrase), ni les phrases niées (« il ne s'agit pas d'un bénéfice »).
+function opposedFigures(claim, passage) {
+  const inPassage = figuresWithSense(passage).filter((g) => !g.negated);
+  const opposed = [];
+  for (const f of figuresWithSense(claim)) {
+    if (f.year || f.negated) continue;
+    const same = inPassage.filter((g) =>
+      g.values.some((x) => f.values.some((y) => round4(x) === round4(y))),
+    );
+    for (const [p, side, word] of f.senses) {
+      if (f.senses.some(([q, other]) => q === p && other !== side)) continue; // phrase ambiguë
+      const found = same.flatMap((g) => g.senses.filter(([q]) => q === p));
+      const contrary = found.find(([, other]) => other !== side);
+      if (contrary && !found.some(([, other]) => other === side)) {
+        opposed.push({ token: f.token, claim: word, source: contrary[2] });
+        break;
+      }
+    }
+  }
+  return opposed;
+}
 // Passage montré à l'utilisateur : autour du premier chiffre retrouvé, sinon début du passage.
 function excerptAround(text, token) {
   const clean = String(text).replace(/\s+/g, ' ').trim();
@@ -452,12 +539,17 @@ function checkProjectSources(answer, docs) {
     const known = new Set();
     for (const v of valuesOf(passage)) for (const x of v.values) known.add(round4(x));
     const figures = valuesOf(claim);
-    const ok = figures.filter((f) => f.values.some((x) => known.has(round4(x))));
+    const opposed = opposedFigures(claim, passage);
+    const ok = figures.filter(
+      (f) =>
+        f.values.some((x) => known.has(round4(x))) && !opposed.some((o) => o.token === f.token),
+    );
     const words = [...new Set(normalizeText(claim).match(WORD_RE) || [])];
     const own = normalizeText(passage);
     const share = words.length ? words.filter((w) => own.includes(w)).length / words.length : 0;
     let status;
-    if (figures.length)
+    if (opposed.length) status = 'contredit';
+    else if (figures.length)
       status = ok.length === figures.length ? 'confirme' : ok.length ? 'partiel' : 'non-trouve';
     else if (words.length >= 2)
       status = share >= 0.5 ? 'confirme' : share >= 0.25 ? 'partiel' : 'non-trouve';
@@ -468,8 +560,11 @@ function checkProjectSources(answer, docs) {
       docId: doc.id,
       status,
       basis: figures.length ? 'chiffres' : words.length >= 2 ? 'mots' : null,
-      missingFigures: figures.filter((f) => !ok.includes(f)).map((f) => f.token),
-      excerpt: excerptAround(passage, ok[0]?.token),
+      missingFigures: figures
+        .filter((f) => !ok.includes(f) && !opposed.some((o) => o.token === f.token))
+        .map((f) => f.token),
+      opposed,
+      excerpt: excerptAround(passage, ok[0]?.token ?? opposed[0]?.token),
     };
   });
   // Lignes avec des chiffres et sans aucune source, seulement si la réponse cite ses sources.

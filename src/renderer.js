@@ -368,6 +368,7 @@ const SOURCE_STATES = {
   confirme: ['ok', 'Retrouvée'],
   partiel: ['partial', 'Partielle'],
   'non-trouve': ['warn', 'Non retrouvée'],
+  contredit: ['warn', 'Sens contraire'],
   introuvable: ['warn', 'Introuvable'],
   present: ['info', 'Document retrouvé'],
 };
@@ -396,7 +397,8 @@ function sourcesPanel(sources) {
   const citations = sources?.citations || [];
   if (!citations.length) return null;
   const count = (...states) => citations.filter((c) => states.includes(c.status)).length;
-  const doubtful = count('partiel', 'non-trouve', 'introuvable') + (sources.uncited?.length || 0);
+  const doubtful =
+    count('partiel', 'non-trouve', 'contredit', 'introuvable') + (sources.uncited?.length || 0);
   const box = document.createElement('details');
   box.className = 'checks sources' + (doubtful ? ' has-alerts' : '');
   box.open = true;
@@ -423,6 +425,17 @@ function sourcesPanel(sources) {
     if (c.claim) body.append(element('span', 'source-claim', `« ${c.claim} »`));
     const detail = sourceDetail(c);
     if (detail) body.append(element('small', 'muted', tr(detail)));
+    // Chiffre retrouvé mais rattaché au sens contraire dans le document (bénéfice / perte…).
+    if (c.opposed?.length)
+      body.append(
+        element(
+          'small',
+          'muted',
+          tr(
+            `Sens contraire dans le passage cité : ${c.opposed.map((o) => `${o.token} (« ${o.claim} » dans la réponse, « ${o.source} » dans le document)`).join(' ; ')}.`,
+          ),
+        ),
+      );
     if (c.excerpt) {
       const passage = element('blockquote', 'source-passage', c.excerpt);
       passage.hidden = true;

@@ -323,3 +323,75 @@ test('sources du projet : un chiffre faux loin dans un long bloc sous une source
   assert.equal(c.status, 'partiel');
   assert.ok(c.claim.length <= 240, 'texte affiché abrégé');
 });
+
+test('sources de projet : un chiffre retrouvé avec le sens contraire est signalé', () => {
+  const docs = [
+    {
+      id: 'b',
+      name: 'Bilan.pdf',
+      pages: [
+        {
+          number: 1,
+          text: 'Résultat 2025 : la perte est de 100 euros. Le chiffre d’affaires est en hausse de 12 %.',
+        },
+      ],
+    },
+  ];
+  const check = (answer) => v.checkProjectSources(answer, docs).citations[0];
+  const benefit = check('Le bénéfice est de 100 euros [Bilan.pdf — page 1].');
+  assert.equal(benefit.status, 'contredit');
+  assert.deepEqual(benefit.opposed, [{ token: '100', claim: 'bénéfice', source: 'perte' }]);
+  assert.deepEqual(benefit.missingFigures, []);
+  assert.equal(
+    check('Le chiffre d’affaires baisse de 12 % [Bilan.pdf — page 1].').status,
+    'contredit',
+  );
+  // Même sens, ou aucun mot de sens dans la réponse : inchangé.
+  assert.equal(check('La perte est de 100 euros [Bilan.pdf — page 1].').status, 'confirme');
+  assert.equal(
+    check('Le chiffre d’affaires progresse de 12 % [Bilan.pdf — page 1].').status,
+    'confirme',
+  );
+  assert.equal(check('Le résultat est de 100 euros [Bilan.pdf — page 1].').status, 'confirme');
+  // Phrase niée : cohérente avec la source.
+  assert.equal(
+    check('Il ne s’agit pas d’un bénéfice de 100 euros [Bilan.pdf — page 1].').status,
+    'confirme',
+  );
+  // Montant entre 1900 et 2100 : pas une année ; une année seule n'est pas contrôlée.
+  const amounts = [
+    {
+      id: 'c',
+      name: 'C.pdf',
+      pages: [
+        {
+          number: 1,
+          text: 'La perte est de 2000 euros, le bénéfice de 300 euros. Rapport 2025 : baisse des ventes en 2025.',
+        },
+      ],
+    },
+  ];
+  const checkC = (answer) => v.checkProjectSources(answer, amounts).citations[0];
+  assert.equal(checkC('Le bénéfice est de 2000 euros [C.pdf — page 1].').status, 'contredit');
+  assert.equal(checkC('Les ventes sont en hausse en 2025 [C.pdf — page 1].').status, 'confirme');
+  // Perte et bénéfice dans la même phrase du document : chaque chiffre garde son sens.
+  assert.equal(checkC('Le bénéfice est de 300 euros [C.pdf — page 1].').status, 'confirme');
+  // Passage montré autour du chiffre contredit.
+  const long = [
+    {
+      id: 'd',
+      name: 'D.pdf',
+      pages: [{ number: 1, text: 'Introduction. '.repeat(60) + 'La perte est de 100 euros.' }],
+    },
+  ];
+  assert.match(
+    v.checkProjectSources('Le bénéfice est de 100 euros [D.pdf — page 1].', long).citations[0]
+      .excerpt,
+    /perte est de 100 euros/,
+  );
+  // Phrase qui contient les deux sens : pas de verdict.
+  assert.equal(
+    check('Une perte de 100 euros, et non un bénéfice [Bilan.pdf — page 1].').status,
+    'confirme',
+  );
+});

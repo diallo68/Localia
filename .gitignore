@@ -3,3 +3,4 @@ dist/
 test-results/
 benchmark/banque/outils/*.parquet
 recommandat_local.md
+exports/

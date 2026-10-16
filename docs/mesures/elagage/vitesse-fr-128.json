@@ -1,0 +1,15 @@
+{
+  "file": "~/localia-labo/qwen36-fr-128.gguf",
+  "contextSize": 2048,
+  "threads": 8,
+  "gpuLayers": 0,
+  "date": "2026-10-16T02:55:30.223Z",
+  "backend": "cpu",
+  "loadSeconds": 3.901314618,
+  "firstTokenSeconds": 4.255051385,
+  "tokens": 150,
+  "generationSeconds": 22.365802128,
+  "tokensPerSecond": 6.66195646135424,
+  "answer": "Le mildiou se développe principalement lors d'humidité élevée car les spores, responsables de la transmission du pathogène, ont besoin d'un milieu humide pour germer et infecter les feuilles. En effet, l'eau sur le feuillage favorise la pénétration rapide des spores fongiques dans les tissus végétaux, accélérant ainsi l'infection. De plus, les températures fraîches et l'humidité relative élevée créent un microclimat idéal pour la multiplication rapide des spores. Pour prévenir cette maladie, il est crucial d'éviter l'arrosage par aspersion qui maintient les feuilles mouillées. Il faut également appliquer des traitements fongicides préventifs dès les",
+  "peakRssGB": 6.74
+}

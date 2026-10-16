@@ -1,0 +1,15 @@
+{
+  "file": "~/Library/Application Support/localia-desktop/modeles/Qwen3.6-35B-A3B-UD-IQ2_XXS.gguf",
+  "contextSize": 2048,
+  "threads": 8,
+  "gpuLayers": 0,
+  "date": "2026-10-16T02:16:51.151Z",
+  "backend": "cpu",
+  "loadSeconds": 8.25021179,
+  "firstTokenSeconds": 10.761775038,
+  "tokens": 150,
+  "generationSeconds": 26.503652558000002,
+  "tokensPerSecond": 5.621866634190579,
+  "answer": "Le mildiou de la pomme de terre se développe principalement lors d'humidité élevée car les spores du pathogène, *Phytophthora infestans*, nécessitent un film d'eau pour germer et pénétrer dans les tissus végétaux.\nEn effet, sans cette humidité suffisante, les zoospores ne peuvent pas nager vers les stomates ou les lenticelles de la plante pour initier l'infection.\nDes conditions chaudes et humides favorisent également une reproduction rapide du champignon, accélérant ainsi la propagation de la maladie au sein de la culture.\nPour prévenir cette épidémie, il est crucial d'installer des systèmes d'irrigation par gout",
+  "peakRssGB": 10
+}

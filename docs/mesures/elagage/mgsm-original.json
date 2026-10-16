@@ -1,0 +1,113 @@
+{
+  "file": "~/Library/Application Support/localia-desktop/modeles/Qwen3.6-35B-A3B-UD-IQ2_XXS.gguf",
+  "correct": 13,
+  "total": 15,
+  "minutes": 14.665016666666666,
+  "results": [
+    {
+      "id": "M01",
+      "expected": 260,
+      "value": 260,
+      "ok": true,
+      "seconds": 53.472
+    },
+    {
+      "id": "M02",
+      "expected": 7,
+      "value": 7,
+      "ok": true,
+      "seconds": 36.989
+    },
+    {
+      "id": "M03",
+      "expected": 243,
+      "value": 243,
+      "ok": true,
+      "seconds": 57.18
+    },
+    {
+      "id": "M04",
+      "expected": 25,
+      "value": 25,
+      "ok": true,
+      "seconds": 36.22
+    },
+    {
+      "id": "M05",
+      "expected": 9,
+      "value": 5,
+      "ok": false,
+      "seconds": 65.885
+    },
+    {
+      "id": "M06",
+      "expected": 83,
+      "value": 83,
+      "ok": true,
+      "seconds": 65.248
+    },
+    {
+      "id": "M07",
+      "expected": 25000,
+      "value": 25000,
+      "ok": true,
+      "seconds": 45.697
+    },
+    {
+      "id": "M08",
+      "expected": 7425,
+      "value": 7425,
+      "ok": true,
+      "seconds": 62.314
+    },
+    {
+      "id": "M09",
+      "expected": 70,
+      "value": null,
+      "ok": false,
+      "seconds": 84.593
+    },
+    {
+      "id": "M10",
+      "expected": 5,
+      "value": 5,
+      "ok": true,
+      "seconds": 65.924
+    },
+    {
+      "id": "M11",
+      "expected": 50,
+      "value": 50,
+      "ok": true,
+      "seconds": 48.35
+    },
+    {
+      "id": "M12",
+      "expected": 18000,
+      "value": 18000,
+      "ok": true,
+      "seconds": 73.256
+    },
+    {
+      "id": "M13",
+      "expected": 50,
+      "value": 50,
+      "ok": true,
+      "seconds": 46.256
+    },
+    {
+      "id": "M14",
+      "expected": 34,
+      "value": 34,
+      "ok": true,
+      "seconds": 77.47
+    },
+    {
+      "id": "M15",
+      "expected": 1,
+      "value": 1,
+      "ok": true,
+      "seconds": 52.981
+    }
+  ]
+}

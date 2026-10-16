@@ -1,0 +1,15 @@
+{
+  "file": "~/localia-labo/qwen36-fr-192.gguf",
+  "contextSize": 2048,
+  "threads": 8,
+  "gpuLayers": 0,
+  "date": "2026-10-16T02:37:48.297Z",
+  "backend": "cpu",
+  "loadSeconds": 5.170845121,
+  "firstTokenSeconds": 4.493600896,
+  "tokens": 150,
+  "generationSeconds": 22.937916999,
+  "tokensPerSecond": 6.495794714336782,
+  "answer": "Le mildiou de la pomme de terre se développe principalement lors d'humidité élevée car les spores du pathogène nécessitent de l'eau pour germer et infecter les tissus végétaux. En effet, l'excès d'humidité favorise la multiplication rapide des zoospores, qui pénètrent activement dans les feuilles par les stomates. Cette condition environnementale crée un microclimat idéal pour la propagation fongique, accélérant ainsi l'infection de la culture. Pour prévenir cette maladie, il est crucial d'espacer les plants afin de favoriser l'aération et le séchage rapide du feuillage après les pluies. De plus, l'utilisation de variétés résistantes et l'",
+  "peakRssGB": 9.02
+}

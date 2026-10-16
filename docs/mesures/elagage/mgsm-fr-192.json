@@ -1,0 +1,113 @@
+{
+  "file": "~/localia-labo/qwen36-fr-192.gguf",
+  "correct": 13,
+  "total": 15,
+  "minutes": 12.507033333333334,
+  "results": [
+    {
+      "id": "M01",
+      "expected": 260,
+      "value": 260,
+      "ok": true,
+      "seconds": 40.212
+    },
+    {
+      "id": "M02",
+      "expected": 7,
+      "value": 7,
+      "ok": true,
+      "seconds": 31.705
+    },
+    {
+      "id": "M03",
+      "expected": 243,
+      "value": 243,
+      "ok": true,
+      "seconds": 49.651
+    },
+    {
+      "id": "M04",
+      "expected": 25,
+      "value": 25,
+      "ok": true,
+      "seconds": 31.902
+    },
+    {
+      "id": "M05",
+      "expected": 9,
+      "value": 5,
+      "ok": false,
+      "seconds": 33.921
+    },
+    {
+      "id": "M06",
+      "expected": 83,
+      "value": 83,
+      "ok": true,
+      "seconds": 67.25
+    },
+    {
+      "id": "M07",
+      "expected": 25000,
+      "value": 25000,
+      "ok": true,
+      "seconds": 43.822
+    },
+    {
+      "id": "M08",
+      "expected": 7425,
+      "value": 7425,
+      "ok": true,
+      "seconds": 54.487
+    },
+    {
+      "id": "M09",
+      "expected": 70,
+      "value": null,
+      "ok": false,
+      "seconds": 83.622
+    },
+    {
+      "id": "M10",
+      "expected": 5,
+      "value": 5,
+      "ok": true,
+      "seconds": 58.66
+    },
+    {
+      "id": "M11",
+      "expected": 50,
+      "value": 50,
+      "ok": true,
+      "seconds": 47.315
+    },
+    {
+      "id": "M12",
+      "expected": 18000,
+      "value": 18000,
+      "ok": true,
+      "seconds": 53.384
+    },
+    {
+      "id": "M13",
+      "expected": 50,
+      "value": 50,
+      "ok": true,
+      "seconds": 40.65
+    },
+    {
+      "id": "M14",
+      "expected": 34,
+      "value": 34,
+      "ok": true,
+      "seconds": 69.931
+    },
+    {
+      "id": "M15",
+      "expected": 1,
+      "value": 1,
+      "ok": true,
+      "seconds": 36.418
+    }
+  ]
+}

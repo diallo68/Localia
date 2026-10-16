@@ -333,6 +333,33 @@ async function capabilities({ id, path }) {
 }
 
 // Vérifie qu'un fichier GGUF est utilisable par ce moteur : il est réellement chargé puis libéré.
+async function tryAnswer(model) {
+  const context = await model.createContext({ contextSize: 512, threads });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 120000);
+  try {
+    const session = new llamaModule.LlamaChatSession({
+      contextSequence: context.getSequence(),
+      chatWrapper: chatWrapper(model, false),
+    });
+    await session.prompt('Réponds seulement : OK', {
+      maxTokens: 8,
+      temperature: 0,
+      signal: controller.signal,
+      stopOnAbortSignal: true,
+    });
+    if (controller.signal.aborted)
+      throw new Error('aucune réponse en 2 minutes (modèle trop lent pour cet ordinateur ?)');
+  } catch (error) {
+    throw new Error(
+      `Le modèle se charge mais ne sait pas répondre avec ce moteur : ${error?.message || error}`,
+    );
+  } finally {
+    clearTimeout(timer);
+    await context.dispose().catch(() => {});
+  }
+}
+
 async function check({ id, path }) {
   try {
     if (fake)
@@ -347,7 +374,13 @@ async function check({ id, path }) {
     // incompatibilités (ex. paramètres absents des fichiers convertis par Ollama pour Gemma 3).
     await unload();
     const model = await loadModelFile(path);
-    await model.dispose();
+    // Essai de conversation : quelques jetons dans un petit contexte, pour vérifier que le format
+    // de conversation et la génération fonctionnent, pas seulement le chargement (2 minutes au plus).
+    try {
+      await tryAnswer(model);
+    } finally {
+      await model.dispose();
+    }
     const arch = info.metadata?.general?.architecture;
     post({
       type: 'checked',

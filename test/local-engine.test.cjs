@@ -77,3 +77,20 @@ test('fichier déjà téléchargé par Ollama retrouvé par son empreinte et sa 
   );
   assert.equal(await e.ollamaBlobWithSha('ee', 8, root), null);
 });
+
+test('fichier Ollama réutilisé seulement si l’empreinte de son contenu correspond', async () => {
+  const { createHash } = require('node:crypto');
+  const sha = createHash('sha256').update('GGUF1234').digest('hex');
+  const root = await fakeOllama({ [`blobs/sha256-${sha}`]: 'GGUF1234' });
+  const hash = async (file) =>
+    createHash('sha256')
+      .update(await fs.readFile(file))
+      .digest('hex');
+  assert.equal(
+    await e.ollamaBlobWithSha(sha, 8, root, hash),
+    path.join(root, 'blobs', `sha256-${sha}`),
+  );
+  // Nom d'empreinte correct, contenu différent (fichier abîmé ou remplacé) : refusé.
+  const bad = await fakeOllama({ [`blobs/sha256-${sha}`]: 'GGUF9999' });
+  assert.equal(await e.ollamaBlobWithSha(sha, 8, bad, hash), null);
+});

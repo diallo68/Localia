@@ -84,6 +84,8 @@ const readJson = async (profile, name) => {
         LOCALIA_FAKE_LLAMA: '1',
         LOCALIA_FAKE_WHISPER: '1',
         LOCALIA_FAKE_UPDATE: '1',
+        // Fichier Ollama simulé (creux) : son empreinte n'est pas recalculée.
+        LOCALIA_TEST_TRUST_OLLAMA: '1',
         LOCALIA_UPDATE_DELAY: '300',
         OLLAMA_MODELS: path.join(profile, 'ollama-models'),
       },

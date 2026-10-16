@@ -64,12 +64,14 @@ async function modelFileIn(name, root) {
 }
 
 // Fichier déjà présent chez Ollama avec la même empreinte (Ollama nomme ses fichiers d'après leur
-// SHA-256) : utilisable tel quel, sans nouveau téléchargement.
-async function ollamaBlobWithSha(sha256, size, roots = ollamaRoots()) {
+// SHA-256) : utilisable tel quel, sans nouveau téléchargement. Le nom ne prouve rien : avec
+// hashFile, l'empreinte du contenu est recalculée et doit correspondre.
+async function ollamaBlobWithSha(sha256, size, roots = ollamaRoots(), hashFile = null) {
   for (const root of [].concat(roots)) {
     const file = path.join(root, 'blobs', `sha256-${sha256}`);
     const stat = await fs.stat(file).catch(() => null);
-    if (stat?.size === size) return file;
+    if (stat?.size !== size) continue;
+    if (!hashFile || (await hashFile(file)) === sha256) return file;
   }
   return null;
 }

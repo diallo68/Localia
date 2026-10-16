@@ -1,12 +1,15 @@
 // Catalogue du moteur intégré : modèles GGUF de Hugging Face, en accès libre, version Q4_K_M.
 // Taille et empreinte SHA-256 relevées par l'API de Hugging Face le 6 octobre 2026 : le fichier
-// téléchargé est vérifié avant d'être utilisé. Chargé par l'interface, le processus principal et
+// téléchargé est vérifié avant d'être utilisé. Révision (commit du dépôt) relevée le 16 octobre
+// 2026, avec la même empreinte : le téléchargement vise ce commit, pas la branche « main » qui
+// peut changer. Chargé par l'interface, le processus principal et
 // les tests.
 const CATALOG = [
   {
     id: 'gemma-4-e2b',
     label: 'Gemma 4 · E2B',
     repo: 'unsloth/gemma-4-E2B-it-GGUF',
+    revision: '0314792d7f1f7e229411f620751375812bb9faf2',
     file: 'gemma-4-E2B-it-Q4_K_M.gguf',
     size: 3106738272,
     sha256: '740185b21d22ceb83a11c3aa62ad5842ef32c70f6096d756bbee85a1e4ec34b8',
@@ -18,6 +21,7 @@ const CATALOG = [
     id: 'gemma-4-e4b',
     label: 'Gemma 4 · E4B',
     repo: 'unsloth/gemma-4-E4B-it-GGUF',
+    revision: 'bfc15c382204943c3a8fff0c750b94ae2364d7a3',
     file: 'gemma-4-E4B-it-Q4_K_M.gguf',
     size: 4977171584,
     sha256: '85a896a047553e842f25297ee5b031d64ff30147d9c4af17b1e4b394cd1fab87',
@@ -29,6 +33,7 @@ const CATALOG = [
     id: 'gemma-4-12b',
     label: 'Gemma 4 · 12B',
     repo: 'unsloth/gemma-4-12b-it-GGUF',
+    revision: 'fc034cfff751157913579611efad8462ac1be606',
     file: 'gemma-4-12b-it-Q4_K_M.gguf',
     size: 7121861440,
     sha256: '0a270ec9fe6b34f4a0d33992b6135117b484ebc4766ab76b51d4ae8c457e4c42',
@@ -40,6 +45,7 @@ const CATALOG = [
     id: 'gemma-3-1b',
     label: 'Gemma 3 · 1B',
     repo: 'unsloth/gemma-3-1b-it-GGUF',
+    revision: 'f0b45be0aac41bd6a100a4b5734cad5f67255bfb',
     file: 'gemma-3-1b-it-Q4_K_M.gguf',
     size: 806058272,
     sha256: '8270790f3ab69fdfe860b7b64008d9a19986d8df7e407bb018184caa08798ebd',
@@ -51,6 +57,7 @@ const CATALOG = [
     id: 'gemma-3-4b',
     label: 'Gemma 3 · 4B',
     repo: 'unsloth/gemma-3-4b-it-GGUF',
+    revision: '5a3566e716d80f709ed7b79817eaf7733d2a1fce',
     file: 'gemma-3-4b-it-Q4_K_M.gguf',
     size: 2489894016,
     sha256: '04a43a22e8d2003deda5acc262f68ec1005fa76c735a9962a8c77042a74a7d19',
@@ -62,6 +69,7 @@ const CATALOG = [
     id: 'gemma-3-12b',
     label: 'Gemma 3 · 12B',
     repo: 'unsloth/gemma-3-12b-it-GGUF',
+    revision: 'd15e4c7dc21dc55d56bf8549db57a71ad8a2a35d',
     file: 'gemma-3-12b-it-Q4_K_M.gguf',
     size: 7300778336,
     sha256: '15b8fd9d8672cd4240c178c217ca781409291f34e353d2e913b29c7602ceb3ff',
@@ -73,6 +81,7 @@ const CATALOG = [
     id: 'qwen3-4b',
     label: 'Qwen 3 · 4B',
     repo: 'Qwen/Qwen3-4B-GGUF',
+    revision: 'bc640142c66e1fdd12af0bd68f40445458f3869b',
     file: 'Qwen3-4B-Q4_K_M.gguf',
     size: 2497280256,
     sha256: '7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5',
@@ -84,6 +93,7 @@ const CATALOG = [
     id: 'qwen3-8b',
     label: 'Qwen 3 · 8B',
     repo: 'Qwen/Qwen3-8B-GGUF',
+    revision: '7c41481f57cb95916b40956ab2f0b139b296d974',
     file: 'Qwen3-8B-Q4_K_M.gguf',
     size: 5027783488,
     sha256: 'd98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785',
@@ -95,6 +105,7 @@ const CATALOG = [
     id: 'qwen3.5-4b',
     label: 'Qwen 3.5 · 4B',
     repo: 'unsloth/Qwen3.5-4B-GGUF',
+    revision: 'e87f176479d0855a907a41277aca2f8ee7a09523',
     file: 'Qwen3.5-4B-Q4_K_M.gguf',
     size: 2740937888,
     sha256: '00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4',
@@ -106,6 +117,7 @@ const CATALOG = [
     id: 'qwen3.5-9b',
     label: 'Qwen 3.5 · 9B',
     repo: 'unsloth/Qwen3.5-9B-GGUF',
+    revision: '3885219b6810b007914f3a7950a8d1b469d598a5',
     file: 'Qwen3.5-9B-Q4_K_M.gguf',
     size: 5680522464,
     sha256: '03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8',
@@ -117,6 +129,7 @@ const CATALOG = [
     id: 'phi-4-mini',
     label: 'Phi-4 mini · 3.8B',
     repo: 'unsloth/Phi-4-mini-instruct-GGUF',
+    revision: '78eb92a46fc37e6b524df991ed9aca9bc6aa7b80',
     file: 'Phi-4-mini-instruct-Q4_K_M.gguf',
     size: 2491874272,
     sha256: '88c00229914083cd112853aab84ed51b87bdf6b9ce42f532d8c85c7c63b1730a',
@@ -128,6 +141,7 @@ const CATALOG = [
     id: 'medgemma-1.5-4b',
     label: 'MedGemma 1.5 · 4B',
     repo: 'unsloth/medgemma-1.5-4b-it-GGUF',
+    revision: '3855f948626b7ae42bccd082757f15078c53e758',
     file: 'medgemma-1.5-4b-it-Q4_K_M.gguf',
     size: 2489894976,
     sha256: 'b31becdf4f39561800505514cce67681604fe449d04dd35c8c92fd7848c6d7bd',
@@ -193,7 +207,8 @@ function recommendFor({ memoryGB = 0, platform, arch, freeDiskGB = null, metier 
     reasons.push('place libre insuffisante : libérez de l’espace sur le disque');
   return { best, alternatives: ranked.slice(1, 3), order, reasons };
 }
-const downloadUrl = (m) => `https://huggingface.co/${m.repo}/resolve/main/${m.file}`;
+const downloadUrl = (m) =>
+  `https://huggingface.co/${m.repo}/resolve/${m.revision || 'main'}/${m.file}`;
 
 if (typeof module !== 'undefined')
   module.exports = { CATALOG, catalogEntry, downloadUrl, recommendCatalog, recommendFor };

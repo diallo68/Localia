@@ -6,7 +6,7 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const { downloadFile } = require('../src/download.cjs');
-const { CATALOG } = require('../src/catalog.js');
+const { CATALOG, downloadUrl } = require('../src/catalog.js');
 
 const content = Buffer.from('GGUF' + 'x'.repeat(200000));
 const sha = crypto.createHash('sha256').update(content).digest('hex');
@@ -135,5 +135,11 @@ test('catalogue : empreintes et tailles complètes, identifiants uniques, sans M
     assert.ok(m.size > 5e8, m.id);
     assert.match(m.file, /\.gguf$/, m.id);
     assert.ok(!/ministral|mistral/i.test(m.repo + m.id), m.id);
+    // Révision figée : le téléchargement vise un commit précis, pas la branche « main ».
+    assert.match(m.revision, /^[0-9a-f]{40}$/, m.id);
+    assert.equal(
+      downloadUrl(m),
+      `https://huggingface.co/${m.repo}/resolve/${m.revision}/${m.file}`,
+    );
   }
 });

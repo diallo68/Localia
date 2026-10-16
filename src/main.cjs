@@ -1128,8 +1128,12 @@ async function resolveHuggingFace(address) {
     throw new Error(
       'Ce dépôt est à accès restreint (compte et acceptation de licence) : choisissez une autre version.',
     );
+  // Révision figée : une branche (« main ») est remplacée par son commit actuel, pour que le
+  // fichier téléchargé soit celui dont l'empreinte vient d'être lue.
+  const commit = (await api(`/revision/${encodeURIComponent(revision)}`)).sha;
+  if (!/^[0-9a-f]{40}$/.test(commit || '')) throw new Error('Révision introuvable dans ce dépôt.');
   const folder = path.posix.dirname(file);
-  const tree = await api(`/tree/${revision}${folder === '.' ? '' : '/' + folder}`);
+  const tree = await api(`/tree/${commit}${folder === '.' ? '' : '/' + folder}`);
   const entry = tree.find((x) => x.path === file);
   if (!entry?.lfs?.oid) throw new Error('Fichier introuvable dans ce dépôt.');
   const license = (info.tags || []).find((t) => t.startsWith('license:'))?.slice(8) || 'inconnue';
@@ -1143,7 +1147,8 @@ async function resolveHuggingFace(address) {
     label: path.posix.basename(file),
     repo: `${owner}/${repo}`,
     file: path.posix.basename(file),
-    url: `https://huggingface.co/${owner}/${repo}/resolve/${revision}/${file}`,
+    revision: commit,
+    url: `https://huggingface.co/${owner}/${repo}/resolve/${commit}/${file}`,
     size: entry.lfs.size,
     sha256: entry.lfs.oid,
     license,
@@ -1158,8 +1163,16 @@ async function fileSha256(file) {
 async function installModel(model) {
   if (currentDownload) throw new Error('Un téléchargement est déjà en cours.');
   await fs.mkdir(modelsDir(), { recursive: true });
-  // Même fichier déjà téléchargé par Ollama (même empreinte) : rien à télécharger.
-  const shared = await localEngine.ollamaBlobWithSha(model.sha256, model.size);
+  // Même fichier déjà téléchargé par Ollama (même empreinte, recalculée) : rien à télécharger.
+  // Tests automatiques seulement : fichier Ollama simulé (creux), empreinte non recalculée.
+  send({ kind: 'download', data: { id: model.id, phase: 'vérification' } });
+  const trustBlob = process.env.LOCALIA_TEST_DATA && process.env.LOCALIA_TEST_TRUST_OLLAMA;
+  const shared = await localEngine.ollamaBlobWithSha(
+    model.sha256,
+    model.size,
+    undefined,
+    trustBlob ? null : fileSha256,
+  );
   if (shared) return registerModel(model, shared, 'ollama');
   const dest = path.join(modelsDir(), model.file);
   // Fichier déjà là (téléchargement précédent, copie) : enregistré s'il a la bonne empreinte.

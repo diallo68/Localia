@@ -1,0 +1,23 @@
+[
+ {
+  "label": "q1",
+  "lus": 2794,
+  "premierMot": 63.7,
+  "total": 73.5,
+  "texte": "58"
+ },
+ {
+  "label": "suite q2",
+  "lus": 2819,
+  "premierMot": 62.8,
+  "total": 71.5,
+  "texte": "2022-07-03"
+ },
+ {
+  "label": "autre q3",
+  "lus": 2798,
+  "premierMot": 72.7,
+  "total": 80.2,
+  "texte": "41"
+ }
+]

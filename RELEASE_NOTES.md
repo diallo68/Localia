@@ -2,6 +2,11 @@
 
 *Notes de version en français plus bas.*
 
+## 0.7.2 — 2026-10-17
+
+- **Built-in engine: the document stays in memory between questions.** The engine no longer empties its memory before each request; it only reads what follows the part already computed (instructions, document, previous exchanges), as Ollama already does. Gemma 4 E4B with a 2,800-token document: a follow-up question starts answering in 3 s instead of 63 s, another question on the same document in 1.4 s instead of 73 s. Hybrid models (Qwen3.5, Qwen3.6) only benefit when a checkpoint fits; otherwise they read everything again, as before. Benchmark series on the built-in engine therefore run faster: their durations are not comparable with earlier series.
+- **Benchmark**: Qwen3.6-35B-A3B pruned to 192 experts (8.5 GB) tested on the 139 questions of the shared series, graded separately by Claude and Codex then reconciled; results, speed measurements and data in `docs/BENCHMARK-35B.md`.
+
 ## 0.7.1 — 2026-10-15
 
 Fixes found by an independent review (Codex) of 0.7.0:
@@ -99,6 +104,11 @@ Fixes found by an independent review (Codex) of 0.7.0:
 ---
 
 # Notes de version
+
+## 0.7.2 — 17 octobre 2026
+
+- **Moteur intégré : le document reste en mémoire d’une question à l’autre.** Le moteur ne vide plus sa mémoire avant chaque demande : il ne relit que ce qui suit la partie déjà calculée (consignes, document, échanges précédents), comme Ollama le faisait déjà. Avec Gemma 4 E4B et un document de 2 800 jetons, une question de suite commence à répondre en 3 s au lieu de 63 s, une autre question sur le même document en 1,4 s au lieu de 73 s. Les modèles hybrides (Qwen3.5, Qwen3.6) n’en profitent que si un point de reprise convient ; sinon ils relisent tout, comme avant. Les séries du Benchmark sur le moteur intégré vont donc plus vite : leurs durées ne sont pas comparables à celles des séries précédentes.
+- **Benchmark** : Qwen3.6-35B-A3B élagué à 192 experts (8,5 Go) testé sur les 139 questions des séries partagées, noté séparément par Claude et par Codex, puis réconcilié ; résultats, mesures de vitesse et données dans `docs/BENCHMARK-35B.md`.
 
 ## 0.7.1 — 15 octobre 2026
 

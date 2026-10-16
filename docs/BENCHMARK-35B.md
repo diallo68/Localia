@@ -123,13 +123,32 @@ fois : seuls les grands écarts sont sûrs, et les petits restent à confirmer p
 
 | Levier | Mesure | Décision |
 |---|---|---|
-| **Garder le document en mémoire entre deux questions** (Gemma 4) | 2ᵉ question : **23 jetons relus, premier mot en 1,2 s** au lieu de 5 460 jetons et environ 3 min | **À intégrer en priorité** : aujourd'hui, Localia vide la mémoire à chaque demande |
+| **Garder le document en mémoire entre deux questions** (Gemma 4) | 2ᵉ question : **23 jetons relus, premier mot en 1,2 s** au lieu de 5 460 jetons et environ 3 min | **Intégré dans la 0.7.2** (voir plus bas) |
 | Même chose sur le 35B (modèle hybride) | Relit les 5 454 jetons, même avec un point de reprise tous les 1 024 jetons | À creuser : point de reprise explicite à la fin du document |
-| **Lots de lecture de 2 048 jetons** (au lieu de 512) | Lecture 40,4 au lieu de 34,6 j/s (+17 %), premier mot à 135 s au lieu de 158 s ; la progression est régulière avec 256, 512, 1 024 et 2 048 | **À intégrer**, puis à confirmer |
+| Lots de lecture de 2 048 jetons (au lieu de 512) | 1ʳᵉ mesure : +17 % en lecture. **Mesures alternées refaites** (2 × 2 essais, document de 2 800 jetons) : Gemma 4 67 s au lieu de 69 s (−3 %, dans le bruit), 35B à 192 experts 72 s au lieu de 77 s (−6 %) ; **+0,4 Go de mémoire** | Non retenu : gain faible pour la mémoire qu'il coûte |
 | Nombre de fils (4, 6, 8, 12, 16) | De 33 à 37 j/s en lecture, de 5,9 à 6,9 j/s en écriture, sans tendance | Pas de gain visible, on garde 8 |
 | Quantification K au lieu de IQ, à 2 bits (6,2 à 7,1 Go) | `llama-bench` : 6,6 (IQ), 6,5 et 5,8 j/s (K) ; mesure sur 300 jetons : 6,7, 6,8 et 8,0 j/s | Pas de gain net : les deux mesures se contredisent |
 | Quantification 4 bits (11,7 Go) | `llama-bench` : 7,7 j/s ; mesure sur 300 jetons, le document à lire en plus : 5,5 j/s | Pas de gain dans les conditions réelles, et la mémoire est presque pleine |
 | Recopie par prédiction (InputLookupTokenPredictor) | 5 % des prédictions acceptées ; Gemma 4 3,2 au lieu de 3,9 j/s ; 35B **1,0 au lieu de 6,9 j/s** | Abandonné : le modèle reformule au lieu de recopier |
+
+### Dans Localia 0.7.2 : le document gardé en mémoire
+
+Le moteur intégré ne vide plus sa mémoire entre deux demandes. Il compare la nouvelle demande aux
+jetons déjà calculés, et ne relit que ce qui suit leur début commun. Essai dans le moteur de
+l'application, avec Gemma 4 E4B et un document de 2 800 jetons :
+
+| Demande | À froid | Mémoire gardée |
+|---|---|---|
+| 1ʳᵉ question | 2 794 jetons lus, 64 s | 2 794 jetons lus, 92 s |
+| Question de suite dans la conversation | 2 819 jetons lus, 63 s | **45 jetons lus, 3,1 s** |
+| Autre question sur le même document | 2 798 jetons lus, 73 s | **24 jetons lus, 1,4 s** |
+
+Deux réponses sur trois sont identiques. La troisième diffère (43 au lieu de 41 ; la bonne réponse
+est 31) : llama.cpp découpe les jetons en lots autrement quand le début est déjà calculé, et un
+arrondi différent peut faire basculer un chiffre incertain, même à température 0. Les modèles
+hybrides (Qwen3.5, Qwen3.6) ne reviennent en arrière que jusqu'à un point de reprise : à défaut,
+ils relisent tout, comme avant. Quand un long document dépasse la place disponible, Localia choisit
+des passages différents selon la question : le début change et le gain diminue.
 
 Données brutes : `docs/mesures/benchmark-35b/leviers/`.
 

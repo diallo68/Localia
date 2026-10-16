@@ -1,0 +1,10 @@
+== gemma-4-E4B-it-Q4_K_M.gguf
+batch 2048 : premier mot 65.8 s ; rss 7.67 Footprint: 3153 MB (4096 bytes per page)
+batch 512 : premier mot 69.8 s ; rss 7.45 Footprint: 2739 MB (4096 bytes per page)
+batch 2048 : premier mot 68.5 s ; rss 7.65 Footprint: 3149 MB (4096 bytes per page)
+batch 512 : premier mot 68.7 s ; rss 7.45 Footprint: 2749 MB (4096 bytes per page)
+== qwen36-fr-192.gguf
+batch 2048 : premier mot 72.6 s ; rss 8.16 Footprint: 1347 MB (4096 bytes per page)
+batch 512 : premier mot 77.9 s ; rss 8.39 Footprint: 918 MB (4096 bytes per page)
+batch 2048 : premier mot 71.7 s ; rss 8.57 Footprint: 1324 MB (4096 bytes per page)
+batch 512 : premier mot 75.6 s ; rss 8.39 Footprint: 930 MB (4096 bytes per page)

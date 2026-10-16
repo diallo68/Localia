@@ -1,0 +1,24 @@
+{
+  "file": "qwen36-fr-128.gguf",
+  "threads": 8,
+  "batchSize": 512,
+  "maxTokens": 300,
+  "interval": null,
+  "date": "2026-10-16T16:57:32.576Z",
+  "mesures": {
+    "analyse": {
+      "jetonsLus": 5471,
+      "premierJetonSecondes": 157.954883737,
+      "lectureJetonsParSeconde": 34.636472583585274,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 6.885044404735358,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "Pour déterminer les variables liées à l'apparition des symptômes de mildiou (oïdure) sur la pomme de terre, il faut analyser la relation entre les conditions mé"
+    }
+  }
+}

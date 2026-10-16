@@ -1,0 +1,66 @@
+{
+  "file": "qwen36-fr-128.gguf",
+  "threads": 8,
+  "batchSize": 512,
+  "maxTokens": 300,
+  "interval": "1024",
+  "date": "2026-10-16T18:11:12.093Z",
+  "mesures": {
+    "analyse": {
+      "jetonsLus": 5471,
+      "premierJetonSecondes": 144.156102728,
+      "lectureJetonsParSeconde": 37.95191390768187,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 6.829017264982675,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "Pour déterminer les variables liées à l'apparition des symptômes de mildiou (oïdure) sur la pomme de terre, il faut analyser la relation entre les conditions mé"
+    },
+    "seconde-a-froid": {
+      "jetonsLus": 5454,
+      "premierJetonSecondes": 142.64518575499997,
+      "lectureJetonsParSeconde": 38.234728856307214,
+      "jetonsEcrits": 2,
+      "ecritureJetonsParSeconde": 2.9649014638570734,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "33"
+    },
+    "premiere-question": {
+      "jetonsLus": 5471,
+      "premierJetonSecondes": 139.104934908,
+      "lectureJetonsParSeconde": 39.330020919950556,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 7.044869613828859,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "Pour déterminer les variables liées à l'apparition des symptômes de mildiou (oïdure) sur la pomme de terre, il faut analyser la relation entre les conditions mé"
+    },
+    "seconde-apres-premiere": {
+      "jetonsLus": 5454,
+      "premierJetonSecondes": 142.01633006000006,
+      "lectureJetonsParSeconde": 38.404034224062514,
+      "jetonsEcrits": 2,
+      "ecritureJetonsParSeconde": 3.0035676195975824,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "33"
+    }
+  }
+}

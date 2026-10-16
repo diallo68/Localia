@@ -62,3 +62,8 @@ Outils : `scripts/labo/`.
 - Les écarts de premier mot dépendent en partie du cache disque.
 - Seul le français a servi à la calibration : les autres langues sont probablement dégradées.
 - Le corpus de calibration et celui d'évaluation sont tous deux issus de Localia : proximité de style.
+
+## Suite
+
+La version à 192 experts a passé les 139 questions du Benchmark, notées par Claude et Codex :
+[BENCHMARK-35B.md](BENCHMARK-35B.md).

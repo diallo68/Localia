@@ -1,0 +1,94 @@
+{
+  "file": "qwen36-fr-128.gguf",
+  "threads": 8,
+  "batchSize": 512,
+  "maxTokens": 300,
+  "interval": null,
+  "date": "2026-10-16T17:45:59.841Z",
+  "mesures": {
+    "analyse": {
+      "jetonsLus": 5471,
+      "premierJetonSecondes": 142.340669349,
+      "lectureJetonsParSeconde": 38.43595807875436,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 7.003613519079862,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "Pour déterminer les variables liées à l'apparition des symptômes de mildiou (oïdure) sur la pomme de terre, il faut analyser la relation entre les conditions mé"
+    },
+    "seconde-a-froid": {
+      "jetonsLus": 5454,
+      "premierJetonSecondes": 181.266003744,
+      "lectureJetonsParSeconde": 30.088377783749372,
+      "jetonsEcrits": 2,
+      "ecritureJetonsParSeconde": 2.870059024772689,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "33"
+    },
+    "premiere-question": {
+      "jetonsLus": 5471,
+      "premierJetonSecondes": 156.187598766,
+      "lectureJetonsParSeconde": 35.02838921415677,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 6.474378382113239,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "Pour déterminer les variables liées à l'apparition des symptômes de mildiou (oïdure) sur la pomme de terre, il faut analyser la relation entre les conditions mé"
+    },
+    "seconde-apres-premiere": {
+      "jetonsLus": 5454,
+      "premierJetonSecondes": 143.0906487749999,
+      "lectureJetonsParSeconde": 38.11569831216599,
+      "jetonsEcrits": 2,
+      "ecritureJetonsParSeconde": 3.342779761516131,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "33"
+    },
+    "recopie-sans-prediction": {
+      "jetonsLus": 5456,
+      "premierJetonSecondes": 139.83690561500006,
+      "lectureJetonsParSeconde": 39.01688167372279,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 6.877711053037572,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "2022-07-12,16.4,27.9,21.2,87,15,0.8,1\n2022-07-13,18.9,26.9,21.4,92,18,13.0,1\n2022-07-18,19.8,25.7,21.7,89,15,6.6,1\n2022-07-19,19.3,23.8,20.7,93,20,9.2,1\n2022-07"
+    },
+    "recopie-avec-prediction": {
+      "jetonsLus": 16713,
+      "premierJetonSecondes": 297.16520705,
+      "lectureJetonsParSeconde": 56.24144281866729,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 0.9836195907772305,
+      "predictions": {
+        "used": 0,
+        "unused": 43,
+        "validated": 43,
+        "refuted": 857
+      },
+      "debut": "202-0-0,16.4,27.9,21.2,87,15,0.8,1\n202-0,18.9,26.9,21.4,92,18,13.0,120-0,18.5,27.4,21.0,92,18,20-0,8.8,27.5,21.1,90,16,120-08.7,28.1,22.0,90,16,20-0,0.4,27.1,22"
+    }
+  }
+}

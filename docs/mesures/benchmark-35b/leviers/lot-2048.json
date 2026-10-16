@@ -1,0 +1,24 @@
+{
+  "file": "qwen36-fr-128.gguf",
+  "threads": 8,
+  "batchSize": 2048,
+  "maxTokens": 300,
+  "interval": null,
+  "date": "2026-10-16T17:15:23.428Z",
+  "mesures": {
+    "analyse": {
+      "jetonsLus": 5471,
+      "premierJetonSecondes": 135.35416889899997,
+      "lectureJetonsParSeconde": 40.41988543465114,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 7.03479210197175,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "Pour déterminer les variables climatiques liées à l'apparition du mildiou (oomycete) sur la pomme de terre, il faut analyser la relation entre les conditions mé"
+    }
+  }
+}

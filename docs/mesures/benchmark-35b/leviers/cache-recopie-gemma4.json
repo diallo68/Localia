@@ -1,0 +1,94 @@
+{
+  "file": "gemma-4-E4B-it-Q4_K_M.gguf",
+  "threads": 8,
+  "batchSize": 512,
+  "maxTokens": 300,
+  "interval": null,
+  "date": "2026-10-16T18:22:27.422Z",
+  "mesures": {
+    "analyse": {
+      "jetonsLus": 5476,
+      "premierJetonSecondes": 129.67220837800002,
+      "lectureJetonsParSeconde": 42.22955765538616,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 6.086733202055845,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "C'est une excellente question qui relève de l'analyse épidémiologique et agronomique. Pour déterminer les facteurs météorologiques liés à l'apparition des sympt"
+    },
+    "seconde-a-froid": {
+      "jetonsLus": 5460,
+      "premierJetonSecondes": 176.391534728,
+      "lectureJetonsParSeconde": 30.9538663996515,
+      "jetonsEcrits": 2,
+      "ecritureJetonsParSeconde": 1.7603766068030227,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "31"
+    },
+    "premiere-question": {
+      "jetonsLus": 5476,
+      "premierJetonSecondes": 192.25618148699996,
+      "lectureJetonsParSeconde": 28.482829304348154,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 3.878261612709619,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "C'est une excellente question qui relève de l'analyse épidémiologique et agronomique. Pour déterminer les facteurs météorologiques liés à l'apparition des sympt"
+    },
+    "seconde-apres-premiere": {
+      "jetonsLus": 23,
+      "premierJetonSecondes": 1.2046269910000265,
+      "lectureJetonsParSeconde": 19.093047202027616,
+      "jetonsEcrits": 2,
+      "ecritureJetonsParSeconde": 1.9813448575165866,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "31"
+    },
+    "recopie-sans-prediction": {
+      "jetonsLus": 5461,
+      "premierJetonSecondes": 204.09061488400005,
+      "lectureJetonsParSeconde": 26.757722314198006,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 3.8685214791519416,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "2022-07-12,16.4,27.9,21.2,87,15,0.8,1\n2022-07-13,18.9,26.9,21.4,92,18,13.0,1\n2022-07-18,19.8,25.7,21.7,89,15,6.6,1\n2022-07-19,19.3,23.8,20.7,93,20,9.2,1\n2022-07"
+    },
+    "recopie-avec-prediction": {
+      "jetonsLus": 5461,
+      "premierJetonSecondes": 199.62560100799996,
+      "lectureJetonsParSeconde": 27.35621068853364,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 3.2105661291451986,
+      "predictions": {
+        "used": 42,
+        "unused": 0,
+        "validated": 42,
+        "refuted": 732
+      },
+      "debut": "2022-07-12,16.4,27.9,21.2,87,15,0.8,1\n2022-07-13,18.9,26.9,21.4,92,18,13.0,1\n2022-07-18,19.8,25.7,21.7,89,15,6.6,1\n2022-07-19,19.3,23.8,20.7,93,20,9.2,1\n2022-07"
+    }
+  }
+}

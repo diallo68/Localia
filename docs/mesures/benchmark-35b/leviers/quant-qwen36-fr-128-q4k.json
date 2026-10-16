@@ -1,0 +1,24 @@
+{
+  "file": "qwen36-fr-128-q4k.gguf",
+  "threads": 8,
+  "batchSize": 512,
+  "maxTokens": 300,
+  "interval": null,
+  "date": "2026-10-16T17:36:54.892Z",
+  "mesures": {
+    "analyse": {
+      "jetonsLus": 5471,
+      "premierJetonSecondes": 170.99988720200002,
+      "lectureJetonsParSeconde": 31.994173151337673,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 5.528323883847716,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "Pour déterminer quelles variables météorologiques et avec quel décalage temporel elles sont liées à l'apparition des symptômes de mildiou, il faut analyser les "
+    }
+  }
+}

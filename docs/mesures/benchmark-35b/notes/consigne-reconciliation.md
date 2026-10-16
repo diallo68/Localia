@@ -1,0 +1,5 @@
+Réconciliation des notes du Benchmark de Localia. Claude et toi (Codex) avez noté indépendamment les mêmes réponses avec la même grille (verdict correct/partiel/faux/hors-sujet ; invention oui/non ; note 1-5 : 5 tous les éléments, aucune erreur ; 4 presque tout, une imprécision mineure ; 3 la moitié des éléments sans invention ; 2 peu d'éléments justes, une erreur importante, ou une réponse juste avec un détail faux ajouté ; 1 faux ou inventé). Voici vos désaccords marqués. NE MODIFIE AUCUN FICHIER.
+
+Pour chaque question, relis la réponse et l'argument de Claude, vérifie les faits toi-même, puis donne ta note FINALE : maintiens-la si Claude se trompe ou si sa lecture est trop indulgente, révise-la si l'argument de Claude est juste. Sois honnête : ne cède pas pour faire consensus, et ne t'obstine pas. Réponds UNIQUEMENT par un CSV (point-virgule, guillemets doubles autour des textes) :
+Série;Question;Modèle;Correcteur;Verdict;Invention;Note;Commentaire
+Modèle = integre/qwen3.6-35b-a3b-fr192 ; Correcteur = Codex ; Commentaire commence par « Maintenu : » ou « Révisé : » suivi de la raison en une phrase.

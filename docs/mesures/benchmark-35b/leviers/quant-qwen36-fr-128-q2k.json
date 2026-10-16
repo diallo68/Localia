@@ -1,0 +1,24 @@
+{
+  "file": "qwen36-fr-128-q2k.gguf",
+  "threads": 8,
+  "batchSize": 512,
+  "maxTokens": 300,
+  "interval": null,
+  "date": "2026-10-16T17:29:58.024Z",
+  "mesures": {
+    "analyse": {
+      "jetonsLus": 5471,
+      "premierJetonSecondes": 141.826124829,
+      "lectureJetonsParSeconde": 38.57540355556068,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 6.784875902336375,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "Pour identifier les variables météorologiques liées à l'apparition des symptômes de mildiou (variable cible `symptomes`), il faut analyser la biologie de la mal"
+    }
+  }
+}

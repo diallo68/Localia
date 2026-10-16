@@ -1,0 +1,66 @@
+{
+  "file": "gemma-4-E4B-it-Q4_K_M.gguf",
+  "threads": 8,
+  "batchSize": 512,
+  "maxTokens": 300,
+  "interval": "1024",
+  "date": "2026-10-16T18:42:44.539Z",
+  "mesures": {
+    "analyse": {
+      "jetonsLus": 5476,
+      "premierJetonSecondes": 187.741042639,
+      "lectureJetonsParSeconde": 29.167836308066047,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 4.014097464542819,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "C'est une excellente question qui relève de l'analyse épidémiologique et agronomique. Pour déterminer les facteurs météorologiques liés à l'apparition des sympt"
+    },
+    "seconde-a-froid": {
+      "jetonsLus": 5460,
+      "premierJetonSecondes": 196.21837832800003,
+      "lectureJetonsParSeconde": 27.826139664007545,
+      "jetonsEcrits": 2,
+      "ecritureJetonsParSeconde": 1.7425188338710242,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "31"
+    },
+    "premiere-question": {
+      "jetonsLus": 5476,
+      "premierJetonSecondes": 187.50979042700004,
+      "lectureJetonsParSeconde": 29.20380843864191,
+      "jetonsEcrits": 300,
+      "ecritureJetonsParSeconde": 4.016844924696693,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "C'est une excellente question qui relève de l'analyse épidémiologique et agronomique. Pour déterminer les facteurs météorologiques liés à l'apparition des sympt"
+    },
+    "seconde-apres-premiere": {
+      "jetonsLus": 23,
+      "premierJetonSecondes": 1.2693564160000532,
+      "lectureJetonsParSeconde": 18.119418399819263,
+      "jetonsEcrits": 2,
+      "ecritureJetonsParSeconde": 1.9437802536517792,
+      "predictions": {
+        "used": 0,
+        "unused": 0,
+        "validated": 0,
+        "refuted": 0
+      },
+      "debut": "31"
+    }
+  }
+}

@@ -28,3 +28,14 @@ pip install gguf numpy
 3. **Évaluation** : `evaluer.sh` enchaîne perplexité (`llama-perplexity` sur des textes absents de
    la calibration), vitesse et mémoire (`scripts/mesure-vitesse.mjs`) et calcul (`eval-mgsm.mjs`,
    15 problèmes MGSM en français corrigés automatiquement).
+
+## Benchmark et vitesse
+
+- `rejouer-series.mjs` : rejoue les messages exacts des séries du Benchmark (copie de
+  `comparisons.json`) sur un modèle GGUF, avec les mêmes réglages ; reprend là où il s'est arrêté.
+- `ajouter-au-benchmark.mjs` : ajoute ces réponses aux comparaisons de Localia (application fermée,
+  faire une sauvegarde avant), puis importe des notes CSV au format du Benchmark.
+- `mesure-leviers.mjs` : mesure lecture, écriture et premier mot selon le nombre de fils, la taille
+  de lot, la réutilisation du document en mémoire et la prédiction par recherche dans l'entrée.
+
+Résultats : [docs/BENCHMARK-35B.md](../../docs/BENCHMARK-35B.md).

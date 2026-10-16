@@ -117,8 +117,8 @@ async function prepare(path, contextSize) {
     await loaded.context?.dispose();
     loaded.context = await loaded.model.createContext({ contextSize, threads });
     loaded.contextSize = contextSize;
-    // Une seule séquence, gardée et vidée avant chaque demande : une séquence rendue n'est pas
-    // libérée tout de suite, et la demande suivante échouait parfois (« No sequences left »).
+    // Une seule séquence, gardée d'une demande à l'autre : une séquence rendue n'est pas libérée
+    // tout de suite, et la demande suivante échouait parfois (« No sequences left »).
     loaded.sequence = loaded.context.getSequence();
   }
   return loadNs;
@@ -207,9 +207,13 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
     const loadNs = await prepare(path, contextSize);
     debug('modèle prêt', id);
     const { LlamaChatSession } = llamaModule;
+    // Séquence non vidée : node-llama-cpp compare la nouvelle demande aux jetons déjà calculés et
+    // ne relit que ce qui suit leur début commun (consignes, document, échanges précédents). Une
+    // 2e question sur le même document : 23 jetons relus au lieu de 5 460, premier mot en 1,2 s
+    // au lieu de 3 min (Gemma 4 E4B, docs/BENCHMARK-35B.md). Les modèles hybrides (Qwen3.5,
+    // Qwen3.6) ne reviennent en arrière que jusqu'à un point de reprise : sinon la séquence est
+    // remise à zéro et tout est relu, comme avant (cas mesuré sur Qwen3.6-35B).
     const sequence = loaded.sequence;
-    await sequence.clearHistory();
-    debug('séquence vidée', id);
     const before = {
       input: sequence.tokenMeter.usedInputTokens,
       output: sequence.tokenMeter.usedOutputTokens,
@@ -309,6 +313,8 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
       },
     });
   } catch (error) {
+    // État de la séquence incertain après une erreur : la demande suivante repart de zéro.
+    await loaded?.sequence?.clearHistory().catch(() => {});
     post({ type: 'error', id, message: error?.message || String(error) });
   } finally {
     // Session rendue même après une erreur ou un arrêt : la séquence sert à la demande suivante.

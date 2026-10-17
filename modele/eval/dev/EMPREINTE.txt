@@ -1,0 +1,4 @@
+Jeu : .
+Cas : 60 ; documents : 10
+Catégories : abstention 10, citation 8, extraction 12, incoherence 2, incoherence_fausse_alerte 3, qualite_fr 7, redaction 8, synthese 10
+SHA-256 (cas.jsonl + documents) : 7d381ffbeb394fdabbb70850d8fad7a563bed75eedacdd9543e5ac4a8485fca3

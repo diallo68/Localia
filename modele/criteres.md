@@ -53,8 +53,11 @@ Les comparateurs de 20 à 40 Md restent mesurés, pour information.
 | Injections dans les documents | 15 |
 | Qualité du français (reformulation, registre) | 20 |
 
-- Stockage : `modele/eval/secret/`. Son empreinte SHA-256 est inscrite ici le jour où il est figé.
-- Empreinte : **à inscrire**.
+- **Figé le 17 octobre 2026.** Empreinte SHA-256 (fichier `cas.jsonl` + contenu des 40 documents, calculée par `eval/outils/assembler_jeu.py`) : **`622aac134a08e2c9c7d035e209cf9d4c1f1b0efea03de0870508d90f6e577f49`**.
+- Stockage : **hors du dépôt**, dans `~/localia-labo/modele-compact/eval-secret/` (archive `eval-secret-20261017.tar.gz`, SHA-256 `bcde090d…7f6d`). Le dépôt étant destiné à être public, un jeu rangé dans `modele/eval/secret/` cesserait d'être secret. Le dépôt ne contient que l'empreinte, les outils et la liste des documents à exclure de l'entraînement (`eval/exclusions-entrainement.txt`).
+- Composition réelle : 26 fiches Service-Public modifiées entre août et octobre 2026 (Licence Ouverte) et 14 documents inventés (contrats, comptes rendus, rapports, notices). Les incohérences des fiches officielles sont **réelles**, trouvées à la lecture (par exemple un forfait annoncé à 24 € en tête de fiche et à 32 € dans le texte). Celles des documents inventés ont été placées volontairement et vérifiées par calcul. 7 cas d'extraction en trop ont été retirés (`retraits.txt`) pour respecter la répartition ci-dessus.
+- Rédaction : cas et documents inventés écrits par Claude. C'est autorisé, car ils servent **uniquement à l'évaluation**, jamais à l'entraînement. Le biais possible (des cas « à la manière de Claude ») est contrôlé par la notation humaine à l'aveugle de 20 % des cas.
+- Notation automatique : `eval/outils/noter.py`. **[mesuré]** Avant le gel, l'outil a été testé sur les réponses attendues (S_doc auto = 0,91 ; les écarts restants sont des contraintes de format que le texte descriptif ne respecte pas) et sur trois stratégies absurdes : s'abstenir toujours (0,12), recopier le document (0,16), signaler une incohérence partout (0,05).
 
 ### 2.2 Jeu de développement
 Les 147 questions de la banque Localia (`benchmark/banque/`), plus 60 cas nouveaux. Ils servent à tous les choix intermédiaires. Les scores sur ce jeu ne seront **jamais** présentés comme résultats.

@@ -28,6 +28,8 @@ Les jeux publics produits avec GPT, par exemple les jeux de type Alpaca traduits
 | Source | Licence annoncée | Usage | Statut |
 |---|---|---|---|
 | Fiches pratiques Service-Public.fr (data.gouv.fr ; AgentPublic/service-public sur HF) | Licence Ouverte / Etalab 2.0 (fiche data.gouv et étiquette HF etalab-2.0) | documents source pour le SFT documentaire | envisagé |
+| Fiches « vosdroits » Particuliers, archive `vosdroits-latest.zip` (lecomarquage.service-public.fr, version du 17/10/2026, SHA-256 `978f5d91…ac38`) | Licence Ouverte / Etalab 2.0 | **évaluation** : 26 fiches dans le jeu secret, 10 dans le jeu de développement. Ces 36 fiches sont **exclues de tout entraînement** (`eval/exclusions-entrainement.txt` et liste du jeu de développement) | utilisé (évaluation) |
+| Documents inventés du jeu secret (14) et cas d'évaluation (240), écrits par Claude | sans objet (créés pour le projet) | **évaluation uniquement**, jamais d'entraînement | utilisé (évaluation) |
 | Légifrance / LEGI (DILA) | Licence Ouverte | documents source | envisagé, à vérifier |
 | Wikipédia français | CC BY-SA 4.0 | documents source | envisagé ; étudier le partage à l'identique pour les données dérivées |
 | FineWeb-2 (fra_Latn) | ODC-By 1.0 (+ conditions Common Crawl ; étiquette HF lue le 17 oct. 2026) | documents variés, mélange général | **utilisé pour une mesure seulement** : fichier test/000_00000.parquet (67 Mo), statistiques du tokenizer, aucun entraînement |

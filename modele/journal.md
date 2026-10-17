@@ -43,3 +43,18 @@ Une entrée par action significative. Une entrée contient : la date, qui l'a fa
 - **Solution retenue** : PyTorch 2.14.1 de conda-forge (avec MKL), installé dans `~/localia-labo/modele-compact/env-entrainement`, hors dépôt (1,8 Go au total, au-dessus des 0,3 à 0,8 Go prévus). S'y ajoutent transformers 5.20.1, peft 0.21.2 et datasets.
 - **[mesuré]** Produit matriciel fp32 2048² : 263 GFLOP/s sur 8 fils.
 - **[calculé]** Un passage LoRA complet sur 1 M de jetons avec un 0,8B demanderait au mieux 5 h. Le CPU ne servira qu'aux essais minuscules et à la conversion ; les entraînements se feront sur Kaggle.
+
+## 17 oct. 2026, 18 h 30 : étape 2.1, jeux d'évaluation
+
+- **Jeu secret figé** : 240 cas sur 40 documents, répartis selon `criteres.md`.
+  - Empreinte SHA-256 `622aac13…7f49`.
+  - Rangé **hors du dépôt**. Dans le dépôt, il aurait cessé d'être secret dès la publication ; la règle de `criteres.md` est corrigée en conséquence.
+  - Documents : 26 fiches Service-Public modifiées entre août et octobre 2026, et 14 documents inventés.
+  - **Constat** : les fiches officielles contiennent de vraies incohérences, par exemple un forfait à 24 € en tête de fiche et à 32 € dans le texte, ou une présomption de 12 mois et de 24 mois pour le même type de bien. Ce sont de bons tests, car elles n'ont pas été fabriquées.
+- **Jeu de développement** : 60 cas sur 10 autres fiches, dans `eval/dev/`. Deux fiches ont été remplacées parce qu'elles recoupaient le jeu secret : la loi de 1948 et les tableaux de retraite. Il reste un recoupement thématique faible, la fiche F14044 reprenant le tableau des trimestres de F21552.
+- **Notation automatique** (`eval/outils/noter.py`) **[mesuré]** :
+  - testée avant le gel sur les réponses attendues : 0,91 ;
+  - et sur trois stratégies absurdes : 0,05 à 0,16 ;
+  - **5 défauts corrigés grâce à ces tests**, notamment une réponse correcte qui cite l'instruction piégée pour la rejeter, et des formulations d'abstention non reconnues ;
+  - limite connue : une réponse qui suit une injection en la mentionnant peut échapper au filtre, d'où le juge et le contrôle humain.
+- Archive du jeu secret : `~/localia-labo/modele-compact/eval-secret-20261017.tar.gz`. À sauvegarder par l'auteur hors de cette machine.

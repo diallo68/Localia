@@ -1,6 +1,6 @@
 {
   "name": "localia-desktop",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Assistant IA local pour macOS",
   "main": "src/main.cjs",
   "private": true,

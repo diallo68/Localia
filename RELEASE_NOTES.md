@@ -2,6 +2,10 @@
 
 *Notes de version en français plus bas.*
 
+## 0.7.3 — 2026-10-17
+
+- **Source checking: figure found with the opposite meaning.** A figure found in the cited passage was marked “Found” even when the document gave it the opposite meaning (“profit of €100” in the answer, “loss of €100” in the document). It is now flagged “Opposite meaning”, with both words and the passage shown. Covers profit/loss and increase/decrease, in French and English. No verdict when the sentence is negated, when the number is a year, or when the document uses both meanings around the same figure (the checker prefers silence to a false alarm).
+
 ## 0.7.2 — 2026-10-17
 
 - **Built-in engine: the document stays in memory between questions.** The engine no longer empties its memory before each request; it only reads what follows the part already computed (instructions, document, previous exchanges), as Ollama already does. Gemma 4 E4B with a 2,800-token document: a follow-up question starts answering in 3 s instead of 63 s, another question on the same document in 1.4 s instead of 73 s. Hybrid models (Qwen3.5, Qwen3.6) only benefit when a checkpoint fits; otherwise they read everything again, as before. Benchmark series on the built-in engine therefore run faster: their durations are not comparable with earlier series.
@@ -104,6 +108,10 @@ Fixes found by an independent review (Codex) of 0.7.0:
 ---
 
 # Notes de version
+
+## 0.7.3 — 17 octobre 2026
+
+- **Vérification des sources : chiffre retrouvé avec le sens contraire.** Un chiffre présent dans le passage cité était marqué « Retrouvée » même quand le document lui donnait le sens opposé (« bénéfice de 100 € » dans la réponse, « perte de 100 € » dans le document). Il est maintenant signalé « Sens contraire », avec les deux mots et le passage. Couvre bénéfice/perte et hausse/baisse, en français et en anglais. Pas de verdict quand la phrase est niée, quand le nombre est une année, ou quand le document emploie les deux sens autour du même chiffre (la vérification préfère se taire qu’accuser à tort).
 
 ## 0.7.2 — 17 octobre 2026
 

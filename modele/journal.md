@@ -81,3 +81,25 @@ Mesuré (60/60 cas, aucune erreur, mêmes conditions que les Qwen, notation auto
 - Ministral : bon en extraction (0,97) et citation (0,94), faible en abstention (0,70), incohérences (0,70) et qualité du français (0,75).
 - Vitesse de lecture de Ministral non interprétable : le cache de llama-server réutilise le document d'un cas à l'autre et le débit est calculé sur quelques jetons (premier cas : 14,5 j/s). À remesurer à froid en 2.2 bis.
 - Décision (règle de criteres.md) : Qwen3.5-2B reste la base retenue ; Ministral n'est ni plus juste ni plus rapide.
+
+### 17 octobre 2026, 23 h 40 : comparateurs de 24 à 31 Md sur le jeu de développement (Kaggle, 2 × T4)
+
+Kaggle, notebook `mohadial/localia-comparateurs-dev` v5 (privé). llama.cpp v0.7.0 compilé avec CUDA. La v4 échouait : CMake ne trouvait pas `CUDA::cuda_driver` ; corrigé en passant `/usr/local/nvidia/lib64/libcuda.so`. Mêmes conditions que sur le Mac : `executer.py`, sans réflexion, température 0, 600 jetons. Environ 1 h de GPU au total (supposé, d'après les durées affichées : compilation, puis 7,5 + 11,5 + 14,5 + 12 min d'évaluation).
+
+Mesuré (60/60 cas pour chacun, aucune erreur, aucune trace de réflexion dans les réponses, notation automatique seule). Écart = S_doc du 2B − S_doc du modèle ; IC95 % par bootstrap regroupé par document (5 000 tirages).
+
+| Modèle | S_doc | abst. | cit. | extr. | incoh. | fr | réd. | synth. | Écart 2B − modèle |
+|---|---|---|---|---|---|---|---|---|---|
+| Qwen3.5-2B (base retenue) | 0,822 | 0,70 | 0,94 | 0,83 | 0,90 | 0,86 | 0,68 | 0,85 | — |
+| Ministral 3B | 0,791 | 0,70 | 0,94 | 0,97 | 0,70 | 0,75 | 0,75 | 0,72 | +0,031 [−0,056 ; 0,126] |
+| Qwen3.5-4B Q4_K_S | 0,917 | 1,00 | 0,88 | 1,00 | 0,80 | 1,00 | 0,90 | 0,85 | −0,095 [−0,169 ; −0,018] |
+| Mistral Small 3.2 24B Q4_K_M | 0,910 | 1,00 | 1,00 | 1,00 | 0,75 | 0,86 | 0,81 | 0,95 | −0,088 [−0,175 ; 0,001] |
+| Gemma 3 27B Q4_K_M | 0,842 | 0,90 | 0,81 | 1,00 | 0,60 | 0,93 | 0,75 | 0,90 | −0,019 [−0,078 ; 0,056] |
+| Qwen3.8 27B Q4_K_M | **0,957** | 1,00 | 0,88 | 1,00 | 0,95 | 1,00 | 0,88 | 1,00 | −0,135 [−0,196 ; −0,079] |
+| Gemma 4 31B QAT Q4_0 | 0,927 | 0,90 | 1,00 | 0,92 | 0,80 | 1,00 | 0,88 | 1,00 | −0,105 [−0,191 ; 0,014] |
+
+- L'écart 4B − 2B est de 0,095 en S_doc (poids égal par catégorie). Le 0,11 noté plus haut était l'écart moyen par cas : les deux chiffres sont justes, mais c'est le S_doc qui fait foi.
+- Contrôle à la main des échecs en incohérence (D020, D032) : la notation est juste. Gemma 3 et Mistral voient une contradiction entre « moins de 26 ans » et « jusqu'à 25 ans », qui disent la même chose ; Gemma 3 répond « oui, c'est une incohérence » puis conclut à la cohérence.
+- Les comparateurs répondent court (40 à 53 mots médians, contre 79 pour le 2B).
+- Lecture (calculé) : le 2B de base égale déjà Gemma 3 27B, mais reste à 9 à 14 points de Mistral Small, Gemma 4 et Qwen3.8. Le jeu de développement compte 60 cas : les intervalles sont larges et le jeu secret (240 cas) tranchera.
+- Cible de l'entraînement : S_doc ≥ 0,93 environ sur le jeu de développement, soit le niveau de Gemma 4 31B, puis la confirmation sur le jeu secret. Points à travailler : abstention (0,70), rédaction (0,68) et extraction (0,83).

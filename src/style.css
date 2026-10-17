@@ -797,6 +797,12 @@ footer {
   border-radius: 4px;
   padding: 1px 4px;
 }
+/* Formules LaTeX converties en texte (markdown.js) : une formule à part est centrée. */
+.markdown .math-display {
+  display: block;
+  text-align: center;
+  margin: 0.3em 0;
+}
 .markdown pre {
   background: var(--accent-soft);
   border-radius: 8px;

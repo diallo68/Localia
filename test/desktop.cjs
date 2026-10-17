@@ -101,6 +101,15 @@ const path = require('node:path');
     assert.equal(await page.locator('.message.assistant .markdown strong').textContent(), 'test');
     await page.reload();
     await page.waitForFunction(() => document.querySelector('#history .history-open'));
+    // Chaque ouverture repart en mode simple, domaine « Général » ; retour au mode avancé et à
+    // Finance pour la suite.
+    await page.waitForFunction(
+      () => document.body.dataset.mode === 'simple' && document.body.dataset.metier === 'general',
+    );
+    await page.locator('#mode-switch').click();
+    await page.locator('#metier-switch').click();
+    await page.locator('.metier-card[data-metier=finance]').dblclick();
+    await page.waitForFunction(() => document.body.dataset.metier === 'finance');
     await page.locator('#history .history-open').click();
     assert.equal(
       await page.locator('.message.assistant p').textContent(),

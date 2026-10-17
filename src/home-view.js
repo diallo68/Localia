@@ -1,5 +1,5 @@
 // Deux interfaces : « simple » (conversation d'abord, réglages repliés) et « avancée » (accueil
-// en tableau de bord, toute la navigation). Le choix est enregistré dans les réglages.
+// en tableau de bord, toute la navigation). Chaque ouverture de Localia repart en mode simple.
 const isAdvanced = () => settings.mode === 'avance';
 
 function applyMode() {

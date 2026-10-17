@@ -81,6 +81,10 @@ const apple = process.platform !== 'win32';
         .getAttribute('value'),
       'foundry/' + MODEL,
     );
+    // Localia s'ouvre sur le domaine « Général » ; Finance choisi pour que ses consignes
+    // accompagnent les questions.
+    await page.locator('.domain-chip[data-domain=finance]').click();
+    await page.waitForFunction(() => document.body.dataset.metier === 'finance');
     // Bouton du moteur, dans les réglages avancés de la conversation.
     await page.waitForFunction(() => !document.querySelector('#chat-view').hidden);
     await page.evaluate(() => {

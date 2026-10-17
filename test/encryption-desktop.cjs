@@ -128,7 +128,10 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
       document.querySelector('#history').textContent.includes('Mildiou à Dalaba'),
     );
 
-    // 4. Déchiffrement : fichiers de nouveau en clair, clé retirée.
+    // 4. Déchiffrement : fichiers de nouveau en clair, clé retirée. La relance de l'étape 2 a
+    // rouvert Localia en mode simple : retour au mode avancé pour la colonne de gauche.
+    await page.waitForFunction(() => document.body.dataset.mode === 'simple');
+    await page.locator('#mode-switch').click();
     await page.locator('#security-tab').click();
     await page.waitForFunction(() =>
       document.querySelector('#encryption-toggle').textContent.includes('Désactiver'),

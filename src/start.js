@@ -1,6 +1,14 @@
 // Démarrage : réglages, historique et comparaisons, puis connexion à Ollama.
 (async () => {
   settings = await window.localia.loadSettings().catch(() => settings);
+  // Chaque ouverture commence en mode simple, domaine « Général » ; le mode avancé et les autres
+  // domaines restent à un clic. Premier lancement (aucun domaine encore choisi) : inchangé.
+  if (settings.metier && (settings.metier !== 'general' || isAdvanced() || settings.profil)) {
+    const { profil, ...rest } = settings;
+    settings = await window.localia
+      .saveSettings({ ...rest, metier: 'general', mode: 'simple' })
+      .catch(() => ({ ...rest, metier: 'general', mode: 'simple' }));
+  }
   textSizeButtons();
   applyContrast();
   scheduleUpdateCheck().catch(() => {});

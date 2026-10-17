@@ -66,3 +66,18 @@ Une entrée par action significative. Une entrée contient : la date, qui l'a fa
 - **[mesuré]** Vitesse en conditions réelles (applications ouvertes, swap de 4 Go, contextes de 1,7 à 6,5 k jetons) : le 2B génère à 5,5 jetons/s en médiane (1,9 à 6,0), le 4B à **2,4 jetons/s**, très loin de l'exigence de 5.
 - Lecture : la règle de la conception (4B s'il fait au moins 5 points de mieux **et** tient 5 jetons/s) donne le 2B, car le 4B échoue nettement sur la vitesse. La qualité du 4B montre toutefois ce que l'entraînement du 2B doit rattraper.
 - Ministral 3B en cours. Les comparateurs de 24 à 31 Md attendent un GPU sur Kaggle (file d'attente).
+
+### 17 octobre 2026, 22 h 50 : Ministral 3B sur le jeu de développement (2.2, fin)
+
+Mesuré (60/60 cas, aucune erreur, mêmes conditions que les Qwen, notation automatique seule) :
+
+| Base | S_doc auto | Génération médiane (j/s) | Mots médians |
+|---|---|---|---|
+| Qwen3.5-2B Q4_K_M | 0,822 | 5,5 | 79 |
+| Ministral 3B Q4_K_M | 0,791 | 2,3 | 95 |
+| Qwen3.5-4B Q4_K_S | 0,917 | 2,4 | 70 |
+
+- Écart 2B − Ministral : +0,031, IC95 % [−0,056 ; 0,126] (bootstrap regroupé par document) : non significatif.
+- Ministral : bon en extraction (0,97) et citation (0,94), faible en abstention (0,70), incohérences (0,70) et qualité du français (0,75).
+- Vitesse de lecture de Ministral non interprétable : le cache de llama-server réutilise le document d'un cas à l'autre et le débit est calculé sur quelques jetons (premier cas : 14,5 j/s). À remesurer à froid en 2.2 bis.
+- Décision (règle de criteres.md) : Qwen3.5-2B reste la base retenue ; Ministral n'est ni plus juste ni plus rapide.

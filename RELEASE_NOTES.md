@@ -2,6 +2,10 @@
 
 *Notes de version en français plus bas.*
 
+## 0.7.4 — 2026-10-17
+
+- **Formulas in answers are readable.** Models write formulas in LaTeX (`$…$`, `$$…$$`, `\(…\)`, `\[…\]`), which appeared raw, with stray `$` and subscripts turned into italics. Common formulas are now shown as text: CO₂ + H₂O → C₆H₁₂O₆, x², (2/3)², √x, ≤, ≈, Greek letters, chemical equations (`\ce`). A formula too complex for text (matrices…) stays as written, in code. Copy, read aloud and Word/PDF export follow the display. Dollar amounts (“between $5 and $10”) are not taken for formulas.
+
 ## 0.7.3 — 2026-10-17
 
 - **Source checking: figure found with the opposite meaning.** A figure found in the cited passage was marked “Found” even when the document gave it the opposite meaning (“profit of €100” in the answer, “loss of €100” in the document). It is now flagged “Opposite meaning”, with both words and the passage shown. Covers profit/loss and increase/decrease, in French and English. No verdict when the sentence is negated, when the number is a year, or when the document uses both meanings around the same figure (the checker prefers silence to a false alarm).
@@ -108,6 +112,10 @@ Fixes found by an independent review (Codex) of 0.7.0:
 ---
 
 # Notes de version
+
+## 0.7.4 — 17 octobre 2026
+
+- **Formules lisibles dans les réponses.** Les modèles écrivent leurs formules en LaTeX (`$…$`, `$$…$$`, `\(…\)`, `\[…\]`), qui s’affichaient brutes, avec des `$` et des indices passés en italique. Les formules courantes s’affichent maintenant en texte : CO₂ + H₂O → C₆H₁₂O₆, x², (2/3)², √x, ≤, ≈, lettres grecques, équations chimiques (`\ce`). Une formule trop complexe pour du texte (matrices…) reste telle quelle, en code. La copie, la lecture à voix haute et les exports Word et PDF suivent l’affichage. Les montants en dollars (« entre 5 $ et 10 $ ») ne sont pas pris pour des formules.
 
 ## 0.7.3 — 17 octobre 2026
 

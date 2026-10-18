@@ -141,3 +141,13 @@ Outil : `mesures/elaguer_vocab.py`. Sélection comme `couverture_vocab_ascii.py`
   - Génération à 16k : 4,5 à 4,8 jetons/s. Le processeur est passé de 100 à 52 pendant la mesure.
 - Incident : `executer.py` abandonnait au bout de 1 800 s par requête, ce qui est trop court pour la première lecture à 32k. Option `--delai` ajoutée ; le 32k a été relancé.
 - À la demande de l'auteur (100 pages) : long64k, 64 488 jetons, 47 fiches, 20 cas, lancé à la suite du 32k (`chaine-long64.sh`, -c 69632). Première lecture attendue de 2 à 3 h [supposé, extrapolé du 16k].
+
+### 18 octobre 2026, 15 h : étape 2.4, sources
+
+- `donnees/preparer_sources.py` : fiches F*.xml de l'archive vosdroits (3 004), converties avec `sp_xml_vers_texte.py`.
+- **[mesuré]** 1 489 fiches gardées (600 à 6 000 jetons). Écartées :
+  - 36 fiches des jeux d'évaluation ;
+  - 1 391 fiches trop courtes et 44 trop longues ;
+  - 44 fiches dont plus de 5 % des 13-grammes de mots figurent dans un document ou un cas d'évaluation (secret et développement). Recouvrement maximal : F10793, 80 %. La reprise de passages d'une fiche à l'autre est fréquente sur Service-Public : il fallait ce filtre en plus de la liste d'exclusion.
+- Provenance mise à jour : les autres fiches de l'archive servent de sources d'entraînement (Licence Ouverte). Sortie hors dépôt : `~/localia-labo/modele-compact/donnees-entrainement/`.
+- Reste à faire pour la décontamination complète (criteres.md) : MinHash, voisins sémantiques et 50 vérifications manuelles, avant l'entraînement réel (phase 3). Pour l'échantillon de 2.4, le filtre par 13-grammes suffit.

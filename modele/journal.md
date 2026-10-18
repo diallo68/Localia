@@ -199,3 +199,15 @@ Les consignes données au professeur sont de moi : elles orientent sa rédaction
 - Correction : désinstallation de torchao (inutilisé) après l'installation de transformers et peft. Version 3 poussée à 20 h 50.
 - Contexte long 64k, en cours : première lecture de 9 423 s (2 h 37, mesuré ; 2 h 55 extrapolé), génération de 2,2 à 2,5 jetons/s, environ 3 min par question suivante, CPU_Speed_Limit entre 43 et 54.
 - Version 3 (20 h 52) : machine obtenue tout de suite, échec à 108 s par manque de mémoire GPU (mesuré : 12,04 Gio alloués par PyTorch au moment de la perte). Cause (calculé) : logits sur toute la séquence, 8 192 × 248 320 en fp32 ≈ 8 Go. Correction : `logits_to_keep` limité à la réponse, perte calculée à la main sur ces positions, `expandable_segments`. Version 4 poussée à 20 h 55.
+
+### 18 octobre 2026, 21 h 40 : contexte long, 64k (environ 100 pages)
+
+- **[mesuré]** long64k (64 488 jetons, 47 fiches, les 20 mêmes questions qu'à 32k), 2B élagué : S_doc **0,851** (extraction 0,764, citation 0,938), identique au 32k, contre 0,875 en contexte court. Sur 20 cas, l'écart n'est pas significatif.
+- **[mesuré]** Les cas changent d'un contexte à l'autre (l'inférence n'est pas déterministe) :
+  - gagnés à 64k : L025 et L031 ;
+  - perdus à 64k : L044 (fiche en 18e position sur 47) et L049 (7e, partiel) ;
+  - perdus partout : L007 et L030.
+  - Les fiches fautives sont réparties de la 6e à la 44e position : pas d'effet de position visible.
+- **[mesuré]** Première lecture : 9 423 s (2 h 37), soit 6,8 jetons/s. Questions suivantes : 181 s en médiane. Génération : 2,4 jetons/s en médiane (2,0 à 2,5). Mémoire du serveur : 3,55 Go. Processeur entre 43 et 54.
+- **[calculé]** Le modèle t(n) = a·n + b·n², réajusté sur 32k et 64k (a ≈ 29 s par millier de jetons, b ≈ 1,8 s par million de jetons²), donne environ 9 h 30 de lecture pour 130k (200 pages), à bridage comparable. L'extrapolation sur 16k et 32k donnait 11 h 30.
+- Conclusion : la qualité tient jusqu'à 100 pages. L'attente (2 h 37 avant la première réponse) et la génération à 2,4 jetons/s rendent toutefois le document entier en contexte peu utilisable au-delà d'environ 30 pages. Pour 100 à 200 pages, la recherche de passages reste la voie recommandée.

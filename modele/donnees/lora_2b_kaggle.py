@@ -15,6 +15,8 @@ import sys
 import time
 import urllib.request
 
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+
 TRAVAIL = "/kaggle/working"
 TMP = "/kaggle/tmp" if os.path.isdir("/kaggle/tmp") else "/tmp"
 LLAMA_TAG = "v0.7.0"
@@ -87,10 +89,12 @@ for epoque in range(EPOQUES):
     for k, i in enumerate(ordre):
         ids, n_p = donnees[i]
         x = torch.tensor([ids], device="cuda")
-        y = x.clone()
-        y[0, :n_p] = -100
+        # Logits sur la réponse seulement : sur 8k jetons, la sortie complète (vocabulaire de 248k, fp32)
+        # ne tient pas sur une T4.
         with torch.autocast("cuda", dtype=torch.float16):
-            perte = modele(input_ids=x, labels=y).loss / ACCUM
+            logits = modele(input_ids=x, logits_to_keep=len(ids) - n_p + 1).logits[0, :-1].float()
+        perte = torch.nn.functional.cross_entropy(logits, x[0, n_p:]) / ACCUM
+        del logits
         scaler.scale(perte).backward()
         cumul.append(perte.item() * ACCUM)
         if (k + 1) % ACCUM == 0 or k == len(ordre) - 1:

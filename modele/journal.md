@@ -112,3 +112,14 @@ Détail dans `mesures/vitesse-2b-fils.md`.
 - **[mesuré]** Le serveur n'est pas freiné par l'échantillonnage sur le vocabulaire de 248 k : 4,65 à 4,87 jetons/s avec la chaîne par défaut, contre 4,74 à 4,90 avec top_k = 1. L'écart avec llama-bench vient de l'état de la machine, pas du serveur.
 - **[calculé]** Sur ce Mac, le 2B de base tourne autour de 5 jetons/s quand il est bridé, et de 7 à 9 sinon : la marge est mince. Le GGUF à vocabulaire élagué (2.3) devient prioritaire. La matrice de sortie fait 33 % du fichier ; elle est lue à chaque jeton.
 - **[supposé]** L'exigence de 5 jetons/s devrait être vérifiée sur une machine de référence moins sujette au bridage thermique, ou avec le bridage relevé et consigné à chaque mesure. Décision à soumettre à l'auteur au moment du plan chiffré (2.7).
+
+### 18 octobre 2026, 12 h 30 : vocabulaire élagué du 2B (2.3, vitesse)
+
+Outil : `mesures/elaguer_vocab.py`. Sélection comme `couverture_vocab_ascii.py`, avec K = 48 000 : jetons fréquents de la moitié « apprentissage » de FineWeb-2 fr, octets de base, jetons ASCII, fermeture BPE et tous les jetons spéciaux. Les lignes de `token_embd` (Q6_K, partagée avec la sortie) sont recopiées octet pour octet.
+- **[mesuré]** 248 320 → 131 203 jetons ; 247 587 → 130 889 fusions ; `token_embd` 417 → 220 Mo ; fichier 1,281 → 1,078 Go (calcul de la conception : 1,07).
+- **[mesuré]** Tokenisation identique en nombre de jetons sur une fiche Service-Public (1 610), un texte de calibration (157) et du code Python (1 762). Les caractères hors liste (grec, par exemple) retombent proprement sur les octets.
+- **[mesuré]** Vitesse en alternance, 3 passes, 8 fils, à 8 k de contexte (`mesures/vitesse-2b-vocab-elague.md`), processeur bridé à 50-52 sauf au premier passage (100) :
+  - génération : complet 5,10 / 5,18 / 5,31, contre élagué 5,72 / 5,34 / 5,92 ;
+  - lecture : inchangée, 22,7 à 25,6 jetons/s des deux côtés.
+- **[calculé]** Gain de génération moyen de +9 % (5,20 → 5,66) ; +3 % à +12 % selon le passage. La conception prévoyait environ +19 %. Le seuil d'abandon (< 5 %) n'est pas atteint : on garde la fiche 08. Le gain de vitesse est plus faible que prévu, car le bridage thermique limite le calcul plus que la lecture mémoire.
+- Reste à vérifier la qualité : le jeu de développement est lancé sur le GGUF élagué.

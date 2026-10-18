@@ -142,7 +142,7 @@ Outil : `mesures/elaguer_vocab.py`. Sélection comme `couverture_vocab_ascii.py`
 - Incident : `executer.py` abandonnait au bout de 1 800 s par requête, ce qui est trop court pour la première lecture à 32k. Option `--delai` ajoutée ; le 32k a été relancé.
 - À la demande de l'auteur (100 pages) : long64k, 64 488 jetons, 47 fiches, 20 cas, lancé à la suite du 32k (`chaine-long64.sh`, -c 69632). Première lecture attendue de 2 à 3 h [supposé, extrapolé du 16k].
 
-### 18 octobre 2026, 15 h : étape 2.4, sources
+### 18 octobre 2026, 14 h 35 : étape 2.4, sources
 
 - `donnees/preparer_sources.py` : fiches F*.xml de l'archive vosdroits (3 004), converties avec `sp_xml_vers_texte.py`.
 - **[mesuré]** 1 489 fiches gardées (600 à 6 000 jetons). Écartées :
@@ -151,3 +151,17 @@ Outil : `mesures/elaguer_vocab.py`. Sélection comme `couverture_vocab_ascii.py`
   - 44 fiches dont plus de 5 % des 13-grammes de mots figurent dans un document ou un cas d'évaluation (secret et développement). Recouvrement maximal : F10793, 80 %. La reprise de passages d'une fiche à l'autre est fréquente sur Service-Public : il fallait ce filtre en plus de la liste d'exclusion.
 - Provenance mise à jour : les autres fiches de l'archive servent de sources d'entraînement (Licence Ouverte). Sortie hors dépôt : `~/localia-labo/modele-compact/donnees-entrainement/`.
 - Reste à faire pour la décontamination complète (criteres.md) : MinHash, voisins sémantiques et 50 vérifications manuelles, avant l'entraînement réel (phase 3). Pour l'échantillon de 2.4, le filtre par 13-grammes suffit.
+
+### 18 octobre 2026, 14 h 50 : étape 2.4, chaîne de génération (échantillon)
+
+Règle de provenance appliquée à la conception : **aucun texte rédigé par Claude n'entre dans les exemples**. Les demandes, les consignes système, les instructions cachées et les réponses sont rédigées par le professeur Qwen3.6-35B-A3B (Apache 2.0). Mon code ne fait que des opérations mécaniques et choisit des paramètres :
+- retrait d'un paragraphe dont les nombres sont uniques (abstention) ;
+- modification d'un nombre suivi d'une unité présent au moins deux fois (incohérence) ;
+- tirage d'une contrainte de format ;
+- position d'insertion de l'instruction cachée.
+
+Les consignes données au professeur sont de moi : elles orientent sa rédaction, mais n'entrent pas dans les exemples. **Point à soumettre à l'auteur** : le gabarit « Document : … Demande : … » des exemples est une mise en forme mécanique de 4 mots ; à remplacer par le format réel de Localia si l'auteur le préfère.
+
+- `donnees/fabriquer_taches.py` : 60 fiches tirées au hasard (graine 1), 8 tâches par fiche (extraction, citation, synthèse, rédaction, abstention, incohérence, fausse alerte, injection), soit 480 tâches. Les 8 premières fiches sont aussi générées avec réflexion du professeur (64 tâches de plus), pour comparer les taux de rejet.
+- Kaggle : jeu de données privé `mohadial/localia-donnees-2-4` et notebook privé `mohadial/localia-professeur-2-4` (Q4_K_M de ggml-org, 20,4 Go, téléchargé sur Kaggle et non sur le Mac, 4 requêtes en parallèle). Les binaires llama.cpp sont conservés en sortie, pour éviter de recompiler la prochaine fois.
+- `donnees/verifier.py` : contrôles mécaniques par type (détail en tête du fichier) ; produit `exemples.jsonl`, `rejets.jsonl` et `rapport.md`. Seuil d'arrêt de la conception : rejet > 70 % → revoir les consignes du professeur.

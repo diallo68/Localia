@@ -186,3 +186,9 @@ Les consignes données au professeur sont de moi : elles orientent sa rédaction
 
 - Kaggle : `mohadial/localia-lora-2b-2-5`. LoRA r = 16 sur les couches de langage (attention, DeltaNet, MLP), 2 époques, taux d'apprentissage 1e-4, perte sur la réponse seulement. Puis fusion, conversion GGUF et Q4_K_M ; base témoin convertie de la même façon ; jeu de développement sur GPU pour les deux.
 - Incident sur le Mac : en arrêtant la première chaîne de mesure à 32k (vers 14 h 27), le serveur llama n'a pas été tué. Il gardait le port 8081, le nouveau serveur n'a pas démarré, et le script a envoyé sa requête à l'ancien, qui l'a annulée. Environ 1 h 50 perdues. Les scripts libèrent désormais le port et vérifient que leur serveur tourne. Le 32k a été relancé à 16 h 16.
+
+### 18 octobre 2026, 17 h 45 : contexte long, 32k
+
+- **[mesuré]** long32k (32 977 jetons, 22 fiches, 20 cas), 2B élagué : S_doc **0,851**, contre 0,875 pour les mêmes cas en contexte court. Deux cas sont partiellement perdus : L001, fiche en 1re position, et L025, fiche en 19e position. Aucune chute nette.
+- **[mesuré]** Première lecture : 2 939 s (49 min), soit 11,2 jetons/s. Questions suivantes : 60 à 110 s. Génération à 32k : 3,5 jetons/s en médiane, sous l'exigence de 5 (qui ne vise que 8k). Processeur entre 100 et 54.
+- **[calculé]** Modèle t(n) = a·n + b·n² ajusté sur 16k et 32k (a ≈ 12 s par millier de jetons, b ≈ 2,3 s par million de jetons²) : environ 2 h 55 pour 64k (100 pages) et 11 h 30 pour 130k (200 pages). La mesure à 64k est lancée, elle validera ou non l'extrapolation.

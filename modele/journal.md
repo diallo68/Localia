@@ -192,3 +192,9 @@ Les consignes données au professeur sont de moi : elles orientent sa rédaction
 - **[mesuré]** long32k (32 977 jetons, 22 fiches, 20 cas), 2B élagué : S_doc **0,851**, contre 0,875 pour les mêmes cas en contexte court. Deux cas sont partiellement perdus : L001, fiche en 1re position, et L025, fiche en 19e position. Aucune chute nette.
 - **[mesuré]** Première lecture : 2 939 s (49 min), soit 11,2 jetons/s. Questions suivantes : 60 à 110 s. Génération à 32k : 3,5 jetons/s en médiane, sous l'exigence de 5 (qui ne vise que 8k). Processeur entre 100 et 54.
 - **[calculé]** Modèle t(n) = a·n + b·n² ajusté sur 16k et 32k (a ≈ 12 s par millier de jetons, b ≈ 2,3 s par million de jetons²) : environ 2 h 55 pour 64k (100 pages) et 11 h 30 pour 130k (200 pages). La mesure à 64k est lancée, elle validera ou non l'extrapolation.
+
+### 18 octobre, 20 h 50 — pilote 2.5 : échec au démarrage, relancé
+
+- Version 2 : environ 3 h de file d'attente Kaggle, puis échec après 85 s (mesuré, journal du noyau) : `ImportError: Found an incompatible version of torchao. Found version 0.10.0, but only versions above 0.16.0 are supported`, levé par peft lors de `get_peft_model`. Les 262 exemples étaient lus et gabarités sans rejet.
+- Correction : désinstallation de torchao (inutilisé) après l'installation de transformers et peft. Version 3 poussée à 20 h 50.
+- Contexte long 64k, en cours : première lecture de 9 423 s (2 h 37, mesuré ; 2 h 55 extrapolé), génération de 2,2 à 2,5 jetons/s, environ 3 min par question suivante, CPU_Speed_Limit entre 43 et 54.

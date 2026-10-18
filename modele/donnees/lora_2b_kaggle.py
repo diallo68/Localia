@@ -29,6 +29,8 @@ def sh(cmd):
 
 subprocess.run("nvidia-smi --query-gpu=name,memory.total --format=csv", shell=True)
 sh(f"{sys.executable} -m pip install -q -U 'transformers>=5.2' 'peft>=0.18' 2>&1 | tail -2")
+# torchao 0.10 préinstallé sur Kaggle : peft >= 0.18 refuse de démarrer avec lui (et on ne s'en sert pas).
+sh(f"{sys.executable} -m pip uninstall -q -y torchao 2>&1 | tail -2")
 
 import torch  # noqa: E402
 from huggingface_hub import snapshot_download  # noqa: E402

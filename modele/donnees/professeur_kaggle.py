@@ -145,7 +145,7 @@ def user(doc, demande):
     return f"Document :\n\n{doc}\n\n---\n\nDemande : {demande}"
 
 
-fiches = [json.loads(l) for l in open(glob.glob("/kaggle/input/**/fiches-2.4.jsonl", recursive=True)[0])]
+fiches = [json.loads(l) for l in open(glob.glob("/kaggle/input/**/fiches-*.jsonl", recursive=True)[0])]
 sortie_a = os.path.join(TRAVAIL, "phase_a.jsonl")
 sortie_b = os.path.join(TRAVAIL, "phase_b.jsonl")
 reprise = glob.glob("/kaggle/input/**/taches_bis.jsonl", recursive=True)
@@ -177,7 +177,7 @@ t0 = time.time()
 
 def phase_a(fiche):
     for essai in range(3):
-        r = appeler([{"role": "user", "content": consigne_phase_a(fiche)}], json_mode=True, max_tokens=1500)
+        r = appeler([{"role": "user", "content": consigne_phase_a(fiche)}], json_mode=True, max_tokens=2500)
         try:
             return fiche["fiche"], json.loads(r["texte"]), r
         except Exception:

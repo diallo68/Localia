@@ -123,3 +123,16 @@ Outil : `mesures/elaguer_vocab.py`. Sélection comme `couverture_vocab_ascii.py`
   - lecture : inchangée, 22,7 à 25,6 jetons/s des deux côtés.
 - **[calculé]** Gain de génération moyen de +9 % (5,20 → 5,66) ; +3 % à +12 % selon le passage. La conception prévoyait environ +19 %. Le seuil d'abandon (< 5 %) n'est pas atteint : on garde la fiche 08. Le gain de vitesse est plus faible que prévu, car le bridage thermique limite le calcul plus que la lecture mémoire.
 - Reste à vérifier la qualité : le jeu de développement est lancé sur le GGUF élagué.
+
+### 18 octobre 2026, 13 h 40 : vocabulaire élagué du 2B (2.3, qualité)
+
+- **[mesuré]** Jeu de développement sur le GGUF élagué, mêmes conditions : S_doc auto **0,815**, contre 0,822 pour le complet. Un seul cas change de note : D006, synthèse, 0,5 → 0 (la réponse ne cite plus « 14 jours »). 53 réponses sur 60 sont identiques mot pour mot. Génération médiane 6,3 jetons/s, lecture 43 jetons/s, processeur bridé à 43 à la fin.
+- **[mesuré]** Le 2B complet, relancé sur D001 à D006, ne redonne pas ses réponses de la veille pour D003 à D006, et retombe exactement sur celles de l'élagué. Les écarts complet/élagué sont donc du bruit numérique de llama.cpp entre exécutions (température 0, mais calcul non déterministe), pas un effet de l'élagage.
+- Conclusion : l'élagage du vocabulaire est retenu (fiche 08). Gain de génération d'environ +9 %, fichier de 1,08 Go, aucune perte de qualité mesurable.
+- Conséquence pour la méthode : à température 0, une même exécution peut varier. Les comparaisons entre modèles devront s'appuyer sur l'intervalle de confiance, et non sur des cas isolés.
+
+### 18 octobre 2026 : contexte long (16k, 32k), à la demande de l'auteur
+
+- Nouvel outil : `eval/outils/assembler_long.py`. Les cas d'extraction et de citation du jeu de développement sont posés sur un seul document long : les fiches du jeu de développement, plus des fiches Service-Public de remplissage, hors jeu secret et hors sujets trop proches (F14043, F34110, F21760, F2951 écartées).
+  - long16k : 16 331 jetons, 20 fiches, 10 cas ;
+  - long32k : 32 835 jetons, 22 fiches, 20 cas.

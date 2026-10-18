@@ -230,3 +230,20 @@ Les consignes données au professeur sont de moi : elles orientent sa rédaction
 - Incident : le GGUF LoRA ne se charge pas sur le Mac (llama.cpp 0.5.0) : `tensor 'blk.24.attn_norm.weight' not found`. `save_pretrained` n'écrit pas la couche MTP (`mtp.*`), alors que la configuration l'annonce. llama.cpp v0.7.0, sur Kaggle, la tolérait. Correction : `mesures/completer_mtp.py` recopie les 15 tenseurs blk.24.* de la base (couche non touchée par la LoRA) → `qwen35-2b-lora-mtp-Q4_K_M.gguf`, 1,312 Go. Pour la prochaine fois : recopier `mtp.*` depuis la base au moment de la fusion.
 - **[mesuré]** Mac, processeur bridé à 43, donc non représentatif : LoRA complété 4,19 jetons/s en génération, base 3,85. Même architecture : aucune différence de vitesse attendue (supposé).
 - Quota Kaggle de cette série (estimé) : environ 1 h 05 de GPU.
+
+### 19 octobre 2026, 0 h 10 : lot 2 des données préparé (rien de lancé)
+
+Corrections tirées du rapport 2.4 et du pilote 2.5 :
+- **Citations** : désormais générées avec réflexion. En 2.4, sans réflexion : 54 rejets sur 60 pour « citation exacte sans guillemets » ; avec réflexion : 1 sur 8 (mesuré).
+- **Incohérences** : la contradiction est proposée par le professeur. En phase A, il donne la phrase exacte, la même phrase modifiée et l'extrait de l'autre passage contredit. Contrôle mécanique avant l'usage : phrase présente une seule fois, autre passage présent et distinct. Le vérificateur exige ensuite qu'un mot changé et un mot de la version d'origine (ou de l'autre passage) figurent dans la réponse. Sans contradiction valable, la fiche n'a pas de tâche d'incohérence.
+- **Nouvelle tâche qualite_fr** (`fabriquer_taches.py`) : une faute mécanique est introduite à une seule occurrence :
+  - soit un « s » du pluriel retiré après un déterminant pluriel ;
+  - soit un mot de 4 lettres ou plus retiré ;
+  - le passage fautif est unique dans le document modifié.
+
+  Le professeur rédige une demande qui cite ce passage. Le vérificateur exige la forme corrigée. Sur 300 fiches (graine 2) : 160 accords, 140 mots manquants. Exemples : « payer des droit fiscaux » → « des droits fiscaux » ; « l'établissement qui le recrutement » → « qui organise le recrutement ».
+- **Contre les fausses abstentions du pilote** :
+  - la synthèse reçoit en phase A 2 à 4 éléments attendus, contrôlés dans la réponse ;
+  - en extraction et en synthèse, rejet si la **première phrase** est une abstention. Une précision en fin de réponse (« le document ne précise pas le coût ») reste admise : la première version, qui cherchait dans toute la réponse, rejetait à tort une bonne réponse.
+- Non-régression : sur les 544 réponses de 2.4, le nouveau vérificateur donne le même rapport (322 gardées).
+- Volume prévu : 300 fiches × 9 tâches = 2 700 tâches. **[calculé]** D'après les durées de 2.4 (phase A : 437 s pour 60 fiches ; phase B : 3 234 s pour 544 tâches), il faut environ 5 à 6 h de GPU, à découper en deux sessions de 150 fiches. Lancement soumis à l'accord de l'auteur.

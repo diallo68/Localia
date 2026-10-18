@@ -10,8 +10,11 @@ Types de tâches par fiche :
 - libre : extraction, citation, synthèse et rédaction (contraintes de format tirées au hasard) ;
 - abstention : un paragraphe dont les nombres n'apparaissent nulle part ailleurs est retiré ; la question
   porte sur ce paragraphe ; la bonne réponse est de dire que l'information manque ;
-- incoherence : un nombre suivi d'une unité, présent au moins deux fois, est modifié à une seule occurrence ;
+- incoherence : un nombre suivi d'une unité, présent au moins deux fois, est modifié à une seule occurrence
+  (lot 2.4 ; à partir du lot 2, c'est le professeur qui propose la contradiction, voir professeur.py) ;
 - fausse_alerte : même demande de vérification, sur la fiche intacte ;
+- qualite_fr (lot 2) : une faute est introduite mécaniquement dans une phrase (mot retiré, ou « s » du pluriel
+  retiré après un déterminant pluriel) ; la demande, rédigée par le professeur, cite le passage fautif ;
 - injection : une instruction cachée (rédigée par le professeur) est insérée entre deux paragraphes.
 
 Usage : python3 -I fabriquer_taches.py <sources/> <sortie.jsonl> [--n 60] [--graine 1]
@@ -30,6 +33,8 @@ RE_NOMBRE = re.compile(r"\d+(?:[  ]\d{3})*(?:,\d+)?")
 FORMATS_SYNTHESE = [{"max_puces": 3}, {"max_puces": 5}, {"max_mots": 60}, {"max_phrases": 2}, {"tableau": True}]
 FORMATS_REDACTION = [{"max_mots": 120}, {"max_mots": 200}, {"max_phrases": 5}]
 OBJECTIFS_INJECTION = ["langue", "lien", "montant", "ignorer"]
+RE_ACCORD = re.compile(r"\b(les|des|ces|aux|leurs|vos|nos|plusieurs) ([a-zà-ÿ]{4,})s\b")
+RE_MOT = re.compile(r"[a-zà-ÿ]{4,}")
 
 
 def paragraphes(md):
@@ -79,6 +84,53 @@ def choisir_incoherence(md, rnd):
             "position": debut}
 
 
+def compte(md, fragment):
+    return md.count(fragment)
+
+
+def choisir_qualite_fr(md, rnd):
+    """Une faute à une seule occurrence ; le passage fautif (fautif) et le passage corrigé (correct) sont uniques."""
+    lignes = [l for l in md.split("\n") if not l.lstrip().startswith(("#", "|")) and len(l.split()) >= 10]
+    rnd.shuffle(lignes)
+    sortes = ["accord", "mot_manquant"]
+    rnd.shuffle(sortes)
+    for sorte in sortes:
+        for l in lignes:
+            if sorte == "accord":
+                ms = list(RE_ACCORD.finditer(l))
+                if not ms:
+                    continue
+                m = rnd.choice(ms)
+                correct, fautif = m.group(0), f"{m.group(1)} {m.group(2)}"
+                cle = correct
+                # un mot de contexte de chaque côté, pour un passage unique
+                avant = l[:m.start()].split()[-1:]
+                apres = l[m.end():].split()[:1]
+                correct = " ".join(avant + [correct] + apres)
+                fautif = " ".join(avant + [fautif] + apres)
+                nouvelle = l[:m.start()] + f"{m.group(1)} {m.group(2)}" + l[m.end():]
+            else:
+                mots = l.split()
+                idx = [i for i in range(2, len(mots) - 2) if RE_MOT.fullmatch(mots[i])]
+                if not idx:
+                    continue
+                i = rnd.choice(idx)
+                correct = " ".join(mots[i - 2:i + 3])
+                cle = " ".join(mots[i - 1:i + 2])
+                fautif = " ".join(mots[i - 2:i] + mots[i + 1:i + 3])
+                nouvelle = " ".join(mots[:i] + mots[i + 1:])
+                if l.startswith(" "):  # indentation de liste
+                    nouvelle = l[:len(l) - len(l.lstrip())] + nouvelle
+            if compte(md, l) != 1 or compte(md, correct) != 1 or compte(md, fautif) or correct not in l:
+                continue
+            modifie = md.replace(l, nouvelle, 1)
+            if compte(modifie, fautif) != 1:
+                continue
+            # cle : ce que la réponse doit contenir (forme corrigée, avec le mot rétabli et ses voisins)
+            return {"sorte": sorte, "document": modifie, "fautif": fautif, "correct": correct, "cle": cle}
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("sources")
@@ -101,7 +153,8 @@ def main():
                 continue
             ab = choisir_abstention(paras, rnd)
             inc = choisir_incoherence(md, rnd)
-            if not ab or not inc:
+            qf = choisir_qualite_fr(md, rnd)
+            if not ab or not inc or not qf:
                 continue
             i, nombres_retires = ab
             fiche = {
@@ -111,11 +164,12 @@ def main():
                 "abstention": {"paragraphe": paras[i], "nombres_retires": nombres_retires,
                                "document": "\n\n".join(paras[:i] + paras[i + 1:])},
                 "incoherence": inc,
+                "qualite_fr": qf,
                 "injection": {"objectif": rnd.choice(OBJECTIFS_INJECTION), "apres_paragraphe": rnd.randrange(1, len(paras) - 1)},
             }
             s.write(json.dumps(fiche, ensure_ascii=False) + "\n")
             gardees += 1
-            n_taches += 8
+            n_taches += 9
     print(f"{gardees} fiches, {n_taches} tâches prévues -> {a.sortie}")
 
 

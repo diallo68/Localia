@@ -152,7 +152,7 @@ Outil : `mesures/elaguer_vocab.py`. Sélection comme `couverture_vocab_ascii.py`
 - Provenance mise à jour : les autres fiches de l'archive servent de sources d'entraînement (Licence Ouverte). Sortie hors dépôt : `~/localia-labo/modele-compact/donnees-entrainement/`.
 - Reste à faire pour la décontamination complète (criteres.md) : MinHash, voisins sémantiques et 50 vérifications manuelles, avant l'entraînement réel (phase 3). Pour l'échantillon de 2.4, le filtre par 13-grammes suffit.
 
-### 18 octobre 2026, 14 h 50 : étape 2.4, chaîne de génération (échantillon)
+### 18 octobre 2026, 14 h 40 : étape 2.4, chaîne de génération (échantillon)
 
 Règle de provenance appliquée à la conception : **aucun texte rédigé par Claude n'entre dans les exemples**. Les demandes, les consignes système, les instructions cachées et les réponses sont rédigées par le professeur Qwen3.6-35B-A3B (Apache 2.0). Mon code ne fait que des opérations mécaniques et choisit des paramètres :
 - retrait d'un paragraphe dont les nombres sont uniques (abstention) ;

@@ -248,3 +248,15 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Non-régression : sur les 544 réponses de 2.4, le nouveau vérificateur donne le même rapport (322 gardées).
 - Volume prévu : 300 fiches × 9 tâches = 2 700 tâches. **[calculé]** D'après les durées de 2.4 (phase A : 437 s pour 60 fiches ; phase B : 3 234 s pour 544 tâches), il faut environ 5 à 6 h de GPU, à découper en deux sessions de 150 fiches. Lancement soumis à l'accord de l'auteur.
 - 0 h 25 : accord de l'auteur (« ok »). 300 fiches (graine 2, sans les 60 de 2.4), découpées en deux datasets Kaggle privés `localia-donnees-lot2a` et `lot2b` de 150 fiches. Phase A : `max_tokens` porté à 2 500 (plus de clés). Le noyau `localia-professeur-lot2a` est lancé ; `lot2b` le sera après contrôle du premier.
+
+### 19 octobre 2026, 2 h 00 : perplexité du vocabulaire élagué (2.3) et repère Gemma 3 12B (2.2)
+
+- **[mesuré]** Perplexité, 2048 jetons de contexte, 33 blocs. Texte : 84 textes FineWeb-2 fr (292 ko), tirés de la moitié qui n'a **pas** servi à choisir le vocabulaire.
+  - Base Q4_K_M : 67 843 jetons, PPL 27,94 ± 0,50.
+  - Élagué à 48k : 67 849 jetons, PPL 27,77 ± 0,50.
+- **[calculé]** Log-vraisemblance totale (jetons × ln PPL, la tokenisation étant presque identique : +0,009 % de jetons) : −0,18 % pour l'élagué. Le seuil de 2.3 (perte de 1 % au plus) est respecté. La légère baisse s'explique ainsi (supposé) : le softmax renormalisé sur 48k jetons redistribue la masse des jetons retirés. Ce n'est pas un gain de modèle. L'élagage reste retenu.
+- **[mesuré]** Jeu de développement, Gemma 3 12B (Ollama, `gemma3-12b-8k`) : S_doc **0,812**. Le 2B d'origine fait 0,822 et l'élagué 0,815 sur le Mac.
+  - Points forts : abstention 1,00, synthèse 0,92.
+  - Point faible : incohérence 0,40.
+  - Réponses courtes : 44,5 mots médians. Durée médiane par cas : 48 s.
+- Repère 5 à 10 fois plus gros : Gemma 3 12B (6×) ne dépasse pas le 2B sur ce jeu. Gemma 3 27B (0,842), Mistral Small (0,910) et Qwen3.8 27B (0,957) restent les cibles. Il n'y a pas de Qwen3.5-9B officiel en local (seulement une version « abliterated » sur Ollama).

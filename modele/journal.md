@@ -103,3 +103,12 @@ Mesuré (60/60 cas pour chacun, aucune erreur, aucune trace de réflexion dans l
 - Les comparateurs répondent court (40 à 53 mots médians, contre 79 pour le 2B).
 - Lecture (calculé) : le 2B de base égale déjà Gemma 3 27B, mais reste à 9 à 14 points de Mistral Small, Gemma 4 et Qwen3.8. Le jeu de développement compte 60 cas : les intervalles sont larges et le jeu secret (240 cas) tranchera.
 - Cible de l'entraînement : S_doc ≥ 0,93 environ sur le jeu de développement, soit le niveau de Gemma 4 31B, puis la confirmation sur le jeu secret. Points à travailler : abstention (0,70), rédaction (0,68) et extraction (0,83).
+
+### 18 octobre 2026, 11 h 50 : vitesses du 2B selon le nombre de fils (2.2 bis)
+
+Détail dans `mesures/vitesse-2b-fils.md`.
+- **[mesuré]** Le processeur est bridé par la chaleur pendant les mesures : `CPU_Speed_Limit` entre 43 et 64 (100 = pleine vitesse). Charge de 2 à 18 ; mémoire libre à 72 %.
+- **[mesuré]** Génération à 8 k de contexte (tg64 @ d8192) : 3,2 jetons/s à 4 fils ; 4,5 à 6 fils ; 5,15 à 8 fils ; 4,5 à 12 fils. Hier, avec un processeur moins bridé, on obtenait 7,2 à 9,3 à 8 fils. 8 fils reste le meilleur réglage.
+- **[mesuré]** Le serveur n'est pas freiné par l'échantillonnage sur le vocabulaire de 248 k : 4,65 à 4,87 jetons/s avec la chaîne par défaut, contre 4,74 à 4,90 avec top_k = 1. L'écart avec llama-bench vient de l'état de la machine, pas du serveur.
+- **[calculé]** Sur ce Mac, le 2B de base tourne autour de 5 jetons/s quand il est bridé, et de 7 à 9 sinon : la marge est mince. Le GGUF à vocabulaire élagué (2.3) devient prioritaire. La matrice de sortie fait 33 % du fichier ; elle est lue à chaque jeton.
+- **[supposé]** L'exigence de 5 jetons/s devrait être vérifiée sur une machine de référence moins sujette au bridage thermique, ou avec le bridage relevé et consigné à chaque mesure. Décision à soumettre à l'auteur au moment du plan chiffré (2.7).

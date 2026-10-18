@@ -165,3 +165,24 @@ Les consignes données au professeur sont de moi : elles orientent sa rédaction
 - `donnees/fabriquer_taches.py` : 60 fiches tirées au hasard (graine 1), 8 tâches par fiche (extraction, citation, synthèse, rédaction, abstention, incohérence, fausse alerte, injection), soit 480 tâches. Les 8 premières fiches sont aussi générées avec réflexion du professeur (64 tâches de plus), pour comparer les taux de rejet.
 - Kaggle : jeu de données privé `mohadial/localia-donnees-2-4` et notebook privé `mohadial/localia-professeur-2-4` (Q4_K_M de ggml-org, 20,4 Go, téléchargé sur Kaggle et non sur le Mac, 4 requêtes en parallèle). Les binaires llama.cpp sont conservés en sortie, pour éviter de recompiler la prochaine fois.
 - `donnees/verifier.py` : contrôles mécaniques par type (détail en tête du fichier) ; produit `exemples.jsonl`, `rejets.jsonl` et `rapport.md`. Seuil d'arrêt de la conception : rejet > 70 % → revoir les consignes du professeur.
+
+### 18 octobre 2026, 16 h 50 : étape 2.4, résultats de l'échantillon
+
+- **[mesuré]** Professeur sur Kaggle : phase A, 60/60 fiches en 437 s ; phase B, 544 tâches en 3 234 s, à 4 requêtes en parallèle (environ 6 s par tâche). Environ 1 h 20 de GPU avec la compilation.
+- **Défaut découvert** : la phase A est en mode JSON. 20 consignes système sur 60 demandaient « le format JSON », et une partie des réponses de la phase B est sortie en JSON. Les 184 tâches concernées ont été reprises avec des consignes système sans JSON : 998 s, sans recompiler grâce au jeu de données privé `localia-llama-bin-cuda`. Les consignes de la phase A interdisent désormais de parler de JSON.
+- **Défaut découvert** : 29 demandes d'abstention mentionnent le « paragraphe P », l'étiquette donnée au professeur. Elles sont rejetées et la consigne a été corrigée pour la prochaine génération.
+- **[mesuré]** Vérification (`mesures/verification-2.4.md`) : **322 gardés sur 544, soit 41 % de rejet**, sous le seuil d'arrêt de 70 %. Par type, en mode direct :
+  - rejet bas : extraction 3 %, injection 17 %, rédaction 17 %, synthèse 17 % ;
+  - rejet moyen : fausse alerte 33 % ;
+  - rejet fort : abstention 75 %, incohérence 80 %, citation 92 %.
+- Analyse des rejets forts :
+  - citation : le professeur recopie bien la phrase exacte, mais sans guillemets (54 cas). Ces réponses sont gardées à part, non utilisées ; la prochaine consigne exigera les guillemets.
+  - incohérence : la modification mécanique (« 18 → 19 ans », « 6 000 → 6 001 € ») porte souvent sur deux occurrences qui ne désignent pas la même règle. Le professeur a alors raison de ne rien signaler. Il faut revoir la méthode : faire produire la contradiction par le professeur, avec un contrôle mécanique du différentiel.
+  - réflexion du professeur (8 fiches) : rejet plus faible en citation (12 % contre 92 %) et en incohérence (62 % contre 80 %), pas mieux ailleurs. Elle coûte 1 200 à 5 800 jetons de plus par tâche.
+- Relecture manuelle de 11 exemples gardés : justes. Défaut relevé : des réponses aux injections donnent la bonne réponse sans signaler l'instruction cachée (acceptable).
+- Jeu d'entraînement du pilote : 289 après dédoublonnage (version avec réflexion préférée), puis **262** après plafonnement des fausses alertes à 15, pour ne pas apprendre au modèle à tout déclarer cohérent.
+
+### 18 octobre 2026, 16 h 55 : étape 2.5 lancée, et incident sur la mesure à 32k
+
+- Kaggle : `mohadial/localia-lora-2b-2-5`. LoRA r = 16 sur les couches de langage (attention, DeltaNet, MLP), 2 époques, taux d'apprentissage 1e-4, perte sur la réponse seulement. Puis fusion, conversion GGUF et Q4_K_M ; base témoin convertie de la même façon ; jeu de développement sur GPU pour les deux.
+- Incident sur le Mac : en arrêtant la première chaîne de mesure à 32k (vers 14 h 27), le serveur llama n'a pas été tué. Il gardait le port 8081, le nouveau serveur n'a pas démarré, et le script a envoyé sa requête à l'ancien, qui l'a annulée. Environ 1 h 50 perdues. Les scripts libèrent désormais le port et vérifient que leur serveur tourne. Le 32k a été relancé à 16 h 16.

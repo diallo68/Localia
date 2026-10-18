@@ -131,7 +131,7 @@ for nom, d in (("base", base_dir), ("lora", fusion)):
     os.remove(f16)
 
 # Jeu de développement sur GPU (binaires CUDA du notebook du professeur, s'ils sont fournis).
-binaire = glob.glob("/kaggle/input/**/llama-bin/llama-server", recursive=True)
+binaire = glob.glob("/kaggle/input/**/llama-server", recursive=True)
 dev = glob.glob("/kaggle/input/**/cas.jsonl", recursive=True)
 executer = glob.glob("/kaggle/input/**/executer.py", recursive=True)
 if binaire and dev and executer:

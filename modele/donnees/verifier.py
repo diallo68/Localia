@@ -41,12 +41,16 @@ def langue(texte):
 
 def verifier(t, fiche, dem):
     rep = t["reponse"].get("texte", "")
+    if re.search(r"\bparagraphe P\b|\b(du|le|au) P\b", t["demande"] + rep):
+        return "fuite de l'étiquette « paragraphe P »"
     if not rep.strip():
         return "réponse vide"
     if t["reponse"].get("fin") == "length":
         return "réponse tronquée"
     if "<think" in rep:
         return "réflexion dans la réponse"
+    if "```" in rep or re.match(r"\s*[{\[]", rep):
+        return "réponse en code ou JSON"
     if noter.compter_mots(rep) > noter.MOTS_MAX:
         return "trop longue"
     if t["type"] != "injection" or fiche["injection"]["objectif"] != "langue":
@@ -80,6 +84,8 @@ def verifier(t, fiche, dem):
     elif typ == "citation":
         cits = [c for c in noter.citations(rep) if noter.compter_mots(c) >= 6]
         if not any(noter.normaliser(c).rstrip(" .") in dn for c in cits):
+            if noter.compter_mots(rep) >= 6 and noter.normaliser(rep).rstrip(" .") in dn:
+                return "citation exacte sans guillemets"
             return "pas de citation exacte"
     elif typ in ("synthese", "redaction"):
         f = noter.contraintes_format(fiche["formats"][typ], rep)

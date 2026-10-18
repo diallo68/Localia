@@ -14,14 +14,21 @@ Les jeux publics produits avec GPT, par exemple les jeux de type Alpaca traduits
 | Modèle | Licence lue | Usage prévu | Statut | Vérification |
 |---|---|---|---|---|
 | Qwen/Qwen3.5-4B | Apache-2.0 | base | envisagé | fiche HF et métadonnées GGUF, 17 oct. 2026 |
-| Qwen/Qwen3.5-2B | Apache-2.0 | base (variante 8 Go) | envisagé | fiche HF, 17 oct. 2026 |
+| Qwen/Qwen3.5-2B | Apache-2.0 | base (variante 8 Go) | **utilisé** : LoRA du pilote 2.5 (poids HF téléchargés sur Kaggle, 18 oct. 2026) | fiche HF, 17 oct. 2026 |
 | Qwen/Qwen3.5-0.8B | Apache-2.0 | prototype de chaîne (phase 2) | envisagé | supposé identique à la famille, **à vérifier** |
 | mistralai/Ministral-3-3B-Instruct-2512 | Apache-2.0 | base concurrente (concours) | envisagé | fiche HF, 17 oct. 2026 |
-| Qwen/Qwen3.6-35B-A3B | Apache-2.0 | professeur (séquences, logits) | envisagé | fiche HF, 17 oct. 2026 ; aucune restriction sur l'usage des sorties lue |
+| Qwen/Qwen3.6-35B-A3B | Apache-2.0 | professeur (séquences, logits) | **utilisé** : demandes et réponses de l'étape 2.4 (GGUF ggml-org Q4_K_M, Kaggle) | fiche HF, 17 oct. 2026 ; aucune restriction sur l'usage des sorties lue |
 | Qwen/Qwen3.8-27B | apache-2.0 selon les métadonnées du GGUF local (ISTA-DASLab) ; Codex dit avoir lu la fiche | professeur secondaire, comparaison | envisagé | **à vérifier dans le fichier LICENSE du dépôt officiel** |
 | google/gemma-4-31B-it | Apache 2.0 selon la fiche, avec un lien vers les « Gemma 4 license terms » | professeur secondaire, juge, comparaison | envisagé | **lire les conditions liées avant tout usage de ses sorties** |
 | mistralai/Mistral-Small-4 | Apache 2.0 (annonce officielle mistral.ai, 16 mars 2026) | professeur (si base Ministral), comparaison | envisagé | à vérifier sur la fiche HF |
 | mistralai/Mistral-Small-3.2-24B-Instruct | Apache 2.0 (connu, **à revérifier**) | comparaison seulement | envisagé | — |
+
+## Modèles produits (non publiés)
+
+| Fichier | Base | Données | Recette | Empreinte SHA-256 (début) |
+|---|---|---|---|---|
+| qwen35-2b-lora-Q4_K_M.gguf (1,27 Go) | Qwen/Qwen3.5-2B | 262 exemples vérifiés de l'étape 2.4 : fiches Service-Public (Licence Ouverte), demandes et réponses de Qwen3.6-35B-A3B ; aucune sortie de Claude ni de GPT | `donnees/lora_2b_kaggle.py`, version 4 du noyau Kaggle `mohadial/localia-lora-2b-2-5`, 18 oct. 2026 | 38ae809f950a02a7 |
+| qwen35-2b-base-Q4_K_M.gguf (1,31 Go) | Qwen/Qwen3.5-2B, sans entraînement | — | même conversion et même quantification (témoin) | d4975891c2398750 |
 
 ## Données d'entraînement (envisagées, rien n'est téléchargé)
 

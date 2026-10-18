@@ -211,3 +211,22 @@ Les consignes données au professeur sont de moi : elles orientent sa rédaction
 - **[mesuré]** Première lecture : 9 423 s (2 h 37), soit 6,8 jetons/s. Questions suivantes : 181 s en médiane. Génération : 2,4 jetons/s en médiane (2,0 à 2,5). Mémoire du serveur : 3,55 Go. Processeur entre 43 et 54.
 - **[calculé]** Le modèle t(n) = a·n + b·n², réajusté sur 32k et 64k (a ≈ 29 s par millier de jetons, b ≈ 1,8 s par million de jetons²), donne environ 9 h 30 de lecture pour 130k (200 pages), à bridage comparable. L'extrapolation sur 16k et 32k donnait 11 h 30.
 - Conclusion : la qualité tient jusqu'à 100 pages. L'attente (2 h 37 avant la première réponse) et la génération à 2,4 jetons/s rendent toutefois le document entier en contexte peu utilisable au-delà d'environ 30 pages. Pour 100 à 200 pages, la recherche de passages reste la voie recommandée.
+
+### 19 octobre 2026, 0 h 15 : pilote 2.5 terminé (de bout en bout)
+
+- Version 4 : 23 h 49, statut COMPLETE. LoRA r = 16, 262 exemples, 2 époques, 66 pas, 3 393 s sur une T4. Mémoire de pointe : 10,6 Go (mesuré).
+- **[mesuré]** Perte moyenne par pas : 0,45 sur l'époque 1, puis 0,31 sur l'époque 2. Pas de divergence.
+- **[mesuré]** Jeu de développement (60 cas, sur GPU Kaggle, mêmes conditions pour les deux) :
+  - base convertie par la même chaîne : S_doc 0,854 ;
+  - LoRA : **0,807**.
+  - Écart : −0,047 ; IC à 95 % par bootstrap regroupé par document (10 documents) : [−0,124 ; +0,031]. **Pas d'effet significatif.**
+  - Gains : 3 cas (D007 et D031 en extraction, qui passe de 0,83 à 1,00 ; D034 en synthèse).
+  - Pertes : 5 cas.
+    - D010 et D026 : fausse abstention (« Le document ne contient pas… ») sur des demandes de liste ou de tableau.
+    - D016 : encadré dépassant 60 mots.
+    - D028 et D041 : corrections de langue (qualite_fr), absentes des données d'entraînement. D041 délire sur l'accord.
+  - Réponses plus courtes : 54 mots médians, contre 77,5.
+- Lecture : le pilote valide la chaîne (données, LoRA, fusion, GGUF, évaluation), pas un gain. 262 exemples sans tâche de correction de langue et sans demande de tableau ou de liste sur une information présente ne suffisent pas. Des fausses abstentions apparaissent alors que la proportion d'abstention dans les données reste modeste (15 sur 262). À surveiller : il faudra des contre-exemples (informations présentes, réparties dans le document), plus des tâches qualite_fr.
+- Incident : le GGUF LoRA ne se charge pas sur le Mac (llama.cpp 0.5.0) : `tensor 'blk.24.attn_norm.weight' not found`. `save_pretrained` n'écrit pas la couche MTP (`mtp.*`), alors que la configuration l'annonce. llama.cpp v0.7.0, sur Kaggle, la tolérait. Correction : `mesures/completer_mtp.py` recopie les 15 tenseurs blk.24.* de la base (couche non touchée par la LoRA) → `qwen35-2b-lora-mtp-Q4_K_M.gguf`, 1,312 Go. Pour la prochaine fois : recopier `mtp.*` depuis la base au moment de la fusion.
+- **[mesuré]** Mac, processeur bridé à 43, donc non représentatif : LoRA complété 4,19 jetons/s en génération, base 3,85. Même architecture : aucune différence de vitesse attendue (supposé).
+- Quota Kaggle de cette série (estimé) : environ 1 h 05 de GPU.

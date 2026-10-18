@@ -4,7 +4,7 @@ Conditions identiques pour tous les modèles (criteres.md) : sans réflexion, te
 au plus, même consigne système. Reprise automatique : les cas déjà présents dans le fichier de sortie sont sautés.
 
 Usage : python3 -I executer.py <dossier_jeu> <sortie.jsonl> --url http://127.0.0.1:8080/v1 --modele nom
-        [--cle-env NOM_VARIABLE] [--ids S001,S002] [--limite N]
+        [--cle-env NOM_VARIABLE] [--ids S001,S002] [--limite N] [--delai SECONDES]
 """
 import argparse
 import json
@@ -50,6 +50,7 @@ def main():
     ap.add_argument("--cle-env")
     ap.add_argument("--ids")
     ap.add_argument("--limite", type=int)
+    ap.add_argument("--delai", type=int, default=1800, help="attente maximale par cas (contexte long : plusieurs heures)")
     a = ap.parse_args()
 
     cas = [json.loads(l) for l in open(os.path.join(a.dossier, "cas.jsonl"), encoding="utf-8")]
@@ -71,7 +72,7 @@ def main():
         messages = [{"role": "system", "content": CONSIGNE_SYSTEME},
                     {"role": "user", "content": f"Document :\n\n{doc}\n\n---\n\nDemande : {c['consigne']}"}]
         try:
-            texte, usage, timings, duree = appeler(a.url, a.modele, messages, cle)
+            texte, usage, timings, duree = appeler(a.url, a.modele, messages, cle, delai=a.delai)
             erreur = None
         except Exception as e:  # on note l'échec et on continue
             texte, usage, timings, duree, erreur = "", {}, {}, 0.0, repr(e)

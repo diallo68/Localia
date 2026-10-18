@@ -136,3 +136,8 @@ Outil : `mesures/elaguer_vocab.py`. Sélection comme `couverture_vocab_ascii.py`
 - Nouvel outil : `eval/outils/assembler_long.py`. Les cas d'extraction et de citation du jeu de développement sont posés sur un seul document long : les fiches du jeu de développement, plus des fiches Service-Public de remplissage, hors jeu secret et hors sujets trop proches (F14043, F34110, F21760, F2951 écartées).
   - long16k : 16 331 jetons, 20 fiches, 10 cas ;
   - long32k : 32 835 jetons, 22 fiches, 20 cas.
+- **[mesuré]** long16k, 2B élagué : S_doc 0,85 sur 10 cas, soit autant que les mêmes cas en contexte court (0,85). Extraction 1,00, citation 0,70. Un échec en long (L018 : le modèle trouve la bonne fiche, mais déclare l'information absente) ; un échec du contexte court réussi en long (L031).
+  - Première lecture des 16 475 jetons : 834 s, soit environ 20 jetons/s. Cas suivants : 55 à 111 s, le cache de llama-server réutilise le document, y compris pour ce modèle hybride.
+  - Génération à 16k : 4,5 à 4,8 jetons/s. Le processeur est passé de 100 à 52 pendant la mesure.
+- Incident : `executer.py` abandonnait au bout de 1 800 s par requête, ce qui est trop court pour la première lecture à 32k. Option `--delai` ajoutée ; le 32k a été relancé.
+- À la demande de l'auteur (100 pages) : long64k, 64 488 jetons, 47 fiches, 20 cas, lancé à la suite du 32k (`chaine-long64.sh`, -c 69632). Première lecture attendue de 2 à 3 h [supposé, extrapolé du 16k].

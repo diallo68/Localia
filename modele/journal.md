@@ -279,7 +279,7 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - Incohérence : en phase A, le professeur rédigeait des demandes de vérification **ciblées sur un thème** sans rapport avec la contradiction insérée, et la réponse « cohérent » était alors juste. La consigne exige désormais une relecture de tout le document. La correction ne vaut que pour le lot 2b. Dans le lot 2a, ces cas restent rejetés.
 - Lot 2b (150 fiches) lancé à 7 h 30 avec cette consigne.
 
-### 19 octobre 2026, 10 h 15 : lot 2b vérifié, assemblage et entraînement du lot 2 lancé
+### 19 octobre 2026, 9 h 45 : lot 2b vérifié, assemblage et entraînement du lot 2 lancé
 
 - **[mesuré]** Lot 2b : phase A 150/150 en 1 463 s ; phase B 1 262 tâches en 7 477 s (environ 2 h 32 de GPU en tout). Vérification : **870 gardés sur 1 262 (31 %)**.
   - La demande de relecture « de tout le document » a supprimé la plupart des vérifications hors sujet : 13 rejets « ne cite pas les deux versions », contre 23 en 2a.

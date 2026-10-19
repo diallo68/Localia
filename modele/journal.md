@@ -322,3 +322,16 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** Assemblage des lots 2.4, 2a, 2b, 3a et 3b : **3 633 exemples**.
   - Répartition : extraction 618, injection 540, citation 516, rédaction 501, synthèse 397, abstention 377, qualite_fr 372, incohérence 156, fausse alerte 156.
 - Entraînement : noyau `mohadial/localia-lora-2b-lot3` (dataset privé `localia-exemples-lot3`), même recette, 1 époque. La base n'est plus convertie ni notée : son score est connu (0,854). **[calculé]** D'après le lot 2 (5,7 s par exemple), environ 5 h 45 d'entraînement, plus 30 à 45 minutes pour la conversion et le jeu de développement.
+
+### 20 octobre 2026, 1 h 45 : entraînement du lot 3 tué, relancé avec points de reprise
+
+- **[mesuré]** La version 1 du noyau `localia-lora-2b-lot3` est en ERROR à 1 h 42. Elle a été tuée (« Killed ») au pas 440 sur 455, après 18 767 s d'entraînement. Perte autour de 0,2 à 0,5. La mémoire du GPU est restée stable (11,1 Go).
+  - **[supposé]** Le noyau a manqué de mémoire vive (le système a tué le processus ; une erreur de mémoire GPU aurait levé une exception Python). Le lot 2 (244 pas) n'avait pas atteint ce seuil.
+  - Le script n'enregistrait aucun point de reprise : les 5 h 13 de calcul sont perdues.
+- Corrections (`donnees/lora_2b_lot3_kaggle.py`) :
+  - un point de reprise tous les 40 pas (`reprise.pt` : LoRA, optimiseur, planificateur, position dans les données), rechargé automatiquement s'il est fourni en entrée ;
+  - la mémoire vive du processus est écrite à chaque pas ;
+  - `gc.collect()` et `torch.cuda.empty_cache()` tous les 10 pas.
+- Version 2 lancée à 1 h 43, depuis le début.
+  - **[calculé]** Environ 6 h 30, donc fin vers 8 h 15.
+  - **[supposé]** Le quota hebdomadaire de GPU de Kaggle (30 h) est peut-être proche : environ 21 h utilisées cette semaine d'après ce journal. Si la session est coupée, elle reprendra au dernier point de reprise.

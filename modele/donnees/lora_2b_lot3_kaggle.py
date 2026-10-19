@@ -4,6 +4,7 @@
 # 2. Fusion, conversion en GGUF (convert_hf_to_gguf.py de llama.cpp), quantification Q4_K_M ; la base est
 #    convertie et quantifiée de la même façon, comme témoin.
 # 3. Jeu de développement sur GPU pour les deux (mêmes conditions que executer.py), pour un premier signal.
+import gc
 import glob
 import json
 import math
@@ -22,6 +23,15 @@ TMP = "/kaggle/tmp" if os.path.isdir("/kaggle/tmp") else "/tmp"
 LLAMA_TAG = "v0.7.0"
 BASE = "Qwen/Qwen3.5-2B"
 LR, EPOQUES, ACCUM, RANG, LONGUEUR_MAX = 1e-4, 1, 8, 16, 8192
+SAUVEGARDE = 40  # pas entre deux points de reprise (le lot 3, version 1, a été tué au pas 440 sur 455)
+
+
+def rss_go():
+    """Mémoire vive occupée par le processus (le noyau est tué quand la machine en manque)."""
+    for ligne in open("/proc/self/status"):
+        if ligne.startswith("VmRSS:"):
+            return int(ligne.split()[1]) / 1e6
+    return 0.0
 
 
 def sh(cmd):
@@ -36,7 +46,7 @@ sh(f"{sys.executable} -m pip uninstall -q -y torchao 2>&1 | tail -2")
 
 import torch  # noqa: E402
 from huggingface_hub import snapshot_download  # noqa: E402
-from peft import LoraConfig, get_peft_model  # noqa: E402
+from peft import LoraConfig, get_peft_model, get_peft_model_state_dict, set_peft_model_state_dict  # noqa: E402
 from transformers import AutoModelForImageTextToText, AutoTokenizer  # noqa: E402
 
 print("torch", torch.__version__, flush=True)
@@ -79,14 +89,32 @@ pas_total = math.ceil(len(donnees) * EPOQUES / ACCUM)
 sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / 5) * 0.5 * (1 + math.cos(math.pi * min(s, pas_total) / pas_total)))
 scaler = torch.amp.GradScaler("cuda")
 
+# Reprise : un point de reprise d'une version précédente (sortie d'un noyau fournie en entrée) ou de cette session.
+reprise = os.path.join(TRAVAIL, "reprise.pt")
+k_debut, pas = 0, 0
+anciens = glob.glob("/kaggle/input/**/reprise.pt", recursive=True)
+if anciens:
+    etat = torch.load(anciens[0], map_location="cuda", weights_only=False)
+    set_peft_model_state_dict(modele, etat["lora"])
+    for p in params:
+        p.data = p.data.float()
+    opt.load_state_dict(etat["opt"])
+    sched.load_state_dict(etat["sched"])
+    scaler.load_state_dict(etat["scaler"])
+    k_debut, pas = etat["k"], etat["pas"]
+    print(f"reprise au pas {pas} (exemple {k_debut})", flush=True)
+    del etat
+
 modele.train()
 rnd = random.Random(1)
-journal = open(os.path.join(TRAVAIL, "entrainement.log"), "w")
-t0, pas, cumul = time.time(), 0, []
+journal = open(os.path.join(TRAVAIL, "entrainement.log"), "a")
+t0, cumul = time.time(), []
 for epoque in range(EPOQUES):
     ordre = list(range(len(donnees)))
     rnd.shuffle(ordre)
     for k, i in enumerate(ordre):
+        if k < k_debut:
+            continue
         ids, n_p = donnees[i]
         x = torch.tensor([ids], device="cuda")
         # Logits sur la réponse seulement : sur 8k jetons, la sortie complète (vocabulaire de 248k, fp32)
@@ -106,10 +134,19 @@ for epoque in range(EPOQUES):
             sched.step()
             pas += 1
             ligne = f"époque {epoque + 1} pas {pas}/{pas_total} perte {sum(cumul) / len(cumul):.4f} " \
-                    f"lr {sched.get_last_lr()[0]:.2e} {time.time() - t0:.0f} s mém {torch.cuda.max_memory_allocated() / 1e9:.1f} Go"
+                    f"lr {sched.get_last_lr()[0]:.2e} {time.time() - t0:.0f} s mém {torch.cuda.max_memory_allocated() / 1e9:.1f} Go " \
+                    f"RAM {rss_go():.1f} Go"
             print(ligne, flush=True)
             journal.write(ligne + "\n")
+            journal.flush()
             cumul = []
+            if pas % 10 == 0:
+                gc.collect()
+                torch.cuda.empty_cache()
+            if pas % SAUVEGARDE == 0:
+                torch.save({"lora": get_peft_model_state_dict(modele), "opt": opt.state_dict(), "sched": sched.state_dict(),
+                            "scaler": scaler.state_dict(), "k": k + 1, "pas": pas}, reprise + ".tmp")
+                os.replace(reprise + ".tmp", reprise)
 
 # Fusion et sauvegarde au format Hugging Face (avec les fichiers de la base : gabarit, processeur).
 fusion = os.path.join(TMP, "fusion")

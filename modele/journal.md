@@ -260,3 +260,21 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - Point faible : incohérence 0,40.
   - Réponses courtes : 44,5 mots médians. Durée médiane par cas : 48 s.
 - Repère 5 à 10 fois plus gros : Gemma 3 12B (6×) ne dépasse pas le 2B sur ce jeu. Gemma 3 27B (0,842), Mistral Small (0,910) et Qwen3.8 27B (0,957) restent les cibles. Il n'y a pas de Qwen3.5-9B officiel en local (seulement une version « abliterated » sur Ollama).
+
+### 19 octobre 2026, 7 h 30 : lot 2a reçu et vérifié, lot 2b lancé
+
+- **[mesuré]** Noyau `localia-professeur-lot2a` : COMPLETE à 7 h 11. Phase A : 150/150 fiches en 1 419 s ; phase B : 1 269 tâches en 6 877 s ; total d'environ 2 h 22 de GPU.
+  - Contradictions valables : 83 sur 150 (recopie exacte contrôlée).
+  - Demandes de correction citant le passage fautif : 136 sur 150.
+- **[mesuré]** Vérification : **902 gardés sur 1 269 (29 % de rejet**, contre 40 % en 2.4 avec le même vérificateur) :
+  - citation, avec réflexion : 13 % de rejet (92 % en 2.4 sans réflexion) ;
+  - incohérence : 37 gardés sur 83, contre 12 sur 60 en 2.4 ;
+  - qualite_fr : 97 gardés sur 136 ;
+  - abstention : 98 sur 150 ;
+  - fausse alerte : 81 sur 150 ;
+  - synthèse : 88 sur 150 (format non respecté : 27 ; éléments manquants : 19).
+- Relecture des rejets :
+  - qualite_fr : rejets justes. Le professeur se trompe de correction, par exemple « les conditions **à** obtenir » au lieu de « pour obtenir ».
+  - Abstention : environ 14 vraies abstentions étaient rejetées à tort (« n'est pas présente dans le document », « il n'est pas fait mention »). Marqueurs ajoutés dans `verifier.py` seulement ; `noter.py` reste inchangé pour garder les scores comparables. 14 repêchées, relues. Sur 2.4 : 326 gardés au lieu de 322.
+  - Incohérence : en phase A, le professeur rédigeait des demandes de vérification **ciblées sur un thème** sans rapport avec la contradiction insérée, et la réponse « cohérent » était alors juste. La consigne exige désormais une relecture de tout le document. La correction ne vaut que pour le lot 2b. Dans le lot 2a, ces cas restent rejetés.
+- Lot 2b (150 fiches) lancé à 7 h 30 avec cette consigne.

@@ -47,11 +47,23 @@ def mots(s):
     return set(re.findall(r"[\wà-ÿ]+", noter.normaliser(s)))
 
 
+# Tournures d'abstention du professeur absentes des marqueurs de noter.py (lot 2a), pour la vérification
+# seulement : noter.py reste inchangé pour garder les scores d'évaluation comparables.
+RE_ABSTENTION_BIS = re.compile(r"n'est pas (explicitement |clairement )?(present|fourni|specifie|mentionne|precise|"
+                               r"indique|detaille|dans le (texte|document))|n'est pas fait mention|il n'est fait mention d'aucun|"
+                               r"pas possible de repondre|n'y a pas d'information|ne sont pas (precise|indique|mentionne|fourni)")
+
+
+def abstention(rn):
+    return any(m in rn for m in noter.MARQUEURS_ABSTENTION) or bool(noter.RE_ABSTENTION.search(rn)) \
+        or bool(RE_ABSTENTION_BIS.search(rn))
+
+
 def abstient(rn):
     """Abstention dans la première phrase (« Le document ne contient pas… ») ; une précision en fin de réponse
     (« le document ne précise pas le coût ») n'en est pas une."""
     debut = re.split(r"(?<=[.!?:])\s", rn.strip(), maxsplit=1)[0]
-    return any(m in debut for m in noter.MARQUEURS_ABSTENTION) or bool(noter.RE_ABSTENTION.search(debut))
+    return abstention(debut)
 
 
 def verifier(t, fiche, dem):
@@ -117,7 +129,7 @@ def verifier(t, fiche, dem):
             if not all(noter.normaliser(str(e)) in rn for e in elements):
                 return "éléments attendus absents de la réponse"
     elif typ == "abstention":
-        if not (any(m in rn for m in noter.MARQUEURS_ABSTENTION) or noter.RE_ABSTENTION.search(rn)):
+        if not abstention(rn):
             return "pas d'abstention"
         if set(fiche["abstention"]["nombres_retires"]) & nombres(rep):
             return "donne un nombre retiré"

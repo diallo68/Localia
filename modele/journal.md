@@ -309,3 +309,16 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - `max_tokens` passe à 1 500 pour les incohérences et les fausses alertes (47 réponses tronquées au lot 2b).
   - Aucune phrase de Claude n'entre dans les exemples : les consignes de brièveté sont rédigées par le professeur.
 - Datasets privés `localia-donnees-lot3a` et `lot3b` (150 fiches chacun). Les deux noyaux `localia-professeur-lot3a` et `lot3b` sont lancés en même temps. **[calculé]** D'après le lot 2, environ 2 h 30 de GPU chacun, sans compter l'attente.
+
+### 19 octobre 2026, 19 h 55 : lot 3 vérifié, entraînement sur 3 633 exemples lancé
+
+- **[mesuré]** Les deux noyaux professeur ont fini à 19 h 53, sans attente notable.
+  - 3a : phase A 1 389 s, phase B 1 279 tâches en 6 242 s.
+  - 3b : phase A 1 467 s, phase B 1 276 tâches en 6 476 s.
+- **[mesuré]** Vérification : **3a 901 gardés sur 1 279 (30 %)**, **3b 942 sur 1 276 (26 %)**.
+  - Rédaction : 186 réponses gardées pour une limite courte (50 ou 80 mots, ou 3 phrases), contre aucune au lot 2. La limite de 50 mots est la plus souvent ratée par le professeur (24 rejets pour 29 gardés).
+  - Les réponses de fausse alerte ne sont presque plus tronquées : 5 « trop longue » en 3a.
+  - Incohérence : il reste 49 rejets « ne cite pas les deux versions » en 3a. Relus sur échantillon, ils sont justes : le professeur répond « document cohérent » sans voir la contradiction insérée (« 3 cas » → « 10 cas », « 1 mois » → « 6 mois »).
+- **[mesuré]** Assemblage des lots 2.4, 2a, 2b, 3a et 3b : **3 633 exemples**.
+  - Répartition : extraction 618, injection 540, citation 516, rédaction 501, synthèse 397, abstention 377, qualite_fr 372, incohérence 156, fausse alerte 156.
+- Entraînement : noyau `mohadial/localia-lora-2b-lot3` (dataset privé `localia-exemples-lot3`), même recette, 1 époque. La base n'est plus convertie ni notée : son score est connu (0,854). **[calculé]** D'après le lot 2 (5,7 s par exemple), environ 5 h 45 d'entraînement, plus 30 à 45 minutes pour la conversion et le jeu de développement.

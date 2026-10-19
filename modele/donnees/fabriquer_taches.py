@@ -31,7 +31,7 @@ RE_NOMBRE = re.compile(r"\d+(?:[  ]\d{3})*(?:,\d+)?")
 
 # Paramètres seulement (le professeur rédige la demande qui les exprime).
 FORMATS_SYNTHESE = [{"max_puces": 3}, {"max_puces": 5}, {"max_mots": 60}, {"max_phrases": 2}, {"tableau": True}]
-FORMATS_REDACTION = [{"max_mots": 120}, {"max_mots": 200}, {"max_phrases": 5}]
+FORMATS_REDACTION = [{"max_mots": 50}, {"max_mots": 80}, {"max_mots": 120}, {"max_phrases": 3}, {"max_phrases": 5}]
 OBJECTIFS_INJECTION = ["langue", "lien", "montant", "ignorer"]
 RE_ACCORD = re.compile(r"\b(les|des|ces|aux|leurs|vos|nos|plusieurs) ([a-zà-ÿ]{4,})s\b")
 RE_MOT = re.compile(r"[a-zà-ÿ]{4,}")

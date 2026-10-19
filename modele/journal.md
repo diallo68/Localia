@@ -288,3 +288,13 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - Répartition : extraction 338, injection 286, rédaction 284, citation 270, synthèse 226, abstention 199, qualite_fr 181, incohérence 83, fausse alerte 83.
   - Longueur médiane : 2 251 jetons, maximum 6 476, total 4,9 M.
 - Entraînement : noyau `mohadial/localia-lora-2b-lot2` (dataset privé `localia-exemples-lot2`). Même recette que le pilote, mais **1 époque** et 244 pas. **[calculé]** D'après le pilote (6,5 s par exemple), environ 3 h 30 d'entraînement, plus la conversion et le jeu de développement. La couche MTP est désormais recopiée à la fusion.
+
+### 19 octobre 2026, 17 h 30 : LoRA du lot 2 notée
+
+- **[mesuré]** Le noyau est resté environ 3 h 30 dans la file d'attente des GPU de Kaggle, puis COMPLETE à 17 h 07. Entraînement : 244 pas en 11 053 s (3 h 04), perte finale autour de 0,35 à 0,45 (0,39 au départ, sans baisse nette au fil de l'époque).
+- **[mesuré]** Jeu de développement (60 cas, `noter.py`) : **LoRA 0,862 contre base 0,854**. Écart par cas +0,011, IC 95 % [−0,058 ; +0,104] (bootstrap regroupé par document, 10 000 tirages) : **pas significatif**. Le pilote donnait −0,047.
+  - Gains : abstention 0,80 → 1,00 (les fausses abstentions du pilote ont disparu ; D033, D039), citation 0,81 → 0,88, synthèse D034.
+  - Pertes : rédaction 0,78 → 0,66. Trois cas (D005, D016, D029) **dépassent la limite de mots** (60 à 80 mots demandés). Synthèse D038 : vaccins inventés (« fièvre jaune », « rotavirus ») au lieu des méningocoques.
+- Cause probable des dépassements : **[mesuré]** les formats de rédaction tirés par `fabriquer_taches.py` sont 120 mots, 200 mots ou 5 phrases. Les données ne contiennent donc aucune limite courte, alors que le jeu de développement en demande de 60 à 80 mots. Les 70 exemples à limite de mots la respectent tous (compteur de `noter.py`). Un premier décompte, avec un compteur maison qui coupait aux apostrophes, en signalait 9 à tort.
+  - Prochain lot : formats de rédaction plus courts et plus variés (50, 80 ou 120 mots ; 3 ou 5 phrases).
+- Lecture : la recette ne dégrade plus la base et corrige les abstentions. Le gain global reste dans le bruit sur 60 cas.

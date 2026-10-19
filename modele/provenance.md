@@ -29,6 +29,7 @@ Les jeux publics produits avec GPT, par exemple les jeux de type Alpaca traduits
 |---|---|---|---|---|
 | qwen35-2b-lora-Q4_K_M.gguf (1,27 Go) | Qwen/Qwen3.5-2B | 262 exemples vérifiés de l'étape 2.4 : fiches Service-Public (Licence Ouverte), demandes et réponses de Qwen3.6-35B-A3B ; aucune sortie de Claude ni de GPT | `donnees/lora_2b_kaggle.py`, version 4 du noyau Kaggle `mohadial/localia-lora-2b-2-5`, 18 oct. 2026 | 38ae809f950a02a7 |
 | qwen35-2b-base-Q4_K_M.gguf (1,31 Go) | Qwen/Qwen3.5-2B, sans entraînement | — | même conversion et même quantification (témoin) | d4975891c2398750 |
+| qwen35-2b-lora-Q4_K_M.gguf, lot 2 (1,31 Go, couche MTP comprise) | Qwen/Qwen3.5-2B | 1 950 exemples vérifiés des lots 2.4, 2a et 2b (`donnees/assembler_exemples.py`) : fiches Service-Public (Licence Ouverte), demandes et réponses de Qwen3.6-35B-A3B ; aucune sortie de Claude ni de GPT | `donnees/lora_2b_lot2_kaggle.py`, noyau Kaggle `mohadial/localia-lora-2b-lot2`, 19 oct. 2026 | 3cf06e0f1c4877b4 |
 
 ## Données d'entraînement (envisagées, rien n'est téléchargé)
 

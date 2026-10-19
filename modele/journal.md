@@ -278,3 +278,13 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - Abstention : environ 14 vraies abstentions étaient rejetées à tort (« n'est pas présente dans le document », « il n'est pas fait mention »). Marqueurs ajoutés dans `verifier.py` seulement ; `noter.py` reste inchangé pour garder les scores comparables. 14 repêchées, relues. Sur 2.4 : 326 gardés au lieu de 322.
   - Incohérence : en phase A, le professeur rédigeait des demandes de vérification **ciblées sur un thème** sans rapport avec la contradiction insérée, et la réponse « cohérent » était alors juste. La consigne exige désormais une relecture de tout le document. La correction ne vaut que pour le lot 2b. Dans le lot 2a, ces cas restent rejetés.
 - Lot 2b (150 fiches) lancé à 7 h 30 avec cette consigne.
+
+### 19 octobre 2026, 10 h 15 : lot 2b vérifié, assemblage et entraînement du lot 2 lancé
+
+- **[mesuré]** Lot 2b : phase A 150/150 en 1 463 s ; phase B 1 262 tâches en 7 477 s (environ 2 h 32 de GPU en tout). Vérification : **870 gardés sur 1 262 (31 %)**.
+  - La demande de relecture « de tout le document » a supprimé la plupart des vérifications hors sujet : 13 rejets « ne cite pas les deux versions », contre 23 en 2a.
+  - Mais les réponses s'allongent : incohérences et fausses alertes ont 47 rejets « tronquée » et 34 « trop longue ». Prochain lot : `max_tokens` plus haut et demande de concision dans la consigne du professeur.
+- **[mesuré]** Assemblage (`donnees/assembler_exemples.py`), avec le vérificateur actuel rejoué sur 2.4 : **1 950 exemples** (2 064 avant le plafond des fausses alertes).
+  - Répartition : extraction 338, injection 286, rédaction 284, citation 270, synthèse 226, abstention 199, qualite_fr 181, incohérence 83, fausse alerte 83.
+  - Longueur médiane : 2 251 jetons, maximum 6 476, total 4,9 M.
+- Entraînement : noyau `mohadial/localia-lora-2b-lot2` (dataset privé `localia-exemples-lot2`). Même recette que le pilote, mais **1 époque** et 244 pas. **[calculé]** D'après le pilote (6,5 s par exemple), environ 3 h 30 d'entraînement, plus la conversion et le jeu de développement. La couche MTP est désormais recopiée à la fusion.

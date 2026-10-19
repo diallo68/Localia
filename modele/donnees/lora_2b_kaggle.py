@@ -119,6 +119,24 @@ for f in glob.glob(os.path.join(base_dir, "*")):  # tokenizer, gabarit, configur
     if os.path.isfile(f) and not f.endswith((".safetensors", ".safetensors.index.json")) \
             and not os.path.exists(os.path.join(fusion, os.path.basename(f))):
         shutil.copy(f, fusion)
+# Couche MTP (prédiction anticipée) : la classe transformers ne la charge pas, save_pretrained ne l'écrit donc pas,
+# alors que la configuration l'annonce (llama.cpp 0.5 refuse alors le GGUF). Non touchée par la LoRA : recopiée de la base.
+from safetensors import safe_open  # noqa: E402
+from safetensors.torch import save_file  # noqa: E402
+mtp = {}
+for f in glob.glob(os.path.join(base_dir, "*.safetensors")):
+    with safe_open(f, "pt") as st:
+        for k in st.keys():
+            if k.startswith("mtp."):
+                mtp[k] = st.get_tensor(k)
+if mtp:
+    save_file(mtp, os.path.join(fusion, "model-mtp.safetensors"), metadata={"format": "pt"})
+    index = os.path.join(fusion, "model.safetensors.index.json")
+    if os.path.exists(index):
+        ix = json.load(open(index))
+        ix["weight_map"].update({k: "model-mtp.safetensors" for k in mtp})
+        json.dump(ix, open(index, "w"), indent=1)
+print(f"couche MTP : {len(mtp)} tenseurs recopiés de la base", flush=True)
 del modele
 torch.cuda.empty_cache()
 

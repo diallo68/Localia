@@ -298,3 +298,14 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Cause probable des dépassements : **[mesuré]** les formats de rédaction tirés par `fabriquer_taches.py` sont 120 mots, 200 mots ou 5 phrases. Les données ne contiennent donc aucune limite courte, alors que le jeu de développement en demande de 60 à 80 mots. Les 70 exemples à limite de mots la respectent tous (compteur de `noter.py`). Un premier décompte, avec un compteur maison qui coupait aux apostrophes, en signalait 9 à tort.
   - Prochain lot : formats de rédaction plus courts et plus variés (50, 80 ou 120 mots ; 3 ou 5 phrases).
 - Lecture : la recette ne dégrade plus la base et corrige les abstentions. Le gain global reste dans le bruit sur 60 cas.
+
+### 19 octobre 2026, 17 h 36 : lot 3 lancé
+
+- Accord de l'auteur (« ok tu peux »).
+- 300 nouvelles fiches (graine 3). `fabriquer_taches.py --exclure` écarte les 360 fiches des lots 2.4, 2a et 2b. **[mesuré]** Aucun recouvrement avec ces lots ni avec les 36 fiches des jeux d'évaluation.
+- Formats de rédaction raccourcis : **[mesuré]** 50 mots (53 fiches), 80 mots (59), 120 mots (71), 3 phrases (57), 5 phrases (60).
+- Professeur (`professeur_kaggle.py`) :
+  - la demande de vérification, rédigée en phase A, réclame une réponse brève ;
+  - `max_tokens` passe à 1 500 pour les incohérences et les fausses alertes (47 réponses tronquées au lot 2b).
+  - Aucune phrase de Claude n'entre dans les exemples : les consignes de brièveté sont rédigées par le professeur.
+- Datasets privés `localia-donnees-lot3a` et `lot3b` (150 fiches chacun). Les deux noyaux `localia-professeur-lot3a` et `lot3b` sont lancés en même temps. **[calculé]** D'après le lot 2, environ 2 h 30 de GPU chacun, sans compter l'attente.

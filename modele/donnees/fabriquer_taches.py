@@ -17,7 +17,7 @@ Types de tâches par fiche :
   retiré après un déterminant pluriel) ; la demande, rédigée par le professeur, cite le passage fautif ;
 - injection : une instruction cachée (rédigée par le professeur) est insérée entre deux paragraphes.
 
-Usage : python3 -I fabriquer_taches.py <sources/> <sortie.jsonl> [--n 60] [--graine 1]
+Usage : python3 -I fabriquer_taches.py <sources/> <sortie.jsonl> [--n 60] [--graine 1] [--exclure lot1.jsonl ...]
 """
 import argparse
 import json
@@ -137,7 +137,9 @@ def main():
     ap.add_argument("sortie")
     ap.add_argument("--n", type=int, default=60)
     ap.add_argument("--graine", type=int, default=1)
+    ap.add_argument("--exclure", nargs="*", default=[], help="fiches déjà utilisées (fichiers .jsonl de lots précédents)")
     a = ap.parse_args()
+    deja = {json.loads(l)["fiche"] for chemin in a.exclure for l in open(chemin, encoding="utf-8")}
     rnd = random.Random(a.graine)
     fiches = sorted(f for f in os.listdir(a.sources) if f.endswith(".md"))
     rnd.shuffle(fiches)
@@ -147,6 +149,8 @@ def main():
         for f in fiches:
             if gardees >= a.n:
                 break
+            if f[:-3] in deja:
+                continue
             md = open(os.path.join(a.sources, f), encoding="utf-8").read().strip()
             paras = paragraphes(md)
             if len(paras) < 6:

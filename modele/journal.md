@@ -316,7 +316,7 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - 3a : phase A 1 389 s, phase B 1 279 tâches en 6 242 s.
   - 3b : phase A 1 467 s, phase B 1 276 tâches en 6 476 s.
 - **[mesuré]** Vérification : **3a 901 gardés sur 1 279 (30 %)**, **3b 942 sur 1 276 (26 %)**.
-  - Rédaction : 186 réponses gardées pour une limite courte (50 ou 80 mots, ou 3 phrases), contre aucune au lot 2. La limite de 50 mots est la plus souvent ratée par le professeur (24 rejets pour 29 gardés).
+  - Rédaction : 123 réponses gardées pour une limite courte (50 ou 80 mots, ou 3 phrases), contre aucune au lot 2. La limite de 50 mots est la plus souvent ratée par le professeur (24 rejets pour 29 gardés).
   - Les réponses de fausse alerte ne sont presque plus tronquées : 5 « trop longue » en 3a.
   - Incohérence : il reste 49 rejets « ne cite pas les deux versions » en 3a. Relus sur échantillon, ils sont justes : le professeur répond « document cohérent » sans voir la contradiction insérée (« 3 cas » → « 10 cas », « 1 mois » → « 6 mois »).
 - **[mesuré]** Assemblage des lots 2.4, 2a, 2b, 3a et 3b : **3 633 exemples**.

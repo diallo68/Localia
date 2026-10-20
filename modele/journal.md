@@ -354,3 +354,25 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - **[supposé]** L'adaptateur appliqué à une base Q4 n'est pas identique à une fusion en f16 suivie d'une quantification ; l'écart devrait être faible.
 - **[mesuré]** 13 h 09 : la session `localia-lora-2b-lot3-fin` (version 1, repartie de zéro) est tuée au pas 441 (RAM 31,4 Go). Le quota affiché par Kaggle est de 33 h 47 sur 30 h. Kaggle ne coupe pas une session en cours, il refuse seulement les nouvelles.
 - La date de remise à zéro n'est publiée nulle part (ni dans les paramètres, ni dans l'info-bulle). Une tentative de relance de la session de fin (version 2 : dataset `localia-reprise-lot3`, arrêt immédiat sans point de reprise) est faite toutes les 3 h ; elle démarrera dès le retour du quota.
+
+### 20 octobre 2026, 14 h 30 : LoRA du lot 3 (pas 440) notée sur le Mac, abstentions à tort
+
+- **[mesuré]** Jeu de développement (60 cas), llama-server 0.5 sur le Mac, `-c 8192`, mêmes réglages pour les deux passages :
+
+  | Catégorie | Base (Mac) | Lot 3, pas 440 (Mac) | Lot 2 (GPU, pour mémoire) |
+  |---|---|---|---|
+  | abstention | 0,80 | 1,00 | 1,00 |
+  | citation | 0,875 | 0,81 | 0,875 |
+  | extraction | 1,00 | 0,81 | 0,81 |
+  | incohérence | 1,00 | 0,95 | 1,00 |
+  | qualité du français | 0,86 | 1,00 | 1,00 |
+  | rédaction | 0,71 | 0,78 | 0,66 |
+  | synthèse | 0,80 | 0,95 | 0,70 |
+  | **S_doc** | **0,863** | **0,900** | **0,862** |
+
+- **[calculé]** Écart lot 3 − base, bootstrap par document (5 000 tirages) : +0,037, IC 95 % [−0,061 ; +0,146]. Il n'est pas significatif sur 60 cas, mais c'est le meilleur écart obtenu jusqu'ici (lot 2 : +0,009). La base sur le Mac (0,863) est proche de la base sur GPU (0,854) : les deux conditions sont comparables, sans être identiques.
+- **[mesuré]** Gains : les rédactions courtes respectent maintenant la limite (D005, D035), les synthèses ne contiennent plus de faits inventés (D006, D038 : 1,0 contre 0,0 au lot 2), les abstentions attendues sont toutes reconnues.
+- **[mesuré]** Défaut nouveau : **abstentions à tort**. D018, D025 et D031 obtiennent 0, alors que la base les réussit : le modèle répond « le document ne le précise pas » quand la réponse demande d'**appliquer** une règle du document (réduction de 20 % sur 5 000 €, âge de départ pour une date de naissance donnée, phrase d'un encadré « À noter »).
+  - **[supposé]** Cause : 377 exemples d'abstention (10 %) et presque aucun exemple qui demande un calcul ou une déduction à partir d'une règle. Le modèle a appris à refuser dès que la réponse n'est pas écrite telle quelle.
+  - Piste pour le lot 4 : des exemples « appliquer une règle » (calcul, barème, date), écrits par le professeur et vérifiés par le calcul, et des abstentions plus proches de la limite (l'information est presque là, mais pas tout à fait).
+- Correction de la fuite de mémoire préparée dans `donnees/lora_2b_echelle_kaggle.py` (étape 2.6) : longueurs arrondies au multiple de 256 jetons, option `ESSAI_PAS` pour un court essai qui vérifie que la RAM reste stable, option `N_EXEMPLES` pour les courbes d'échelle. **Non testée** : il faut le GPU, le quota n'est pas revenu.

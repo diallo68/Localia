@@ -13,6 +13,11 @@ Méthode (Python pur, sans dépendance) :
 - sélection des meilleurs passages dans un budget de jetons, puis remise dans l'ordre du document, regroupés
   par fiche et par section, avec « […] » entre deux passages non contigus.
 
+Expansion de requête (option --expansion URL) : le modèle local réécrit d'abord la question avec le vocabulaire
+administratif probable (mots-clés) ; deux recherches BM25 (question seule, question + mots-clés) sont fusionnées
+par rang réciproque (RRF), pour aider quand l'usager n'emploie pas les mots du document (« poubelles » au lieu de
+« déchets ») sans noyer la question quand il les emploie.
+
 Usage :
   python3 -I passages.py chercher <document.md> "<question>" [--budget 3000]
   python3 -I passages.py jeu <dossier_long/> <sortie/> [--budget 3000]
@@ -113,17 +118,34 @@ class Index:
         return res
 
 
+CONSIGNE_EXPANSION = ("Un usager pose cette question sur un long document administratif français : « {q} »\n"
+                      "Donne, sur une seule ligne, 10 à 15 mots-clés que le document emploierait probablement pour "
+                      "en parler (termes administratifs ou juridiques officiels, synonymes). Réponds seulement par les mots-clés.")
+
+
+def etendre(question, url):
+    import urllib.request
+    corps = {"messages": [{"role": "user", "content": CONSIGNE_EXPANSION.format(q=question)}], "temperature": 0,
+             "max_tokens": 80, "chat_template_kwargs": {"enable_thinking": False}}
+    req = urllib.request.Request(url.rstrip("/") + "/chat/completions", data=json.dumps(corps).encode(),
+                                 headers={"Content-Type": "application/json"})
+    return json.loads(urllib.request.urlopen(req, timeout=300).read())["choices"][0]["message"]["content"]
+
+
 def jetons(s):
     return len(s) / CAR_PAR_JETON
 
 
-def selectionner(index, question, budget=3000):
-    sc = index.scores(question)
-    ordre = sorted(range(len(sc)), key=lambda i: -sc[i])
+def selectionner(index, question, budget=3000, k_rrf=60):
+    """question : une chaîne, ou une liste de requêtes dont les classements sont fusionnés (rang réciproque)."""
+    requetes = [question] if isinstance(question, str) else list(question)
+    fusion = {}
+    for q in requetes:
+        sc = index.scores(q)
+        for rang, i in enumerate(sorted((i for i in range(len(sc)) if sc[i] > 0), key=lambda i: -sc[i])[:200]):
+            fusion[i] = fusion.get(i, 0.0) + 1 / (k_rrf + rang)
     choisis, total = [], 0.0
-    for i in ordre:
-        if sc[i] <= 0:
-            break
+    for i in sorted(fusion, key=lambda i: -fusion[i]):
         p = index.passages[i]
         cout = jetons(p["texte"]) + jetons(" > ".join(p["chemin"])) + 4
         if total + cout > budget:
@@ -156,9 +178,10 @@ def rendre(index, choisis):
     return "\n\n".join(sortie)
 
 
-def chercher(md, question, budget=3000, index=None):
+def chercher(md, question, budget=3000, index=None, expansion=None):
     index = index or Index(decouper(md))
-    return rendre(index, selectionner(index, question, budget))
+    requetes = [question, question + " " + etendre(question, expansion)] if expansion else question
+    return rendre(index, selectionner(index, requetes, budget))
 
 
 def main():
@@ -168,13 +191,15 @@ def main():
     a1.add_argument("document")
     a1.add_argument("question")
     a1.add_argument("--budget", type=int, default=3000)
+    a1.add_argument("--expansion", help="URL OpenAI du modèle local (ex. http://127.0.0.1:8081/v1)")
     a2 = sp.add_parser("jeu")
     a2.add_argument("dossier")
     a2.add_argument("sortie")
     a2.add_argument("--budget", type=int, default=3000)
+    a2.add_argument("--expansion", help="URL OpenAI du modèle local (ex. http://127.0.0.1:8081/v1)")
     a = ap.parse_args()
     if a.cmd == "chercher":
-        print(chercher(open(a.document, encoding="utf-8").read(), a.question, a.budget))
+        print(chercher(open(a.document, encoding="utf-8").read(), a.question, a.budget, expansion=a.expansion))
         return
     cas = [json.loads(l) for l in open(os.path.join(a.dossier, "cas.jsonl"), encoding="utf-8")]
     os.makedirs(os.path.join(a.sortie, "documents"), exist_ok=True)
@@ -184,7 +209,7 @@ def main():
             if c["doc"] not in index:
                 md = open(os.path.join(a.dossier, "documents", c["doc"] + ".md"), encoding="utf-8").read()
                 index[c["doc"]] = Index(decouper(md))
-            texte = chercher(None, c["consigne"], a.budget, index[c["doc"]])
+            texte = chercher(None, c["consigne"], a.budget, index[c["doc"]], a.expansion)
             open(os.path.join(a.sortie, "documents", c["id"] + ".md"), "w", encoding="utf-8").write(texte)
             s.write(json.dumps(dict(c, doc=c["id"], doc_long=c["doc"]), ensure_ascii=False) + "\n")
     print(f"{len(cas)} cas -> {a.sortie} (budget {a.budget} jetons)")

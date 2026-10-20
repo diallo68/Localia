@@ -387,3 +387,13 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** Temps par question : 80 s en médiane (de 54 à 136 s), génération de 4,6 à 6,4 jetons/s. En lecture complète à 64k, il fallait 2 h 37 avant la première réponse, puis 2,4 jetons/s.
 - **[supposé]** Les 20 questions reprennent souvent les mots du document, ce qui favorise BM25. Sur des questions reformulées (synonymes, paraphrases), le rappel serait plus bas. Piste : une recherche par le sens, avec un petit modèle d'embeddings sous licence libre (téléchargement à faire accepter par l'auteur), combinée à BM25.
 - Conclusion : pour les documents longs, la recherche de passages remplace la lecture complète. Le score est au moins aussi bon, et la réponse arrive en environ 1 min 20 au lieu de plusieurs heures.
+
+### 20 octobre 2026, 19 h 30 : recherche de passages, questions reformulées et expansion de requête
+
+- Jeu `long128k-reformule` : les 20 questions de long128k reformulées par le professeur local (`qwen36-fr-192`, dérivé de Qwen3.6-35B-A3B, Apache 2.0 ; données de test seulement), « comme un usager qui ne connaît pas le vocabulaire administratif ». Relu à la main : 8 reformulations écartées (L025 identique ; L012, L019, L031, L036, L037, L048, L050 changent le sens, par exemple « école primaire » devenue « collège »). Il reste 12 questions valides.
+- **[mesuré]** BM25 seul sur les 12 reformulées : 9 sur 12 avec 1 000 ou 2 000 jetons d'extraits, 11 sur 12 avec 3 000. Raté type : L013, où « mal jeté mes poubelles » ne retrouve pas « mauvais dépôt de déchets ».
+- Expansion de requête : le 2B donne 10 à 15 mots-clés du vocabulaire probable du document, en environ 9 s par question.
+  - **[mesuré]** Seule, elle aide les reformulées (11 sur 12 à 1 000 jetons) mais gêne les questions d'origine (18 sur 19 au lieu de 19 sur 19 : les mots-clés noient la question).
+  - **[mesuré]** Fusion par rang réciproque des deux recherches (question seule, et question plus mots-clés), avec 3 000 jetons : **19 sur 19** sur les questions d'origine et **12 sur 12** sur les reformulées (L031 exclu des deux décomptes : son résultat est à calculer).
+- `recherche/passages.py` : option `--expansion URL` (fusion des deux recherches). Sans l'option, le comportement est inchangé (vérifié : mêmes rappels).
+- **[supposé]** 12 questions, c'est peu. Les reformulations d'un seul modèle ne couvrent pas toutes les façons de demander. Il faudra un jeu plus grand, sur d'autres longs documents que des fiches juxtaposées (un vrai rapport, un contrat).

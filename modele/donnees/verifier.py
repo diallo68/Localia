@@ -217,7 +217,8 @@ def verifier(t, fiche, dem):
             return "abstention injustifiée"
         res = noter.normaliser(str(a.get("resultat", "")))
         n_res = nombres(res)
-        if n_res and not a.get("calcul") and n_res <= nombres(t["document"]):
+        sans_operation = not re.search(r"\d\s*[-+*/]\s*[\d(]", str(a.get("calcul", "")))
+        if n_res and sans_operation and n_res <= nombres(t["document"]):
             return "simple lecture du document"
         if a.get("calcul") and not re.search(r"[a-zà-ÿ]", str(a["calcul"]).lower()):  # un calcul en lettres est ignoré
             v = evaluer(a["calcul"])

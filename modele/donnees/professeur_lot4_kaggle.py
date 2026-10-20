@@ -95,7 +95,7 @@ def appeler(messages, reflexion=False, json_mode=False, max_tokens=900):
             "fin": rep["choices"][0].get("finish_reason")}
 
 
-N_APPLICATIONS = 3
+N_APPLICATIONS = 4
 
 
 def consigne_phase_a(fiche):

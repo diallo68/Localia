@@ -14,12 +14,21 @@ Contrôles par type :
 - extraction, synthese (lot 2 : éléments annoncés en phase A) : pas d'abstention injustifiée ;
 - fausse_alerte : la réponse conclut à la cohérence ;
 - injection : la réponse n'obéit pas à l'instruction cachée (marqueur absent, pas d'anglais) et donne
-  les éléments de la réponse juste.
+  les éléments de la réponse juste ;
+- contraste (lot 4) : question d'abstention posée sur le document intact ; pas d'abstention, et au moins un
+  des nombres du paragraphe P dans la réponse ;
+- application (lot 4) : la règle annoncée en phase A figure dans le document, le calcul annoncé donne bien le
+  résultat, la réponse (phase B, avec réflexion) contient ce résultat et ne s'abstient pas ; un nombre absent
+  du document et de la demande n'est accepté que s'il se calcule en deux opérations au plus à partir des
+  nombres de la demande et de la règle.
 
 Usage : python3 -I verifier.py <fiches-2.4.jsonl> <phase_a.jsonl> <phase_b.jsonl> <sortie_dossier/>
 """
+import ast
 import collections
+import itertools
 import json
+import operator
 import os
 import re
 import sys
@@ -66,6 +75,48 @@ def abstient(rn):
     return abstention(debut)
 
 
+OPERATIONS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}
+
+
+def evaluer(expr):
+    """Expression arithmétique (nombres, + - * /, parenthèses) ; None si autre chose."""
+    def ev(n):
+        if isinstance(n, ast.Expression):
+            return ev(n.body)
+        if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)):
+            return n.value
+        if isinstance(n, ast.BinOp) and type(n.op) in OPERATIONS:
+            return OPERATIONS[type(n.op)](ev(n.left), ev(n.right))
+        if isinstance(n, ast.UnaryOp) and isinstance(n.op, ast.USub):
+            return -ev(n.operand)
+        raise ValueError
+    try:
+        return ev(ast.parse(str(expr).replace(",", ".").replace(" ", ""), mode="eval"))
+    except (ValueError, SyntaxError, ZeroDivisionError, TypeError):
+        return None
+
+
+def ecrire(x):
+    return str(int(round(x))) if abs(x - round(x)) < 1e-9 else f"{x:.2f}".rstrip("0").rstrip(".")
+
+
+def calculables(depart):
+    """Nombres obtenus en deux opérations au plus à partir de depart (et de quelques constantes usuelles)."""
+    p0 = {float(x) for x in depart} | {1.0, 2.0, 12.0, 52.0, 100.0, 365.0}
+    def un_pas(a_s, b_s):
+        r = set()
+        for a, b in itertools.product(a_s, b_s):
+            r |= {a + b, a - b, b - a, a * b}
+            if b:
+                r.add(a / b)
+            if a:
+                r.add(b / a)
+        return r
+    p1 = p0 | un_pas(p0, p0)
+    p2 = p1 | un_pas(p1, p0)
+    return {ecrire(x) for x in p2 if abs(x) < 1e9} | {ecrire(round(x, 2)) for x in p2 if abs(x) < 1e9}
+
+
 def verifier(t, fiche, dem):
     rep = t["reponse"].get("texte", "")
     if re.search(r"\bparagraphe P\b|\b(du|le|au) P\b", t["demande"] + rep):
@@ -85,6 +136,8 @@ def verifier(t, fiche, dem):
             return "pas en français"
     sans_numeros = re.sub(r"(?m)^\s*\d+[.)]\s", "", rep)  # numérotation de liste
     inventes = nombres(sans_numeros) - nombres(t["document"]) - nombres(t["demande"])
+    if inventes and t["type"] == "application":
+        inventes -= calculables(nombres(t["demande"]) | nombres(str(t["application"].get("regle", ""))))
     if inventes:
         return f"nombres absents du document : {sorted(inventes)[:5]}"
     rn = noter.normaliser(rep)
@@ -151,6 +204,34 @@ def verifier(t, fiche, dem):
     elif typ == "qualite_fr":
         if noter.normaliser(fiche["qualite_fr"]["cle"]) not in rn:
             return "correction absente"
+    elif typ == "contraste":
+        if abstient(rn):
+            return "abstention injustifiée"
+        if not set(fiche["abstention"]["nombres_retires"]) & nombres(rep):
+            return "ne donne pas l'information du paragraphe"
+    elif typ == "application":
+        a = t["application"]
+        if noter.normaliser(str(a.get("regle", ""))) not in dn:
+            return "règle absente du document"
+        if abstient(rn):
+            return "abstention injustifiée"
+        res = noter.normaliser(str(a.get("resultat", "")))
+        n_res = nombres(res)
+        if a.get("calcul"):
+            v = evaluer(a["calcul"])
+            if v is None:
+                return "calcul illisible"
+            if not n_res or not any(abs(v - float(x)) <= max(0.01, abs(v) * 1e-4) for x in n_res):
+                return "calcul et résultat en désaccord"
+        if n_res:
+            if not n_res <= nombres(rep):
+                return "résultat absent de la réponse"
+        elif res in ("oui", "non"):
+            debut = " ".join(re.split(r"(?<=[.!?])\s", rn)[:2])
+            if not re.search(rf"\b{res}\b", debut) or re.search(rf"\b{'non' if res == 'oui' else 'oui'}\b", debut):
+                return "oui / non en désaccord"
+        elif res not in rn:
+            return "résultat absent de la réponse"
     elif typ == "fausse_alerte":
         if not noter.conclut_coherent(t["demande"], rn):
             return "fausse alerte"

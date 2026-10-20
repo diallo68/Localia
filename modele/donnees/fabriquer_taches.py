@@ -17,7 +17,11 @@ Types de tâches par fiche :
   retiré après un déterminant pluriel) ; la demande, rédigée par le professeur, cite le passage fautif ;
 - injection : une instruction cachée (rédigée par le professeur) est insérée entre deux paragraphes.
 
+Lot 4 (--application) : seul le paragraphe d'abstention est exigé, et au moins 3 nombres suivis d'une unité
+(règles chiffrées à appliquer) ; l'incohérence et la faute de français sont fournies si elles existent.
+
 Usage : python3 -I fabriquer_taches.py <sources/> <sortie.jsonl> [--n 60] [--graine 1] [--exclure lot1.jsonl ...]
+        [--application]
 """
 import argparse
 import json
@@ -138,6 +142,7 @@ def main():
     ap.add_argument("--n", type=int, default=60)
     ap.add_argument("--graine", type=int, default=1)
     ap.add_argument("--exclure", nargs="*", default=[], help="fiches déjà utilisées (fichiers .jsonl de lots précédents)")
+    ap.add_argument("--application", action="store_true", help="lot 4 : abstention et règles chiffrées seulement")
     a = ap.parse_args()
     deja = {json.loads(l)["fiche"] for chemin in a.exclure for l in open(chemin, encoding="utf-8")}
     rnd = random.Random(a.graine)
@@ -158,7 +163,10 @@ def main():
             ab = choisir_abstention(paras, rnd)
             inc = choisir_incoherence(md, rnd)
             qf = choisir_qualite_fr(md, rnd)
-            if not ab or not inc or not qf:
+            if a.application:
+                if not ab or len(RE_NOMBRE_UNITE.findall(md)) < 3:
+                    continue
+            elif not ab or not inc or not qf:
                 continue
             i, nombres_retires = ab
             fiche = {

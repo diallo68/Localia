@@ -335,3 +335,9 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Version 2 lancée à 1 h 43, depuis le début.
   - **[calculé]** Environ 6 h 30, donc fin vers 8 h 15.
   - **[supposé]** Le quota hebdomadaire de GPU de Kaggle (30 h) est peut-être proche : environ 21 h utilisées cette semaine d'après ce journal. Si la session est coupée, elle reprendra au dernier point de reprise.
+
+### 20 octobre 2026, 7 h 36 : fuite de mémoire vive confirmée, fin de l'entraînement depuis le point de reprise
+
+- **[mesuré]** La version 2 a été tuée au même endroit (« Killed » après le pas 442, ERROR à 7 h 35). La mémoire vive du processus monte régulièrement : 2,8 Go au pas 1, 30,9 Go au pas 430, 31,4 Go au pas 442. Cela fait environ 65 Mo par pas, soit 8 Mo par exemple. La mémoire du GPU reste à 11,1 Go.
+  - **[supposé]** Cause : un cache qui grossit à chaque nouvelle longueur de séquence (noyaux compilés ou plans de calcul indexés par la forme des tenseurs ; les exemples ont presque tous une longueur différente). Le `gc.collect()` n'y change rien. Piste pour les prochains entraînements : arrondir les longueurs à un multiple de 256 jetons (remplissage après la fin, sans effet sur la perte d'un modèle causal) et vérifier que la mémoire se stabilise.
+- Le point de reprise du pas 440 (`reprise.pt`) a été enregistré. Le noyau `mohadial/localia-lora-2b-lot3-fin` le reçoit en entrée (sortie de `localia-lora-2b-lot3`) et termine les 15 derniers pas, puis fait la fusion, le GGUF et le jeu de développement.

@@ -341,3 +341,14 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** La version 2 a été tuée au même endroit (« Killed » après le pas 442, ERROR à 7 h 35). La mémoire vive du processus monte régulièrement : 2,8 Go au pas 1, 30,9 Go au pas 430, 31,4 Go au pas 442. Cela fait environ 65 Mo par pas, soit 8 Mo par exemple. La mémoire du GPU reste à 11,1 Go.
   - **[supposé]** Cause : un cache qui grossit à chaque nouvelle longueur de séquence (noyaux compilés ou plans de calcul indexés par la forme des tenseurs ; les exemples ont presque tous une longueur différente). Le `gc.collect()` n'y change rien. Piste pour les prochains entraînements : arrondir les longueurs à un multiple de 256 jetons (remplissage après la fin, sans effet sur la perte d'un modèle causal) et vérifier que la mémoire se stabilise.
 - Le point de reprise du pas 440 (`reprise.pt`) a été enregistré. Le noyau `mohadial/localia-lora-2b-lot3-fin` le reçoit en entrée (sortie de `localia-lora-2b-lot3`) et termine les 15 derniers pas, puis fait la fusion, le GGUF et le jeu de développement.
+
+### 20 octobre 2026, 12 h 45 : quota GPU de Kaggle épuisé, LoRA du pas 440 évaluée sur le Mac
+
+- **[mesuré]** La session `localia-lora-2b-lot3-fin` (version 1) n'a pas trouvé le point de reprise. La sortie d'un noyau terminé en ERROR, fournie en `kernel_sources`, n'a pas été montée, ou pas à un chemin trouvé. Elle est repartie de zéro (pas 416 à 4 h 50 de calcul, RAM 30,4 Go) et sera tuée au même endroit. Le journal a été lu par l'auteur sur le site, qui m'a transmis les lignes.
+- Le point de reprise de la version 2 (`reprise.pt`, 188 Mo, pas 440, exemple 3 520) a été téléchargé et contrôlé, puis publié dans le dataset privé `localia-reprise-lot3`. La session de fin s'arrête désormais tout de suite si le point de reprise manque (`donnees/lora_2b_lot3_fin_kaggle.py`).
+- **[mesuré]** Relance refusée : « Maximum weekly GPU quota of 30.00 hours reached ».
+- Solution sans GPU :
+  - **[mesuré]** au pas 440, le taux d'apprentissage vaut 2,7e-7, soit 0,3 % du maximum ; **[calculé]** les 15 pas manquants ne changeraient presque pas les poids ;
+  - les poids LoRA du point de reprise sont convertis en adaptateur GGUF (`convert_lora_to_gguf.py` de llama.cpp 0.5, 300 tenseurs, 31 Mo, f16), sans télécharger les poids de la base (configuration et tokenizer seulement) ;
+  - évaluation sur le Mac : llama-server 0.5 avec `--lora` sur le GGUF de base converti sur Kaggle (`bases/pilote-2.5/qwen35-2b-base-Q4_K_M.gguf`), puis la même base sans adaptateur, mêmes réglages. La comparaison se fait entre ces deux passages sur le Mac, pas avec les notes obtenues sur GPU.
+  - **[supposé]** L'adaptateur appliqué à une base Q4 n'est pas identique à une fusion en f16 suivie d'une quantification ; l'écart devrait être faible.

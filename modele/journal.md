@@ -429,3 +429,18 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - abstentions à tort alors que le passage est dans les extraits (T012, T022, R006) : même défaut que la LoRA du lot 3, visé par le lot 4 ;
   - à 5 000 jetons sur le RGPD, les considérants et les articles voisins se répètent et le modèle répond à côté ou de façon incomplète (R012 : 1 → 0, R022 : 1 → 0,5). Plus d'extraits n'est pas toujours mieux.
 - Conclusion : on garde **3 000 jetons** par défaut. Sur 24 questions par jeu, les écarts de ±0,05 ne sont pas significatifs. Les deux points faibles sont les questions reformulées (recherche par mots-clés) et les abstentions à tort (modèle). Pour la recherche par le sens (modèle d'embeddings d'environ 100 Mo), il faut l'accord de l'auteur avant le téléchargement.
+
+### 21 octobre 2026, 9 h : la recherche actuelle de Localia sur les mêmes longs documents
+
+- Mesure sans modèle et sans toucher à l'application : les fonctions de Localia (`src/documents.cjs` pour un document joint à une conversation, `src/project-docs.cjs` pour les documents d'un projet) sont appelées en lecture seule sur les quatre jeux longs, avec un budget de 10 800 caractères (environ 3 000 jetons, comme `recherche/passages.py`). La thèse est lue page par page avec pdftotext ; les autres documents sont découpés par `splitSections`, comme un fichier texte ajouté à un projet.
+- **[mesuré]** Éléments de réponse présents dans les extraits (L031 exclu) :
+
+| Jeu | Conversation (`mots`) | Projet `mots` (par défaut) | Projet `bm25` | `passages.py` |
+|---|---|---|---|---|
+| Thèse (24) | 17 | 16 | 18 | 18 |
+| RGPD (24) | 19 | 18 | 18 | **22** |
+| long128k (19) | 16 | 16 | 19 | 19 |
+| long128k reformulé (12) | 9 | 9 | 11 | 11 |
+| **Total (79)** | **61** | **59** | **66** | **70** |
+
+- Lecture : sur des documents longs, la méthode par défaut de Localia (`mots`) rate 20 cas sur 79, contre 9 pour `passages.py`. Le passage à BM25 explique une partie du gain (59 → 66). Le découpage par sections avec le chemin des titres apporte le reste, surtout sur le RGPD (titres d'articles et de considérants). La mesure du 15 octobre (`docs/MESURE-RECHERCHE.md`, 23 questions sur des documents courts) ne départageait pas les méthodes ; celle-ci, sur des documents de 60 000 à 130 000 jetons, les départage.

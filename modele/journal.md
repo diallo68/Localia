@@ -397,3 +397,35 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - **[mesuré]** Fusion par rang réciproque des deux recherches (question seule, et question plus mots-clés), avec 3 000 jetons : **19 sur 19** sur les questions d'origine et **12 sur 12** sur les reformulées (L031 exclu des deux décomptes : son résultat est à calculer).
 - `recherche/passages.py` : option `--expansion URL` (fusion des deux recherches). Sans l'option, le comportement est inchangé (vérifié : mêmes rappels).
 - **[supposé]** 12 questions, c'est peu. Les reformulations d'un seul modèle ne couvrent pas toutes les façons de demander. Il faudra un jeu plus grand, sur d'autres longs documents que des fiches juxtaposées (un vrai rapport, un contrat).
+
+### 21 octobre 2026, 4 h : recherche de passages sur deux vrais longs documents (thèse, RGPD)
+
+- Deux jeux nouveaux, hors dépôt, écrits par le professeur local `qwen36-fr-192` : il lit une section, pose une question littérale et une question reformulée, recopie la preuve, et le script vérifie que la preuve et les éléments attendus figurent mot pour mot dans le document. 30 questions par document, 24 gardées pour chacun.
+  - `eval-long/these` : thèse de doctorat fournie par l'auteur, 114 pages, environ 60k jetons, convertie par `recherche/pdf_vers_md.py`. Document **privé** : il reste sur le Mac, n'est pas publié et ne sert pas à l'entraînement.
+  - `eval-long/rgpd` : RGPD (99 articles, 173 considérants, environ 112k jetons), assemblé depuis les pages de la CNIL par `recherche/assembler_rgpd.py`, car EUR-Lex refuse les téléchargements automatiques.
+  - **[jugement à la relecture]** Trois questions de la thèse sont mal posées (T004 « ce type de réseau », T028 « le prochain chapitre », T030 trop vague). Les éléments attendus sont des tournures exactes du document, donc la note automatique pénalise les réponses justes mais reformulées : elle est probablement **sous-estimée** sur ces deux jeux.
+  - Variantes ajoutées aux éléments chiffrés (« 98.06% », « 98,06 % ») dans les jeux, sans toucher au noteur, pour que les notes passées restent comparables. Effet sur la thèse à 3 000 jetons : 0,632 → 0,688.
+- **[mesuré]** Rappel sans modèle (`recherche/rappel.py`) :
+
+| Jeu | 3 000 jetons | 5 000 jetons |
+|---|---|---|
+| Thèse, littérales | 9/10 | 9/10 |
+| Thèse, reformulées | 9/14 | 12/14 |
+| RGPD, littérales | 13/13 | 13/13 |
+| RGPD, reformulées | 9/11 | 9/11 |
+
+- **[mesuré]** Expansion de requête sur la thèse : 10/14 reformulées à 3 000 jetons (au lieu de 9/14), aucun gain à 5 000. Une consigne d'expansion plus générale (« rapport, thèse, texte juridique ») n'apporte rien sur la thèse et perd L013 sur long128k-reformule (11/12 au lieu de 12/12) : **abandonnée**, la consigne d'origine reste.
+- **[mesuré]** De bout en bout, 2B élagué `vocfr48k`, `-c 10240`, sans expansion :
+
+| Jeu | Budget | S_doc | Littérales | Reformulées | Temps médian par question |
+|---|---|---|---|---|---|
+| Thèse | 3 000 | 0,688 | 0,833 | 0,583 | 72 s |
+| Thèse | 5 000 | 0,736 | 0,900 | 0,619 | 151 s * |
+| RGPD | 3 000 | 0,854 | 0,974 | 0,712 | 83 s |
+| RGPD | 5 000 | 0,722 | 0,936 | 0,470 | 129 s * |
+
+  \* processeur bridé à 50-54 % par la chaleur pendant ces deux séries : temps surestimés.
+- Lecture des réponses :
+  - abstentions à tort alors que le passage est dans les extraits (T012, T022, R006) : même défaut que la LoRA du lot 3, visé par le lot 4 ;
+  - à 5 000 jetons sur le RGPD, les considérants et les articles voisins se répètent et le modèle répond à côté ou de façon incomplète (R012 : 1 → 0, R022 : 1 → 0,5). Plus d'extraits n'est pas toujours mieux.
+- Conclusion : on garde **3 000 jetons** par défaut. Sur 24 questions par jeu, les écarts de ±0,05 ne sont pas significatifs. Les deux points faibles sont les questions reformulées (recherche par mots-clés) et les abstentions à tort (modèle). Pour la recherche par le sens (modèle d'embeddings d'environ 100 Mo), il faut l'accord de l'auteur avant le téléchargement.

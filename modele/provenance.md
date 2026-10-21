@@ -56,4 +56,6 @@ Les jeux publics produits avec GPT, par exemple les jeux de type Alpaca traduits
 | Global-MMLU (CohereLabs) / MMMLU (openai) | Apache-2.0 / MIT (étiquettes HF, 17 oct. 2026) | connaissances générales, garde-fou de régression |
 | French MT-Bench (bofenghuang) | Apache-2.0 (étiquette HF) | rédaction, avec juge ouvert |
 | Banque Localia (147 questions, documents fictifs) | interne | jeu de **développement** |
+| RGPD, règlement (UE) 2016/679, pages de la CNIL (20 oct. 2026), assemblé par `recherche/assembler_rgpd.py` | texte officiel de l'UE, réutilisation libre avec mention de la source | jeu `eval-long/rgpd` (hors dépôt) : 24 questions écrites par le professeur local `qwen36-fr-192` (Apache 2.0) avec preuve recopiée et vérifiée ; évaluation de la recherche de passages seulement |
+| Thèse de doctorat fournie par l'auteur (114 pages) | document **privé** de l'auteur | jeu `eval-long/these` (hors dépôt, sur le Mac seulement) : 24 questions écrites par `qwen36-fr-192` ; évaluation seulement, **jamais d'entraînement sans l'accord de l'auteur**, jamais publié |
 | Jeu maison secret (à écrire) | interne | jeu de **test**, figé avant tout entraînement |

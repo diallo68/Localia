@@ -21,6 +21,7 @@ Les jeux publics produits avec GPT, par exemple les jeux de type Alpaca traduits
 | Qwen/Qwen3.8-27B | apache-2.0 selon les métadonnées du GGUF local (ISTA-DASLab) ; Codex dit avoir lu la fiche | professeur secondaire, comparaison | envisagé | **à vérifier dans le fichier LICENSE du dépôt officiel** |
 | google/gemma-4-31B-it | Apache 2.0 selon la fiche, avec un lien vers les « Gemma 4 license terms » | professeur secondaire, juge, comparaison | envisagé | **lire les conditions liées avant tout usage de ses sorties** |
 | mistralai/Mistral-Small-4 | Apache 2.0 (annonce officielle mistral.ai, 16 mars 2026) | professeur (si base Ministral), comparaison | envisagé | à vérifier sur la fiche HF |
+| intfloat/multilingual-e5-small | MIT (fiche HF, 21 oct. 2026) | embeddings pour la recherche de passages par le sens (mesure seulement) | **utilisé** : poids HF téléchargés le 21 oct. 2026 avec l'accord de l'auteur (471 Mo, SHA-256 `1a55775f…8477`), calculs en PyTorch sur le Mac | fiche HF, 21 oct. 2026 |
 | mistralai/Mistral-Small-3.2-24B-Instruct | Apache 2.0 (connu, **à revérifier**) | comparaison seulement | envisagé | — |
 
 ## Modèles produits (non publiés)

@@ -444,3 +444,18 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 | **Total (79)** | **61** | **59** | **66** | **70** |
 
 - Lecture : sur des documents longs, la méthode par défaut de Localia (`mots`) rate 20 cas sur 79, contre 9 pour `passages.py`. Le passage à BM25 explique une partie du gain (59 → 66). Le découpage par sections avec le chemin des titres apporte le reste, surtout sur le RGPD (titres d'articles et de considérants). La mesure du 15 octobre (`docs/MESURE-RECHERCHE.md`, 23 questions sur des documents courts) ne départageait pas les méthodes ; celle-ci, sur des documents de 60 000 à 130 000 jetons, les départage.
+
+### 21 octobre 2026, 10 h 40 : recherche par le sens (embeddings) combinée aux mots-clés
+
+- Modèle : `intfloat/multilingual-e5-small` (MIT, 118 M de paramètres), téléchargé avec l'accord de l'auteur. La conversion en GGUF par llama.cpp ne convient pas : le convertisseur traite ce modèle BERT à tokenizer XLM-R comme un XLM-R et décalerait ses positions. Calcul en PyTorch pour la mesure.
+- Passages de `recherche/passages.py`, préfixés « passage: » avec leur chemin de titres ; questions préfixées « query: ». Classement par cosinus, fusion avec BM25 par rang réciproque (k = 60).
+- **[mesuré]** Éléments de réponse présents dans les extraits (79 cas : thèse 24, RGPD 24, long128k 19, long128k reformulé 12) :
+
+| Budget | BM25 | Sens seul | Fusion |
+|---|---|---|---|
+| 3 000 jetons | 70 | 69 | **72** |
+| 5 000 jetons | 73 | 72 | **75** |
+
+  La fusion rattrape L013 (« poubelles ») et T004 ; T006 et T013 restent ratés par toutes les méthodes.
+- **[mesuré]** Coût sur le CPU du Mac (8 fils) : indexation de 0,07 à 0,15 s par passage, soit 30 s pour la thèse (210 passages), 67 s pour le RGPD (457) et 87 s pour long128k (1 026). La recherche elle-même est instantanée.
+- Conclusion : le gain (+2 cas sur 79) est réel mais petit, pour un modèle de plus à embarquer dans Localia et une indexation d'une à deux minutes par long document. Priorité au plan Localia (BM25 par défaut, découpage par sections) ; la recherche par le sens reste une option à proposer ensuite.

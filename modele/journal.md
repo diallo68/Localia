@@ -459,3 +459,14 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   La fusion rattrape L013 (« poubelles ») et T004 ; T006 et T013 restent ratés par toutes les méthodes.
 - **[mesuré]** Coût sur le CPU du Mac (8 fils) : indexation de 0,07 à 0,15 s par passage, soit 30 s pour la thèse (210 passages), 67 s pour le RGPD (457) et 87 s pour long128k (1 026). La recherche elle-même est instantanée.
 - Conclusion : le gain (+2 cas sur 79) est réel mais petit, pour un modèle de plus à embarquer dans Localia et une indexation d'une à deux minutes par long document. Priorité au plan Localia (BM25 par défaut, découpage par sections) ; la recherche par le sens reste une option à proposer ensuite.
+
+### 21 octobre 2026, 13 h : recherche de passages intégrée à Localia (branche locale `recherche-sections`)
+
+- Plan accepté par l'auteur. Trois commits sur une branche locale, **non poussée** (5e86e76, 2b0d554, 54025c4) :
+  1. BM25 par défaut pour un document de conversation et pour un projet (`src/documents.cjs`, `src/project-docs.cjs`) ; les demandes de résumé gardent le comptage de mots.
+  2. Au-delà du budget, passages par sections (`splitPassages` dans `src/retrieval.js`) : environ 120 mots, jamais à cheval sur deux pages ni sur deux titres, chemin des titres envoyé sur une ligne « Titres : » ; titres Markdown, chapitres, articles, numéros 1.2.3 ; en-têtes et pieds répétés, sommaires écartés ; mots coupés en fin de ligne recollés. Seuls les passages qui contiennent des mots de la question sont retenus quand il y en a.
+  3. `docs/MESURE-RECHERCHE.md` complété.
+- **[mesuré]** 79 questions, 10 800 caractères, thèse lue par pdf.js : conversation 66 → **68**, projet 64 → **68** (étape 1 seule : 66 et 64 ; méthode d'origine : 59 pour un projet). Essais écartés : titres comptés une seule fois (thèse 16 → 15).
+- **[mesuré]** Documents courts du 15 octobre, `bm25` : 19 → 20/23 (3 000 caractères), 21 → 22/23 (6 000) ; aucun recul.
+- **[mesuré]** Tests : `npm test` 218/218, `test:pdf`, `test:workspace` et `test:features` (Electron) passent ; mise en forme Prettier vérifiée.
+- Pas encore mesuré : la qualité des réponses de bout en bout avec ces extraits dans l'application.

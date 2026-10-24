@@ -512,3 +512,19 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Correction de `assembler_exemples.py` : il ne gardait qu'un exemple par (fiche, type). Une fiche du lot 4 porte jusqu'à 3 ou 4 cas « application » différents ; 109 sur 250 étaient écartés. Le type `application` garde désormais un exemple par demande. Les autres types sont inchangés (vérifié : mêmes effectifs).
 - **[mesuré]** Assemblage des lots 2.4 à 4b : **4 094 exemples**, dont application 250, contraste 119, abstention 469 (11,5 %). Aucune des 167 fiches du lot 4 n'est dans le lot 3 ni parmi les 36 fiches d'évaluation.
 - Dataset privé `localia-exemples-lot4`, noyau `mohadial/localia-lora-2b-lot4` : même recette, avec la correction de la fuite, sur les 4 094 exemples. Il partira dès qu'une place GPU se libère (courbes d'échelle 500 et 1 000 en cours). **[calculé]** 512 pas à environ 44 s, soit 6 h 15, plus 45 min pour la fusion et le jeu de développement.
+
+### 25 octobre 2026, 1 h 30 : courbe d'échelle (étape 2.6)
+
+- Noyaux `localia-lora-2b-echelle-500` et `-1000` : même recette que le lot 3, avec la correction de la fuite, sur les N premiers exemples d'un tirage fixe (graine 7) parmi les 3 633 du lot 3. **[mesuré]** RAM stable à 3,1 Go ; 63 pas en 2 648 s et 125 pas en 5 055 s (environ 41 s par pas).
+- **[mesuré]** Jeu de développement (60 cas) sur GPU, même procédure pour tous :
+
+  | Exemples | S_doc | abst. | cit. | extr. | incoh. | fr | réd. | synth. |
+  |---|---|---|---|---|---|---|---|---|
+  | 0 (base) | 0,854 | | | | | | | |
+  | 500 | 0,803 | 0,90 | 0,875 | 0,81 | 1,00 | 0,76 | 0,625 | 0,65 |
+  | 1 000 | 0,856 | 0,80 | 0,875 | 0,89 | 0,95 | 0,95 | 0,71 | 0,82 |
+  | 1 950 (lot 2, autres données) | 0,862 | | | | | | | |
+  | 3 633 (lot 3) | 0,884 | 0,90 | 0,875 | 0,81 | 1,00 | 1,00 | 0,69 | 0,92 |
+
+- **[supposé]** Lecture : avec peu d'exemples, le modèle perd d'abord en synthèse et en rédaction (il prend le style des exemples avant d'en apprendre le fond). La courbe monte ensuite lentement, d'environ 0,03 entre 1 000 et 3 633 exemples, sans plateau visible. Ces écarts restent dans le bruit du jeu de 60 cas (environ ±0,13). Le lot 2 n'est pas tiré du même ensemble : il sert de repère, pas de point de la courbe.
+- Conséquence : plus d'exemples ne nuit pas, mais ne suffit pas à lui seul. Le gain attendu du lot 4 vient de la nature des exemples (appliquer une règle) plutôt que de leur nombre. Pour trancher, il faut un jeu de développement plus grand.

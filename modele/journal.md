@@ -486,3 +486,13 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** RAM du processus : 2,7 Go au pas 1, 3,0 Go au pas 10, puis **3,1 Go stable du pas 20 au pas 60**. Sans la correction, elle montait d'environ 65 Mo par pas (30,9 Go au pas 430). Mémoire du GPU : 11,0 Go, comme avant. Environ 44 s par pas (2 625 s pour 60 pas).
 - **[calculé]** Sans correction, la RAM aurait atteint environ 6,7 Go au pas 60. La cause supposée (un cache par forme de tenseur) est donc confirmée en pratique, et les entraînements de l'étape 2.6 (courbes d'échelle) peuvent dépasser 440 pas.
 - Professeur du lot 4 lancé : `localia-professeur-lot4a` à 21 h 17, `localia-professeur-lot4b` à 21 h 47 (Kaggle limite à 2 sessions GPU simultanées). Datasets privés `localia-donnees-lot4a` et `lot4b` (86 fiches Service-Public chacun, Licence Ouverte Etalab 2.0).
+
+### 24 octobre 2026, 22 h 45 : lot 3 final noté sur le Mac
+
+- **[mesuré]** GGUF final du lot 3 (fusion f16 puis Q4_K_M sur Kaggle, 1,31 Go), llama-server sur le Mac, `-c 8192`, mêmes réglages que la base : **S_doc 0,856**, contre 0,863 pour la base sur le Mac et 0,900 pour l'adaptateur du pas 440. Écart avec la base −0,014, IC 95 % [−0,150 ; +0,117] (bootstrap par document, 5 000 tirages) : aucun gain mesurable.
+- **[mesuré]** Les 11 cas qui changent par rapport au pas 440 sont les mêmes sur le Mac et sur GPU (plus D028). L'écart vient donc du modèle (fusion f16 contre adaptateur sur base Q4, ou les 15 derniers pas), pas de la machine.
+- Relecture des baisses :
+  - D015 : bonne abstention, mais la réponse cite « une fois par semaine » comme exemple de ce qui manque, et `noter.py` la compte comme interdite. Défaut du noteur, laissé tel quel pour garder les scores comparables.
+  - D028 : le pas 440 avait réussi par hasard (il recopiait la phrase en ajoutant « plein » tout en disant qu'il ne manquait rien). Les deux versions ratent la tâche.
+  - D007 : les deux versions commencent par « il n'est pas possible de répondre » ; la version finale donne ensuite un taux faux (6,30 % au lieu de 6,45 %).
+- **[supposé]** Entre 0,856 et 0,900, l'écart vient surtout du bruit sur 60 cas, où chaque cas pèse 1,7 point. Le défaut de fond reste le même : le modèle commence trop souvent par refuser (« il n'est pas possible de répondre ») avant de répondre quand même. C'est la cible du lot 4.

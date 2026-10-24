@@ -479,3 +479,10 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** Par rapport au pas 440 sur le Mac, 11 cas changent : 5 montent (D018 0 → 0,5, D031 0 → 1, D029, D032, D051), 6 baissent (D007 et D015 1 → 0, D026, D035, D040, D047).
   - **[supposé]** Ces écarts viennent surtout des conditions (adaptateur sur une base Q4 et CPU du Mac contre fusion f16 puis Q4 sur GPU), pas des 15 derniers pas, dont le taux d'apprentissage est presque nul. Les deux mesures restent dans l'intervalle de confiance l'une de l'autre.
 - Le GGUF final n'est pas encore rapatrié sur le Mac (environ 1,2 Go **[supposé]**).
+
+### 24 octobre 2026, 21 h 47 : correction de la fuite de mémoire vive vérifiée
+
+- Session `localia-lora-2b-essai-fuite` : 60 pas du lot 3, longueurs arrondies au multiple de 256 jetons (`ESSAI_PAS`).
+- **[mesuré]** RAM du processus : 2,7 Go au pas 1, 3,0 Go au pas 10, puis **3,1 Go stable du pas 20 au pas 60**. Sans la correction, elle montait d'environ 65 Mo par pas (30,9 Go au pas 430). Mémoire du GPU : 11,0 Go, comme avant. Environ 44 s par pas (2 625 s pour 60 pas).
+- **[calculé]** Sans correction, la RAM aurait atteint environ 6,7 Go au pas 60. La cause supposée (un cache par forme de tenseur) est donc confirmée en pratique, et les entraînements de l'étape 2.6 (courbes d'échelle) peuvent dépasser 440 pas.
+- Professeur du lot 4 lancé : `localia-professeur-lot4a` à 21 h 17, `localia-professeur-lot4b` à 21 h 47 (Kaggle limite à 2 sessions GPU simultanées). Datasets privés `localia-donnees-lot4a` et `lot4b` (86 fiches Service-Public chacun, Licence Ouverte Etalab 2.0).

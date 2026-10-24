@@ -1,6 +1,7 @@
 """Réunit les exemples vérifiés de plusieurs lots en un jeu d'entraînement.
 
-- Un seul exemple par (fiche, type) : la version produite avec réflexion du professeur est préférée.
+- Un seul exemple par (fiche, type) : la version produite avec réflexion du professeur est préférée. Exception :
+  les types de TYPES_MULTIPLES (plusieurs cas concrets par fiche) gardent un exemple par demande.
 - Les fausses alertes (« le document est cohérent ») sont plafonnées à PART_FAUSSE_ALERTE du nombre d'incohérences
   gardées, pour ne pas apprendre au modèle à tout déclarer cohérent.
 - Ordre mélangé (graine fixe) ; rapport par type sur la sortie standard.
@@ -13,6 +14,7 @@ import json
 import random
 
 PART_FAUSSE_ALERTE = 1.0
+TYPES_MULTIPLES = {"application"}  # lot 4
 
 
 def main():
@@ -27,6 +29,8 @@ def main():
         for l in open(chemin, encoding="utf-8"):
             ex = json.loads(l)
             cle = (ex["fiche"], ex["type"])
+            if ex["type"] in TYPES_MULTIPLES:  # plusieurs cas concrets par fiche : un exemple par demande
+                cle += (ex["messages"][-2]["content"],)
             if cle not in choisis or (ex.get("reflexion_professeur") and not choisis[cle].get("reflexion_professeur")):
                 choisis[cle] = ex
     exemples = list(choisis.values())

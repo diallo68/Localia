@@ -496,3 +496,19 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - D028 : le pas 440 avait réussi par hasard (il recopiait la phrase en ajoutant « plein » tout en disant qu'il ne manquait rien). Les deux versions ratent la tâche.
   - D007 : les deux versions commencent par « il n'est pas possible de répondre » ; la version finale donne ensuite un taux faux (6,30 % au lieu de 6,45 %).
 - **[supposé]** Entre 0,856 et 0,900, l'écart vient surtout du bruit sur 60 cas, où chaque cas pèse 1,7 point. Le défaut de fond reste le même : le modèle commence trop souvent par refuser (« il n'est pas possible de répondre ») avant de répondre quand même. C'est la cible du lot 4.
+
+### 25 octobre 2026, 0 h : lot 4 généré, vérifié et assemblé
+
+- **[mesuré]** Professeur (Qwen3.6-35B-A3B, Kaggle) : 4a fini à 23 h 19 (phase B, 462 tâches en 6 175 s), 4b vers 23 h 40 (473 tâches). Environ 2 h par session, au lieu des 3 h 30 calculées.
+- **[mesuré]** Vérification (`verifier.py`) : 4a, 217 gardés sur 462 ; 4b, 244 sur 473.
+
+  | Type | 4a | 4b | Raisons de rejet principales |
+  |---|---|---|---|
+  | application (avec réflexion) | 119 / 290 | 131 / 301 | oui ou non différent entre phases A et B (137), simple lecture du document sans règle à appliquer (118) |
+  | contraste | 54 / 86 | 65 / 86 | ne donne pas l'information du paragraphe (39) |
+  | abstention | 44 / 86 | 48 / 86 | pas d'abstention (52), donne un nombre retiré (18) |
+
+- Relecture d'un échantillon : les cas « application » appliquent bien une règle recopiée du document (abandon de famille après deux mois sans paiement ; limite de 2 % du forfait pour une formation hors temps de travail, 210 h × 2 % = 4,2 h). Certaines réponses ont un style de présentation chargé (titres, émoticône).
+- Correction de `assembler_exemples.py` : il ne gardait qu'un exemple par (fiche, type). Une fiche du lot 4 porte jusqu'à 3 ou 4 cas « application » différents ; 109 sur 250 étaient écartés. Le type `application` garde désormais un exemple par demande. Les autres types sont inchangés (vérifié : mêmes effectifs).
+- **[mesuré]** Assemblage des lots 2.4 à 4b : **4 094 exemples**, dont application 250, contraste 119, abstention 469 (11,5 %). Aucune des 167 fiches du lot 4 n'est dans le lot 3 ni parmi les 36 fiches d'évaluation.
+- Dataset privé `localia-exemples-lot4`, noyau `mohadial/localia-lora-2b-lot4` : même recette, avec la correction de la fuite, sur les 4 094 exemples. Il partira dès qu'une place GPU se libère (courbes d'échelle 500 et 1 000 en cours). **[calculé]** 512 pas à environ 44 s, soit 6 h 15, plus 45 min pour la fusion et le jeu de développement.

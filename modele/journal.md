@@ -470,3 +470,12 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** Documents courts du 15 octobre, `bm25` : 19 → 20/23 (3 000 caractères), 21 → 22/23 (6 000) ; aucun recul.
 - **[mesuré]** Tests : `npm test` 218/218, `test:pdf`, `test:workspace` et `test:features` (Electron) passent ; mise en forme Prettier vérifiée.
 - Pas encore mesuré : la qualité des réponses de bout en bout avec ces extraits dans l'application.
+
+### 24 octobre 2026, 21 h 20 : session de fin du lot 3 terminée sur Kaggle
+
+- Quota de Kaggle remis à zéro (signalé par l'auteur). La tâche de relance automatique avait été arrêtée par Claude Code, faute de mémoire sur le Mac ; la session `localia-lora-2b-lot3-fin` (version 2) a été lancée à la main.
+- **[mesuré]** Reprise au pas 440 trouvée : pas 441 à 455 en 617 s, perte finale 0,15 à 0,50 selon les pas. RAM 2,8 → 4,3 Go sur 15 pas (environ 100 Mo par pas, même fuite qu'avant, sans conséquence sur 15 pas). Puis fusion, GGUF f16 (3,9 Go, sur Kaggle) et Q4_K_M, et réponses au jeu de développement sur GPU.
+- **[mesuré]** Jeu de développement (60 cas, `noter.py`), sur GPU : **S_doc 0,884** (abstention 0,90, citation 0,875, extraction 0,81, incohérence 1,00, qualité du français 1,00, rédaction 0,69, synthèse 0,92). Pour mémoire : base sur GPU 0,854, lot 2 sur GPU 0,862, LoRA du pas 440 sur le Mac 0,900.
+- **[mesuré]** Par rapport au pas 440 sur le Mac, 11 cas changent : 5 montent (D018 0 → 0,5, D031 0 → 1, D029, D032, D051), 6 baissent (D007 et D015 1 → 0, D026, D035, D040, D047).
+  - **[supposé]** Ces écarts viennent surtout des conditions (adaptateur sur une base Q4 et CPU du Mac contre fusion f16 puis Q4 sur GPU), pas des 15 derniers pas, dont le taux d'apprentissage est presque nul. Les deux mesures restent dans l'intervalle de confiance l'une de l'autre.
+- Le GGUF final n'est pas encore rapatrié sur le Mac (environ 1,2 Go **[supposé]**).

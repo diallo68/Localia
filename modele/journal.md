@@ -553,7 +553,7 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   | synthèse | 0,91 | 0,94 |
   | **S_doc** | **0,712** | **0,766** |
 
-- **[calculé]** Écart lot 3 − base : +0,054 ; IC 95 % [−0,025 ; +0,115] (bootstrap par fiche, 5 000 tirages). Pas encore significatif, mais l'intervalle est deux fois plus étroit qu'avec `dev/` seul. 21 cas gagnés, 16 perdus.
+- **[calculé]** Écart lot 3 − base : +0,054 sur S_doc (moyenne des catégories) ; +0,044 en moyenne par cas, IC 95 % [−0,025 ; +0,115] (bootstrap par fiche, 5 000 tirages). Pas encore significatif, mais l'intervalle est deux fois plus étroit qu'avec `dev/` seul. 21 cas gagnés, 16 perdus.
 - **[calculé]** `dev/` et `dev2` réunis (198 cas, sur le Mac) : base 0,757, lot 3 final 0,793.
 - dev2 est plus difficile que `dev/` (base 0,71 contre 0,86) : plus de cas où il faut appliquer une règle, et des fautes de français plus discrètes.
 - Relecture des 6 extractions perdues par le lot 3 : le défaut connu se confirme. V013 (vol de 2 800 km) et V025 (complément d'impôt à calculer) commencent par « il n'est pas possible de répondre » alors que la règle est dans le document ; V021 applique la règle mais se trompe d'année (2026 au lieu de 2027) ; V031 lit la mauvaise colonne d'un tableau dont l'en-tête est décalé dans la fiche.

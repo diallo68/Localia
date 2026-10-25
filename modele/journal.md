@@ -667,3 +667,16 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - **[mesuré]** dev2 : 30 cas sur 138 où Localia ne transmet que des extraits (document trop long pour le budget).
 - `executer.py` : option `--messages` pour envoyer des messages précalculés ; sans elle, rien ne change.
 - Lancé sur le Mac : base puis lot 4 (GGUF au gabarit sans réflexion), dev2 puis dev. Le lot 5 suivra.
+
+### 25 octobre 2026, 19 h 30 : base et lot 4 dans les conditions de Localia
+
+- **[mesuré]** Messages exacts de Localia (PDF, extraits, consigne système), llama-server sur le Mac :
+
+  | | dev | dev2 | 188 cas (sans les cas touchés) | extraction | abstention |
+  |---|---|---|---|---|---|
+  | Base, Localia | 0,785 | 0,766 | 0,793 | 0,78 | 0,84 |
+  | Lot 4, Localia | 0,900 | 0,795 | **0,851** | 0,77 | 0,97 |
+  | Base, `executer.py` | 0,863 | 0,712 | 0,784 | 0,79 | 0,78 |
+  | Lot 4, `executer.py` | 0,895 | 0,796 | 0,840 | 0,76 | 0,97 |
+
+- Lecture : l'avance du lot 4 sur la base est la même dans les deux conditions (+0,058 et +0,056 par cas). Le refus vu dans l'essai de Localia (V025) n'est pas général : 5 réponses sur 138 de dev2 commencent par un refus, abstentions attendues comprises. La consigne de Localia ne pénalise pas le modèle.

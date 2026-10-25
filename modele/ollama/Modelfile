@@ -1,0 +1,11 @@
+# Localia, défi modèle compact : modèle documentaire (Qwen3.5-2B + LoRA, Q4_K_M). Non publié.
+# Le GGUF doit porter le gabarit gabarit_sans_reflexion.jinja (voir README.md) : avec le gabarit d'origine, Ollama
+# active la réflexion par défaut, pour laquelle le modèle n'a pas été entraîné (réflexion jusqu'à la limite de
+# contexte, réponse vide ; mesuré le 25 oct. 2026).
+FROM ./qwen35-2b-lora-Q4_K_M-sansreflexion.gguf
+PARAMETER num_ctx 8192
+PARAMETER temperature 0.3
+PARAMETER top_k 20
+PARAMETER top_p 0.95
+PARAMETER stop <|im_end|>
+PARAMETER stop <|endoftext|>

@@ -537,3 +537,24 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - 138 cas, 6 par fiche : extraction 56 (dont une bonne part où il faut appliquer une règle : calcul, date limite, seuil), abstention 22, citation 21, qualité du français 12, synthèse 9, fausses alertes 7, rédaction 6, incohérence 5. Deux fiches modifiées pour une contradiction contrôlée (F348, F12484) ; les autres fautes et incohérences visées sont dans les fiches d'origine. Les fautes d'accent seules sont évitées, car `noter.py` retire les accents.
 - **[mesuré]** Contrôles de notation : réponses de référence 0,88 (les réponses de référence ne sont pas mises en puces, d'où les synthèses à 0,5) ; « le document ne précise pas » partout 0,14 ; « il y a une incohérence » partout 0,03. Empreinte SHA-256 `283adbd5…`.
 - Première mesure lancée sur le Mac : base, puis lot 3 final.
+
+### 25 octobre 2026, 4 h 50 : base et lot 3 final sur dev2 (Mac)
+
+- **[mesuré]** dev2 (138 cas), llama-server sur le Mac, `-c 8192`, mêmes réglages que `dev/` :
+
+  | Catégorie | Base | Lot 3 final |
+  |---|---|---|
+  | abstention | 0,77 | 0,91 |
+  | citation | 0,90 | 0,88 |
+  | extraction | 0,75 | 0,75 |
+  | incohérence (avec fausses alertes) | 0,65 | 0,71 |
+  | qualité du français | 0,42 | 0,67 |
+  | rédaction | 0,58 | 0,50 |
+  | synthèse | 0,91 | 0,94 |
+  | **S_doc** | **0,712** | **0,766** |
+
+- **[calculé]** Écart lot 3 − base : +0,054 ; IC 95 % [−0,025 ; +0,115] (bootstrap par fiche, 5 000 tirages). Pas encore significatif, mais l'intervalle est deux fois plus étroit qu'avec `dev/` seul. 21 cas gagnés, 16 perdus.
+- **[calculé]** `dev/` et `dev2` réunis (198 cas, sur le Mac) : base 0,757, lot 3 final 0,793.
+- dev2 est plus difficile que `dev/` (base 0,71 contre 0,86) : plus de cas où il faut appliquer une règle, et des fautes de français plus discrètes.
+- Relecture des 6 extractions perdues par le lot 3 : le défaut connu se confirme. V013 (vol de 2 800 km) et V025 (complément d'impôt à calculer) commencent par « il n'est pas possible de répondre » alors que la règle est dans le document ; V021 applique la règle mais se trompe d'année (2026 au lieu de 2027) ; V031 lit la mauvaise colonne d'un tableau dont l'en-tête est décalé dans la fiche.
+- **[mesuré]** Génération médiane du lot 3 sur dev2 : 5,1 jetons/s. Durée : 52 min pour la base, 1 h 43 pour le lot 3 (réponses plus longues).

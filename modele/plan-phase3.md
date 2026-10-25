@@ -1,4 +1,4 @@
-# Étape 2.7 : plan chiffré de la phase 3 (soumis à l'auteur le 25 octobre 2026)
+# Étape 2.7 : plan chiffré de la phase 3 (soumis à l'auteur et validé le 25 octobre 2026)
 
 ## 1. Où en est-on [mesuré]
 

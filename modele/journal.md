@@ -658,4 +658,4 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 
 ### 25 octobre 2026, 15 h : plan 2.7 soumis à l'auteur
 
-- `plan-phase3.md` : 0 € de dépense (Mac et Kaggle) ; étapes 3.1 à 3.6 (note du lot 5, lot 6 par réponses de l'élève vérifiées, vitesse et mémoire, benchmarks publics, évaluation finale sur le jeu secret, juge ouvert et contrôle humain), environ 15 h de GPU ; points d'arrêt ; recette fixée ; phase 4 ensuite. En attente de l'accord de l'auteur.
+- `plan-phase3.md` : 0 € de dépense (Mac et Kaggle) ; étapes 3.1 à 3.6 (note du lot 5, lot 6 par réponses de l'élève vérifiées, vitesse et mémoire, benchmarks publics, évaluation finale sur le jeu secret, juge ouvert et contrôle humain), environ 15 h de GPU ; points d'arrêt ; recette fixée ; phase 4 ensuite. **Validé par l'auteur (« ok »).**

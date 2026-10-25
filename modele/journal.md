@@ -655,3 +655,7 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Erreur trouvée : deux fiches de dev2 (F348, F35755) sont proches de fiches d'entraînement (F14840 : Jaccard 0,41). Cas touchés : 3 dans dev, 7 dans dev2, 6 dans le secret. Vérification manuelle : 2 fuites réelles (V037, V093), 2 risques d'interférence (S038, S009), le reste sans rapport.
 - **[mesuré]** Sans les cas touchés de dev et dev2 (188 cas) : base 0,784, lot 3 0,816, lot 4 0,840 ; lot 4 − base +0,057 [−0,002 ; +0,115]. Les conclusions tiennent.
 - `criteres.md` amendé avant l'ouverture du jeu secret : score principal sans les cas touchés, score complet publié à côté.
+
+### 25 octobre 2026, 15 h : plan 2.7 soumis à l'auteur
+
+- `plan-phase3.md` : 0 € de dépense (Mac et Kaggle) ; étapes 3.1 à 3.6 (note du lot 5, lot 6 par réponses de l'élève vérifiées, vitesse et mémoire, benchmarks publics, évaluation finale sur le jeu secret, juge ouvert et contrôle humain), environ 15 h de GPU ; points d'arrêt ; recette fixée ; phase 4 ensuite. En attente de l'accord de l'auteur.

@@ -558,3 +558,13 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - dev2 est plus difficile que `dev/` (base 0,71 contre 0,86) : plus de cas où il faut appliquer une règle, et des fautes de français plus discrètes.
 - Relecture des 6 extractions perdues par le lot 3 : le défaut connu se confirme. V013 (vol de 2 800 km) et V025 (complément d'impôt à calculer) commencent par « il n'est pas possible de répondre » alors que la règle est dans le document ; V021 applique la règle mais se trompe d'année (2026 au lieu de 2027) ; V031 lit la mauvaise colonne d'un tableau dont l'en-tête est décalé dans la fiche.
 - **[mesuré]** Génération médiane du lot 3 sur dev2 : 5,1 jetons/s. Durée : 52 min pour la base, 1 h 43 pour le lot 3 (réponses plus longues).
+
+### 25 octobre 2026, 5 h 50 : lot 4 entraîné sur Kaggle
+
+- **[mesuré]** `localia-lora-2b-lot4` : 4 094 exemples, 512 pas en 21 163 s (5 h 53, 41 s par pas), sans interruption. RAM stable à 3,2 Go jusqu'au bout : la correction de la fuite tient sur un entraînement complet. GGUF Q4_K_M de 1,31 Go rapatrié sur le Mac (SHA-256 `465a0ee1…`).
+- **[mesuré]** Jeu de développement (`dev/`, 60 cas) sur GPU : **S_doc 0,855** (lot 3 : 0,884 ; base : 0,854). Par catégorie : extraction **0,97** (lot 3 : 0,81), incohérence 0,95, synthèse 0,90, citation 0,875, qualité du français 0,81, abstention 0,80 (lot 3 : 0,90), rédaction 0,68.
+- Cas qui changent par rapport au lot 3 (GPU) : les abstentions à tort visées sont corrigées, D007 (taux de 6,45 % sur 18 ans) et D025 passent de 0 à 1. Perdus : D046, D028, D035.
+  - D046 : la réponse « L'information demandée n'est pas dans le document fourni. » est une bonne abstention, mais `noter.py` ne reconnaît pas cette tournure. Défaut du noteur, laissé tel quel pour garder les scores comparables (sans lui, l'abstention serait à 0,90).
+  - D035 : la lettre parle d'un « titre de séjour » au lieu d'une pièce d'identité, et ne nomme pas le destinataire.
+  - D028 : le modèle croit qu'il manque « de » au lieu de « plein ».
+- Notation sur le Mac (`dev2` puis `dev`) en cours.

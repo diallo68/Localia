@@ -51,6 +51,7 @@ def main():
     ap.add_argument("--ids")
     ap.add_argument("--limite", type=int)
     ap.add_argument("--delai", type=int, default=1800, help="attente maximale par cas (contexte long : plusieurs heures)")
+    ap.add_argument("--messages", help="messages précalculés par cas (jsonl {id, messages}), par exemple ceux de Localia")
     a = ap.parse_args()
 
     cas = [json.loads(l) for l in open(os.path.join(a.dossier, "cas.jsonl"), encoding="utf-8")]
@@ -61,6 +62,9 @@ def main():
     if os.path.exists(a.sortie):
         faits = {json.loads(l)["id"] for l in open(a.sortie, encoding="utf-8") if l.strip()}
     cle = os.environ.get(a.cle_env) if a.cle_env else None
+    precalcules = None
+    if a.messages:
+        precalcules = {x["id"]: x["messages"] for x in map(json.loads, open(a.messages, encoding="utf-8")) if x}
 
     n = 0
     for c in cas:
@@ -68,9 +72,12 @@ def main():
             continue
         if a.limite and n >= a.limite:
             break
-        doc = open(os.path.join(a.dossier, "documents", c["doc"] + ".md"), encoding="utf-8").read()
-        messages = [{"role": "system", "content": CONSIGNE_SYSTEME},
-                    {"role": "user", "content": f"Document :\n\n{doc}\n\n---\n\nDemande : {c['consigne']}"}]
+        if precalcules is not None:
+            messages = precalcules[c["id"]]
+        else:
+            doc = open(os.path.join(a.dossier, "documents", c["doc"] + ".md"), encoding="utf-8").read()
+            messages = [{"role": "system", "content": CONSIGNE_SYSTEME},
+                        {"role": "user", "content": f"Document :\n\n{doc}\n\n---\n\nDemande : {c['consigne']}"}]
         try:
             texte, usage, timings, duree = appeler(a.url, a.modele, messages, cle, delai=a.delai)
             erreur = None

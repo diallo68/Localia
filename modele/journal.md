@@ -659,3 +659,11 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 ### 25 octobre 2026, 15 h : plan 2.7 soumis à l'auteur
 
 - `plan-phase3.md` : 0 € de dépense (Mac et Kaggle) ; étapes 3.1 à 3.6 (note du lot 5, lot 6 par réponses de l'élève vérifiées, vitesse et mémoire, benchmarks publics, évaluation finale sur le jeu secret, juge ouvert et contrôle humain), environ 15 h de GPU ; points d'arrêt ; recette fixée ; phase 4 ensuite. **Validé par l'auteur (« ok »).**
+
+### 25 octobre 2026, 15 h 40 : étape 3.1 préparée, mesure avec les messages exacts de Localia
+
+- `eval/outils/messages_localia.cjs` : pour chaque cas, la fiche est convertie en PDF (cupsfilter), lue par `extractPdf` de Localia, puis `documentMessages` (src/chat.cjs) choisit les extraits et ajoute la consigne système de Localia, exactement comme dans une conversation avec un PDF joint (budget de 8 192 jetons). Évaluation seulement : ces consignes ont été écrites avec Claude et n'entrent jamais dans l'entraînement.
+  - Deux artefacts de la conversion en PDF, propres à cupsfilter : plusieurs espaces entre les mots (ramenés à un seul) et des mots coupés en fin de ligne sans trait d'union (laissés tels quels ; ils peuvent gêner les citations exactes).
+  - **[mesuré]** dev2 : 30 cas sur 138 où Localia ne transmet que des extraits (document trop long pour le budget).
+- `executer.py` : option `--messages` pour envoyer des messages précalculés ; sans elle, rien ne change.
+- Lancé sur le Mac : base puis lot 4 (GGUF au gabarit sans réflexion), dev2 puis dev. Le lot 5 suivra.

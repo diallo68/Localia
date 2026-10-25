@@ -632,3 +632,8 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - L'écart avec les plus gros tient surtout à **l'extraction** : 0,71 contre 0,96 à 0,98, soit les cas où il faut appliquer une règle ou lire un tableau. C'est la cible du lot 5.
   - Sur l'incohérence, seul Qwen3.8 fait bien (0,92) ; les autres sont entre 0,48 et 0,67, comme le lot 4.
   - Les niveaux annoncés dans `criteres.md` ne sont pas atteints contre Mistral Small, Gemma 4 et Qwen3.8 (écarts significatifs au-delà de la marge de 3 points).
+
+### 25 octobre 2026, 11 h 30 : place disque libérée (accord de l'auteur)
+
+- Disque du Mac plein à 99 % (2,4 Go libres). Avec l'accord de l'auteur, suppression de fichiers du défi en double ou abandonnés, tous récupérables : ancien GGUF du lot 4 (mêmes poids que la version au gabarit sans réflexion), GGUF du lot 2, deux LoRA du pilote 2.5, Qwen3.5-4B IQ4_XS et Q4_K_S, Ministral 3B. Empreintes relevées avant suppression dans `~/localia-labo/modele-compact/supprimes-20261025.txt`. Modèles Ollama de l'auteur non touchés.
+- **[mesuré]** 16 Go libres après suppression.

@@ -14,7 +14,7 @@ import json
 import random
 
 PART_FAUSSE_ALERTE = 1.0
-TYPES_MULTIPLES = {"application"}  # lot 4
+TYPES_MULTIPLES = {"application", "tableau"}  # lots 4 et 5
 
 
 def main():

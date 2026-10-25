@@ -637,3 +637,13 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 
 - Disque du Mac plein à 99 % (2,4 Go libres). Avec l'accord de l'auteur, suppression de fichiers du défi en double ou abandonnés, tous récupérables : ancien GGUF du lot 4 (mêmes poids que la version au gabarit sans réflexion), GGUF du lot 2, deux LoRA du pilote 2.5, Qwen3.5-4B IQ4_XS et Q4_K_S, Ministral 3B. Empreintes relevées avant suppression dans `~/localia-labo/modele-compact/supprimes-20261025.txt`. Modèles Ollama de l'auteur non touchés.
 - **[mesuré]** 16 Go libres après suppression.
+
+### 25 octobre 2026, 13 h 30 : lot 5 généré, vérifié, assemblé ; entraînement lancé
+
+- **[mesuré]** Professeur : 5a, 162 fiches, phase B 603 tâches en 11 918 s ; 5b, 234 fiches, dont 188 retenues par le professeur comme portant sur la même règle (46 écartées), phase B 376 tâches en 6 140 s.
+- **[mesuré]** Vérification :
+  - 5b : incohérence éloignée 175 / 188 gardées (7 % de rejet), fausse alerte 123 / 188 (24 fausses alertes, 19 trop longues).
+  - 5a : 163 / 603 au premier passage, dont 256 rejets « simple lecture du document ». Relus : ce sont de bons exemples (salaire d'exactement 4 005 € en tranche 1, conducteur de 77 ans dans la ligne « plus de 76 ans »), car choisir la bonne ligne est la compétence visée. Le contrôle est adapté pour le type tableau : une lecture directe est acceptée si le résultat figure dans la ligne recopiée. **374 / 603** gardées.
+  - Relecture d'un échantillon gardé : contradictions réelles, citées avec les deux passages, sans trace de l'information réservée ; fausses alertes qui concluent à la cohérence en citant les passages ; tableaux qui nomment la ligne utilisée.
+- Assemblage : le type `tableau` garde un exemple par demande ; les incohérences et fausses alertes de 5b prennent les types `incoherence_loin` et `fausse_alerte_loin`, pour ne pas remplacer celles des lots précédents sur les mêmes fiches. **4 766 exemples** sur 939 fiches, aucune fiche d'évaluation.
+- Noyau `mohadial/localia-lora-2b-lot5` lancé (dataset privé `localia-exemples-lot5`), même recette que le lot 4. **[calculé]** 596 pas à environ 41 s, soit 6 h 50, plus la fusion et le jeu de développement. **[supposé]** Le quota hebdomadaire de Kaggle sera presque épuisé à la fin (environ 22 h utilisées depuis samedi).

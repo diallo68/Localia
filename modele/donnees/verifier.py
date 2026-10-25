@@ -17,7 +17,8 @@ Contrôles par type :
   les éléments de la réponse juste ;
 - contraste (lot 4) : question d'abstention posée sur le document intact ; pas d'abstention, et au moins un
   des nombres du paragraphe P dans la réponse ;
-- tableau (lot 5) : mêmes contrôles qu'application, la règle étant une ligne de tableau recopiée ;
+- tableau (lot 5) : mêmes contrôles qu'application, la règle étant une ligne de tableau recopiée ; une lecture
+  directe (sans calcul) est acceptée si le résultat figure dans la ligne ;
 - incoherence (lot 5, contradiction éloignée) : contrôles d'incoherence, et aucune trace de l'information réservée
   donnée au professeur en phase B ;
 - application (lot 4) : la règle annoncée en phase A figure dans le document, le calcul annoncé donne bien le
@@ -223,7 +224,12 @@ def verifier(t, fiche, dem):
         res = noter.normaliser(str(a.get("resultat", "")))
         n_res = nombres(res)
         sans_operation = not re.search(r"\d\s*[-+*/]\s*[\d(]", str(a.get("calcul", "")))
-        if n_res and sans_operation and n_res <= nombres(t["document"]):
+        if n_res and sans_operation and typ == "tableau":
+            # lot 5 : choisir la bonne ligne est la compétence visée ; une lecture directe est acceptée si le
+            # résultat est bien dans la ligne recopiée (relu : âge ou salaire juste à la limite d'une tranche)
+            if not n_res <= nombres(str(a.get("regle", ""))):
+                return "résultat absent de la ligne"
+        elif n_res and sans_operation and n_res <= nombres(t["document"]):
             return "simple lecture du document"
         if a.get("calcul") and not re.search(r"[a-zà-ÿ]", str(a["calcul"]).lower()):  # un calcul en lettres est ignoré
             v = evaluer(a["calcul"])

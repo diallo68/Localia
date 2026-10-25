@@ -611,3 +611,24 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** Essai réel dans Localia (application lancée par Playwright, aucune simulation) : fiche F35898 de dev2 en PDF, question V025. Pièce lue (2 pages), réponse en 60 s, vérifications automatiques de Localia passées. Mais la réponse est une abstention à tort : « il est impossible de répondre », alors que 2 700 − 12 × 200 = 300 €, prélevés en septembre.
   - **[supposé]** La consigne système de Localia (« Tu aides à vérifier un document… Distingue les faits du texte, tes déductions et les informations non vérifiables ») pousse le modèle vers la prudence. Le refus n'est pourtant pas propre à Localia : avec la consigne d'`executer.py`, le même modèle refusait déjà V025 dans llama-server sur le Mac ; seul l'essai direct dans Ollama, avec une consigne courte, a répondu, et faux (2 500 €).
   - Conséquence : il faut aussi mesurer le modèle avec les vraies consignes de Localia. Ces consignes ne peuvent pas entrer dans les données d'entraînement (elles ont été écrites avec Claude) ; les consignes système des lots restent rédigées par le professeur, en couvrant aussi les situations de Localia (vérification, citation des pages).
+
+### 25 octobre 2026, 11 h : comparateurs de 24 à 31 Md sur dev2 (Kaggle)
+
+- Noyau `localia-comparateurs-dev2` (même script que pour `dev/`, dataset privé `localia-eval-dev2`, `executer.py` du dépôt, sans réflexion, température 0). Réponses utilisées pour l'évaluation seulement.
+- **[mesuré]** dev2 (138 cas), noteur corrigé ; comparateurs sur GPU (Kaggle), nos modèles sur le Mac :
+
+  | Modèle | S_doc | par cas | extraction | incohérence | abstention | rédaction |
+  |---|---|---|---|---|---|---|
+  | Base 2B | 0,712 | 0,742 | 0,75 | 0,65 | 0,77 | 0,58 |
+  | Lot 4 (2B) | 0,796 | 0,786 | **0,71** | 0,56 | 0,95 | 0,75 |
+  | Gemma 3 27B | 0,800 | 0,871 | 0,97 | 0,48 | 0,86 | 0,75 |
+  | Mistral Small 3.2 24B | 0,843 | 0,897 | 0,97 | 0,56 | 0,91 | 0,83 |
+  | Gemma 4 31B | 0,913 | 0,938 | 0,98 | 0,67 | 0,91 | 0,92 |
+  | Qwen3.8 27B | 0,943 | 0,955 | 0,96 | 0,92 | 1,00 | 0,88 |
+
+- **[calculé]** Écart par cas, lot 4 moins comparateur (bootstrap par fiche) : Gemma 3 27B −0,086 [−0,189 ; +0,013] ; Mistral Small −0,111 [−0,191 ; −0,040] ; Gemma 4 −0,153 [−0,245 ; −0,066] ; Qwen3.8 −0,169 [−0,252 ; −0,098].
+- Lecture :
+  - Le lot 4 égale Gemma 3 27B sur S_doc (moyenne des catégories), mais pas par cas, car les extractions (56 cas sur 138) pèsent lourd par cas.
+  - L'écart avec les plus gros tient surtout à **l'extraction** : 0,71 contre 0,96 à 0,98, soit les cas où il faut appliquer une règle ou lire un tableau. C'est la cible du lot 5.
+  - Sur l'incohérence, seul Qwen3.8 fait bien (0,92) ; les autres sont entre 0,48 et 0,67, comme le lot 4.
+  - Les niveaux annoncés dans `criteres.md` ne sont pas atteints contre Mistral Small, Gemma 4 et Qwen3.8 (écarts significatifs au-delà de la marge de 3 points).

@@ -680,3 +680,9 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   | Lot 4, `executer.py` | 0,895 | 0,796 | 0,840 | 0,76 | 0,97 |
 
 - Lecture : l'avance du lot 4 sur la base est la même dans les deux conditions (+0,058 et +0,056 par cas). Le refus vu dans l'essai de Localia (V025) n'est pas général : 5 réponses sur 138 de dev2 commencent par un refus, abstentions attendues comprises. La consigne de Localia ne pénalise pas le modèle.
+
+### 25 octobre 2026, 20 h 30 : lot 5 entraîné
+
+- **[mesuré]** `localia-lora-2b-lot5` : 596 pas en 25 222 s (7 h), RAM stable à 3,3 Go. GGUF rapatrié, gabarit sans réflexion appliqué (empreintes dans `provenance.md`).
+- **[mesuré]** dev (60 cas), GPU : **S_doc 0,874** (lot 4 : 0,883 avec le noteur corrigé). Abstention 1,00, incohérence 1,00, extraction 0,92, synthèse 0,90, citation 0,875, qualité du français 0,81, rédaction 0,61 (lot 4 : 0,68).
+- Notation sur le Mac (dev2 et dev, avec `executer.py` puis avec les messages de Localia) en cours.

@@ -99,6 +99,9 @@ Les 147 questions de la banque Localia (`benchmark/banque/`), plus 60 cas nouvea
 | Mémoire vive à 8k | ≤ 4 Go (pic) | `/usr/bin/time -l` sur llama-cli ; contrôle dans Ollama |
 | Import Ollama et Localia | fonctionne | Modelfile, essai dans Localia |
 | Décontamination | 0 recouvrement de 13-grammes entre l'entraînement et les jeux d'évaluation ; aucune paire MinHash > 0,5 non expliquée ; 50 vérifications manuelles | script publié |
+
+**Amendement du 25 octobre 2026, avant toute ouverture du jeu secret** (voir `decontamination.md`) : les fiches de Service-Public partagent des paragraphes entiers, si bien que « 0 recouvrement de 13-grammes » n'est pas tenable à la lettre. Le contrôle devient : aucune paire de documents au-dessus de 0,5 (Jaccard exact), et repérage des cas dont une valeur attendue tombe dans un passage partagé. Le score principal sur le jeu secret est calculé sans ces cas (6 sur 240 pour le lot 5) ; le score sur les 240 cas est publié à côté.
+
 | Provenance | 100 % des sources inscrites dans `provenance.md` | relecture |
 | Régression générale | MMMLU-fr ≥ base − 2 points ; MGSM-fr ≥ base − 3 points ; IFEval-fr ≥ base | |
 

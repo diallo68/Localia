@@ -647,3 +647,11 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - Relecture d'un échantillon gardé : contradictions réelles, citées avec les deux passages, sans trace de l'information réservée ; fausses alertes qui concluent à la cohérence en citant les passages ; tableaux qui nomment la ligne utilisée.
 - Assemblage : le type `tableau` garde un exemple par demande ; les incohérences et fausses alertes de 5b prennent les types `incoherence_loin` et `fausse_alerte_loin`, pour ne pas remplacer celles des lots précédents sur les mêmes fiches. **4 766 exemples** sur 939 fiches, aucune fiche d'évaluation.
 - Noyau `mohadial/localia-lora-2b-lot5` lancé (dataset privé `localia-exemples-lot5`), même recette que le lot 4. **[calculé]** 596 pas à environ 41 s, soit 6 h 50, plus la fusion et le jeu de développement. **[supposé]** Le quota hebdomadaire de Kaggle sera presque épuisé à la fin (environ 22 h utilisées depuis samedi).
+
+### 25 octobre 2026, 14 h 30 : décontamination complète (lot 5)
+
+- `donnees/decontaminer.py` et `decontamination.md` : 13-grammes, Jaccard exact sur 5-grammes, voisins sémantiques e5-small, repérage des réponses attendues tombant dans un passage partagé, 50 vérifications manuelles.
+- **[mesuré]** Aucune paire de documents au-dessus de 0,5. Aucun 13-gramme commun non banal entre les cas du jeu secret et l'entraînement.
+- Erreur trouvée : deux fiches de dev2 (F348, F35755) sont proches de fiches d'entraînement (F14840 : Jaccard 0,41). Cas touchés : 3 dans dev, 7 dans dev2, 6 dans le secret. Vérification manuelle : 2 fuites réelles (V037, V093), 2 risques d'interférence (S038, S009), le reste sans rapport.
+- **[mesuré]** Sans les cas touchés de dev et dev2 (188 cas) : base 0,784, lot 3 0,816, lot 4 0,840 ; lot 4 − base +0,057 [−0,002 ; +0,115]. Les conclusions tiennent.
+- `criteres.md` amendé avant l'ouverture du jeu secret : score principal sans les cas touchés, score complet publié à côté.

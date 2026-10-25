@@ -1,0 +1,4 @@
+Jeu : dev2
+Cas : 138 ; documents : 23
+Catégories : abstention 22, citation 21, extraction 56, incoherence 5, incoherence_fausse_alerte 7, qualite_fr 12, redaction 6, synthese 9
+SHA-256 (cas.jsonl + documents) : 283adbd55f99b5241e1043faadcc72f7119a0ce4ddee9c6983fefd62e0611e98

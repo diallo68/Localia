@@ -50,3 +50,27 @@ dev:sp-F34283
 dev:sp-F38054
 dev:sp-F707
 dev:sp-F848
+# Jeu de développement élargi (dev2, 25 oct. 2026)
+dev:sp-F10977
+dev:sp-F12484
+dev:sp-F13919
+dev:sp-F16033
+dev:sp-F16494
+dev:sp-F1702
+dev:sp-F1744
+dev:sp-F20688
+dev:sp-F219
+dev:sp-F2252
+dev:sp-F2651
+dev:sp-F3136
+dev:sp-F33967
+dev:sp-F34781
+dev:sp-F348
+dev:sp-F35755
+dev:sp-F35898
+dev:sp-F35951
+dev:sp-F38201
+dev:sp-F714
+dev:sp-F86
+dev:sp-F934
+dev:sp-F966

@@ -4,6 +4,7 @@
 - `outils/assembler_jeu.py` : assemblage d'un jeu de cas (`cas/lot*.py` → `cas.jsonl`) et calcul de son empreinte SHA-256 (cas + documents).
 - `outils/noter.py` : notation automatique (premier filtre ; voir `../criteres.md` pour le juge ouvert et le contrôle humain).
 - `dev/` : jeu de **développement** (60 cas, 10 fiches Service-Public). Il sert aux choix intermédiaires ; ses scores ne sont jamais présentés comme résultats. Empreinte : voir `dev/EMPREINTE.txt`.
+- `dev2/` : jeu de **développement élargi** (138 cas, 23 autres fiches Service-Public jamais utilisées, 25 oct. 2026), écrit à la main comme `dev/` et non par le professeur, pour ne pas favoriser les modèles entraînés sur ses questions. Plus d'extractions où il faut appliquer une règle (calcul, date, seuil). Deux fiches modifiées pour une contradiction contrôlée (indiqué en tête de `cas/lot06.py` et `cas/lot07.py`). Mêmes règles d'usage que `dev/`. Empreinte : `dev2/EMPREINTE.txt`.
 - Jeu **secret** (240 cas, 40 documents) : hors du dépôt, empreinte dans `../criteres.md`.
 - `exclusions-entrainement.txt` : documents à exclure de toute donnée d'entraînement.
 

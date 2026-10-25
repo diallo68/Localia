@@ -568,3 +568,22 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - D035 : la lettre parle d'un « titre de séjour » au lieu d'une pièce d'identité, et ne nomme pas le destinataire.
   - D028 : le modèle croit qu'il manque « de » au lieu de « plein ».
 - Notation sur le Mac (`dev2` puis `dev`) en cours.
+
+### 25 octobre 2026, 8 h 15 : lot 4 sur 198 cas (Mac), noteur corrigé pour une tournure d'abstention
+
+- Correction de `noter.py` : la tournure « L'information (demandée) n'est pas dans le document (fourni). », propre au lot 4, n'était pas reconnue comme une abstention. Ajout de « n'est pas dans le document » et « ne se trouve pas dans le document » aux marqueurs. **[mesuré]** Toutes les réponses déjà produites (`dev/` et `dev2`, base, lots 2.5 à 4, comparateurs) ont été renotées avec l'ancien et le nouveau noteur : seules celles du lot 4 changent (dev2 0,758 → 0,797 ; dev Mac 0,867 → 0,895 ; dev GPU 0,855 → 0,883). Les autres scores du journal restent valables.
+- **[mesuré]** Sur le Mac, noteur corrigé :
+
+  | | dev (60) | dev2 (138) | moyenne par cas (198) |
+  |---|---|---|---|
+  | Base | 0,863 | 0,712 | 0,778 |
+  | Lot 3 final | 0,856 | 0,766 | 0,805 |
+  | **Lot 4** | **0,895** | **0,797** | **0,823** |
+
+- **[calculé]** Écarts par cas sur 198 cas (bootstrap par fiche, 5 000 tirages) : lot 4 − base +0,045, IC 95 % [−0,019 ; +0,105] ; lot 4 − lot 3 +0,019 [−0,038 ; +0,071] ; lot 3 − base +0,027 [−0,038 ; +0,090]. Le lot 4 est le meilleur modèle à ce jour, mais aucun écart n'est encore significatif.
+- dev2, par catégorie, lot 4 : abstention 0,95, synthèse 0,96, citation 0,88, rédaction 0,75 (lot 3 : 0,50), qualité du français 0,75, **extraction 0,71**, **incohérence 0,56**.
+- Relecture des reculs du lot 4 sur dev2 : le modèle ne refuse plus de répondre, mais il se trompe dans l'application des règles.
+  - Mauvaise ligne de tableau : V037 (taux de 6 % : 4 833,20 €, montant du taux de 9 %), V049 (barème de l'usufruit : tranche de moins de 61 ans pour un usufruitier de 67 ans), V061 (1 400 € au lieu de 950 €).
+  - Calcul ou condition faux : V038 (taux de 60 % ramené à 30 % au lieu de 40 %), V133 (« 5 000 € est inférieur ou égal à 1 000 € »).
+  - Incohérences insérées non vues : V041 et V071, où le modèle répond « le document est cohérent » en ne lisant qu'un des deux passages.
+- **[supposé]** Le lot 4 a appris à appliquer une règle plutôt qu'à refuser, mais pas à vérifier qu'il a choisi la bonne ligne ou la bonne condition. Pistes pour un lot 5 : des cas « application » sur des tableaux à plusieurs lignes et des seuils, vérifiés par le calcul ; davantage d'incohérences insérées loin l'une de l'autre dans le document.

@@ -22,6 +22,7 @@ MARQUEURS_ABSTENTION = [
     "aucune donnee", "pas de donnee", "ne le precise", "n'en parle pas", "ne l'indique pas", "n'est pas mentionne",
     "n'apparait pas", "aucun chiffre", "n'est pas donne", "pas donne", "absent du document", "ne comporte pas",
     "je ne trouve pas", "introuvable", "non precise", "non indique", "non mentionne", "ne renseigne pas",
+    "n'est pas dans le document", "ne se trouve pas dans le document",  # tournure du lot 4 (25 oct. 2026)
 ]
 MARQUEURS_SIGNAL = [
     "incoheren", "contradict", "divergen", "erreur", "ne correspond pas", "ne concorde", "incompatible",

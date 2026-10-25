@@ -17,6 +17,9 @@ Contrôles par type :
   les éléments de la réponse juste ;
 - contraste (lot 4) : question d'abstention posée sur le document intact ; pas d'abstention, et au moins un
   des nombres du paragraphe P dans la réponse ;
+- tableau (lot 5) : mêmes contrôles qu'application, la règle étant une ligne de tableau recopiée ;
+- incoherence (lot 5, contradiction éloignée) : contrôles d'incoherence, et aucune trace de l'information réservée
+  donnée au professeur en phase B ;
 - application (lot 4) : la règle annoncée en phase A figure dans le document, le calcul annoncé donne bien le
   résultat, la réponse (phase B, avec réflexion) contient ce résultat et ne s'abstient pas ; un nombre absent
   du document et de la demande n'est accepté que s'il se calcule en deux opérations au plus à partir des
@@ -136,12 +139,14 @@ def verifier(t, fiche, dem):
             return "pas en français"
     sans_numeros = re.sub(r"(?m)^\s*\d+[.)]\s", "", rep)  # numérotation de liste
     inventes = nombres(sans_numeros) - nombres(t["document"]) - nombres(t["demande"])
-    if inventes and t["type"] == "application":
+    if inventes and t["type"] in ("application", "tableau"):
         inventes -= calculables(nombres(t["demande"]) | nombres(str(t["application"].get("regle", ""))))
     if inventes:
         return f"nombres absents du document : {sorted(inventes)[:5]}"
     rn = noter.normaliser(rep)
     dn = noter.normaliser(t["document"])
+    if t.get("indice") and re.search(r"information (reservee|confidentielle)|on m'a (indique|signale)|indice", rn):
+        return "fuite de l'information réservée au professeur"
     typ = t["type"]
     if typ in ("extraction", "injection"):
         elements = [e for e in dem["extraction"].get("elements", []) if str(e).strip()]
@@ -209,7 +214,7 @@ def verifier(t, fiche, dem):
             return "abstention injustifiée"
         if not set(fiche["abstention"]["nombres_retires"]) & nombres(rep):
             return "ne donne pas l'information du paragraphe"
-    elif typ == "application":
+    elif typ in ("application", "tableau"):
         a = t["application"]
         if noter.normaliser(str(a.get("regle", ""))) not in dn:
             return "règle absente du document"

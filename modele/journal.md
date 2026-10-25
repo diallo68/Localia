@@ -587,3 +587,18 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - Calcul ou condition faux : V038 (taux de 60 % ramené à 30 % au lieu de 40 %), V133 (« 5 000 € est inférieur ou égal à 1 000 € »).
   - Incohérences insérées non vues : V041 et V071, où le modèle répond « le document est cohérent » en ne lisant qu'un des deux passages.
 - **[supposé]** Le lot 4 a appris à appliquer une règle plutôt qu'à refuser, mais pas à vérifier qu'il a choisi la bonne ligne ou la bonne condition. Pistes pour un lot 5 : des cas « application » sur des tableaux à plusieurs lignes et des seuils, vérifiés par le calcul ; davantage d'incohérences insérées loin l'une de l'autre dans le document.
+
+### 25 octobre 2026, 9 h 30 : lot 5 préparé (tableaux et contradictions éloignées)
+
+- Cible : les défauts du lot 4 mesurés sur dev2 (mauvaise ligne de tableau, calcul faux, contradiction éloignée non vue).
+- `donnees/fabriquer_lot5.py` (opérations mécaniques seulement) :
+  - **5a, tableau** : 162 fiches avec au moins un tableau Markdown de 3 lignes chiffrées ou plus. Une fiche déjà utilisée dans un lot précédent peut servir, car le type de tâche est nouveau.
+  - **5b, contradiction éloignée** : 234 fiches. Un nombre suivi d'une unité est changé à une occurrence, située à au moins 25 % de la longueur du document d'une autre occurrence de la même valeur. Les grands montants sont doublés plutôt qu'augmentés de 1.
+  - Relecture d'un échantillon de 5b : une bonne part des paires ne se contredisent pas vraiment (« 12 mois » d'ancienneté et « 12 mois » de validité). Deux filtres sont donc ajoutés : les deux phrases doivent partager au moins 30 % de leurs mots, puis le professeur dit en phase A si elles énoncent la même règle (sinon la fiche est écartée).
+  - Les fiches de tous les jeux d'évaluation, dev2 compris, sont écartées (vérifié : 0 sur 396).
+- `donnees/professeur_lot5_kaggle.py` : même professeur (Qwen3.6-35B-A3B). Trois types de tâches :
+  - **tableau** : 4 situations par fiche, proches d'une limite entre deux lignes ; ligne recopiée, résultat et calcul en phase A ; réponse avec réflexion en phase B ;
+  - **incohérence** : demande de vérification rédigée par le professeur. En phase B, il reçoit une information réservée (les deux passages et les deux valeurs), qui n'entre pas dans l'exemple : seuls la consigne système, le document, la demande et la réponse sont gardés ;
+  - **fausse alerte** : la même demande sur le document intact.
+- `verifier.py` : le type tableau reprend les contrôles d'application ; une réponse d'incohérence qui trahit l'information réservée (« information réservée », « indice »…) est rejetée. Essai à blanc avec des réponses factices : tableau gardé, incohérence gardée, réponse qui cite l'information réservée rejetée.
+- Datasets privés `localia-donnees-lot5a` et `lot5b` ; noyaux `localia-professeur-lot5a` et `lot5b` en file d'attente (une place GPU est prise par les comparateurs sur dev2).

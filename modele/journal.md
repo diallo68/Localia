@@ -686,3 +686,13 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** `localia-lora-2b-lot5` : 596 pas en 25 222 s (7 h), RAM stable à 3,3 Go. GGUF rapatrié, gabarit sans réflexion appliqué (empreintes dans `provenance.md`).
 - **[mesuré]** dev (60 cas), GPU : **S_doc 0,874** (lot 4 : 0,883 avec le noteur corrigé). Abstention 1,00, incohérence 1,00, extraction 0,92, synthèse 0,90, citation 0,875, qualité du français 0,81, rédaction 0,61 (lot 4 : 0,68).
 - Notation sur le Mac (dev2 et dev, avec `executer.py` puis avec les messages de Localia) en cours.
+
+### 26 octobre 2026, 1 h : lot 5 sur 198 cas (Mac), non retenu
+
+- **[mesuré]** 188 cas sans les cas touchés : `executer.py` — base 0,784, lot 4 0,840, lot 5 0,839 ; conditions de Localia — base 0,793, lot 4 0,851, lot 5 0,790.
+- **[calculé]** Lot 5 − lot 4 : −0,002 [−0,043 ; +0,041] avec `executer.py` ; **−0,061 [−0,116 ; 0,000]** dans les conditions de Localia.
+- dev2, `executer.py` : le lot 5 corrige ce qu'il visait — incohérence 0,80 (lot 4 : 0,15), extraction 0,79 (lot 4 : 0,71) — mais recule ailleurs : fausses alertes 0,79 (0,86), qualité du français 0,67 (0,75), rédaction 0,67 (0,75), synthèse 0,87 (0,96).
+- Dans les conditions de Localia, les fausses alertes tombent à **0,43** (lot 4 : 1,00) : à une demande de vérification sur un passage cohérent, le lot 5 répond « oui, il y a une contradiction » (V033, V053). Il ne signale en revanche aucune incohérence spontanée hors des demandes de vérification (0 réponse sur 126).
+  - **[supposé]** Déséquilibre des données (175 incohérences éloignées contre 123 fausses alertes) et consigne de Localia (« Tu aides à vérifier un document ») qui oriente vers la recherche d'erreurs.
+- Décision (plan, étape 3.1) : **le lot 4 reste le modèle retenu.** Les données du lot 5 seront reprises au lot 6, rééquilibrées.
+- **[calculé]** Quota Kaggle de la semaine presque épuisé (environ 28 h sur 30) ; prochain entraînement après la remise à zéro du samedi 31 octobre vers 2 h.

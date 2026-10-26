@@ -696,3 +696,14 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - **[supposé]** Déséquilibre des données (175 incohérences éloignées contre 123 fausses alertes) et consigne de Localia (« Tu aides à vérifier un document ») qui oriente vers la recherche d'erreurs.
 - Décision (plan, étape 3.1) : **le lot 4 reste le modèle retenu.** Les données du lot 5 seront reprises au lot 6, rééquilibrées.
 - **[calculé]** Quota Kaggle de la semaine presque épuisé (environ 28 h sur 30) ; prochain entraînement après la remise à zéro du samedi 31 octobre vers 2 h.
+
+### 26 octobre 2026, 11 h : étape 3.3, vitesse et mémoire du lot 4 (processeur seul)
+
+- `mesures/vitesse-lot4.md` et `mesures/vitesse-lot4-vocfr48k.md` : llama-bench, `-ngl 0`, 8 fils, `-fa 0`, 64 jetons générés après 8 192 jetons de contexte, 3 passes alternées. Charge de la machine entre 11 et 15 (autres logiciels ouverts) ; le Mac bride le processeur à 50-54 % dès la 2e mesure.
+- **[mesuré]** Génération à 8k :
+  - base : 5,55 (processeur à 100 %), 4,53 et 4,16 jetons/s (bridé) ;
+  - lot 4 : 5,80 (100 %), puis 5,18, 4,66, 4,72, 4,24 et 3,87 jetons/s (bridé à 50-54 %) ;
+  - **lot 4 élagué (vocfr48k, 1,11 Go)** : 5,22 (100 %, mesure de tête), 5,35 et 4,94 jetons/s (bridé à 50-52 %).
+- **[calculé]** À bridage égal, l'élagage apporte de 13 à 28 % de vitesse ; le modèle élagué reste autour de 5 jetons/s même bridé, le modèle complet tombe à 3,9-4,7.
+- **[mesuré]** Pic de mémoire : 2,02 Go (lot 4), 1,77 Go (élagué), pour une limite de 4 Go.
+- Reste à faire : la qualité du lot 4 élagué sur dev et dev2 (à la phase 2.3, l'élagage coûtait 0,007 sur dev). S'il ne perd pas de qualité, c'est la version à livrer.

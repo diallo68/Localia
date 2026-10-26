@@ -707,3 +707,13 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[calculé]** À bridage égal, l'élagage apporte de 13 à 28 % de vitesse ; le modèle élagué reste autour de 5 jetons/s même bridé, le modèle complet tombe à 3,9-4,7.
 - **[mesuré]** Pic de mémoire : 2,02 Go (lot 4), 1,77 Go (élagué), pour une limite de 4 Go.
 - Reste à faire : la qualité du lot 4 élagué sur dev et dev2 (à la phase 2.3, l'élagage coûtait 0,007 sur dev). S'il ne perd pas de qualité, c'est la version à livrer.
+
+### 26 octobre 2026, 13 h : qualité du lot 4 élagué (étape 3.3), c'est la version à livrer
+
+- **[mesuré]** Messages exacts de Localia, llama-server sur le Mac, dev2 puis dev : lot 4 élagué (`…-sansreflexion-vocfr48k.gguf`) dev2 **0,795** (lot 4 : 0,795), dev **0,893** (0,900) ; 188 cas sans les cas touchés **0,849** (0,851).
+- **[calculé]** Élagué − complet : −0,002 [−0,005 ; 0,000] (bootstrap apparié, 10 000 tirages). 20 réponses sur 198 diffèrent d'au moins un jeton, une seule change de note : D059 (qualité du français, 1,00 → 0,67, l'accord « activités » n'est plus rétabli).
+- Décision : **le lot 4 élagué est la version à livrer** (même qualité, de 13 à 28 % plus rapide à bridage égal, 1,77 Go de RAM). L'élève du lot 6 reste le lot 4 complet, celui dont on entraîne les poids.
+
+### 26 octobre 2026, 13 h : lot 6 lancé (étape 3.2), réponses de l'élève
+
+- `donnees/generer_lot6.py` : 300 questions vérifiées, moitié application (lots 4a, 4b), moitié tableau (lot 5a) ; sans ce partage, le tableau (374 questions gardées contre 250) dominerait. 4 réponses par question, température 0,8, lot 4 dans Ollama. Sortie : `resultats/lot6/eleve_phase_b.jsonl`, à contrôler ensuite par `verifier.py`.

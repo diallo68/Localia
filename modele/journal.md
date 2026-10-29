@@ -717,3 +717,11 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 ### 26 octobre 2026, 13 h : lot 6 lancé (étape 3.2), réponses de l'élève
 
 - `donnees/generer_lot6.py` : 300 questions vérifiées, moitié application (lots 4a, 4b), moitié tableau (lot 5a) ; sans ce partage, le tableau (374 questions gardées contre 250) dominerait. 4 réponses par question, température 0,8, lot 4 dans Ollama. Sortie : `resultats/lot6/eleve_phase_b.jsonl`, à contrôler ensuite par `verifier.py`.
+
+### 29 octobre 2026, 21 h 30 : lot 6, réponses de l'élève vérifiées et relues
+
+- **[mesuré]** Génération : 1 200 réponses (300 questions × 4) en 32 164 s (8 h 56), toutes terminées. `verifier.py`, par lot d'origine : application 4a 168/292, 4b 207/308, tableau 5a 439/600, soit **814 justes (68 %)**. Par question : 33 sans aucune réponse juste, 35 avec 1, 35 avec 2, 79 avec 3, 118 avec 4. Rejets principaux : résultat absent de la réponse, oui ou non en désaccord avec le calcul vérifié.
+- Défaut trouvé à la relecture : des réponses justes mais fautives passent `verifier.py`, qui ne contrôle pas la langue (« le requalification », « valid en tant que CDD », « vous avez été né »). Sur 3 réponses tirées au hasard, 2 avaient des fautes. S'entraîner sur ses propres fautes renforcerait celles de l'élève ; le lot 5 reculait déjà en qualité du français.
+- `donnees/juger_francais.py` : Qwen3 8B (Apache 2.0, Ollama, température 0) répond FAUTE ou PROPRE ; il trie seulement et n'écrit aucun texte d'entraînement. Essai : 4 fautes signalées sur 12 réponses de l'élève et 2 sur 8 du professeur, dont une vraie (« étape parème »). Mistral Small 3.2 n'est pas sur le Mac (14 Go, au-delà de la limite de téléchargement).
+- `donnees/assembler_lot6.py` : lot 5, incohérences éloignées ramenées de 175 à 123 (autant que de fausses alertes éloignées, comme au lot 4), plus au plus 2 réponses justes et propres de l'élève par question, en plus de la réponse du professeur.
+- Chaîne automatique (`resultats/lot6/chaine-lot6.sh`, hors dépôt), pour ne pas dépendre de la disponibilité de Claude : assemblage, jeu de données Kaggle privé, noyau lancé le samedi 31 octobre à 2 h 15 (relancé toutes les 3 h s'il est refusé), GGUF rapatrié, gabarit sans réflexion, notation sur le Mac dans les deux conditions, comparaison avec le lot 4 sur les 188 cas.

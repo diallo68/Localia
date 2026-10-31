@@ -54,12 +54,13 @@ Les jeux publics produits avec GPT, par exemple les jeux de type Alpaca traduits
 
 | Benchmark | Licence | Remarque |
 |---|---|---|
-| FQuAD 1.1 / 2.0 | CC BY-NC-SA 3.0 | usage d'évaluation non commercial ; 2.0 contient des questions sans réponse |
+| FQuAD 1.1 / 2.0 | CC BY-NC-SA 3.0 | usage d'évaluation non commercial ; 2.0 contient des questions sans réponse. Étape 3.4 : échantillon FrenchBench `manu/fquad2_test` (800 questions, test, étiqueté Apache-2.0 sur HF, conditions d'origine de FQuAD retenues) |
 | PIAF (AgentPublic/piaf) | MIT (étiquette HF, 17 oct. 2026) | questions-réponses françaises |
 | Belebele (fra_Latn) | CC BY-SA 4.0 | compréhension de lecture, QCM |
-| IFEval-fr (le-leadboard) | non indiquée sur HF : **à clarifier avant usage** | suivi de consignes vérifiable |
+| IFEval-fr (le-leadboard) | non indiquée sur HF | **non utilisé** : annotations souvent sans rapport avec la consigne (journal, 1er nov. 2026) |
+| IFEval (google/IFEval) | Apache-2.0 (étiquette HF, 31 oct. 2026) | suivi de consignes vérifiable, en anglais ; remplace IFEval-fr à l'étape 3.4 |
 | MGSM (fr) | CC BY-SA 4.0 | déjà utilisé dans la banque Localia |
-| Global-MMLU (CohereLabs) / MMMLU (openai) | Apache-2.0 / MIT (étiquettes HF, 17 oct. 2026) | connaissances générales, garde-fou de régression |
+| Global-MMLU (CohereLabs) / MMMLU (openai) | Apache-2.0 / MIT (étiquettes HF, 17 oct. 2026) | connaissances générales, garde-fou de régression ; étape 3.4 : MMMLU FR-FR, 50 questions par matière |
 | French MT-Bench (bofenghuang) | Apache-2.0 (étiquette HF) | rédaction, avec juge ouvert |
 | Banque Localia (147 questions, documents fictifs) | interne | jeu de **développement** |
 | RGPD, règlement (UE) 2016/679, pages de la CNIL (20 oct. 2026), assemblé par `recherche/assembler_rgpd.py` | texte officiel de l'UE, réutilisation libre avec mention de la source | jeu `eval-long/rgpd` (hors dépôt) : 24 questions écrites par le professeur local `qwen36-fr-192` (Apache 2.0) avec preuve recopiée et vérifiée ; évaluation de la recherche de passages seulement |

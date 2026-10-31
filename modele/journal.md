@@ -733,3 +733,18 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Chaîne arrêtée avant l'assemblage (rien envoyé). **Choix de l'auteur** parmi trois options (professeur juge, lot 6 sans l'élève, garder tel quel) : **le professeur juge**.
 - `donnees/preparer_juge_lot6.py` : pour chaque réponse gardée, la règle ou la ligne, le résultat et le calcul vérifiés, et la réponse gardée du professeur comme référence (jeu privé `localia-eleve-lot6`, 814 réponses). `donnees/juge_lot6_kaggle.py` : Qwen3.6-35B-A3B avec réflexion dit si le raisonnement est juste de bout en bout et si le français est correct ; il trie seulement. Seules les réponses jugées justes et correctes entrent dans le lot 6.
 - **[calculé]** Quota : environ 3 h de plus pour le juge, soit environ 18 h 30 sur 30 pour la fin de la phase 3. La chaîne lance le juge samedi à 2 h 15, puis l'entraînement ; le résultat est attendu dimanche matin.
+
+### 31 octobre 2026, 22 h : lot 6 non retenu, le lot 4 élagué reste la version à livrer
+
+- **[mesuré]** Professeur juge (Qwen3.6-35B-A3B, Kaggle, 2 h 18 → 8 h 20, environ 6 h au lieu des 3 h prévues) : sur les 814 réponses de l'élève gardées par `verifier.py`, **290 justes et correctes, 524 écartées** (raisonnement faux ou français fautif, 64 %). Le contrôle automatique laissait passer bien plus d'erreurs que la relecture à la main ne le laissait penser.
+- **[mesuré]** Lot 6 assemblé : 4 958 exemples, dont 244 réponses de l'élève sur 163 questions (application 99, tableau 145) ; 52 incohérences éloignées retirées. Entraînement de 8 h 37 à environ 16 h 20 (même recette que le lot 5, depuis la base).
+- **[mesuré]** 188 cas de dev et dev2 sans les cas touchés :
+
+| | base | lot 4 | lot 6 | lot 6 − lot 4 |
+|---|---|---|---|---|
+| Messages de Localia | 0,793 | 0,851 | 0,842 | −0,008 [−0,051 ; +0,033] |
+| `executer.py` | – | 0,840 | 0,835 | −0,006 [−0,050 ; +0,037] |
+
+- Par catégorie (Localia) : le lot 6 gagne en qualité du français (0,84 contre 0,79) et en incohérences (0,70 contre 0,55, 5 cas), mais retombe sur les fausses alertes (0,80 contre 1,00, 10 cas) et la rédaction (0,69 contre 0,74). Avec `executer.py`, la rédaction recule aussi (0,66 contre 0,76).
+- Décision (règle fixée avant le résultat : retenir le lot 6 seulement s'il dépasse le lot 4 d'au moins 2 points) : **lot 6 non retenu ; le lot 4 élagué reste la version à livrer.** Les réponses de l'élève, même triées par le professeur, n'apportent rien de mesurable à cette taille de jeu.
+- **[calculé]** Quota GPU de la semaine : environ 13 h 45 utilisées sur 30 (juge 6 h, entraînement 7 h 45), il en reste environ 16 h pour les étapes 3.4 à 3.6.

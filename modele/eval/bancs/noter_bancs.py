@@ -12,7 +12,7 @@
   milliers et virgule décimale à la française) ; égalité avec la valeur attendue.
 
 Les deux séries doivent être complètes (aucune réponse manquante ni en erreur), sinon rien n'est comparé.
-Écart lot 4 − base : bootstrap apparié, 10 000 tirages, graine 0, regroupé par document (passage Belebele, article
+Écart de chaque modèle avec la base (reponses-base.jsonl) : bootstrap apparié, 10 000 tirages, graine 0, regroupé par document (passage Belebele, article
 FQuAD ; chaque question ailleurs), comme dans criteres.md, section 4.
 
 Usage : python3 -I noter_bancs.py <bancs.jsonl> <dossier des réponses> <dossier du code ifeval> [--details d.jsonl]
@@ -93,6 +93,7 @@ class IFEval:
         sys.path.insert(0, os.path.dirname(os.path.abspath(dossier)))
         paquet = os.path.basename(os.path.abspath(dossier))
         self.registre = importlib.import_module(f"{paquet}.instructions_registry").INSTRUCTION_DICT
+        importlib.import_module("langdetect").DetectorFactory.seed = 0  # langdetect est aléatoire sinon
         self.exceptions = 0
 
     def noter(self, attendu, prompt, reponse):
@@ -149,38 +150,41 @@ def main():
     details = sys.argv[sys.argv.index("--details") + 1] if "--details" in sys.argv else None
     questions = {q["id"]: q for q in map(json.loads, open(bancs, encoding="utf-8"))}
     ifeval = IFEval(code)
+    modeles = ["base"] + sorted(f[len("reponses-"):-len(".jsonl")] for f in os.listdir(dossier)
+                                if f.startswith("reponses-") and f != "reponses-base.jsonl")
     notes = {}
-    for modele in ("base", "lot4"):
+    for modele in modeles:
         rep = {r["id"]: r for r in map(json.loads, open(os.path.join(dossier, f"reponses-{modele}.jsonl"), encoding="utf-8"))}
         manquantes = sum(1 for i in questions if i not in rep or rep[i].get("erreur"))
         tronquees = sum(1 for r in rep.values() if r.get("fin") == "length")
         print(f"{modele} : {len(rep)} réponses, {manquantes} manquantes ou en erreur, {tronquees} tronquées")
         if manquantes:
             sys.exit(f"{modele} : série incomplète, relancer les appels manquants avant de comparer")
-        notes[modele] = {i: noter(q, rep.get(i, {}).get("texte", ""), ifeval) for i, q in questions.items()}
+        notes[modele] = {i: noter(q, rep[i]["texte"], ifeval) for i, q in questions.items()}
     print(f"exceptions du vérificateur IFEval (instruction non suivie) : {ifeval.exceptions}")
-    print(f"\n{'banc':10s} {'n':>5s} {'base':>7s} {'lot 4':>7s}  lot 4 − base [IC 95 %]")
     for banc in ("belebele", "fquad", "ifeval", "mgsm", "mmmlu"):
         ids = [i for i, q in questions.items() if q["banc"] == banc]
         x = [notes["base"][i][0] for i in ids]
-        y = [notes["lot4"][i][0] for i in ids]
-        bas, haut = bootstrap(list(zip(x, y)), [questions[i]["groupe"] for i in ids])
-        mx, my = sum(x) / len(x), sum(y) / len(y)
-        print(f"{banc:10s} {len(ids):5d} {mx:7.3f} {my:7.3f}  {my - mx:+.3f} [{bas:+.3f} ; {haut:+.3f}]")
-        if banc == "fquad":
-            for imp, nom in ((False, "avec réponse (F1)"), (True, "sans réponse (abstention)")):
-                sel = [i for i in ids if notes["base"][i][1]["impossible"] is imp]
-                print(f"  {nom:26s} {len(sel):4d} {sum(notes['base'][i][0] for i in sel) / len(sel):7.3f} "
-                      f"{sum(notes['lot4'][i][0] for i in sel) / len(sel):7.3f}")
-        if banc == "ifeval":
-            for m in ("base", "lot4"):
+        print(f"\n{banc} ({len(ids)} questions)")
+        for m in modeles:
+            y = [notes[m][i][0] for i in ids]
+            ligne = f"  {m:13s} {sum(y) / len(y):.3f}"
+            if m != "base":
+                bas, haut = bootstrap(list(zip(x, y)), [questions[i]["groupe"] for i in ids])
+                ligne += f"  − base : {(sum(y) - sum(x)) / len(ids):+.3f} [{bas:+.3f} ; {haut:+.3f}]"
+            if banc == "fquad":
+                for imp, nom in ((False, "F1 avec réponse"), (True, "abstention juste")):
+                    sel = [i for i in ids if questions[i]["attendu"]["impossible"] is imp]
+                    ligne += f" ; {nom} {sum(notes[m][i][0] for i in sel) / len(sel):.3f}"
+            if banc == "ifeval":
                 s = [v for i in ids for v in notes[m][i][1]["instructions"]]
-                print(f"  par instruction, {m:4s} : {sum(s) / len(s):.3f} ({len(s)})")
+                ligne += f" ; par instruction {sum(s) / len(s):.3f}"
+            print(ligne)
     if details:
         with open(details, "w", encoding="utf-8") as s:
             for i, q in questions.items():
-                s.write(json.dumps({"id": i, "banc": q["banc"], "base": notes["base"][i][0],
-                                    "lot4": notes["lot4"][i][0]}, ensure_ascii=False) + "\n")
+                s.write(json.dumps({"id": i, "banc": q["banc"], **{m: notes[m][i][0] for m in modeles}},
+                                   ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

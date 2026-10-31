@@ -105,6 +105,9 @@ Les 147 questions de la banque Localia (`benchmark/banque/`), plus 60 cas nouvea
 | Provenance | 100 % des sources inscrites dans `provenance.md` | relecture |
 | Régression générale | MMMLU-fr ≥ base − 2 points ; MGSM-fr ≥ base − 3 points ; IFEval-fr ≥ base | |
 
+**Amendement du 1er novembre 2026, avant tout résultat de l'étape 3.4** : IFEval-fr est mal annoté (journal, même date) ; le contrôle devient « IFEval (d'origine, anglais) ≥ base ».
+
+
 **Publié, sans seuil bloquant** : le temps avant le premier jeton pour un document de 6 000 jetons. Repère mesuré : Qwen3.5-2B lit 68 jetons/s à 8k, soit environ 90 s.
 
 ### Niveaux de résultat (sur S_doc, jeu secret)

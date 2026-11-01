@@ -1,7 +1,9 @@
 """Fait passer un jeu de cas à un modèle servi par une API compatible OpenAI (llama-server, Ollama, API distante).
 
 Conditions identiques pour tous les modèles (criteres.md) : sans réflexion, température 0, 600 jetons de sortie
-au plus, même consigne système. Reprise automatique : les cas déjà présents dans le fichier de sortie sont sautés.
+au plus, même consigne système. Reprise automatique : les cas déjà réussis sont sautés, les cas en erreur sont retentés (la ligne en erreur reste,
+la dernière ligne d'un cas fait foi). Raison de fin (« length » : 600 jetons atteints) et longueur d'une éventuelle
+réflexion enregistrées.
 
 Usage : python3 -I executer.py <dossier_jeu> <sortie.jsonl> --url http://127.0.0.1:8080/v1 --modele nom
         [--cle-env NOM_VARIABLE] [--ids S001,S002] [--limite N] [--delai SECONDES]
@@ -37,8 +39,12 @@ def appeler(url, modele, messages, cle=None, max_tokens=600, delai=1800):
     with urllib.request.urlopen(req, timeout=delai) as r:
         rep = json.loads(r.read().decode("utf-8"))
     duree = time.time() - t0
-    msg = rep["choices"][0]["message"]
-    return msg.get("content") or "", rep.get("usage", {}), rep.get("timings", {}), duree
+    choix = rep["choices"][0]
+    msg = choix["message"]
+    if msg.get("content") is None:
+        raise ValueError(f"réponse sans contenu (fin : {choix.get('finish_reason')})")
+    extra = {"fin": choix.get("finish_reason"), "reflexion_car": len(msg.get("reasoning_content") or "")}
+    return msg["content"], rep.get("usage", {}), {**rep.get("timings", {}), **extra}, duree
 
 
 def main():
@@ -60,7 +66,9 @@ def main():
         cas = [c for c in cas if c["id"] in voulus]
     faits = set()
     if os.path.exists(a.sortie):
-        faits = {json.loads(l)["id"] for l in open(a.sortie, encoding="utf-8") if l.strip()}
+        # Reprise : seuls les cas réussis sont sautés ; un cas en erreur est retenté (la ligne en erreur reste).
+        faits = {x["id"] for x in map(json.loads, filter(str.strip, open(a.sortie, encoding="utf-8")))
+                 if not x.get("erreur")}
     cle = os.environ.get(a.cle_env) if a.cle_env else None
     precalcules = None
     if a.messages:
@@ -86,7 +94,7 @@ def main():
         ligne = {"id": c["id"], "modele": a.modele, "reponse": texte, "duree_s": round(duree, 1),
                  "jetons_entree": usage.get("prompt_tokens"), "jetons_sortie": usage.get("completion_tokens"),
                  "lecture_jps": timings.get("prompt_per_second"), "generation_jps": timings.get("predicted_per_second"),
-                 "erreur": erreur}
+                 "fin": timings.get("fin"), "reflexion_car": timings.get("reflexion_car"), "erreur": erreur}
         with open(a.sortie, "a", encoding="utf-8") as f:
             f.write(json.dumps(ligne, ensure_ascii=False) + "\n")
         n += 1

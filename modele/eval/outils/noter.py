@@ -63,7 +63,16 @@ def normaliser(s):
 
 
 def contient(texte_n, variante):
-    return normaliser(variante) in texte_n
+    # Un nombre ne se trouve pas à l'intérieur d'un autre (« 24 » n'est pas dans « 240 » ni dans « 1,24 ») ;
+    # amendement du 1er novembre 2026, avant l'ouverture du jeu secret (journal).
+    v = normaliser(variante)
+    if not v:
+        return False
+    avant = r"(?<![\d])(?<![\d][.,])" if v[0].isdigit() else ""
+    # Zéros décimaux en plus (« 165,8 » dans « 165,80 ») ; milliers pour un entier (« 460 » dans « 460 000 »).
+    suite = "0*" if re.search(r"[.,]\d+$", v) else "(?:000)*"
+    apres = suite + r"(?![\d])(?![.,]\d)" if v[-1].isdigit() else ""
+    return re.search(avant + re.escape(v) + apres, texte_n) is not None
 
 
 def groupes_ok(texte_n, groupes):
@@ -199,7 +208,9 @@ def main():
     for l in open(chemin_rep, encoding="utf-8"):
         if l.strip():
             r = json.loads(l)
-            reps[r["id"]] = r["reponse"]
+            reps[r["id"]] = r  # la dernière ligne d'un cas fait foi (executer.py retente les erreurs)
+    erreurs = sorted(i for i, r in reps.items() if r.get("erreur"))
+    reps = {i: r["reponse"] for i, r in reps.items() if not r.get("erreur")}
     docs = {}
     par_cat = defaultdict(list)
     details = []
@@ -216,7 +227,8 @@ def main():
     moyennes = {k: sum(v) / len(v) for k, v in regroupe.items()}
     s_doc = sum(moyennes.values()) / len(moyennes)
     sortie = {"S_doc_auto": round(s_doc, 4), "par_categorie": {k: round(v, 4) for k, v in sorted(moyennes.items())},
-              "n_cas": len(cas), "n_repondus": sum(1 for c in cas if c["id"] in reps), "details": details}
+              "n_cas": len(cas), "n_repondus": sum(1 for c in cas if c["id"] in reps), "erreurs": erreurs,
+              "details": details}
     if len(sys.argv) > 3:
         json.dump(sortie, open(sys.argv[3], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(json.dumps({k: v for k, v in sortie.items() if k != "details"}, ensure_ascii=False, indent=1))

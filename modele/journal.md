@@ -809,3 +809,11 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 
 - Décision de l'auteur : on garde le **lot 4 élagué** (vocfr48k), déjà mesuré sur dev et dev2 (0,851). Le contrôle de régression de criteres.md, section 5, est déclaré **non tenu** : IFEval −5,9 et MGSM −7,2, seul MMMLU est tenu. Ce sera écrit tel quel dans le rapport final. En échange, la lecture progresse en français (FQuAD +19,0) comme en anglais (SQuAD +23,3, Belebele eng +3,3).
 - Pas de choix d'une LoRA atténuée après coup (aucune ne passe, et elles lisent moins bien). Aucun réentraînement.
+
+### 1er novembre 2026, 15 h : étape 3.5 préparée, relecture de Codex avant l'ouverture du jeu secret
+
+- Empreinte du jeu secret vérifiée : identique au gel du 17 octobre (`622aac13…`).
+- Codex a déconseillé le lancement de la première version (12 remarques, toutes vérifiées) : erreurs techniques notées 0 comme des réponses, serveur non identifié, jeu reconstruit sur Kaggle sans contrôle d'empreinte, statuts non vérifiés, tirage du bootstrap sans une catégorie, noteur qui trouvait « 24 » dans « 240 ». Corrigé : `executer.py` retente les erreurs et note la raison de fin ; `noter.py` respecte les frontières des nombres (aucune note de dev ni de dev2 ne change) ; `comparer_secret.py` écarte un modèle en erreur, vérifie les 240 cas et les 6 exclusions, refait les tirages incomplets ; noyaux et Mac servent le modèle sous un alias vérifié et enregistrent l'empreinte de chaque GGUF (`eval/outils/finale/`, `comparateurs_secret_kaggle.py`).
+- Comparateurs : « Rivalise » se juge sur Qwen3.5-9B, Gemma 3 12B, Mistral-Nemo 12B et Gemma 4 12B (le modèle retenu est le 2B) ; les 24 à 35 Md et les repères (Qwen3.5-4B, Ministral 3 3B, Phi-4-mini) sont publiés pour information.
+- Décisions de l'auteur, inscrites dans `criteres.md` avant l'ouverture : « au moins 5 (10) points » veut dire écart ≥ 5 (10) et borne basse > 0 ; FQuAD et Belebele ne passent aux comparateurs que si le lot 4 remplit déjà les conditions de S_doc de « Rivalise ».
+- Répétition en cours sans le jeu secret : les deux noyaux sur 5 cas de dev2 ; le Mac a été répété sur 2 cas (sans erreur).

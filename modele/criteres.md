@@ -116,6 +116,13 @@ Les 147 questions de la banque Localia (`benchmark/banque/`), plus 60 cas nouvea
 - **« Améliore la base »** : supérieur à la base d'au moins 5 points. Résultat modeste.
 - **Échec** : moins de 5 points de gain, ou une condition obligatoire non remplie.
 
+**Amendement du 1er novembre 2026, avant l'ouverture du jeu secret** (relecture de Codex, décisions de l'auteur) :
+- « Supérieur à la base d'au moins 5 (ou 10) points » : l'écart mesuré atteint 5 (ou 10) points **et** la borne basse de son IC à 95 % est > 0.
+- Le modèle retenu étant le 2B, « Rivalise » se juge sur les quatre comparateurs de 9 à 12 Md (section 1 : Qwen3.5-9B, Gemma 3 12B, Mistral-Nemo 12B, Gemma 4 12B) ; les modèles de 24 à 35 Md sont publiés pour information. FQuAD 2.0 et Belebele ne passent à ces quatre comparateurs que si le lot 4 remplit déjà les conditions de S_doc de « Rivalise ».
+- Gemma 4 (12B et 31B) est évalué dans la version QAT Q4_0 publiée par Google, comme sur dev et dev2, et non en Q4_K_M ; Qwen3.6-35B-A3B (le professeur) en UD-Q4_K_M d'Unsloth.
+- Notation : un nombre attendu n'est plus reconnu à l'intérieur d'un autre (« 24 » dans « 240 ») ; les zéros décimaux en plus et les milliers d'un entier restent acceptés. Aucune note de dev ni de dev2 ne change. Un cas resté en erreur technique (serveur, délai) après trois passes écarte le modèle de la comparaison, au lieu de compter 0.
+- Les résultats de l'étape 3.5 sont automatiques et provisoires jusqu'au juge ouvert et au contrôle humain (étape 3.6).
+
 Le rapport final indique le niveau atteint, **et les domaines où le modèle est inférieur** (on s'attend au moins à la culture générale, aux maths et au code).
 
 ## 6. Mesures de vitesse de référence (déjà faites, 17 oct. 2026)

@@ -804,3 +804,8 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 | abstention juste | 0,140 | 0,135 | 0,510 | **0,515** | 0,343 | 0,420 |
 
 - Le vocabulaire élagué au français ne gêne pas la lecture de l'anglais (base élaguée = base). L'entraînement en français se transfère à l'anglais : abstention juste ×3,7 et F1 +9 points sur SQuAD, +3,3 points sur Belebele. Atténuer la LoRA réduit ce gain.
+
+### 1er novembre 2026, 13 h : décision de l'auteur, le lot 4 élagué reste la version à livrer
+
+- Décision de l'auteur : on garde le **lot 4 élagué** (vocfr48k), déjà mesuré sur dev et dev2 (0,851). Le contrôle de régression de criteres.md, section 5, est déclaré **non tenu** : IFEval −5,9 et MGSM −7,2, seul MMMLU est tenu. Ce sera écrit tel quel dans le rapport final. En échange, la lecture progresse en français (FQuAD +19,0) comme en anglais (SQuAD +23,3, Belebele eng +3,3).
+- Pas de choix d'une LoRA atténuée après coup (aucune ne passe, et elles lisent moins bien). Aucun réentraînement.

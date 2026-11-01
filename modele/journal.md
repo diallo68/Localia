@@ -791,3 +791,16 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[calculé, découpage décidé après la mesure]** IFEval sans les 31 consignes qui imposent une langue (510) : base 0,641 ; base élaguée +0,004 ; lot 4 élagué −0,029 [−0,071 ; +0,012] ; s = 0,5 −0,010 ; s = 0,85 −0,012. Aucun modèle entraîné n'atteint la base, même ainsi.
 - La base élaguée seule échoue déjà au seuil de MGSM (−3,2) : avec ces seuils et cette taille d'échantillon, aucun modèle élagué ne pouvait passer de façon sûre.
 - **[calculé]** Quota GPU : environ 2 h 20 pour le noyau (9 h 55 → 12 h 15), il en reste environ 12 h cette semaine (bancs anglais en cours).
+
+### 1er novembre 2026, 12 h 45 : bancs anglais, l'élagage ne coûte rien et le lot 4 progresse en anglais
+
+- **[mesuré]** Belebele eng_Latn (900) et SQuAD 2.0 (800, validation, moitié sans réponse), consignes en anglais, noyau `localia-bancs-anglais-3-4` (20 min). Écart avec la base [IC 95 %] :
+
+| Banc | Base | Base élaguée | Lot 4 complet | **Lot 4 élagué** | s = 0,5 | s = 0,85 |
+|---|---|---|---|---|---|---|
+| Belebele eng | 0,683 | +0,004 | +0,048 | **+0,033** [+0,012 ; +0,055] | −0,004 | +0,003 |
+| SQuAD 2.0 | 0,344 | −0,001 | +0,230 | **+0,233** [+0,199 ; +0,270] | +0,171 | +0,178 |
+| F1 avec réponse | 0,548 | 0,551 | 0,639 | **0,639** | 0,688 | 0,624 |
+| abstention juste | 0,140 | 0,135 | 0,510 | **0,515** | 0,343 | 0,420 |
+
+- Le vocabulaire élagué au français ne gêne pas la lecture de l'anglais (base élaguée = base). L'entraînement en français se transfère à l'anglais : abstention juste ×3,7 et F1 +9 points sur SQuAD, +3,3 points sur Belebele. Atténuer la LoRA réduit ce gain.

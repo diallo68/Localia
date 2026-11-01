@@ -790,4 +790,4 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **Contrôle de régression** : aucune intensité ne le passe, élaguée ou complète (meilleur cas : s = 0,85 complet, IFEval −1,8, MGSM −3,6). La réponse ne suit pas s (s = 0,7 est pire que 0,5 et 0,85 en MGSM) : à 250 problèmes, l'IC de MGSM fait ±6 points, plus large que le seuil de −3.
 - **[calculé, découpage décidé après la mesure]** IFEval sans les 31 consignes qui imposent une langue (510) : base 0,641 ; base élaguée +0,004 ; lot 4 élagué −0,029 [−0,071 ; +0,012] ; s = 0,5 −0,010 ; s = 0,85 −0,012. Aucun modèle entraîné n'atteint la base, même ainsi.
 - La base élaguée seule échoue déjà au seuil de MGSM (−3,2) : avec ces seuils et cette taille d'échantillon, aucun modèle élagué ne pouvait passer de façon sûre.
-- **[calculé]** Quota GPU : environ 4 h pour le noyau, il en reste environ 10 h cette semaine (bancs anglais en cours).
+- **[calculé]** Quota GPU : environ 2 h 20 pour le noyau (9 h 55 → 12 h 15), il en reste environ 12 h cette semaine (bancs anglais en cours).

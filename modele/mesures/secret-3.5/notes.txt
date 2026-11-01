@@ -1,0 +1,49 @@
+secret-base.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-gemma3-12b-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-gemma3-27b-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-gemma4-12b-qat-q40.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-gemma4-31b-qat-q40.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-lot4.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-ministral3-3b-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-mistral-nemo-12b-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-mistral-small-3.2-24b-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-phi4-mini-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-qwen35-4b-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-qwen35-9b-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-qwen36-35b-a3b-ud-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+secret-qwen38-27b-q4km.jsonl : 240 lignes, 240 cas, 0 en erreur
+comparateurs de « Rivalise » absents ou écartés : aucun
+
+== principal, sans les cas touchés (234 cas, 40 documents)
+  modèle                       S_doc   écart (retenu − modèle) [IC 95 %]   verdict          refaits abstenti citation extracti incohere injectio qualite_ redactio synthese
+  qwen38-27b-q4km              0.933  -0.167 [-0.209 ; -0.124] inférieur ou indécis  0.0%     0.97     1.00     0.97     0.88     0.87     0.91     0.89     0.98
+  gemma4-31b-qat-q40           0.919  -0.153 [-0.202 ; -0.100] inférieur ou indécis  0.0%     0.89     0.98     0.95     0.77     0.93     0.93     0.93     0.98
+  qwen36-35b-a3b-ud-q4km       0.892  -0.126 [-0.174 ; -0.078] inférieur ou indécis  0.0%     0.86     0.90     0.95     0.86     0.80     0.94     0.90     0.94
+  mistral-small-3.2-24b-q4km   0.870  -0.103 [-0.149 ; -0.056] inférieur ou indécis  0.0%     0.91     0.93     0.92     0.87     0.77     0.83     0.79     0.93
+  qwen35-9b-q4km               0.867  -0.101 [-0.157 ; -0.044] inférieur ou indécis  0.0%     0.97     0.98     0.92     0.76     0.80     0.74     0.80     0.96  (Rivalise)
+  gemma4-12b-qat-q40           0.863  -0.097 [-0.140 ; -0.053] inférieur ou indécis  0.0%     0.63     0.97     0.94     0.86     0.87     0.88     0.82     0.95  (Rivalise)
+  qwen35-4b-q4km               0.857  -0.091 [-0.138 ; -0.042] inférieur ou indécis  0.0%     0.97     0.93     0.97     0.79     0.73     0.70     0.84     0.91
+  gemma3-12b-q4km              0.845  -0.079 [-0.128 ; -0.020] inférieur ou indécis  0.0%     1.00     0.87     0.92     0.62     0.87     0.82     0.74     0.92  (Rivalise)
+  gemma3-27b-q4km              0.833  -0.067 [-0.122 ; -0.003] inférieur ou indécis  0.0%     0.80     0.95     0.93     0.75     0.73     0.82     0.82     0.87
+  base                         0.772  -0.006 [-0.057 ; +0.047] inférieur ou indécis  0.0%     0.83     0.82     0.86     0.75     0.75     0.51     0.79     0.87
+  lot4                         0.766                                                          0.91     0.88     0.89     0.60     0.67     0.60     0.72     0.85
+  mistral-nemo-12b-q4km        0.737  +0.029 [-0.021 ; +0.083] non inférieur         0.0%     0.66     0.71     0.94     0.62     0.67     0.77     0.71     0.84  (Rivalise)
+  ministral3-3b-q4km           0.719  +0.047 [-0.006 ; +0.101] non inférieur         0.0%     0.83     0.90     0.92     0.67     0.53     0.61     0.64     0.66
+  phi4-mini-q4km               0.693  +0.073 [+0.023 ; +0.121] supérieur             0.0%     0.86     0.75     0.86     0.48     0.57     0.62     0.61     0.80
+
+== tous les cas (240 cas, 40 documents)
+  modèle                       S_doc   écart (retenu − modèle) [IC 95 %]   verdict          refaits abstenti citation extracti incohere injectio qualite_ redactio synthese
+  qwen38-27b-q4km              0.934  -0.169 [-0.212 ; -0.127] inférieur ou indécis  0.0%     0.97     1.00     0.97     0.88     0.87     0.91     0.90     0.98
+  gemma4-31b-qat-q40           0.920  -0.155 [-0.204 ; -0.103] inférieur ou indécis  0.0%     0.89     0.98     0.95     0.77     0.93     0.93     0.94     0.98
+  qwen36-35b-a3b-ud-q4km       0.892  -0.127 [-0.174 ; -0.079] inférieur ou indécis  0.0%     0.86     0.90     0.95     0.86     0.80     0.94     0.89     0.94
+  mistral-small-3.2-24b-q4km   0.872  -0.107 [-0.152 ; -0.060] inférieur ou indécis  0.0%     0.91     0.93     0.93     0.87     0.77     0.83     0.80     0.93
+  qwen35-9b-q4km               0.870  -0.105 [-0.160 ; -0.048] inférieur ou indécis  0.0%     0.97     0.98     0.93     0.76     0.80     0.74     0.81     0.96  (Rivalise)
+  gemma4-12b-qat-q40           0.864  -0.099 [-0.142 ; -0.055] inférieur ou indécis  0.0%     0.63     0.97     0.94     0.86     0.87     0.88     0.83     0.95  (Rivalise)
+  qwen35-4b-q4km               0.859  -0.093 [-0.141 ; -0.045] inférieur ou indécis  0.0%     0.97     0.93     0.97     0.79     0.73     0.70     0.85     0.91
+  gemma3-12b-q4km              0.847  -0.081 [-0.131 ; -0.023] inférieur ou indécis  0.0%     1.00     0.87     0.92     0.62     0.87     0.82     0.75     0.93  (Rivalise)
+  gemma3-27b-q4km              0.835  -0.070 [-0.126 ; -0.007] inférieur ou indécis  0.0%     0.80     0.95     0.94     0.75     0.73     0.82     0.83     0.87
+  base                         0.772  -0.007 [-0.058 ; +0.047] inférieur ou indécis  0.0%     0.83     0.82     0.88     0.75     0.75     0.51     0.77     0.87
+  lot4                         0.765                                                          0.91     0.88     0.89     0.60     0.67     0.60     0.71     0.85
+  mistral-nemo-12b-q4km        0.736  +0.029 [-0.022 ; +0.083] non inférieur         0.0%     0.66     0.71     0.93     0.62     0.67     0.77     0.71     0.84  (Rivalise)
+  ministral3-3b-q4km           0.724  +0.041 [-0.011 ; +0.094] non inférieur         0.0%     0.83     0.90     0.93     0.67     0.53     0.61     0.66     0.67
+  phi4-mini-q4km               0.694  +0.071 [+0.022 ; +0.119] supérieur             0.0%     0.86     0.75     0.85     0.48     0.57     0.62     0.62     0.81

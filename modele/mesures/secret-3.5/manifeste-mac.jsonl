@@ -1,0 +1,2 @@
+{"modele": "base", "fichier": "bases/pilote-2.5/qwen35-2b-base-Q4_K_M.gguf", "sha256": "d4975891c23987500d10736a01e072d9dfc859de2786ea47dfabbf90a15eb7cf", "llama": "version: 0.5.0 (build 11146, commit 7fe450e19)"}
+{"modele": "lot4", "fichier": "bases/lot4/gguf/qwen35-2b-lora-Q4_K_M-sansreflexion-vocfr48k.gguf", "sha256": "a4b5f4bc2fa3457cfcc5237b87df0327610b23b4199e4e646ccdde5babf6d4ad", "llama": "version: 0.5.0 (build 11146, commit 7fe450e19)"}

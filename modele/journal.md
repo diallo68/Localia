@@ -817,3 +817,32 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Comparateurs : « Rivalise » se juge sur Qwen3.5-9B, Gemma 3 12B, Mistral-Nemo 12B et Gemma 4 12B (le modèle retenu est le 2B) ; les 24 à 35 Md et les repères (Qwen3.5-4B, Ministral 3 3B, Phi-4-mini) sont publiés pour information.
 - Décisions de l'auteur, inscrites dans `criteres.md` avant l'ouverture : « au moins 5 (10) points » veut dire écart ≥ 5 (10) et borne basse > 0 ; FQuAD et Belebele ne passent aux comparateurs que si le lot 4 remplit déjà les conditions de S_doc de « Rivalise ».
 - Répétition en cours sans le jeu secret : les deux noyaux sur 5 cas de dev2 ; le Mac a été répété sur 2 cas (sans erreur).
+
+### 1er novembre 2026, 23 h : étape 3.5, jeu secret ouvert une fois : le lot 4 ne fait pas mieux que la base
+
+- Incident au lancement (15 h 25) : l'envoi du jeu à Kaggle n'a pas pris le dossier `documents/` (le client Kaggle ignore les sous-dossiers sans `-r tar`). Les deux noyaux se sont arrêtés au contrôle d'empreinte, **avant toute génération**. Reprise (15 h 41) : nouvelle version du jeu avec ses 40 documents, mêmes noyaux relancés. Le Mac n'a pas été interrompu. Rien n'a été relancé après lecture d'un résultat.
+- **[mesuré]** 14 modèles, 240 cas chacun, aucun cas en erreur technique, aucune réflexion ; empreinte du jeu `622aac13…` dans chaque noyau ; GGUF identifiés (dépôt, révision, sha256 : `mesures/secret-3.5/`). Base et lot 4 sur le Mac (processeur, llama-server 0.5.0), comparateurs sur Kaggle (2 × T4).
+- **[mesuré]** S_doc principal (234 cas, sans les 6 cas touchés), écart lot 4 − modèle [IC 95 %, bootstrap par document] :
+
+| Modèle | S_doc | Lot 4 − modèle | Verdict |
+|---|---|---|---|
+| Qwen3.8-27B (info) | 0,933 | −0,167 [−0,209 ; −0,124] | inférieur |
+| Gemma 4 31B QAT (info) | 0,919 | −0,153 [−0,202 ; −0,100] | inférieur |
+| Qwen3.6-35B-A3B (info, professeur) | 0,892 | −0,126 [−0,174 ; −0,078] | inférieur |
+| Mistral Small 3.2 24B (info) | 0,870 | −0,103 [−0,149 ; −0,056] | inférieur |
+| **Qwen3.5-9B** | 0,867 | −0,101 [−0,157 ; −0,044] | inférieur |
+| **Gemma 4 12B QAT** | 0,863 | −0,097 [−0,140 ; −0,053] | inférieur |
+| Qwen3.5-4B (repère) | 0,857 | −0,091 [−0,138 ; −0,042] | inférieur |
+| **Gemma 3 12B** | 0,845 | −0,079 [−0,128 ; −0,020] | inférieur |
+| Gemma 3 27B (info) | 0,833 | −0,067 [−0,122 ; −0,003] | inférieur |
+| Base Qwen3.5-2B | 0,772 | **−0,006 [−0,057 ; +0,047]** | indécis |
+| **Lot 4 élagué** | **0,766** | | |
+| **Mistral-Nemo 12B** | 0,737 | +0,029 [−0,021 ; +0,083] | non inférieur |
+| Ministral 3 3B (repère) | 0,719 | +0,047 [−0,006 ; +0,101] | non inférieur |
+| Phi-4-mini (repère) | 0,693 | +0,073 [+0,023 ; +0,121] | supérieur |
+
+- Sur les 240 cas : lot 4 0,765, base 0,772 ; mêmes verdicts.
+- **Niveau atteint (criteres.md, section 5, amendée) : Échec.** Gain sur la base −0,6 point (seuil : +5 et borne basse > 0). « Rivalise » non rempli (non inférieur à 1 des 4 comparateurs de 9 à 12 Md, Mistral-Nemo ; il en faut 3) : FQuAD et Belebele ne sont donc pas passés aux comparateurs, comme décidé avant l'ouverture.
+- **[mesuré]** Par catégorie, lot 4 − base : abstention +0,08, citation +0,06, qualité du français +0,09, extraction +0,03 ; **incohérence −0,15**, **injection −0,08**, **rédaction −0,07**, synthèse −0,02. Les gains et les pertes s'annulent.
+- **[calculé]** Écart avec dev et dev2 : sur les 188 cas non touchés de dev et dev2, le lot 4 élagué avait 0,849 et +0,057 sur la base ; sur le jeu secret, 0,766 et −0,006. **[supposé]** Le lot 4 a été choisi et ses données ciblées sur les défauts vus en dev et dev2 (journal du lot 5) : l'avance mesurée là était en partie un surajustement à ces deux jeux. C'est exactement ce que le jeu secret devait détecter.
+- Résultats automatiques, provisoires jusqu'à l'étape 3.6 (juge ouvert, contrôle humain), comme prévu par l'amendement. Un écart de 6 points à rattraper par le seul changement de notation est peu probable.

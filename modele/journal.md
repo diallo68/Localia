@@ -754,3 +754,21 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - `eval/bancs/preparer_bancs.py` : 5 341 questions. Belebele fra_Latn (900), FQuAD 2.0 (800, échantillon FrenchBench, moitié sans réponse), IFEval (541), MGSM fr (250), MMMLU FR-FR (50 par matière, graine 0 : 2 850). Sans réflexion, température 0, mêmes consignes pour la base Qwen3.5-2B Q4_K_M et le lot 4 élagué. `eval/bancs/bancs_kaggle.py` : un modèle par T4 (jeu privé `localia-bancs-publics`, noyau `localia-bancs-publics-3-4`). `eval/bancs/noter_bancs.py` : notation sur le Mac, bootstrap apparié regroupé par document.
 - **Amendement** (criteres.md, section 5 : « IFEval-fr ≥ base ») : IFEval-fr (le-leadboard) est mal annoté. Les catégories d'instruction ne correspondent souvent pas à la consigne (`constrained_response`, qui attend « My answer is yes. », est collé à des consignes de paragraphes séparés par ***), les paramètres sont mal placés (« le mot pourrait 6 fois » rangé dans `letter`), la relation manque partout (le vérificateur la tire alors au hasard, différemment pour chaque modèle) et « moins de 2 fois » est codé avec une fréquence de 1. La note mesurerait ces erreurs, pas le modèle. On le remplace par **IFEval d'origine** (Google, anglais, Apache 2.0), décision prise avant tout résultat. Le seuil devient « IFEval ≥ base ».
 - Relecture croisée par Codex avant le lancement : en plus d'IFEval, 4 défauts de notation corrigés (articles français mal retirés dans le F1 de FQuAD, espaces insécables qui coupaient les nombres de MGSM, abstention reconnue au milieu d'une phrase, lettre de QCM prise dans « D'après le texte, B. ») ; une série incomplète bloque désormais la comparaison.
+
+### 1er novembre 2026, 2 h : étape 3.4, le lot 4 élagué ne passe pas le contrôle de régression
+
+- **[mesuré]** Kaggle, 2 × T4, sans réflexion, température 0, mêmes 5 341 questions (`eval/bancs/`). Écart avec la base Qwen3.5-2B Q4_K_M [IC 95 %, bootstrap apparié regroupé par document] :
+
+| Banc | Base | Base élaguée | Lot 3 | Lot 4 complet | **Lot 4 élagué** |
+|---|---|---|---|---|---|
+| Belebele (900) | 0,701 | +0,000 | −0,013 | +0,020 | **+0,020** [0 ; +0,040] |
+| FQuAD 2.0 (800) | 0,420 | +0,007 | +0,010 | +0,193 | **+0,190** [+0,142 ; +0,260] |
+| IFEval (541) | 0,654 | −0,020 | −0,035 | −0,031 | **−0,059** [−0,100 ; −0,018] |
+| MGSM fr (250) | 0,584 | −0,032 | −0,016 | −0,128 | **−0,072** [−0,136 ; −0,004] |
+| MMMLU fr (2 850) | 0,518 | −0,001 | +0,011 | +0,005 | **+0,002** [−0,011 ; +0,015] |
+
+- FQuAD : le gain vient de l'abstention juste sur les questions sans réponse (0,22 → 0,62), le F1 sur les questions avec réponse ne bouge presque pas (0,619 → 0,604).
+- **Contrôle de régression (criteres.md, section 5)** : MMMLU tenu ; **IFEval non tenu** (−5,9 points, seuil : ≥ base) ; **MGSM non tenu** (−7,2, seuil : −3).
+- **[calculé]** IFEval se décompose ainsi : l'élagage fait tomber l'instruction « réponds en kannada, pendjabi, persan… » de 0,97 à 0,48 (base élaguée comme lot 4 élagué ; le vocabulaire français ne sait plus écrire ces langues), environ −2,5 points ; l'entraînement coûte environ −3 points de plus [−7,2 ; +0,7] sur les autres instructions. MGSM : c'est l'entraînement du lot 4 qui coûte (lot 4 complet −12,8, élagué −7,2 ; avec 250 problèmes l'écart entre les deux est du bruit) ; le lot 3 ne recule presque pas (−1,6) mais n'a pas le gain d'abstention.
+- Vérifications : aucune réponse manquante, autant de réponses tronquées pour tous les modèles (65 à 95 sur 5 341) ; les erreurs MGSM relues sont de vrais faux calculs ; détection de langue à graine fixe (langdetect est aléatoire sinon).
+- **[calculé]** Quota GPU : environ 1 h 30 utilisée (30 min puis 50 min de noyau), il en reste environ 14 h 30 cette semaine.

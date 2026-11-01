@@ -8,6 +8,8 @@
 - IFEval (d'origine, anglais) : vérificateur de Google (Apache 2.0, copie d'lm-evaluation-harness), score strict
   par consigne (toutes les instructions suivies) et par instruction. Une exception du vérificateur compte comme
   instruction non suivie (le nombre est affiché).
+- Bancs anglais (1er novembre 2026) : Belebele eng_Latn comme Belebele ; SQuAD 2.0 comme FQuAD (articles anglais,
+  abstention « no answer »).
 - MGSM : nombre de la ligne « Réponse », sinon dernier nombre de la réponse (espaces insécables, séparateurs de
   milliers et virgule décimale à la française) ; égalité avec la valeur attendue.
 
@@ -44,17 +46,18 @@ def symbole(texte, motif):
 
 
 ARTICLES = re.compile(r"\b(?:le|la|les|un|une|des|du|de)\b|\b[ld]'")
+ARTICLES_EN = re.compile(r"\b(?:a|an|the)\b")  # normalisation officielle de SQuAD
 
 
-def normaliser(s):
+def normaliser(s, articles=ARTICLES):
     s = unicodedata.normalize("NFKC", s.lower()).replace("’", "'")
-    s = ARTICLES.sub(" ", s)
+    s = articles.sub(" ", s)
     s = "".join(" " if c in string.punctuation + "«»" else c for c in s)
     return s.split()
 
 
-def f1(prediction, attendu):
-    p, a = normaliser(prediction), normaliser(attendu)
+def f1(prediction, attendu, articles=ARTICLES):
+    p, a = normaliser(prediction, articles), normaliser(attendu, articles)
     if not p or not a:
         return float(p == a)
     commun = sum((collections.Counter(p) & collections.Counter(a)).values())
@@ -64,9 +67,9 @@ def f1(prediction, attendu):
     return 2 * precision * rappel / (precision + rappel)
 
 
-def abstention(texte):
+def abstention(texte, sentinelle="sans réponse"):
     t = unicodedata.normalize("NFKC", texte.lower()).translate(ESPACES)
-    return re.sub(r"[\s.*_`\"'«»!]+", " ", t).strip() == "sans réponse"
+    return re.sub(r"[\s.*_`\"'«»!]+", " ", t).strip() == sentinelle
 
 
 NOMBRE = re.compile(r"-?\d{1,3}(?:[ .]\d{3})+(?:,\d+)?(?!\d)|-?\d+(?:[.,]\d+)?")
@@ -113,15 +116,17 @@ class IFEval:
 
 def noter(q, texte, ifeval):
     b, a = q["banc"], q["attendu"]
-    if b == "belebele":
+    if b in ("belebele", "belebele_en"):
         return float(symbole(texte, "[1-4]") == a), {}
     if b == "mmmlu":
         return float(symbole(texte, "[ABCD]") == a), {}
-    if b == "fquad":
-        s = abstention(texte)
+    if b in ("fquad", "squad"):
+        en = b == "squad"
+        s = abstention(texte, "no answer" if en else "sans réponse")
         if a["impossible"]:
             return float(s), {"impossible": True}
-        return (0.0 if s else max(f1(texte, t) for t in a["textes"])), {"impossible": False}
+        return (0.0 if s else max(f1(texte, t, ARTICLES_EN if en else ARTICLES) for t in a["textes"])), \
+            {"impossible": False}
     if b == "mgsm":
         n = nombre(texte)
         return float(n is not None and abs(n - a) < 1e-6), {}
@@ -162,7 +167,7 @@ def main():
             sys.exit(f"{modele} : série incomplète, relancer les appels manquants avant de comparer")
         notes[modele] = {i: noter(q, rep[i]["texte"], ifeval) for i, q in questions.items()}
     print(f"exceptions du vérificateur IFEval (instruction non suivie) : {ifeval.exceptions}")
-    for banc in ("belebele", "fquad", "ifeval", "mgsm", "mmmlu"):
+    for banc in dict.fromkeys(q["banc"] for q in questions.values()):
         ids = [i for i, q in questions.items() if q["banc"] == banc]
         x = [notes["base"][i][0] for i in ids]
         print(f"\n{banc} ({len(ids)} questions)")
@@ -172,7 +177,7 @@ def main():
             if m != "base":
                 bas, haut = bootstrap(list(zip(x, y)), [questions[i]["groupe"] for i in ids])
                 ligne += f"  − base : {(sum(y) - sum(x)) / len(ids):+.3f} [{bas:+.3f} ; {haut:+.3f}]"
-            if banc == "fquad":
+            if banc in ("fquad", "squad"):
                 for imp, nom in ((False, "F1 avec réponse"), (True, "abstention juste")):
                     sel = [i for i in ids if questions[i]["attendu"]["impossible"] is imp]
                     ligne += f" ; {nom} {sum(notes[m][i][0] for i in sel) / len(sel):.3f}"

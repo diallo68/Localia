@@ -6,7 +6,9 @@ IFEval d'origine en anglais (541 consignes ; IFEval-fr est mal annoté), MGSM fr
 quand même le raisonnement dans la réponse), réponse gloutonne (température 0), consigne de format en français, la
 même pour les deux modèles. Une ligne par question : id, banc, groupe (pour le bootstrap par document), messages, max_tokens, attendu.
 
-Usage : python3 -I preparer_bancs.py <dossier des fichiers téléchargés> <sortie.jsonl>
+Avec --anglais : Belebele eng_Latn (900) et SQuAD 2.0 (800, validation, moitié sans réponse), consignes en anglais.
+
+Usage : python3 -I preparer_bancs.py <dossier des fichiers téléchargés> <sortie.jsonl> [--anglais]
 """
 import csv
 import json
@@ -70,12 +72,39 @@ def mmmlu(d, par_matiere=50):
                    "max_tokens": 16, "attendu": x["Answer"], "matiere": matiere}
 
 
+def belebele_en(d):
+    for l in open(os.path.join(d, "belebele-eng_Latn.jsonl"), encoding="utf-8"):
+        x = json.loads(l)
+        choix = "\n".join(f"{i}. {x[f'mc_answer{i}']}" for i in range(1, 5))
+        yield {"id": f"belebele_en-{x['link']}-{x['question_number']}", "groupe": x["link"],
+               "texte": f"Read the passage, then answer the question.\n\nPassage: {x['flores_passage']}\n\n"
+                        f"Question: {x['question']}\n\n{choix}\n\nAnswer with the number of the correct option only.",
+               "max_tokens": 16, "attendu": x["correct_answer_num"]}
+
+
+def squad(d, n=400):
+    # SQuAD 2.0 (validation) : 400 questions avec réponse et 400 sans, graine 0, comme l'échantillon de FQuAD.
+    t = pd.read_parquet(os.path.join(d, "squad2-validation.parquet"))
+    rnd = random.Random(0)
+    avec = [i for i, a in enumerate(t["answers"]) if len(a["text"])]
+    sans = [i for i, a in enumerate(t["answers"]) if not len(a["text"])]
+    for i in sorted(rnd.sample(avec, n) + rnd.sample(sans, n)):
+        x = t.iloc[i]
+        yield {"id": f"squad-{x['id']}", "groupe": x["title"],
+               "texte": f"Text: {x['context']}\n\nQuestion: {x['question']}\n\nAnswer with an exact excerpt from the "
+                        "text, as short as possible. If the text does not allow you to answer, answer exactly: no answer.",
+               "max_tokens": 96,
+               "attendu": {"impossible": not len(x["answers"]["text"]), "textes": list(x["answers"]["text"])}}
+
+
 def main():
     d, sortie = sys.argv[1:3]
+    bancs = (("belebele", belebele), ("fquad", fquad), ("ifeval", ifeval), ("mgsm", mgsm), ("mmmlu", mmmlu))
+    if "--anglais" in sys.argv:  # bancs anglais, ajoutés le 1er novembre 2026 : Localia lit aussi l'anglais
+        bancs = (("belebele_en", belebele_en), ("squad", squad))
     n = {}
     with open(sortie, "w", encoding="utf-8") as s:
-        for banc, gen in (("belebele", belebele), ("fquad", fquad), ("ifeval", ifeval), ("mgsm", mgsm),
-                          ("mmmlu", mmmlu)):
+        for banc, gen in bancs:
             for q in gen(d):
                 q["banc"] = banc
                 q["messages"] = [{"role": "user", "content": q.pop("texte")}]

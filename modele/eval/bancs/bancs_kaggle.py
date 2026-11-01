@@ -22,9 +22,15 @@ MODELES = {"base": ("localia-bancs-publics", "Qwen3.5-2B-Q4_K_M.gguf"),
 CONTROLES = {"base-elaguee": ("localia-base-vocfr48k", "Qwen3.5-2B-Q4_K_M-vocfr48k.gguf"),
              "lot4-complet": ("localia-lora-2b-lot4", "qwen35-2b-lora-Q4_K_M.gguf"),
              "lot3": ("localia-lora-2b-lot3-fin", "qwen35-2b-lora-Q4_K_M.gguf")}
-SERIE = "principale"  # "controles" dans la copie du noyau localia-bancs-controles
-if SERIE == "controles":
-    MODELES = CONTROLES
+# Bancs anglais (noyau localia-bancs-anglais, 1er novembre 2026) : Localia lit aussi des documents en anglais.
+ANGLAIS = {"base": ("localia-bancs-publics", "Qwen3.5-2B-Q4_K_M.gguf"),
+           "base-elaguee": ("localia-base-vocfr48k", "Qwen3.5-2B-Q4_K_M-vocfr48k.gguf"),
+           "lot4": ("localia-bancs-publics", "qwen35-2b-lora-Q4_K_M-sansreflexion-vocfr48k.gguf"),
+           "lot4-complet": ("localia-lora-2b-lot4", "qwen35-2b-lora-Q4_K_M.gguf"),
+           **{f"attenuee-{s}": ("localia-lora-attenuee", f"attenuee-{s}-vocfr48k.gguf") for s in (0.5, 0.7, 0.85, 1.0)}}
+SERIE = "principale"  # "controles" ou "anglais" dans les copies des noyaux localia-bancs-controles et -anglais
+QUESTIONS = "localia-bancs-anglais" if SERIE == "anglais" else "localia-bancs-publics"
+MODELES = {"controles": CONTROLES, "anglais": ANGLAIS}.get(SERIE, MODELES)
 
 
 def sh(cmd):
@@ -81,7 +87,8 @@ def appeler(port, q):
     return {"id": q["id"], "texte": "", "erreur": err}
 
 
-questions = [json.loads(l) for chemin in glob.glob("/kaggle/input/**/bancs.jsonl", recursive=True) for l in open(chemin)]
+questions = [json.loads(l) for chemin in glob.glob("/kaggle/input/**/bancs.jsonl", recursive=True) if QUESTIONS in chemin
+             for l in open(chemin)]
 print(f"{len(questions)} questions", flush=True)
 
 

@@ -772,3 +772,22 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[calculé]** IFEval se décompose ainsi : l'élagage fait tomber l'instruction « réponds en kannada, pendjabi, persan… » de 0,97 à 0,48 (base élaguée comme lot 4 élagué ; le vocabulaire français ne sait plus écrire ces langues), environ −2,5 points ; l'entraînement coûte environ −3 points de plus [−7,2 ; +0,7] sur les autres instructions. MGSM : c'est l'entraînement du lot 4 qui coûte (lot 4 complet −12,8, élagué −7,2 ; avec 250 problèmes l'écart entre les deux est du bruit) ; le lot 3 ne recule presque pas (−1,6) mais n'a pas le gain d'abstention.
 - Vérifications : aucune réponse manquante, autant de réponses tronquées pour tous les modèles (65 à 95 sur 5 341) ; les erreurs MGSM relues sont de vrais faux calculs ; détection de langue à graine fixe (langdetect est aléatoire sinon).
 - **[calculé]** Quota GPU : environ 1 h 30 utilisée (30 min puis 50 min de noyau), il en reste environ 14 h 30 cette semaine.
+
+### 1er novembre 2026, 12 h : LoRA atténuée, aucune intensité ne passe le contrôle de régression
+
+- **[mesuré]** Choix de l'auteur : la LoRA du lot 4 appliquée à intensité réduite, W = W_base + s · ΔW (`eval/bancs/lora_attenuee_kaggle.py`, point de reprise du pas 480 sur 512, noyau `localia-lora-attenuee`). Mêmes 5 341 questions, élagué (vocfr48k) et complet. Écart avec la base [IC 95 %] :
+
+| Banc | s = 0,5 | s = 0,7 | s = 0,85 | s = 1,0 | lot 4 élagué |
+|---|---|---|---|---|---|
+| Belebele | −0,018 | +0,007 | +0,004 | +0,024 | +0,020 |
+| FQuAD 2.0 | +0,185 | +0,173 | +0,172 | +0,183 | +0,190 |
+| abstention juste (base 0,22) | 0,535 | 0,560 | 0,530 | 0,610 | 0,615 |
+| IFEval | −0,037 [−0,078 ; +0,004] | −0,057 | −0,039 [−0,081 ; +0,004] | −0,044 | −0,059 |
+| MGSM fr | −0,048 [−0,112 ; +0,016] | −0,080 | −0,032 [−0,092 ; +0,028] | −0,072 | −0,072 |
+| MMMLU fr | +0,004 | +0,005 | +0,007 | +0,003 | +0,002 |
+
+- Témoin : s = 1,0 retrouve le lot 4 (MGSM 0,512 des deux côtés, IFEval 0,610 contre 0,597, Belebele 0,726 contre 0,721 ; le point de reprise n'est pas la LoRA finale).
+- **Contrôle de régression** : aucune intensité ne le passe, élaguée ou complète (meilleur cas : s = 0,85 complet, IFEval −1,8, MGSM −3,6). La réponse ne suit pas s (s = 0,7 est pire que 0,5 et 0,85 en MGSM) : à 250 problèmes, l'IC de MGSM fait ±6 points, plus large que le seuil de −3.
+- **[calculé, découpage décidé après la mesure]** IFEval sans les 31 consignes qui imposent une langue (510) : base 0,641 ; base élaguée +0,004 ; lot 4 élagué −0,029 [−0,071 ; +0,012] ; s = 0,5 −0,010 ; s = 0,85 −0,012. Aucun modèle entraîné n'atteint la base, même ainsi.
+- La base élaguée seule échoue déjà au seuil de MGSM (−3,2) : avec ces seuils et cette taille d'échantillon, aucun modèle élagué ne pouvait passer de façon sûre.
+- **[calculé]** Quota GPU : environ 4 h pour le noyau, il en reste environ 10 h cette semaine (bancs anglais en cours).

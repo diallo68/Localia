@@ -888,3 +888,8 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - Un des écarts restants est une note de 1 dont la justification dit « ne répond pas à la demande » : le juge n'est pas toujours cohérent avec lui-même.
 - **[mesuré]** dev2, moyenne par cas, juge contre note automatique : base 0,685 contre 0,742, lot 4 0,728 contre 0,786. Le juge est plus sévère, surtout en synthèse (0,67 contre 0,91 et 0,96).
 - Jeu secret : `a_juger.jsonl` refait avec la consigne corrigée (SHA-256 `55bb69bd32d9934defe8f8c2c7de49ac0fd54c6f077cf66242a04e44183eee48`, remplace `2379674b…`). Juge lancé le 2 novembre vers 11 h.
+
+### 2 novembre 2026 : notes humaines figées avant les verdicts du juge
+
+- L'auteur a noté les 60 réponses à l'aveugle (note et affirmation non étayée, toutes remplies). Export lié à l'échantillon `2e37c224…`. SHA-256 du fichier `notes-humaines.json` : `4d79309e51d4500f08796545108e40beaae69d21f0361861b7cf963c3337dcd5`. Le fichier reste sur le Mac, avec l'échantillon.
+- Le juge tourne encore : ni l'auteur ni moi n'avons vu de verdict du jeu secret.

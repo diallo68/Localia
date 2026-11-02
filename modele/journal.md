@@ -908,3 +908,16 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - Écart moyen juge − auteur par modèle : base −0,35, lot 4 −0,25, Gemma 3 12B −0,15, Qwen3.5 9B −0,10, Mistral Nemo −0,05, Gemma 4 12B +0,05.
 - **Décision, selon la règle de `criteres.md` fixée avant les verdicts** : κ < 0,6, donc le juge n'est pas fiable. Le niveau final reste celui de la note automatique (étape 3.5) : **Échec** (lot 4 élagué 0,766 contre base 0,772). Le niveau qui se lirait sur le juge n'est pas retenu.
 - Observation, sans effet sur la décision : l'auteur a noté presque tout à 1. Avec une note aussi concentrée, le κ est faible même quand l'accord brut est moyen (effet de prévalence). La note automatique n'atteint pas non plus le seuil. Sur cet échantillon, aucun des deux correcteurs automatiques ne reproduit le jugement de l'auteur.
+
+### 2 novembre 2026, 16 h 40 : phase 4, la version pleine précision du lot 4 manque
+
+- Constat : le noyau `localia-lora-2b-lot4` n'a gardé que le Q4_K_M. L'adaptateur final et le F16 ont été effacés, il ne reste que le point de reprise du pas 480 sur 512. Requantifier un Q4_K_M n'aurait pas de sens pour comparer des quantifications.
+- Choix de l'auteur : finir l'entraînement. Le noyau `localia-lora-lot4-fin` (`kaggle/lora-lot4-fin/`, hors dépôt) :
+  - reprend le script du lot 4 sans changement (les 172 premières lignes sont identiques) au pas 480, et refait les 32 derniers pas, à un taux d'apprentissage inférieur à 3·10⁻⁷ ;
+  - garde cette fois l'adaptateur ;
+  - produit F16, Q8_0, Q5_K_M, Q4_K_M et Q4_0, tous élagués (k = 48 000) ;
+  - note dev et dev2 sur GPU pour chaque variante et pour le lot 4 livré, élagué avec le même outil ;
+  - calcule la divergence KL par rapport au F16 sur du français FineWeb-2 tenu à l'écart.
+- **[supposé]** Le dropout et le GPU ne sont pas déterministes : le résultat sera voisin du lot 4 livré, pas identique. L'équivalence se vérifie sur dev et dev2 et par la KL du témoin.
+- Envoi refusé : le quota GPU hebdomadaire est atteint (30 h, dont le juge de l'étape 3.6). Chaîne automatique `resultats/lot4-fin/chaine-lot4-fin.sh` (nohup + caffeinate) : envoi le samedi 7 novembre à 2 h 15, relance toutes les 3 h en cas de refus, notation sur le Mac. Résultat dans `resultats/lot4-fin/comparaison.txt`.
+- Les GGUF restent sur Kaggle (8,7 Go libres sur le Mac). Ils seront rapatriés un par un pour mesurer la vitesse.

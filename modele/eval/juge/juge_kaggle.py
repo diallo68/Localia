@@ -23,9 +23,9 @@ PARALLELE, CONTEXTE = 4, 12288
 TRAVAIL = "/kaggle/working"
 TMP = "/kaggle/tmp" if os.path.isdir("/kaggle/tmp") else "/tmp"
 SCHEMA = {"type": "object",
-          "properties": {"justification": {"type": "string"}, "note": {"type": "number", "enum": [0, 0.5, 1]},
+          "properties": {"ce_que_dit_la_reponse": {"type": "string"}, "justification": {"type": "string"}, "note": {"type": "number", "enum": [0, 0.5, 1]},
                          "affirmation_non_etayee": {"type": "boolean"}},
-          "required": ["justification", "note", "affirmation_non_etayee"], "additionalProperties": False}
+          "required": ["ce_que_dit_la_reponse", "justification", "note", "affirmation_non_etayee"], "additionalProperties": False}
 
 
 def sh(cmd):

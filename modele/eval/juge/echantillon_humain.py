@@ -42,7 +42,7 @@ def sections(message):
     reference, reste = reste.split("\n\nGRILLE\n", 1)
     grille, reste = reste.split("\n\nMESURES", 1)
     mesures, reste = reste.split("\n\nRÉPONSE À NOTER\n<<<\n", 1)
-    reponse = reste.rsplit("\n>>>\n\n", 1)[0]
+    reponse = reste.split("\n>>>\n\nRAPPEL : ", 1)[0]
     return {"document": doc.removeprefix("DOCUMENT\n"), "demande": demande, "reference": reference,
             "grille": grille, "mesures": mesures.split("\n", 1)[1], "reponse": reponse}
 

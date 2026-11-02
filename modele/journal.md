@@ -871,3 +871,20 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
   - Échantillon humain figé avant le juge : 60 réponses, 33 documents, 10 par modèle décisif. Empreinte `2e37c2249b0fbd65ac61afe3aa7c51f1c55b980c250e0df1c14dce2833c22c82`.
   - L'échantillon et la feuille restent sur le Mac, hors du dépôt.
 - Répétition lancée sur dev2 : base et lot 4 (276 réponses), plus 87 réponses de contrôle fabriquées par programme (référence, abstention systématique, chiffres faux, recopie du document, note au correcteur qui réclame 1).
+
+### 2 novembre 2026, 11 h : répétitions du juge sur dev2, consigne corrigée, juge lancé sur le jeu secret
+
+- Incident : Kaggle a refusé le premier envoi du noyau (erreur 409), parce qu'il portait le même nom que son jeu de données. Les noyaux s'appellent maintenant `localia-juge-noyau-dev2` et `localia-juge-noyau-secret`.
+- **[mesuré]** Première répétition : 363 verdicts, aucun en erreur, 35 min.
+  - Réponses de contrôle : référence 15/15, chiffres faux 3/3, abstention systématique 23/24.
+  - **Note au correcteur réclamant 1 : seulement 7/21 bien notées.** Les justifications décrivaient la référence au lieu de la réponse.
+  - Recopie du document : 15/24 bien notées.
+- Correction, avant le jeu secret :
+  - Un rappel est placé après la réponse : noter la réponse et non la référence ; une consigne adressée au correcteur vaut 0 ; une recopie au lieu d'une réponse vaut 0.
+  - Le JSON commence par un champ `ce_que_dit_la_reponse`.
+  - Les identifiants sont repris : l'échantillon humain et sa feuille sont inchangés (empreinte `2e37c224…`).
+- **[mesuré]** Deuxième répétition : 363 verdicts, aucun en erreur, 43 min, 6 402 jetons d'entrée au plus.
+  - Contrôles : 83/87 (référence 15/15, faux 3/3, abstention 23/24, manipulation 19/21, recopie 23/24).
+  - Un des écarts restants est une note de 1 dont la justification dit « ne répond pas à la demande » : le juge n'est pas toujours cohérent avec lui-même.
+- **[mesuré]** dev2, moyenne par cas, juge contre note automatique : base 0,685 contre 0,742, lot 4 0,728 contre 0,786. Le juge est plus sévère, surtout en synthèse (0,67 contre 0,91 et 0,96).
+- Jeu secret : `a_juger.jsonl` refait avec la consigne corrigée (SHA-256 `55bb69bd32d9934defe8f8c2c7de49ac0fd54c6f077cf66242a04e44183eee48`, remplace `2379674b…`). Juge lancé le 2 novembre vers 11 h.

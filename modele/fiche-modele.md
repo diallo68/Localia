@@ -17,7 +17,7 @@ document fourni**, sur un ordinateur sans carte graphique. Il s'abstient et cite
 | Vocabulaire | élagué au français et à l'ASCII : environ 48 000 jetons gardés sur 248 000 (`mesures/elaguer_vocab.py`, k = 48 000) |
 | Fichier livré | `qwen35-2b-lora-Q4_K_M-sansreflexion-vocfr48k.gguf`, Q4_K_M, 1,11 Go, SHA-256 `a4b5f4bc2fa3457cfcc5237b87df0327610b23b4199e4e646ccdde5babf6d4ad` |
 | Gabarit | `ollama/gabarit_sans_reflexion.jinja` : bloc de réflexion toujours vide (voir § 3) |
-| Nom dans Ollama | `localia-doc-2b-lot4` |
+| Nom dans Ollama | `localia-doc-2b` (sur le Mac de l'auteur, `localia-doc-2b-lot4` est l'ancienne version **non élaguée**, 1,31 Go) |
 | Autres quantifications | *phase 4* |
 
 ## 2. Usage prévu et usages à éviter
@@ -44,7 +44,7 @@ est pas.
   25 octobre 2026). Le GGUF livré porte déjà le gabarit corrigé ; la marche à suivre est dans `ollama/README.md`.
 - Réglages du `Modelfile` : contexte de 8 192 jetons, température 0,3, top_k 20, top_p 0,95. Toutes les mesures de
   cette fiche ont été faites à **température 0**.
-- Guide d'installation dans Localia : *phase 4*.
+- Guide d'installation dans Localia : `guide-installation-localia.md`.
 
 ## 4. Données et entraînement
 

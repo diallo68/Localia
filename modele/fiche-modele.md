@@ -14,7 +14,7 @@ document fourni**, sur un ordinateur sans carte graphique. Il s'abstient et cite
 |---|---|
 | Base | Qwen/Qwen3.5-2B (Apache 2.0), mode sans réflexion |
 | Adaptation | LoRA (rang 16) fusionnée, lot 4 |
-| Vocabulaire | élagué au français et à l'ASCII : environ 48 000 jetons gardés sur 248 000 (`mesures/elaguer_vocab.py`, k = 48 000) |
+| Vocabulaire | élagué : 131 203 jetons gardés sur 248 320, soit les 48 000 jetons les plus fréquents en français (k), les jetons ASCII, les octets de base, la fermeture par les fusions BPE et les jetons spéciaux (`mesures/elaguer_vocab.py`) |
 | Fichier livré | `qwen35-2b-lora-Q4_K_M-sansreflexion-vocfr48k.gguf`, Q4_K_M, 1,11 Go, SHA-256 `a4b5f4bc2fa3457cfcc5237b87df0327610b23b4199e4e646ccdde5babf6d4ad` |
 | Gabarit | `ollama/gabarit_sans_reflexion.jinja` : bloc de réflexion toujours vide (voir § 3) |
 | Nom dans Ollama | `localia-doc-2b` (sur le Mac de l'auteur, `localia-doc-2b-lot4` est l'ancienne version **non élaguée**, 1,31 Go) |

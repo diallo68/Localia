@@ -68,11 +68,12 @@ Mesuré sur le cas V001 de dev2, avec la consigne de l'évaluation et une tempé
    - consigne permanente : rien à ajouter. Localia met sa propre consigne pour les documents, et le modèle a été
      mesuré avec elle (`journal.md`, 25 octobre 2026 : 0,851 sur 188 cas de dev et dev2).
 
-**Moteur intégré : ne fonctionne pas encore avec ce modèle.** Le bouton « Utiliser avec le moteur intégré » cherche
-le manifeste dans `~/.ollama/models/manifests/registry.ollama.ai/`. Or Ollama 0.40.5 range les modèles créés
-récemment dans `~/.ollama/models/manifests-v2/ollama.com/` (constaté le 2 novembre 2026 pour `localia-doc-2b`).
-Localia répond alors « Modèle Ollama introuvable sur cet ordinateur ». Ce défaut est à corriger dans
-`src/local-engine.cjs`, puis ce paragraphe à mettre à jour.
+**Moteur intégré (sans Ollama ensuite).** Sur la ligne du modèle, le bouton « Utiliser avec le moteur intégré » reprend
+le fichier d'Ollama sans le copier ; le modèle s'appelle alors `integre/localia-doc-2b`. Ollama 0.40.5 range les
+modèles récents dans `~/.ollama/models/manifests-v2/ollama.com/`, que Localia ne lisait pas avant le
+2 novembre 2026 (« Modèle Ollama introuvable sur cet ordinateur »). C'est corrigé dans `src/local-engine.cjs`. Le
+lecteur GGUF du moteur intégré lit bien le fichier (architecture `qwen35`, gabarit sans réflexion), mais une
+conversation complète par ce moteur n'a pas encore été essayée.
 
 ## 6. Quel fichier selon la mémoire de l'ordinateur
 
@@ -84,6 +85,6 @@ Localia répond alors « Modèle Ollama introuvable sur cet ordinateur ». Ce d�
 | Symptôme | Cause | Solution |
 |---|---|---|
 | Longue attente, puis réponse vide | gabarit d'origine, réflexion active | refaire l'étape 2 avec le bon fichier, puis l'étape 3 |
-| « Modèle Ollama introuvable » avec le moteur intégré | manifeste au format `manifests-v2` (étape 5) | utiliser le modèle par Ollama |
+| « Modèle Ollama introuvable » avec le moteur intégré | version de Localia antérieure au 2 novembre 2026 (étape 5) | mettre Localia à jour, ou utiliser le modèle par Ollama |
 | Refus à tort (« impossible de répondre ») | prudence du modèle, vue sur environ 5 réponses sur 138 de dev2 | reformuler la demande ou vérifier dans le document ; voir les limites dans `fiche-modele.md` |
 | Moins de 5 jetons/s | processeur seul, bridé quand le Mac chauffe | normal pour ce Mac ; fermer d'autres applications |

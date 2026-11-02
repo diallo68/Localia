@@ -846,3 +846,28 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** Par catégorie, lot 4 − base : abstention +0,08, citation +0,06, qualité du français +0,09, extraction +0,03 ; **incohérence −0,15**, **injection −0,08**, **rédaction −0,07**, synthèse −0,02. Les gains et les pertes s'annulent.
 - **[calculé]** Écart avec dev et dev2 : sur les 188 cas non touchés de dev et dev2, le lot 4 élagué avait 0,849 et +0,057 sur la base ; sur le jeu secret, 0,766 et −0,006. **[supposé]** Le lot 4 a été choisi et ses données ciblées sur les défauts vus en dev et dev2 (journal du lot 5) : l'avance mesurée là était en partie un surajustement à ces deux jeux. C'est exactement ce que le jeu secret devait détecter.
 - Résultats automatiques, provisoires jusqu'à l'étape 3.6 (juge ouvert, contrôle humain), comme prévu par l'amendement. Un écart de 6 points à rattraper par le seul changement de notation est peu probable.
+
+### 2 novembre 2026, 10 h : étape 3.6 préparée (juge ouvert, contrôle humain de 60 réponses)
+
+- Décision de l'auteur : contrôle humain sur 60 réponses (et non 20 % des cas, soit 48). Amendement du 2 novembre inscrit dans `criteres.md` avant le passage du juge, mais après la note automatique (Échec) : les deux niveaux seront publiés côte à côte.
+- Outils (`eval/juge/`) :
+  - `preparer_juge.py` : grille par catégorie et tâches anonymes ;
+  - `juge_kaggle.py` : Mistral Small 3.2 24B, révision de l'étape 3.5, température 0, JSON contraint ;
+  - `noter_juge.py` : notes par modèle pour `comparer_secret.py` ;
+  - `echantillon_humain.py` : tirage et feuille de notation locale ;
+  - `kappa.py` ;
+  - `controles_juge.py` : réponses de contrôle pour la répétition.
+- Relecture de Codex, avec « lancer après corrections » et 12 remarques vérifiées. Corrections :
+  - Identifiants aléatoires : la formule publique permettait de retrouver le modèle.
+  - Tâches, clés et verdicts liés par l'empreinte de la préparation.
+  - Mesures de citation données comme indicatives.
+  - Grille précisée : le document prime sur la référence, aucun bonus de longueur, instructions adressées au correcteur ignorées.
+  - Fin de génération et types du JSON contrôlés.
+  - κ indéfini compté comme non fiable ; IC de κ par document ; écarts publiés par modèle et par catégorie.
+  - Notes humaines liées à l'échantillon.
+  - Répétition sur dev2 avec des réponses de contrôle.
+- **[mesuré]** Jeu secret :
+  - 3 360 tâches (240 cas × 14 modèles), `a_juger.jsonl` de SHA-256 `2379674bca2c4972366d6e60e2524b7b9dbda3be5fdd4f9d7ef020b54f2df74b`.
+  - Échantillon humain figé avant le juge : 60 réponses, 33 documents, 10 par modèle décisif. Empreinte `2e37c2249b0fbd65ac61afe3aa7c51f1c55b980c250e0df1c14dce2833c22c82`.
+  - L'échantillon et la feuille restent sur le Mac, hors du dépôt.
+- Répétition lancée sur dev2 : base et lot 4 (276 réponses), plus 87 réponses de contrôle fabriquées par programme (référence, abstention systématique, chiffres faux, recopie du document, note au correcteur qui réclame 1).

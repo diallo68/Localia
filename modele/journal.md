@@ -893,3 +893,18 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 
 - L'auteur a noté les 60 réponses à l'aveugle (note et affirmation non étayée, toutes remplies). Export lié à l'échantillon `2e37c224…`. SHA-256 du fichier `notes-humaines.json` : `4d79309e51d4500f08796545108e40beaae69d21f0361861b7cf963c3337dcd5`. Le fichier reste sur le Mac, avec l'échantillon.
 - Le juge tourne encore : ni l'auteur ni moi n'avons vu de verdict du jeu secret.
+
+### 2 novembre 2026, 16 h 30 : verdicts du juge sur le jeu secret, κ, niveau final
+
+- **[mesuré]** Juge Mistral Small 3.2 (Q4_K_M) : 3 360 verdicts, aucun en erreur, noyau terminé à 16 h 17 (5 h 20 de calcul).
+- **[mesuré]** S_doc du juge, principal (234 cas, 40 documents) : lot 4 élagué 0,696, base 0,675, écart lot 4 − base +0,021 [−0,024 ; +0,067].
+  - Comparateurs : Qwen3.8 27B 0,907, Gemma 4 31B 0,885, Qwen3.6 35B 0,855, Gemma 4 12B 0,854, Mistral Small 0,827, Qwen3.5 9B 0,816, Gemma 3 27B 0,806, Qwen3.5 4B 0,791, Gemma 3 12B 0,780, Mistral Nemo 0,697, Ministral 3B 0,691, Phi-4 mini 0,657.
+  - Affirmations non étayées selon le juge : base 17,1 %, lot 4 9,2 %.
+  - Écart absolu moyen juge/note automatique : 0,10 à 0,25 selon le modèle. Comme sur dev2, le juge est plus sévère.
+- **[mesuré]** Accord sur les 60 réponses notées à l'aveugle par l'auteur (`kappa.py`, sortie dans `resultats/juge/secret/kappa.txt`, hors dépôt) :
+  - auteur/juge : **κ = −0,038 [−0,121 ; +0,058]**, κ pondéré 0,105, accord brut 61,7 % ;
+  - auteur/note automatique : κ = 0,048 [−0,070 ; +0,174], κ pondéré 0,121, accord brut 76,7 %.
+  - Notes de l'auteur : 1 sur 55 réponses, ½ sur 4, 0 sur 1. Le juge met ½ là où l'auteur met 1 (16 fois sur 55), surtout en rédaction et en synthèse. Il ne relève qu'une affirmation non étayée là où l'auteur en relève 14.
+  - Écart moyen juge − auteur par modèle : base −0,35, lot 4 −0,25, Gemma 3 12B −0,15, Qwen3.5 9B −0,10, Mistral Nemo −0,05, Gemma 4 12B +0,05.
+- **Décision, selon la règle de `criteres.md` fixée avant les verdicts** : κ < 0,6, donc le juge n'est pas fiable. Le niveau final reste celui de la note automatique (étape 3.5) : **Échec** (lot 4 élagué 0,766 contre base 0,772). Le niveau qui se lirait sur le juge n'est pas retenu.
+- Observation, sans effet sur la décision : l'auteur a noté presque tout à 1. Avec une note aussi concentrée, le κ est faible même quand l'accord brut est moyen (effet de prévalence). La note automatique n'atteint pas non plus le seuil. Sur cet échantillon, aucun des deux correcteurs automatiques ne reproduit le jugement de l'auteur.

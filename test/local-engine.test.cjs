@@ -43,6 +43,21 @@ test('fichier GGUF d’un modèle Ollama retrouvé par son manifeste, avec ses r
   );
 });
 
+test('manifeste au format d’Ollama 0.40 (manifests-v2/ollama.com) retrouvé aussi', async () => {
+  const root = await fakeOllama({
+    'manifests-v2/ollama.com/library/localia-doc-2b/latest': manifest('dd'),
+    'manifests-v2/ollama.com/lukey03/qwen3.5-9b/q4': manifest('ee'),
+    'manifests/registry.ollama.ai/library/qwen3/8b': manifest('aa'),
+    'blobs/sha256-aa': 'GGUFxx',
+    'blobs/sha256-dd': 'GGUFzz',
+    'blobs/sha256-ee': 'GGUFww',
+  });
+  assert.equal((await e.ollamaModelFile('localia-doc-2b', root)).digest, 'sha256:dd');
+  assert.equal((await e.ollamaModelFile('lukey03/qwen3.5-9b:q4', root)).digest, 'sha256:ee');
+  // Les deux emplacements coexistent : les modèles plus anciens restent dans l'ancien dossier.
+  assert.equal((await e.ollamaModelFile('qwen3:8b', root)).digest, 'sha256:aa');
+});
+
 test('fichier qui n’est pas au format GGUF refusé', async () => {
   const root = await fakeOllama({
     'manifests/registry.ollama.ai/library/bizarre/latest': manifest('cc'),

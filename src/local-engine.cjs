@@ -31,13 +31,21 @@ async function ollamaModelFile(name, roots = ollamaRoots()) {
 async function modelFileIn(name, root) {
   const [base, tag = 'latest'] = String(name).split(':');
   const parts = base.includes('/') ? base.split('/') : ['library', base];
-  const manifest = path.join(root, 'manifests', 'registry.ollama.ai', ...parts, tag);
+  // Ollama 0.40 range les modèles créés ou téléchargés depuis dans manifests-v2/ollama.com ; les plus
+  // anciens restent dans manifests/registry.ollama.ai.
   let data;
-  try {
-    data = JSON.parse(await fs.readFile(manifest, 'utf8'));
-  } catch {
-    throw new Error(`Modèle Ollama introuvable sur cet ordinateur : ${name}.`);
+  for (const dir of [
+    ['manifests-v2', 'ollama.com'],
+    ['manifests', 'registry.ollama.ai'],
+  ]) {
+    try {
+      data = JSON.parse(await fs.readFile(path.join(root, ...dir, ...parts, tag), 'utf8'));
+      break;
+    } catch {
+      // emplacement suivant
+    }
   }
+  if (!data) throw new Error(`Modèle Ollama introuvable sur cet ordinateur : ${name}.`);
   const layer = (data.layers || []).find(
     (l) => l.mediaType === 'application/vnd.ollama.image.model',
   );

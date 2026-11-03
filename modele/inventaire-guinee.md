@@ -43,6 +43,21 @@ langue la plus parlée, n'a presque rien d'ouvert à l'écrit. Le soussou n'a qu
   pular, les livres de l'éditeur guinéen Ganndal (dictionnaires illustrés en français, pular, soussou et malinké),
   et la couverture du pular par les modèles de parole de Meta (MMS).
 
+### Écritures du pular : latin, ADLaM, ajami
+
+- Le pular s'écrit en **alphabet latin** (ɓ, ɗ, ŋ, ƴ), en **ADLaM** et en **ajami** (écriture arabe). L'ADLaM a été créé
+  en 1989 par Ibrahima et Abdoulaye Barry, et il est dans Unicode, donc pris en charge par les systèmes courants.
+- *Guide d'apprentissage de l'alphabet ADLaM* (Aysha Sow, avec Abdoulaye J. Barry, 2021, 21 pages, en français et en
+  pular) : « Tous les droits sont réservés », sauf pour apprendre l'ADLaM à titre individuel. Il ne peut pas servir à
+  l'entraînement, mais c'est une bonne référence pour les évaluateurs. Contact de l'autrice : l'organisation Winden
+  Jangen, adresse dans le guide. C'est un partenaire possible pour l'ADLaM.
+- **[mesuré]** Le tokenizer de Qwen3.5 découpe l'ADLaM octet par octet : 11 caractères donnent 41 jetons, contre 9
+  jetons pour 24 caractères de pular en lettres latines. Écrire en ADLaM coûterait environ 4 jetons par lettre, donc
+  serait plus lent et plus difficile à apprendre. Il faudrait ajouter des jetons ADLaM au vocabulaire, et le
+  vocabulaire élagué de Dial-bowe-Guinee-2B ne les a pas.
+- La correspondance entre le latin et l'ADLaM est en grande partie régulière. Un texte pular en latin pourrait être
+  converti en ADLaM par programme, à faire vérifier par un locuteur.
+
 ## 2. Malinké (maninka, écriture N'Ko et latine)
 
 - **nicolingua-0005-nqo-nmt-resources** (`github.com/mdoumbouya/nicolingua-0005-nqo-nmt-resources`), licence lue :

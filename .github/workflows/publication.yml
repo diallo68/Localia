@@ -32,7 +32,7 @@ jobs:
             os: windows-latest
             build: --win nsis zip --x64
           - name: Linux
-            os: ubuntu-latest
+            os: ubuntu-24.04
             build: --linux AppImage deb --x64
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60

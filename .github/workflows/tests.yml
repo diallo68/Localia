@@ -23,7 +23,7 @@ defaults:
 jobs:
   unit:
     name: Unit tests and formatting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -58,7 +58,7 @@ jobs:
             build: --win nsis zip --x64
           - name: Linux
             family: linux
-            os: ubuntu-latest
+            os: ubuntu-24.04
             build: --linux AppImage deb --x64
     runs-on: ${{ matrix.os }}
     # Un test bloqué s'arrête au bout de 45 min (sinon GitHub attend 6 h, minutes comptées).

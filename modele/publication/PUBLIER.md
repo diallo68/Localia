@@ -9,7 +9,7 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
 - [x] Licence : Apache 2.0 (décision de l'auteur, 3 nov. 2026 ; texte standard dans `LICENSE`).
 - [x] Plateformes : Hugging Face seul pour l'instant ; Ollama éventuellement plus tard.
 - [x] Mise en ligne : dépôt d'abord **privé** pour relecture, puis rendu public par l'auteur.
-- [ ] Compte : l'auteur a un compte Hugging Face ; nom du compte à donner.
+- [x] Compte : `madma2022` → dépôt `madma2022/Dial-bowe-Guinee-2B`.
 - [ ] Qui envoie : l'auteur, ou Claude avec un jeton Hugging Face à écriture limitée à ce seul dépôt, rangé dans
   le trousseau (jamais dans un fichier, une commande visible ou une capture).
 
@@ -39,7 +39,8 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
 ## Envoi (le jour J, avec accord)
 
 ```bash
-huggingface-cli upload <compte>/Dial-bowe-Guinee-2B Dial-bowe-Guinee-2B/ . --repo-type model
+huggingface-cli repo create Dial-bowe-Guinee-2B --type model --private   # dépôt privé d'abord
+huggingface-cli upload madma2022/Dial-bowe-Guinee-2B Dial-bowe-Guinee-2B/ . --repo-type model
 ```
 
 Puis, si l'auteur le décide, Ollama : `ollama cp dial-bowe-guinee-2b <compte>/dial-bowe-guinee-2b` et

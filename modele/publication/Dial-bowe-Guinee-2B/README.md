@@ -22,9 +22,11 @@ tags:
 **Modèle expérimental.** Petit modèle de 2 milliards de paramètres pour répondre en français à des demandes sur
 **un document fourni**, sur un ordinateur sans carte graphique (8 Go de RAM suffisent).
 
-> **À lire d'abord.** Le modèle a été entraîné sur des fiches administratives **françaises** (Service-Public.fr).
-> Il ne contient aucune donnée propre à la Guinée et n'a pas été évalué sur des documents guinéens ni dans les
-> langues nationales guinéennes. Sur notre jeu de test secret, il **ne fait pas mieux que son modèle de base dans
+> **Le nom.** Le nom du modèle rappelle l'origine guinéenne de son auteur. Le modèle lui-même a été entraîné sur des
+> fiches administratives **françaises** (Service-Public.fr). Il ne contient pas de données propres à la Guinée et ne
+> parle pas les langues nationales guinéennes.
+>
+> **Le résultat.** Sur notre jeu de test secret, le modèle **ne fait pas mieux que son modèle de base dans
 > l'ensemble**. Il s'abstient et cite mieux, mais il signale moins bien les incohérences et résiste moins bien aux
 > instructions cachées dans un document (§ Résultats).
 
@@ -173,8 +175,8 @@ Processeur seul (Mac Intel, 8 fils), 8 192 jetons de contexte : génération de 
 ## English summary
 
 Experimental 2B model (Qwen3.5-2B + LoRA, GGUF) for answering questions about **a provided French document** on a
-CPU-only computer. It was trained on French government information sheets (Service-Public.fr); it contains **no
-Guinea-specific data** and was not evaluated on Guinean documents or languages. On a held-out secret test set
+CPU-only computer. The name honours the author's Guinean origin; the model itself was trained on French government
+information sheets (Service-Public.fr) and contains no Guinea-specific data. On a held-out secret test set
 (240 cases), it does **not** beat its base model overall (0.766 vs 0.772): it abstains and cites better, but it is
 weaker at flagging inconsistencies and at resisting prompt injection. Public benchmarks: FQuAD 2.0 +19 points and
 SQuAD 2.0 +23 points (mostly correct abstention), IFEval −5.9, MGSM −7.2. Speed: about 5 tokens/s on a laptop CPU,

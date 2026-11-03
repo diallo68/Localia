@@ -1,0 +1,46 @@
+# Publication de Dial-bowe-Guinee-2B : liste de contrôle
+
+Préparé le 3 novembre 2026. **Rien n'est envoyé sans l'accord explicite de l'auteur, le jour de la publication.**
+Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fichier-ci n'en fait pas partie.
+
+## Décisions de l'auteur
+
+- [x] Nom : Dial-bowe-Guinee-2B (Ollama : `dial-bowe-guinee-2b`).
+- [ ] Licence : Apache 2.0 proposée (celle de la base ; texte standard dans `LICENSE`).
+- [ ] Plateformes : Hugging Face ; bibliothèque Ollama ? autres ?
+- [ ] Compte et dépôt : quel compte Hugging Face ? Le modèle est-il mis tout de suite en public, ou d'abord en privé
+  pour relecture ?
+- [ ] Qui envoie : l'auteur, ou Claude avec un jeton Hugging Face à écriture limitée à ce seul dépôt, rangé dans
+  le trousseau (jamais dans un fichier, une commande visible ou une capture).
+
+## Après le noyau du 7 novembre (`resultats/lot4-fin/comparaison.txt`)
+
+- [ ] Choisir le fichier publié.
+  - Si le modèle refait est équivalent au lot 4 sur dev et dev2 (et par la KL du témoin), publier toute sa famille
+    (Q8_0, Q5_K_M, Q4_K_M, Q4_0) et reprendre ses empreintes.
+  - Sinon, ne publier que le Q4_K_M actuel (`a4b5f4bc…`), seul à avoir été mesuré sur le jeu secret.
+  - Dans les deux cas, le README dit quel fichier a été mesuré sur le jeu secret.
+- [ ] Mesurer la vitesse et la mémoire de chaque quantification retenue sur le Mac (llama-bench, mêmes réglages que
+  `mesures/vitesse-lot4-vocfr48k.md`).
+- [ ] Remplir les `À_COMPLÉTER` du README : tableau des fichiers, empreintes, choix selon la RAM, vitesses.
+- [ ] Renommer les GGUF (`Dial-bowe-Guinee-2B-<quant>.gguf`) et mettre `general.name` à `Dial-bowe-Guinee-2B` avec
+  `gguf_new_metadata.py`. Ce changement de métadonnées modifie l'empreinte : la recalculer **après**.
+- [ ] Vérifier que chaque GGUF porte le gabarit sans réflexion, puis essai rapide dans Ollama (guide, étape 4).
+
+## Avant l'envoi
+
+- [ ] Relecture critique du README par Codex (prévue avant le rapport final). Ses désaccords vont dans
+  `desaccords.md`.
+- [ ] Relire le README avec l'auteur, et vérifier qu'aucun chiffre ne dit plus que le journal.
+- [ ] Vérifier qu'aucun fichier du dépôt ne contient le jeu secret, les jeux dev et dev2, les données privées (thèse)
+  ou un jeton.
+- [ ] Mentions : Service-Public.fr (DILA), Licence Ouverte ; « ni produit ni approuvé par l'équipe Qwen ».
+
+## Envoi (le jour J, avec accord)
+
+```bash
+huggingface-cli upload <compte>/Dial-bowe-Guinee-2B Dial-bowe-Guinee-2B/ . --repo-type model
+```
+
+Puis, si l'auteur le décide, Ollama : `ollama cp dial-bowe-guinee-2b <compte>/dial-bowe-guinee-2b` et
+`ollama push <compte>/dial-bowe-guinee-2b` (clé du compte ollama.com requise).

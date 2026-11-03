@@ -6,10 +6,10 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
 ## Décisions de l'auteur
 
 - [x] Nom : Dial-bowe-Guinee-2B (Ollama : `dial-bowe-guinee-2b`).
-- [ ] Licence : Apache 2.0 proposée (celle de la base ; texte standard dans `LICENSE`).
-- [ ] Plateformes : Hugging Face ; bibliothèque Ollama ? autres ?
-- [ ] Compte et dépôt : quel compte Hugging Face ? Le modèle est-il mis tout de suite en public, ou d'abord en privé
-  pour relecture ?
+- [x] Licence : Apache 2.0 (décision de l'auteur, 3 nov. 2026 ; texte standard dans `LICENSE`).
+- [x] Plateformes : Hugging Face seul pour l'instant ; Ollama éventuellement plus tard.
+- [x] Mise en ligne : dépôt d'abord **privé** pour relecture, puis rendu public par l'auteur.
+- [ ] Compte : l'auteur a un compte Hugging Face ; nom du compte à donner.
 - [ ] Qui envoie : l'auteur, ou Claude avec un jeton Hugging Face à écriture limitée à ce seul dépôt, rangé dans
   le trousseau (jamais dans un fichier, une commande visible ou une capture).
 

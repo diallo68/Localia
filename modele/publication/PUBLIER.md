@@ -10,8 +10,8 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
 - [x] Plateformes : Hugging Face seul pour l'instant ; Ollama éventuellement plus tard.
 - [x] Mise en ligne : dépôt d'abord **privé** pour relecture, puis rendu public par l'auteur.
 - [x] Compte : `madma2022` → dépôt `madma2022/Dial-bowe-Guinee-2B`.
-- [ ] Qui envoie : l'auteur, ou Claude avec un jeton Hugging Face à écriture limitée à ce seul dépôt, rangé dans
-  le trousseau (jamais dans un fichier, une commande visible ou une capture).
+- [x] Qui envoie : **l'auteur**, avec sa propre connexion Hugging Face (commandes ci-dessous, lancées par lui).
+- [x] Calendrier : on attend les résultats du noyau du samedi 7 novembre avant toute publication.
 
 ## Après le noyau du 7 novembre (`resultats/lot4-fin/comparaison.txt`)
 

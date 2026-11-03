@@ -19,13 +19,19 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
   - Si le modèle refait est équivalent au lot 4 sur dev et dev2 (et par la KL du témoin), publier toute sa famille
     (Q8_0, Q5_K_M, Q4_K_M, Q4_0) et reprendre ses empreintes.
   - Sinon, ne publier que le Q4_K_M actuel (`a4b5f4bc…`), seul à avoir été mesuré sur le jeu secret.
-  - Dans les deux cas, le README dit quel fichier a été mesuré sur le jeu secret.
+  - Dans les deux cas, le README dit quel fichier a été mesuré sur le jeu secret (avant le changement de métadonnées :
+    `a4b5f4bc…` ; mêmes poids après).
 - [ ] Mesurer la vitesse et la mémoire de chaque quantification retenue sur le Mac (llama-bench, mêmes réglages que
   `mesures/vitesse-lot4-vocfr48k.md`).
 - [ ] Remplir les `À_COMPLÉTER` du README : tableau des fichiers, empreintes, choix selon la RAM, vitesses.
-- [ ] Renommer les GGUF (`Dial-bowe-Guinee-2B-<quant>.gguf`) et mettre `general.name` à `Dial-bowe-Guinee-2B` avec
-  `gguf_new_metadata.py`. Ce changement de métadonnées modifie l'empreinte : la recalculer **après**.
-- [ ] Vérifier que chaque GGUF porte le gabarit sans réflexion, puis essai rapide dans Ollama (guide, étape 4).
+- [ ] Préparer chaque GGUF avec `preparer_gguf.py SOURCE.gguf <quant> <dossier>` (depuis `~/localia-labo`, avec
+  `modele-compact/env-entrainement/bin/python -I`). Le script renomme en `Dial-bowe-Guinee-2B-<quant>.gguf`, met
+  `general.name`, corrige `general.base_model` (le convertisseur avait écrit Qwen3.5-2B-**Base**, alors que la base
+  entraînée est Qwen/Qwen3.5-2B) et retire l'étiquette `image-text-to-text`. Il refuse le fichier si le gabarit
+  diffère de `gabarit_sans_reflexion.jinja` ou si un tenseur change, puis écrit l'empreinte dans `SHA256SUMS`.
+  Essai du 3 nov. sur le Q4_K_M actuel : 335 tenseurs identiques, SHA-256 `437607848b5a…` (contre `a4b5f4bc…` avant
+  les métadonnées), même réponse que l'original à température 0 dans llama-server.
+- [ ] Essai rapide dans Ollama (guide, étape 4).
 
 ## Avant l'envoi
 

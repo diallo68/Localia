@@ -41,7 +41,17 @@ tags:
 | `Modelfile` | réglages pour Ollama | | |
 | `gabarit_sans_reflexion.jinja` | gabarit de conversation, déjà inclus dans les GGUF | | |
 
-Quel fichier choisir selon la mémoire de l'ordinateur : `À_COMPLÉTER`.
+Quel fichier choisir selon la mémoire de l'ordinateur (Q4_K_M mesuré, processeur seul ; le reste `À_COMPLÉTER`) :
+
+| Mémoire de l'ordinateur | Fichier | Contexte conseillé |
+|---|---|---|
+| 8 Go | Q4_K_M | 8 192 jetons (pic 1,8 Go) ; 32 768 possible (pic 2,9 Go) |
+| 16 Go | `À_COMPLÉTER` | 8 192 à 32 768 jetons |
+| 32 Go | `À_COMPLÉTER` | 8 192 à 32 768 jetons |
+
+La mémoire limite rarement : seules 6 couches sur 24 gardent un cache par jeton (environ 12 Ko par jeton), les autres
+ont un état de taille fixe. C'est le temps qui limite : sur un processeur, un long document se lit lentement
+(§ Vitesse et mémoire).
 
 ## Utilisation
 
@@ -138,8 +148,16 @@ l'information n'est pas dans le texte. IFEval et MGSM reculent.
 
 ### Vitesse et mémoire
 
-Processeur seul (Mac Intel, 8 fils), 8 192 jetons de contexte : génération de 4,9 à 5,4 jetons/s, pic de mémoire de
-1,77 Go. Les autres quantifications : `À_COMPLÉTER`.
+Q4_K_M, processeur seul (Mac Intel, 8 fils, llama.cpp sans flash attention) :
+
+| Contexte déjà rempli | Lecture du document | Génération | Pic de mémoire |
+|---:|---:|---:|---:|
+| 8 192 jetons | 21 à 24 jetons/s | 4,9 à 5,4 jetons/s | 1,77 Go |
+| 32 768 jetons | 7,2 jetons/s | 3,0 jetons/s | 2,91 Go |
+
+La mesure à 32 768 jetons a été faite une seule fois, avec un processeur bridé à 50 % par la température : elle donne
+un ordre de grandeur. Lire un document d'environ 30 000 jetons (une cinquantaine de pages) prend plus d'une heure.
+Les autres quantifications : `À_COMPLÉTER`.
 
 ## Entraînement
 

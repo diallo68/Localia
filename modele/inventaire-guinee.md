@@ -35,6 +35,10 @@ langue la plus parlée, n'a presque rien d'ouvert à l'écrit. Le soussou n'a qu
 - **Non ouverts, mais à garder comme partenaires possibles** : la chaîne YouTube « Apprendre le pulaar Guinée »
   (Siraajo Jallo, 101 vidéos, licence YouTube standard) ; l'application Dialect (pulaar du Sénégal, tous droits
   réservés).
+- **Livre protégé, partenaire possible** : *Parlons poular, peul du Fouta Djalon*, d'Alpha Oumar Kona Balde et Anne
+  Leroy (L'Harmattan, 2003, 285 pages, ISBN 9782296306455). C'est la bonne variété, mais l'ouvrage est sous droit
+  d'auteur et lu sur Perlego (abonnement, usage personnel). Il ne peut pas servir à l'entraînement sans l'accord de
+  l'éditeur ou des auteurs. Il reste utile comme référence pour les évaluateurs.
 - À vérifier : Bloom Library (livres illustrés souvent sous Creative Commons), les guides de santé Hesperian en
   pular, les livres de l'éditeur guinéen Ganndal (dictionnaires illustrés en français, pular, soussou et malinké),
   et la couverture du pular par les modèles de parole de Meta (MMS).

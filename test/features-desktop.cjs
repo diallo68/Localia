@@ -28,6 +28,26 @@ async function waitForMissing(file, timeout = 5000) {
 }
 // Avant chaque lecture : écritures de Localia terminées (machines lentes), voir settleWrites.
 let settleWrites = async () => {};
+// Message attendu dans la bibliothèque de modèles. Délai large (machines lentes de la CI) ; en
+// cas d'échec, le message réellement affiché et une capture disent où l'installation s'est arrêtée.
+async function waitForHfStatus(page, text, timeout = 60000) {
+  try {
+    await page.waitForFunction(
+      (t) => document.querySelector('#hf-status').textContent.includes(t),
+      text,
+      { timeout },
+    );
+  } catch (error) {
+    await page.screenshot({ path: 'test-results/echec-bibliotheque.png', fullPage: true });
+    const shown = await page.evaluate(() => ({
+      status: document.querySelector('#hf-status').textContent,
+      notice: document.querySelector('#notice').textContent,
+    }));
+    throw new Error(
+      `« ${text} » attendu ; affiché : « ${shown.status} » ; avis : « ${shown.notice} » (${error.message})`,
+    );
+  }
+}
 const readJson = async (profile, name) => {
   await settleWrites();
   return JSON.parse(await fs.readFile(path.join(profile, name), 'utf8'));
@@ -1604,9 +1624,7 @@ const readJson = async (profile, name) => {
     const qwenCard = page.locator('.hf-card', { hasText: 'Qwen 3 · 4B' });
     assert.match(await qwenCard.textContent(), /2,5 Go · licence Apache 2\.0/);
     await qwenCard.locator('button').click();
-    await page.waitForFunction(() =>
-      document.querySelector('#hf-status').textContent.includes('integre/qwen3-4b est prêt'),
-    );
+    await waitForHfStatus(page, 'integre/qwen3-4b est prêt');
     const sharedEntry = (await readJson(profile, 'modeles-integres.json')).find(
       (m) => m.name === 'integre/qwen3-4b',
     );

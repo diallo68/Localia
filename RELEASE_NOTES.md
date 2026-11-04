@@ -2,6 +2,11 @@
 
 *Notes de version en français plus bas.*
 
+## 0.7.5 — 2026-11-04
+
+- **Built-in engine: Ollama 0.40 models found again.** Since Ollama 0.40, models created or downloaded are stored in a new folder (`manifests-v2/ollama.com`); the built-in engine only looked in the old one (`manifests/registry.ollama.ai`) and reported these models as missing. Both folders are now searched, the new one first.
+- **Localia opens in simple mode, on the “General” field.** Each launch starts in simple mode with the General field, whatever was chosen last time (advanced mode, another field or a profile); both remain one click away. First launch is unchanged.
+
 ## 0.7.4 — 2026-10-17
 
 - **Formulas in answers are readable.** Models write formulas in LaTeX (`$…$`, `$$…$$`, `\(…\)`, `\[…\]`), which appeared raw, with stray `$` and subscripts turned into italics. Common formulas are now shown as text: CO₂ + H₂O → C₆H₁₂O₆, x², (2/3)², √x, ≤, ≈, Greek letters, chemical equations (`\ce`). A formula too complex for text (matrices…) stays as written, in code. Copy, read aloud and Word/PDF export follow the display. Dollar amounts (“between $5 and $10”) are not taken for formulas.
@@ -112,6 +117,11 @@ Fixes found by an independent review (Codex) of 0.7.0:
 ---
 
 # Notes de version
+
+## 0.7.5 — 4 novembre 2026
+
+- **Moteur intégré : les modèles d’Ollama 0.40 sont de nouveau trouvés.** Depuis Ollama 0.40, les modèles créés ou téléchargés sont rangés dans un nouveau dossier (`manifests-v2/ollama.com`) ; le moteur intégré ne cherchait que dans l’ancien (`manifests/registry.ollama.ai`) et les disait introuvables. Les deux dossiers sont maintenant consultés, le nouveau d’abord.
+- **Localia s’ouvre en mode simple, sur le domaine « Général ».** Chaque ouverture repart en mode simple avec le domaine Général, quel que soit le dernier choix (mode avancé, autre domaine ou profil) ; les deux restent à un clic. Le premier lancement ne change pas.
 
 ## 0.7.4 — 17 octobre 2026
 

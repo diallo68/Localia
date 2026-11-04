@@ -55,6 +55,7 @@ const readJson = async (profile, name) => {
 
 (async () => {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-features-'));
+  await fs.mkdir('test-results', { recursive: true });
   let app;
   try {
     await fs.writeFile(
@@ -102,6 +103,8 @@ const readJson = async (profile, name) => {
         LOCALIA_TEST_DATA: profile,
         LOCALIA_REMOTE_PORT: '47899',
         LOCALIA_FAKE_LLAMA: '1',
+        // Diagnostic du moteur intégré (gardé par la CI avec les captures).
+        LOCALIA_ENGINE_DEBUG: path.resolve('test-results', 'moteur-integre.log'),
         LOCALIA_FAKE_WHISPER: '1',
         LOCALIA_FAKE_UPDATE: '1',
         // Fichier Ollama simulé (creux) : son empreinte n'est pas recalculée.

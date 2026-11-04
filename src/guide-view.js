@@ -65,12 +65,15 @@ async function renderGuide() {
           Boolean(catalog.downloading) || !enoughDisk({ sizeGB: m.size / 1e9 }, catalog.freeDiskGB),
         onclick: async () => {
           $('guide-progress').textContent = 'Connexion à Hugging Face…';
+          guideDownloading = true;
           try {
             const result = await window.localia.catalogDownload(m.id);
+            guideDownloading = false;
             $('guide-progress').textContent = result?.cancelled
               ? 'En pause : cliquez à nouveau pour reprendre.'
               : `${result.name} est prêt.`;
           } catch (error) {
+            guideDownloading = false;
             $('guide-progress').textContent = error.message;
           }
           await refresh();
@@ -130,8 +133,11 @@ async function renderGuide() {
   $('guide-done').checked = settings.guideDone === true;
 }
 
+// Téléchargement lancé ici en cours : un message de progression arrivé après le résultat (essai du
+// modèle très rapide) ne doit pas remplacer « … est prêt ».
+let guideDownloading = false;
 window.localia.onProgress(({ kind, data }) => {
-  if (kind === 'download' && !$('guide-view').hidden) {
+  if (kind === 'download' && guideDownloading && !$('guide-view').hidden) {
     $('guide-progress').textContent =
       data.phase === 'téléchargement'
         ? `Téléchargement : ${Math.round((100 * data.received) / data.total)} %`

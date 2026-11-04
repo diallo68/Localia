@@ -1,6 +1,9 @@
 // Bibliothèque de modèles : catalogue du moteur intégré (Hugging Face), téléchargement avec reprise.
 const gigas = (bytes) => `${(bytes / 1e9).toFixed(1).replace('.', ',')} Go`;
 let catalogState = null;
+// Installation en cours : les messages de progression arrivés après le résultat (essai du modèle
+// très rapide) sont ignorés, sinon ils remplaceraient « … est prêt » par une étape déjà finie.
+let downloadActive = false;
 
 async function renderCatalog() {
   catalogState = await window.localia.catalogStatus();
@@ -59,8 +62,10 @@ async function startDownload(run, label, first = 'Connexion à Hugging Face…')
   $('hf-status').textContent = first;
   $('hf-progress').removeAttribute('value');
   $('hf-cancel').hidden = false;
+  downloadActive = true;
   try {
     const result = await run();
+    downloadActive = false;
     if (result?.quiet) $('hf-download').hidden = true;
     else if (result?.cancelled && result.copy)
       $('hf-status').textContent = 'Copie interrompue : rien n’a été installé ni écrit.';
@@ -76,8 +81,10 @@ async function startDownload(run, label, first = 'Connexion à Hugging Face…')
       $('hf-progress').value = 100;
     }
   } catch (error) {
+    downloadActive = false;
     $('hf-status').textContent = error.message;
   } finally {
+    downloadActive = false;
     $('hf-cancel').hidden = true;
     await refresh();
     await renderCatalog().catch(() => {});
@@ -85,7 +92,7 @@ async function startDownload(run, label, first = 'Connexion à Hugging Face…')
 }
 
 window.localia.onProgress(({ kind, data }) => {
-  if (kind !== 'download') return;
+  if (kind !== 'download' || !downloadActive) return;
   if (data.total) $('hf-progress').value = Math.round((100 * data.received) / data.total);
   $('hf-status').textContent =
     data.phase === 'téléchargement'

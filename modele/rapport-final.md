@@ -117,7 +117,7 @@ Les gains et les pertes s'annulent.
 | Taille du fichier | ≤ 2,5 Go | 1,11 Go (Q4_K_M) | oui |
 | Génération à 8k, processeur seul | ≥ 5 jetons/s | 26 oct., machine chargée : 5,22 / 5,35 / 4,94, médiane 5,22. 7 nov. : 16,8 à 17,1 | oui, de justesse en charge |
 | Mémoire à 8k | ≤ 4 Go | 1,77 Go (26 oct.), 2,39 Go (7 nov.) | oui |
-| Import dans Ollama et Localia | fonctionne | Ollama 0.40.5 et 0.40.14 ; Localia par Ollama. Le moteur intégré lit le fichier, mais aucune conversation complète n'y a été essayée | oui |
+| Import dans Ollama et Localia | fonctionne | Ollama 0.40.5 et 0.40.14 ; Localia par Ollama et par le moteur intégré (conversation de trois tours, 7 nov.) | oui |
 | Décontamination | règle amendée le 25 oct. | 36 fiches d'évaluation et 44 fiches proches exclues ; 6 cas retirés du score principal | oui |
 | Provenance | 100 % des sources | `provenance.md` | oui |
 | Régression générale | MMMLU ≥ base − 2 ; MGSM ≥ base − 3 ; IFEval ≥ base | MMMLU +0,2 ; **MGSM −7,2** ; **IFEval −5,9** | **non** |
@@ -223,8 +223,12 @@ Tous sont datés dans `criteres.md` et ont été décidés avant le résultat qu
   le RGPD ont mené à une recherche combinant mots-clés et sens, intégrée sur une branche locale de Localia
   (`recherche-sections`). C'est la réponse pratique au contexte long sur un processeur : envoyer les passages utiles
   plutôt que le document entier.
-- **Localia** : le modèle s'utilise par Ollama. Le moteur intégré lit le fichier, mais une conversation complète n'y a
-  pas encore été essayée. La version 0.7.5 de Localia est sortie le 4 novembre.
+- **Localia** : le modèle s'utilise par Ollama et par le moteur intégré. La version 0.7.5 de Localia est sortie le
+  4 novembre.
+  - Défaut relevé dans le moteur intégré : quand la réflexion n'est pas réglée (cas par défaut), node-llama-cpp
+    n'ajoute pas le bloc de réflexion vide du gabarit, et le modèle commence chaque réponse par deux sauts de ligne.
+  - Si la réflexion est ensuite désactivée en cours de conversation, ces sauts de ligne restés dans l'historique ont
+    produit une réponse contradictoire (journal, 7 novembre).
 
 ## 7. Suites possibles (rien n'est décidé)
 

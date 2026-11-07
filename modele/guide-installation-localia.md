@@ -72,8 +72,9 @@ Mesuré sur le cas V001 de dev2, avec la consigne de l'évaluation et une tempé
 le fichier d'Ollama sans le copier ; le modèle s'appelle alors `integre/localia-doc-2b`. Ollama 0.40.5 range les
 modèles récents dans `~/.ollama/models/manifests-v2/ollama.com/`, que Localia ne lisait pas avant le
 2 novembre 2026 (« Modèle Ollama introuvable sur cet ordinateur »). C'est corrigé dans `src/local-engine.cjs`. Le
-lecteur GGUF du moteur intégré lit bien le fichier (architecture `qwen35`, gabarit sans réflexion), mais une
-conversation complète par ce moteur n'a pas encore été essayée.
+lecteur GGUF du moteur intégré lit bien le fichier (architecture `qwen35`, gabarit sans réflexion), et une
+conversation de trois tours a été essayée le 7 novembre 2026 avec le moteur de Localia (`src/llama-worker.mjs`,
+node-llama-cpp 3.22.1), sur processeur seul : réponses justes, environ 19 jetons/s, aucune réflexion.
 
 ## 6. Quel fichier selon la mémoire de l'ordinateur
 

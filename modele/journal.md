@@ -955,3 +955,10 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Défaut trouvé : sans `think`, `QwenChatWrapper` termine l'invite par `<|im_start|>assistant\n`, sans le bloc vide `<think>\n\n</think>\n\n` du gabarit d'entraînement (vérifié en affichant le texte de l'invite). Le modèle écrit alors deux sauts de ligne en tête de chaque réponse.
 - Cas mixte, avec un 1er tour sans `think` puis `think: false` au 2e : la 2e réponse se contredit (« Le document ne contient pas d'information… Il indique seulement que les prêts sont limités à 6 livres pendant 3 semaines »). Ollama répond juste dans la même conversation. **[supposé]** Ce sont les sauts de ligne restés dans l'historique, dans un format que le modèle n'a pas vu à l'entraînement.
 - Correction possible dans Localia, non faite : pour un modèle Qwen dont le gabarit émet toujours le bloc vide, traiter l'absence de `think` comme `think: false`.
+
+### 7 novembre 2026, 18 h : défaut du moteur intégré corrigé sur main
+
+- Accord de l'auteur. Commit 57d2133 sur `main` (pas encore dans une version) : `src/thinking-template.cjs` reconnaît un gabarit qui émet toujours `<think></think>` vide après `add_generation_prompt`, sans `enable_thinking` hors commentaires. Pour un tel modèle, l'absence de `think` vaut `think: false`. Le choix de l'utilisateur, s'il en a fait un, est gardé.
+- **[mesuré]** Aucun des 70 gabarits de `llama.cpp/models/templates` n'est reconnu à tort (dont Qwen3, Qwen3.5-4B, QwQ, DeepSeek-R1) ; celui de Dial-bowe l'est. 4 tests ajoutés, 219 tests passent.
+- **[mesuré]** Réessai du vrai moteur sur le Q4_K_M : sans `think`, les réponses ne commencent plus par des sauts de ligne et restent justes (19 à 21 jetons/s) ; cas mixte (`think: false` au 2e tour) : réponse juste, « On peut emprunter 6 livres pendant 3 semaines ».
+

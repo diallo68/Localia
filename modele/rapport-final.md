@@ -229,6 +229,8 @@ Tous sont datés dans `criteres.md` et ont été décidés avant le résultat qu
     n'ajoute pas le bloc de réflexion vide du gabarit, et le modèle commence chaque réponse par deux sauts de ligne.
   - Si la réflexion est ensuite désactivée en cours de conversation, ces sauts de ligne restés dans l'historique ont
     produit une réponse contradictoire (journal, 7 novembre).
+  - Corrigé sur `main` le 7 novembre (commit 57d2133, pas encore dans une version) : pour un gabarit qui émet toujours
+    le bloc vide, l'absence de réglage vaut « réflexion désactivée ». Réessayé : plus de sauts de ligne, cas mixte juste.
 
 ## 7. Suites possibles (rien n'est décidé)
 

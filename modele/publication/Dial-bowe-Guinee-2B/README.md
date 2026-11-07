@@ -36,10 +36,19 @@ tags:
 
 | Fichier | Quantification | Taille | SHA-256 |
 |---|---|---:|---|
-| `Dial-bowe-Guinee-2B-Q4_K_M.gguf` | Q4_K_M | 1,11 Go | `À_COMPLÉTER` |
-| autres quantifications | Q8_0, Q5_K_M, Q4_0 | | `À_COMPLÉTER` (mesures du 7 novembre 2026) |
+| `Dial-bowe-Guinee-2B-Q4_K_M.gguf` | Q4_K_M, **fichier évalué sur le jeu secret** | 1,11 Go | `437607848b5a01795584b23b377f229301942bd6206ca3712451a6219f54f34a` |
+| `Dial-bowe-Guinee-2B-Q5_K_M.gguf` | Q5_K_M | 1,25 Go | `8c3b26dd918b274ea616ced785d435ce3c1839f25aa572b77511fe0ecd269255` |
+| `Dial-bowe-Guinee-2B-Q8_0.gguf` | Q8_0 | 1,82 Go | `5c62f9374a30d820a6793a415fe0d505b0024aed931705679f837fbabb70e349` |
 | `Modelfile` | réglages pour Ollama | | |
 | `gabarit_sans_reflexion.jinja` | gabarit de conversation, déjà inclus dans les GGUF | | |
+
+Les empreintes sont aussi dans `SHA256SUMS`. Seul le Q4_K_M a été évalué sur le jeu secret. Il s'agit du fichier
+mesuré, avec les mêmes poids : seuls le nom et la description du modèle de base ont changé dans ses métadonnées.
+Le Q5_K_M et le Q8_0 viennent d'un second entraînement, qui reprend le même au pas 480 sur 512 pour en garder la
+pleine précision. Le Q4_K_M de ce second entraînement s'écarte de la pleine précision exactement comme le fichier
+évalué (divergence KL 0,0428 contre 0,0427) et ne s'en distingue pas sur nos deux jeux de développement (écart non
+significatif). Le Q5_K_M et le Q8_0 n'ont été vérifiés que sur ces jeux de développement et par la divergence KL
+(§ Quantifications).
 
 Quel fichier choisir selon la mémoire de l'ordinateur (Q4_K_M mesuré, processeur seul ; le reste `À_COMPLÉTER`) :
 
@@ -158,6 +167,22 @@ Q4_K_M, processeur seul (Mac Intel, 8 fils, llama.cpp sans flash attention) :
 La mesure à 32 768 jetons a été faite une seule fois, avec un processeur bridé à 50 % par la température : elle donne
 un ordre de grandeur. Lire un document d'environ 30 000 jetons (une cinquantaine de pages) prend plus d'une heure.
 Les autres quantifications : `À_COMPLÉTER`.
+
+### Quantifications
+
+Note automatique sur nos deux jeux de développement (60 et 138 cas, sur GPU, mêmes conditions pour tous) et
+divergence KL par rapport à la pleine précision (F16) sur du français tenu à l'écart (FineWeb-2, 40 × 512 jetons) :
+
+| Fichier | dev | dev2 | KL / F16 | Même premier jeton que F16 |
+|---|---:|---:|---:|---:|
+| F16 (non publié) | 0,922 | 0,817 | 0 | 100 % |
+| Q8_0 | 0,857 | 0,824 | 0,0010 | 98,1 % |
+| Q5_K_M | 0,883 | 0,773 | 0,0134 | 93,6 % |
+| Q4_K_M évalué sur le jeu secret | 0,884 | 0,785 | 0,0427 | 88,7 % |
+
+Sur ces jeux de développement, les écarts entre fichiers ne sont pas significatifs, sauf celui du F16 sur dev. Le
+GPU n'étant pas déterministe, le Q8_0 peut noter moins bien qu'un Q4_K_M. La divergence KL est la mesure la plus
+fiable de la perte due à la quantification. Une quantification Q4_0 a été écartée : elle perdait 0,11 sur dev.
 
 ## Entraînement
 

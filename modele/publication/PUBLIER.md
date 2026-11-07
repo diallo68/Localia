@@ -15,7 +15,8 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
 
 ## Après le noyau du 7 novembre (`resultats/lot4-fin/comparaison.txt`)
 
-- [ ] Choisir le fichier publié.
+- [x] Choisir le fichier publié (7 nov., accord de l'auteur) : Q4_K_M livré (évalué sur le jeu secret), Q5_K_M et Q8_0
+  refaits. Le lot 4 refait est équivalent au livré (journal, 7 nov. 12 h 30) ; Q4_0 écarté (−0,11 sur dev).
   - Si le modèle refait est équivalent au lot 4 sur dev et dev2 (et par la KL du témoin), publier toute sa famille
     (Q8_0, Q5_K_M, Q4_K_M, Q4_0) et reprendre ses empreintes.
   - Sinon, ne publier que le Q4_K_M actuel (`a4b5f4bc…`), seul à avoir été mesuré sur le jeu secret.
@@ -24,13 +25,15 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
 - [ ] Mesurer la vitesse et la mémoire de chaque quantification retenue sur le Mac (llama-bench, mêmes réglages que
   `mesures/vitesse-lot4-vocfr48k.md`).
 - [ ] Remplir les `À_COMPLÉTER` du README : tableau des fichiers, empreintes, choix selon la RAM, vitesses.
-- [ ] Préparer chaque GGUF avec `preparer_gguf.py SOURCE.gguf <quant> <dossier>` (depuis `~/localia-labo`, avec
+- [x] Préparer chaque GGUF avec `preparer_gguf.py SOURCE.gguf <quant> <dossier>` (depuis `~/localia-labo`, avec
   `modele-compact/env-entrainement/bin/python -I`). Le script renomme en `Dial-bowe-Guinee-2B-<quant>.gguf`, met
   `general.name`, corrige `general.base_model` (le convertisseur avait écrit Qwen3.5-2B-**Base**, alors que la base
   entraînée est Qwen/Qwen3.5-2B) et retire l'étiquette `image-text-to-text`. Il refuse le fichier si le gabarit
   diffère de `gabarit_sans_reflexion.jinja` ou si un tenseur change, puis écrit l'empreinte dans `SHA256SUMS`.
   Essai du 3 nov. sur le Q4_K_M actuel : 335 tenseurs identiques, SHA-256 `437607848b5a…` (contre `a4b5f4bc…` avant
   les métadonnées), même réponse que l'original à température 0 dans llama-server.
+  Fait le 7 nov. dans `~/localia-labo/modele-compact/publication-hf/` ; les fichiers refaits portaient le gabarit
+  d'origine de Qwen3.5 (réflexion activable), remplacé avec `--remplacer-gabarit`. Empreintes dans `SHA256SUMS`.
 - [ ] Essai rapide dans Ollama (guide, étape 4).
 
 ## Avant l'envoi

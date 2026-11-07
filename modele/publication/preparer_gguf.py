@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Prépare un GGUF pour la publication de Dial-bowe-Guinee-2B (liste de contrôle : PUBLIER.md).
+"""Prépare un GGUF pour la publication de Dial-bowe-GN-224-2B (liste de contrôle : PUBLIER.md).
 
 Copie le fichier sous son nom publié en corrigeant les métadonnées, puis vérifie la copie :
-- general.name = Dial-bowe-Guinee-2B ;
+- general.name = Dial-bowe-GN-224-2B ;
 - general.base_model.0 = Qwen/Qwen3.5-2B : le convertisseur avait écrit Qwen3.5-2B-Base, la base de la base ;
 - general.tags sans « image-text-to-text » : le modèle publié ne lit que du texte ;
 - general.size_label recalculé à partir des tenseurs (le vocabulaire réduit fait passer de 1,9 à 1,7 Md) ;
@@ -25,7 +25,7 @@ sys.path.insert(0, str(LLAMA / "gguf/scripts"))
 import gguf  # noqa: E402
 from gguf_new_metadata import MetadataDetails, copy_with_new_metadata  # noqa: E402
 
-NOM = "Dial-bowe-Guinee-2B"
+NOM = "Dial-bowe-GN-224-2B"
 ICI = Path(__file__).resolve().parent
 GABARIT = (ICI / NOM / "gabarit_sans_reflexion.jinja").read_text(encoding="utf-8")
 S, A = gguf.GGUFValueType.STRING, gguf.GGUFValueType.ARRAY

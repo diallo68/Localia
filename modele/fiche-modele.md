@@ -17,7 +17,7 @@ document fourni**, sur un ordinateur sans carte graphique. Il s'abstient et cite
 | Vocabulaire | élagué : 131 203 jetons gardés sur 248 320, soit les 48 000 jetons les plus fréquents en français (k), les jetons ASCII, les octets de base, la fermeture par les fusions BPE et les jetons spéciaux (`mesures/elaguer_vocab.py`) |
 | Fichier livré | `qwen35-2b-lora-Q4_K_M-sansreflexion-vocfr48k.gguf`, Q4_K_M, 1,11 Go, SHA-256 `a4b5f4bc2fa3457cfcc5237b87df0327610b23b4199e4e646ccdde5babf6d4ad` |
 | Gabarit | `ollama/gabarit_sans_reflexion.jinja` : bloc de réflexion toujours vide (voir § 3) |
-| Nom dans Ollama | `dial-bowe-guinee-2b` depuis le 7 nov. 2026 (anciennement `localia-doc-2b` ; `localia-doc-2b` et l'ancienne version non élaguée `localia-doc-2b-lot4` ont été supprimées du Mac de l'auteur) |
+| Nom dans Ollama | `dial-bowe-gn-224-2b` depuis le 7 nov. 2026 (anciennement `localia-doc-2b` ; `localia-doc-2b` et l'ancienne version non élaguée `localia-doc-2b-lot4` ont été supprimées du Mac de l'auteur) |
 | Autres quantifications | *phase 4* |
 
 ## 2. Usage prévu et usages à éviter

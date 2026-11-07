@@ -20,7 +20,7 @@ Rédigé le 7 novembre 2026 par Claude, à partir de `journal.md`, qui fait foi 
 - **Ce qui recule** : la détection d'incohérences, la résistance aux instructions cachées dans un document, le respect
   des consignes de rédaction et le calcul.
 - **Publication** : l'auteur a choisi de publier le modèle malgré l'échec, avec ses mesures, sous le nom
-  Dial-bowe-Guinee-2B (Apache 2.0). Trois fichiers sont prêts (Q4_K_M, Q5_K_M, Q8_0). L'envoi sur Hugging Face est
+  Dial-bowe-GN-224-2B (Apache 2.0). Trois fichiers sont prêts (Q4_K_M, Q5_K_M, Q8_0). L'envoi sur Hugging Face est
   fait par l'auteur (`publication/PUBLIER.md`).
 - **Coût** : 0 €. Tout a tourné sur le Mac de l'auteur et sur les GPU T4 gratuits de Kaggle. Le crédit Google Cloud
   n'a pas été utilisé.

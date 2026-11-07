@@ -1,15 +1,15 @@
-# Publication de Dial-bowe-Guinee-2B : liste de contrôle
+# Publication de Dial-bowe-GN-224-2B : liste de contrôle
 
 Préparé le 3 novembre 2026. **Rien n'est envoyé sans l'accord explicite de l'auteur, le jour de la publication.**
-Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fichier-ci n'en fait pas partie.
+Le dossier `Dial-bowe-GN-224-2B/` est le contenu du dépôt Hugging Face ; ce fichier-ci n'en fait pas partie.
 
 ## Décisions de l'auteur
 
-- [x] Nom : Dial-bowe-Guinee-2B (Ollama : `dial-bowe-guinee-2b`).
+- [x] Nom : Dial-bowe-GN-224-2B (Ollama : `dial-bowe-gn-224-2b`).
 - [x] Licence : Apache 2.0 (décision de l'auteur, 3 nov. 2026 ; texte standard dans `LICENSE`).
 - [x] Plateformes : Hugging Face seul pour l'instant ; Ollama éventuellement plus tard.
 - [x] Mise en ligne : dépôt d'abord **privé** pour relecture, puis rendu public par l'auteur.
-- [x] Compte : `madma2022` → dépôt `madma2022/Dial-bowe-Guinee-2B`.
+- [x] Compte : `madma2022` → dépôt `madma2022/Dial-bowe-GN-224-2B`.
 - [x] Qui envoie : **l'auteur**, avec sa propre connexion Hugging Face (commandes ci-dessous, lancées par lui).
 - [x] Calendrier : on attend les résultats du noyau du samedi 7 novembre avant toute publication.
 
@@ -26,7 +26,7 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
   `mesures/vitesse-lot4-vocfr48k.md`).
 - [x] Remplir les `À_COMPLÉTER` du README : tableau des fichiers, empreintes, choix selon la RAM, vitesses.
 - [x] Préparer chaque GGUF avec `preparer_gguf.py SOURCE.gguf <quant> <dossier>` (depuis `~/localia-labo`, avec
-  `modele-compact/env-entrainement/bin/python -I`). Le script renomme en `Dial-bowe-Guinee-2B-<quant>.gguf`, met
+  `modele-compact/env-entrainement/bin/python -I`). Le script renomme en `Dial-bowe-GN-224-2B-<quant>.gguf`, met
   `general.name`, corrige `general.base_model` (le convertisseur avait écrit Qwen3.5-2B-**Base**, alors que la base
   entraînée est Qwen/Qwen3.5-2B) et retire l'étiquette `image-text-to-text`. Il refuse le fichier si le gabarit
   diffère de `gabarit_sans_reflexion.jinja` ou si un tenseur change, puis écrit l'empreinte dans `SHA256SUMS`.
@@ -34,6 +34,8 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
   les métadonnées), même réponse que l'original à température 0 dans llama-server.
   Fait le 7 nov. dans `~/localia-labo/modele-compact/publication-hf/` ; les fichiers refaits portaient le gabarit
   d'origine de Qwen3.5 (réflexion activable), remplacé avec `--remplacer-gabarit`. Empreintes dans `SHA256SUMS`.
+  Refait le 7 nov. au soir sous le nom Dial-bowe-GN-224-2B, depuis ces fichiers, dans
+  `~/localia-labo/modele-compact/publication-hf-gn224/` : 335 tenseurs identiques, nouvelles empreintes dans `SHA256SUMS`.
 - [x] Essai rapide dans Ollama (guide, étape 4) : 7 nov., Ollama 0.40.14, les trois fichiers ; aucune réflexion même
   avec `think: true`, bonne réponse sur une exception (« gratuit, sauf en cas de perte ») ; 18, 17 et 13 j/s.
 
@@ -49,9 +51,11 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
 ## Envoi (le jour J, avec accord)
 
 ```bash
-huggingface-cli repo create Dial-bowe-Guinee-2B --type model --private   # dépôt privé d'abord
-huggingface-cli upload madma2022/Dial-bowe-Guinee-2B Dial-bowe-Guinee-2B/ . --repo-type model
+huggingface-cli repo create Dial-bowe-GN-224-2B --type model --private   # dépôt privé d'abord
+huggingface-cli upload madma2022/Dial-bowe-GN-224-2B Dial-bowe-GN-224-2B/ . --repo-type model
+huggingface-cli upload madma2022/Dial-bowe-GN-224-2B ~/localia-labo/modele-compact/publication-hf-gn224/ . \
+    --include "*.gguf" --repo-type model   # les trois GGUF, qui ne sont pas dans le dépôt git
 ```
 
-Puis, si l'auteur le décide, Ollama : `ollama cp dial-bowe-guinee-2b <compte>/dial-bowe-guinee-2b` et
-`ollama push <compte>/dial-bowe-guinee-2b` (clé du compte ollama.com requise).
+Puis, si l'auteur le décide, Ollama : `ollama cp dial-bowe-gn-224-2b <compte>/dial-bowe-gn-224-2b` et
+`ollama push <compte>/dial-bowe-gn-224-2b` (clé du compte ollama.com requise).

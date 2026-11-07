@@ -1,4 +1,4 @@
-# Installer Dial-bowe-Guinee-2B dans Localia
+# Installer Dial-bowe-GN-224-2B dans Localia
 
 **Statut : modèle non publié.** Le fichier n'est pas sur Hugging Face : il se trouve sur le Mac de l'auteur
 (`~/localia-labo/modele-compact/bases/lot4/gguf/`). Ce guide suppose qu'on a ce fichier. Les étapes 1 à 4 ont été
@@ -35,8 +35,8 @@ l'étape 3. La commande est dans `ollama/README.md`.
 Placer le GGUF dans le même dossier que `ollama/Modelfile` (une copie ou un lien), puis :
 
 ```bash
-ollama create dial-bowe-guinee-2b -f Modelfile
-ollama show dial-bowe-guinee-2b    # quantization Q4_K_M, num_ctx 8192, temperature 0.3
+ollama create dial-bowe-gn-224-2b -f Modelfile
+ollama show dial-bowe-gn-224-2b    # quantization Q4_K_M, num_ctx 8192, temperature 0.3
 ```
 
 `ollama show` affiche la capacité « thinking » : elle vient du nom de l'architecture. Avec ce gabarit, elle reste
@@ -45,8 +45,8 @@ sans effet (étape 4).
 ## 4. Essai rapide
 
 ```bash
-ollama run dial-bowe-guinee-2b "Document : La carte de bibliothèque est gratuite pour les moins de 18 ans. Pour les adultes, elle coûte 15 € par an. Les prêts sont limités à 6 livres pendant 3 semaines. --- Demande : combien de livres peut-on emprunter, et pour combien de temps ?"
-ollama run dial-bowe-guinee-2b "Document : La carte de bibliothèque est gratuite pour les moins de 18 ans. Pour les adultes, elle coûte 15 € par an. Les prêts sont limités à 6 livres pendant 3 semaines. --- Demande : à quelle heure ouvre la bibliothèque ?"
+ollama run dial-bowe-gn-224-2b "Document : La carte de bibliothèque est gratuite pour les moins de 18 ans. Pour les adultes, elle coûte 15 € par an. Les prêts sont limités à 6 livres pendant 3 semaines. --- Demande : combien de livres peut-on emprunter, et pour combien de temps ?"
+ollama run dial-bowe-gn-224-2b "Document : La carte de bibliothèque est gratuite pour les moins de 18 ans. Pour les adultes, elle coûte 15 € par an. Les prêts sont limités à 6 livres pendant 3 semaines. --- Demande : à quelle heure ouvre la bibliothèque ?"
 ```
 
 Mesuré le 7 novembre 2026 sur le fichier publié, comme `ollama run` l'envoie (sans consigne, température 0,3 du
@@ -66,8 +66,8 @@ Vitesse : sur le processeur seul, comptez de 5 jetons/s (machine chargée) à 17
 
 ## 5. Utiliser le modèle dans Localia
 
-1. Ouvrir **Bibliothèque de modèles**. `dial-bowe-guinee-2b` apparaît sous **Installés sur ce Mac**, avec le moteur Ollama.
-2. Dans une conversation, choisir `dial-bowe-guinee-2b` et joindre le document (PDF). Pour un document long, Localia
+1. Ouvrir **Bibliothèque de modèles**. `dial-bowe-gn-224-2b` apparaît sous **Installés sur ce Mac**, avec le moteur Ollama.
+2. Dans une conversation, choisir `dial-bowe-gn-224-2b` et joindre le document (PDF). Pour un document long, Localia
    n'envoie que les extraits utiles, dans la limite du contexte.
 3. Réglages du modèle conseillés (Bibliothèque, réglages par modèle) :
    - **réflexion désactivée** ;
@@ -78,7 +78,7 @@ Vitesse : sur le processeur seul, comptez de 5 jetons/s (machine chargée) à 17
      mesuré avec elle (`journal.md`, 25 octobre 2026 : 0,851 sur 188 cas de dev et dev2).
 
 **Moteur intégré (sans Ollama ensuite).** Sur la ligne du modèle, le bouton « Utiliser avec le moteur intégré » reprend
-le fichier d'Ollama sans le copier ; le modèle s'appelle alors `integre/dial-bowe-guinee-2b`. Ollama 0.40.5 range les
+le fichier d'Ollama sans le copier ; le modèle s'appelle alors `integre/dial-bowe-gn-224-2b`. Ollama 0.40.5 range les
 modèles récents dans `~/.ollama/models/manifests-v2/ollama.com/`, que Localia ne lisait pas avant le
 2 novembre 2026 (« Modèle Ollama introuvable sur cet ordinateur »). C'est corrigé dans `src/local-engine.cjs`. Le
 lecteur GGUF du moteur intégré lit bien le fichier (architecture `qwen35`, gabarit sans réflexion), et une
@@ -92,7 +92,7 @@ réflexion n'est pas réglée : régler **réflexion désactivée** (étape 3) l
 
 Trois fichiers sont prêts (Q4_K_M, Q5_K_M, Q8_0). Le Q4_K_M est le choix par défaut : c'est le plus rapide, et le
 seul évalué sur le jeu secret. Les pics de mémoire de chaque fichier sont dans
-`publication/Dial-bowe-Guinee-2B/README.md`, § Fichiers.
+`publication/Dial-bowe-GN-224-2B/README.md`, § Fichiers.
 
 ## 7. Dépannage
 

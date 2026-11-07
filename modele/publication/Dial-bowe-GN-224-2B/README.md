@@ -17,13 +17,14 @@ tags:
   - cpu
 ---
 
-# Dial-bowe-Guinee-2B
+# Dial-bowe-GN-224-2B
 
 **Modèle expérimental.** Petit modèle dérivé de Qwen3.5-2B (1,7 milliard de paramètres après réduction du vocabulaire)
 pour répondre en français à des demandes sur **un document fourni**, sur un ordinateur sans carte graphique (le
 fichier Q4_K_M a utilisé au plus 2,4 Go de mémoire à 8 192 jetons de contexte).
 
-> **Le nom.** Le nom du modèle rappelle l'origine guinéenne de son auteur. Le modèle lui-même a été entraîné sur des
+> **Le nom.** Le nom du modèle rappelle l'origine guinéenne de son auteur : « GN » est le domaine internet de la
+> Guinée (.gn) et « 224 » son indicatif téléphonique international (+224). Ce n'est pas un numéro de version. Le modèle lui-même a été entraîné sur des
 > fiches administratives **françaises** (Service-Public.fr). Aucune donnée propre à la Guinée n'a été ajoutée pendant
 > son adaptation, et ses capacités dans les langues nationales guinéennes n'ont pas été évaluées.
 >
@@ -39,13 +40,14 @@ fichier Q4_K_M a utilisé au plus 2,4 Go de mémoire à 8 192 jetons de contexte
 
 | Fichier | Quantification | Taille | SHA-256 |
 |---|---|---:|---|
-| `Dial-bowe-Guinee-2B-Q4_K_M.gguf` | Q4_K_M, **fichier évalué sur le jeu secret** | 1,11 Go | `437607848b5a01795584b23b377f229301942bd6206ca3712451a6219f54f34a` |
-| `Dial-bowe-Guinee-2B-Q5_K_M.gguf` | Q5_K_M | 1,25 Go | `8c3b26dd918b274ea616ced785d435ce3c1839f25aa572b77511fe0ecd269255` |
-| `Dial-bowe-Guinee-2B-Q8_0.gguf` | Q8_0 | 1,82 Go | `5c62f9374a30d820a6793a415fe0d505b0024aed931705679f837fbabb70e349` |
+| `Dial-bowe-GN-224-2B-Q4_K_M.gguf` | Q4_K_M, **fichier évalué sur le jeu secret** | 1,11 Go | `55567601b618df32728961d62635e014e61501e9d3a57b34dd6eec01c517397c` |
+| `Dial-bowe-GN-224-2B-Q5_K_M.gguf` | Q5_K_M | 1,25 Go | `d444ecd1abc4292456bd4a78977fb8961b9390138a4c3088099c560d0c5a9f16` |
+| `Dial-bowe-GN-224-2B-Q8_0.gguf` | Q8_0 | 1,82 Go | `9f46697b6348a7727b0512303156043f30d33ac7ce2bad2681ec37e7c9666bb5` |
 | `Modelfile` | réglages pour Ollama | | |
 | `gabarit_sans_reflexion.jinja` | gabarit de conversation, déjà inclus dans les GGUF | | |
 
-Les empreintes sont aussi dans `SHA256SUMS`. Seul le Q4_K_M a été évalué sur le jeu secret. Ce sont les mêmes poids
+Les empreintes sont aussi dans `SHA256SUMS`. Jusqu'au 7 novembre 2026, le modèle s'appelait Dial-bowe-Guinee-2B : les
+relevés de mesures datés portent encore ce nom. Seul le Q4_K_M a été évalué sur le jeu secret. Ce sont les mêmes poids
 que le fichier mesuré : seuls le nom et la description du modèle de base ont changé dans ses métadonnées.
 
 La version pleine précision de cet entraînement n'a pas été conservée. Le Q5_K_M et le Q8_0 viennent donc d'un second
@@ -78,8 +80,8 @@ lecture d'un long document qui limite (§ Vitesse et mémoire).
 **Ollama**
 
 ```bash
-ollama create dial-bowe-guinee-2b -f Modelfile   # le GGUF dans le même dossier que le Modelfile
-ollama run dial-bowe-guinee-2b
+ollama create dial-bowe-gn-224-2b -f Modelfile   # le GGUF dans le même dossier que le Modelfile
+ollama run dial-bowe-gn-224-2b
 ```
 
 Le Modelfile charge le Q4_K_M avec un contexte de 8 192 jetons. Pour un autre fichier ou un autre contexte, changez
@@ -89,7 +91,7 @@ la ligne `FROM` et `PARAMETER num_ctx`. Il ne contient pas de consigne système 
 **llama.cpp**
 
 ```bash
-llama-server -m Dial-bowe-Guinee-2B-Q4_K_M.gguf -c 8192 --jinja
+llama-server -m Dial-bowe-GN-224-2B-Q4_K_M.gguf -c 8192 --jinja
 ```
 
 Nos mesures de vitesse sur processeur seul ajoutent `-ngl 0 -t 8` (aucune couche sur la carte graphique, 8 fils).
@@ -150,7 +152,7 @@ QAT Q4_0 publiée par Google.
 | Qwen3.5-4B | 0,857 | −0,091 [−0,138 ; −0,042] |
 | Gemma 3 12B | 0,845 | −0,079 [−0,128 ; −0,020] |
 | Qwen3.5-2B (base) | 0,772 | −0,006 [−0,057 ; +0,047] |
-| **Dial-bowe-Guinee-2B** | **0,766** | |
+| **Dial-bowe-GN-224-2B** | **0,766** | |
 | Mistral-Nemo 12B | 0,737 | +0,029 [−0,021 ; +0,083] |
 | Ministral 3 3B | 0,719 | +0,047 [−0,006 ; +0,101] |
 | Phi-4-mini | 0,693 | +0,073 [+0,023 ; +0,121] |
@@ -274,7 +276,7 @@ elle perdait 0,11 sur dev.
 ## English summary
 
 Experimental model derived from Qwen3.5-2B (LoRA, reduced vocabulary, 1.7B parameters, GGUF) for answering questions about **a provided French document** on a
-CPU-only computer. The name honours the author's Guinean origin; the model itself was trained on French government
+CPU-only computer. The name honours the author's Guinean origin (GN: Guinea's internet domain .gn; 224: its international calling code +224; not a version number); the model itself was trained on French government
 information sheets (Service-Public.fr) with no Guinea-specific data added; Guinean national languages were not evaluated. On a held-out secret test set
 (primary score on 234 of 240 cases, after excluding six close to the training data), no overall improvement over the
 base model is shown (0.766 vs 0.772, not significant), and the project's own success criteria count it as a

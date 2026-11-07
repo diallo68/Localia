@@ -968,3 +968,9 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** L'exemple du guide (période d'essai de 3 mois renouvelable une fois) donnait « 3 mois » au lieu de 6, avec l'ancien fichier comme avec le nouveau (réponses identiques), sans consigne comme avec celle de Localia, à 0. Avec la question précise de V001 à 0,3 : juste 2 fois sur 6. La mention « réponse juste (6 mois) » du guide venait du vrai cas V001 (fiche entière), pas de cette phrase résumée.
 - **[mesuré]** Exemples retenus (sans consigne, 0,3, 5 essais chacun) : extraction « 6 livres, 3 semaines » 5/5 ; heure d'ouverture absente 5/5.
 
+### 7 novembre 2026, 19 h : le modèle s'appelle désormais Dial-bowe-GN-224-2B
+
+- Choix de l'auteur : « GN » (domaine .gn de la Guinée) et « 224 » (indicatif +224), moins appuyé que « Guinee ». Ollama : `dial-bowe-gn-224-2b`.
+- Dossier `publication/Dial-bowe-GN-224-2B/`, `NOM` de `preparer_gguf.py`, README (nom expliqué en français et en anglais, ancien nom signalé), Modelfile, PUBLIER.md, guide, fiche, rapport et scripts de mesure mis à jour. Le journal, `desaccords.md` et les relevés de mesures datés gardent l'ancien nom.
+- **[mesuré]** Trois GGUF refaits depuis les fichiers Dial-bowe-Guinee-2B (`~/localia-labo/modele-compact/publication-hf-gn224/`) : 335 tenseurs identiques chacun ; SHA-256 Q4_K_M `55567601…397c`, Q5_K_M `d444ecd1…9f16`, Q8_0 `9f46697b…bb5`. Réponse identique à l'ancien nom (température 0). `dial-bowe-guinee-2b` retiré d'Ollama.
+

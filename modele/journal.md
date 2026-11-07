@@ -974,3 +974,10 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Dossier `publication/Dial-bowe-GN-224-2B/`, `NOM` de `preparer_gguf.py`, README (nom expliqué en français et en anglais, ancien nom signalé), Modelfile, PUBLIER.md, guide, fiche, rapport et scripts de mesure mis à jour. Le journal, `desaccords.md` et les relevés de mesures datés gardent l'ancien nom.
 - **[mesuré]** Trois GGUF refaits depuis les fichiers Dial-bowe-Guinee-2B (`~/localia-labo/modele-compact/publication-hf-gn224/`) : 335 tenseurs identiques chacun ; SHA-256 Q4_K_M `55567601…397c`, Q5_K_M `d444ecd1…9f16`, Q8_0 `9f46697b…bb5`. Réponse identique à l'ancien nom (température 0). `dial-bowe-guinee-2b` retiré d'Ollama.
 
+### 7 novembre 2026, 19 h 30 : premiers essais de l'auteur dans Localia ; extraits déplacés (main)
+
+- L'auteur a essayé `dial-bowe-gn-224-2b` par Ollama dans Localia. Sans document, les réponses sont des formules (« copiez-collez votre document ici ») ; à « tes connaissances se limitent en quelle année ? », le modèle invente « environ 2026 » ; il n'invente pas le vainqueur de la Coupe du monde 2026.
+- Un PDF de 26 pages joint après 8 échanges : le modèle répond encore « copiez-collez ». **[mesuré]** Cause : Localia plaçait les extraits avant tout l'historique. Même PDF dans une conversation neuve : réponse juste (rapport du 23 oct. 2026, 16 expériences, DSP, paramètres S).
+- Accord de l'auteur. Commit 1b45ca3 sur `main` : pour un long document, les extraits sont placés juste avant la dernière question. **[mesuré]** Même conversation de 8 échanges : le modèle lit le document et le résume. 220 tests passent.
+- Sauvegarde de `qwen36-fr-192.gguf` sur la clé de l'auteur (FAT32 : 3 morceaux, `sauvegarde-localia/qwen36-fr-192/`), empreinte reconstituée identique `cb283451…5462`.
+

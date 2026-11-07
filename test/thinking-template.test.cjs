@@ -21,6 +21,11 @@ const r1 = `{% if add_generation_prompt %}{{'<｜Assistant｜><think>\\n'}}{% en
 // Gemma : pas de réflexion du tout.
 const gemma = `{%- if add_generation_prompt -%}{{'<start_of_turn>model\\n'}}{%- endif -%}`;
 // Bloc vide dans l'historique seulement (réponses précédentes), pas à la génération.
+// Réflexion ouverte dans une branche, bloc vide dans l'autre (relecture de Codex, 7 nov. 2026).
+const conditionnel = `{%- if add_generation_prompt %}
+    {{- '<|im_start|>assistant\\n' }}
+    {%- if thinking %}{{- '<think>\\n' }}{%- else %}{{- '<think>\\n\\n</think>\\n\\n' }}{%- endif %}
+{%- endif %}`;
 const historique = `{%- for m in messages %}{{- '<think>\\n\\n</think>\\n\\n' + m.content }}{%- endfor %}
 {%- if add_generation_prompt %}{{- '<|im_start|>assistant\\n' }}{%- endif %}`;
 
@@ -29,7 +34,7 @@ test('gabarit qui émet toujours le bloc de réflexion vide reconnu', () => {
 });
 
 test('gabarits où la réflexion reste réglable ou absente non reconnus', () => {
-  for (const g of [qwen3, r1, gemma, historique, '', undefined, null, 42])
+  for (const g of [qwen3, r1, gemma, historique, conditionnel, '', undefined, null, 42])
     assert.equal(alwaysEmptyThought(g), false, String(g).slice(0, 40));
 });
 

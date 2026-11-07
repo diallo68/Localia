@@ -94,9 +94,11 @@ function documentMessages(doc, messages, system, { numCtx, numPredict, summary =
   // alors ses réponses précédentes sans lire le document (Dial-bowe-GN-224-2B, 7 nov. 2026, après
   // 8 échanges sans document). Texte complet (document court) : il reste en tête, identique d'une
   // question à l'autre, et n'est pas relu à chaque question (voir llama-worker.mjs).
-  const history = context.partial
-    ? [...recent.slice(0, -1), source, recent.at(-1)]
-    : [source, ...recent];
+  // Historique tronqué qui commencerait par une réponse : sans sa question, elle est retirée,
+  // pour que la conversation commence par l'utilisateur (certains gabarits l'exigent).
+  const earlier = recent.slice(0, -1);
+  while (earlier[0]?.role === 'assistant') earlier.shift();
+  const history = context.partial ? [...earlier, source, recent.at(-1)] : [source, ...recent];
   return {
     partial: context.partial,
     pages: context.pages,

@@ -11,7 +11,13 @@ function alwaysEmptyThought(template) {
   if (/enable_thinking/.test(code)) return false;
   const generation = code.lastIndexOf('add_generation_prompt');
   if (generation < 0) return false;
-  return /<think>(?:\\n|\n|\s)*<\/think>/.test(code.slice(generation));
+  const tail = code.slice(generation);
+  const empty = /<think>(?:\\n|\n|\s)*<\/think>/g;
+  // Toutes les ouvertures <think> de la fin doivent être des blocs vides : un gabarit qui ouvre
+  // une réflexion dans une autre branche ({% if … %}<think>{% else %}<think></think>…) peut réfléchir.
+  const opens = (tail.match(/<think>/g) || []).length;
+  const blocks = (tail.match(empty) || []).length;
+  return blocks > 0 && blocks === opens;
 }
 
 // Réglage de la réflexion à appliquer : celui de l'utilisateur s'il en a choisi un.

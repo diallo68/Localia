@@ -82,6 +82,28 @@ test('avec un long PDF : extraits placés juste avant la dernière question, apr
   assert.equal(result.messages[4], messages[2]);
 });
 
+test('avec un long PDF : historique tronqué sans réponse orpheline en tête', () => {
+  const long = {
+    ...doc,
+    pages: Array.from({ length: 30 }, (_, i) => ({
+      number: i + 1,
+      text: `Page ${i + 1} : essai ${i + 1}, résultat conforme. `.repeat(60),
+    })),
+  };
+  const messages = [
+    { role: 'user', content: 'q'.repeat(3000) },
+    { role: 'assistant', content: 'r'.repeat(3000) },
+    { role: 'user', content: 'Quel est le résultat de l’essai 12 ?' },
+  ];
+  const result = documentMessages(long, messages, '', { numCtx: 4096 });
+  // La question de 3 000 caractères ne tient plus : sa réponse est retirée avec elle.
+  assert.deepEqual(
+    result.messages.map((m) => m.role),
+    ['system', 'user', 'user'],
+  );
+  assert.match(result.messages[1].content, /^SOURCE DOCUMENTAIRE/);
+});
+
 test('avec un PDF : extraits proportionnés au contexte choisi', () => {
   assert.equal(documentBudget(4096, 2048), 10000);
   assert.equal(documentBudget(16384, 2048), 32731);

@@ -64,6 +64,8 @@ async function renderGuide() {
         disabled:
           Boolean(catalog.downloading) || !enoughDisk({ sizeGB: m.size / 1e9 }, catalog.freeDiskGB),
         onclick: async () => {
+          // Installation déjà en cours : un 2e clic, refusé, couperait le suivi de la 1re.
+          if (guideDownloading) return;
           $('guide-progress').textContent = 'Connexion à Hugging Face…';
           guideDownloading = true;
           try {

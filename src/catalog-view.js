@@ -56,6 +56,9 @@ async function renderCatalog() {
 }
 
 async function startDownload(run, label, first = 'Connexion à Hugging Face…') {
+  // Un 2e lancement pendant une installation serait refusé, et sa fin couperait le suivi de la
+  // 1re (drapeau partagé remis à faux) : il est ignoré.
+  if (downloadActive) return;
   notice('');
   $('hf-download').hidden = false;
   $('hf-name').textContent = label;

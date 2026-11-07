@@ -1,5 +1,6 @@
 import { appendFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
+import thinkingTemplate from './thinking-template.cjs';
 // Moteur intégré (llama.cpp par node-llama-cpp), dans un processus séparé : un modèle qui plante
 // ne fait pas planter Localia. Reçoit des conversations au format d'Ollama et renvoie des morceaux
 // au même format (message.content, message.thinking, puis statistiques finales).
@@ -169,7 +170,7 @@ function history(messages) {
   return { items, question: last.content };
 }
 
-async function chat({ id, path, messages, options = {}, think, keepAlive }) {
+async function chat({ id, path, messages, options = {}, think: requestedThink, keepAlive }) {
   const controller = new AbortController();
   let session = null;
   running.set(id, controller);
@@ -206,6 +207,12 @@ async function chat({ id, path, messages, options = {}, think, keepAlive }) {
     debug('demande', id, 'contexte', contextSize);
     const loadNs = await prepare(path, contextSize);
     debug('modèle prêt', id);
+    // Modèle entraîné sans réflexion (bloc vide toujours émis par son gabarit) : pas de réglage
+    // vaut réflexion désactivée, pour écrire l'invite comme à l'entraînement.
+    const think = thinkingTemplate.effectiveThink(
+      requestedThink,
+      loaded.model.fileInfo?.metadata?.tokenizer?.chat_template,
+    );
     const { LlamaChatSession } = llamaModule;
     // Séquence non vidée : node-llama-cpp compare la nouvelle demande aux jetons déjà calculés et
     // ne relit que ce qui suit leur début commun (consignes, document, échanges précédents). Une

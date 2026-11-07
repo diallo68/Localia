@@ -22,9 +22,9 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
   - Sinon, ne publier que le Q4_K_M actuel (`a4b5f4bc…`), seul à avoir été mesuré sur le jeu secret.
   - Dans les deux cas, le README dit quel fichier a été mesuré sur le jeu secret (avant le changement de métadonnées :
     `a4b5f4bc…` ; mêmes poids après).
-- [ ] Mesurer la vitesse et la mémoire de chaque quantification retenue sur le Mac (llama-bench, mêmes réglages que
+- [x] Mesurer la vitesse et la mémoire de chaque quantification retenue sur le Mac (llama-bench, mêmes réglages que
   `mesures/vitesse-lot4-vocfr48k.md`).
-- [ ] Remplir les `À_COMPLÉTER` du README : tableau des fichiers, empreintes, choix selon la RAM, vitesses.
+- [x] Remplir les `À_COMPLÉTER` du README : tableau des fichiers, empreintes, choix selon la RAM, vitesses.
 - [x] Préparer chaque GGUF avec `preparer_gguf.py SOURCE.gguf <quant> <dossier>` (depuis `~/localia-labo`, avec
   `modele-compact/env-entrainement/bin/python -I`). Le script renomme en `Dial-bowe-Guinee-2B-<quant>.gguf`, met
   `general.name`, corrige `general.base_model` (le convertisseur avait écrit Qwen3.5-2B-**Base**, alors que la base
@@ -34,7 +34,8 @@ Le dossier `Dial-bowe-Guinee-2B/` est le contenu du dépôt Hugging Face ; ce fi
   les métadonnées), même réponse que l'original à température 0 dans llama-server.
   Fait le 7 nov. dans `~/localia-labo/modele-compact/publication-hf/` ; les fichiers refaits portaient le gabarit
   d'origine de Qwen3.5 (réflexion activable), remplacé avec `--remplacer-gabarit`. Empreintes dans `SHA256SUMS`.
-- [ ] Essai rapide dans Ollama (guide, étape 4).
+- [x] Essai rapide dans Ollama (guide, étape 4) : 7 nov., Ollama 0.40.14, les trois fichiers ; aucune réflexion même
+  avec `think: true`, bonne réponse sur une exception (« gratuit, sauf en cas de perte ») ; 18, 17 et 13 j/s.
 
 ## Avant l'envoi
 

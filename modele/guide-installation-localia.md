@@ -1,4 +1,4 @@
-# Installer localia-doc-2b dans Localia
+# Installer Dial-bowe-Guinee-2B dans Localia
 
 **Statut : modèle non publié.** Le fichier n'est pas sur Hugging Face : il se trouve sur le Mac de l'auteur
 (`~/localia-labo/modele-compact/bases/lot4/gguf/`). Ce guide suppose qu'on a ce fichier. Les étapes 1 à 4 ont été
@@ -35,8 +35,8 @@ l'étape 3. La commande est dans `ollama/README.md`.
 Placer le GGUF dans le même dossier que `ollama/Modelfile` (une copie ou un lien), puis :
 
 ```bash
-ollama create localia-doc-2b -f Modelfile
-ollama show localia-doc-2b    # quantization Q4_K_M, num_ctx 8192, temperature 0.3
+ollama create dial-bowe-guinee-2b -f Modelfile
+ollama show dial-bowe-guinee-2b    # quantization Q4_K_M, num_ctx 8192, temperature 0.3
 ```
 
 `ollama show` affiche la capacité « thinking » : elle vient du nom de l'architecture. Avec ce gabarit, elle reste
@@ -45,20 +45,29 @@ sans effet (étape 4).
 ## 4. Essai rapide
 
 ```bash
-ollama run localia-doc-2b "Document : La période d'essai d'un technicien en CDI dure 3 mois, renouvelable une fois. --- Demande : quelle est sa durée maximale ?"
+ollama run dial-bowe-guinee-2b "Document : La carte de bibliothèque est gratuite pour les moins de 18 ans. Pour les adultes, elle coûte 15 € par an. Les prêts sont limités à 6 livres pendant 3 semaines. --- Demande : combien de livres peut-on emprunter, et pour combien de temps ?"
+ollama run dial-bowe-guinee-2b "Document : La carte de bibliothèque est gratuite pour les moins de 18 ans. Pour les adultes, elle coûte 15 € par an. Les prêts sont limités à 6 livres pendant 3 semaines. --- Demande : à quelle heure ouvre la bibliothèque ?"
 ```
 
-Mesuré sur le cas V001 de dev2, avec la consigne de l'évaluation et une température de 0 :
+Mesuré le 7 novembre 2026 sur le fichier publié, comme `ollama run` l'envoie (sans consigne, température 0,3 du
+Modelfile), 5 essais par question :
 
-- réponse directe et juste (6 mois) ;
-- aucune réflexion, même quand `think` est demandé ;
-- 43 jetons, à 16 jetons/s. Ollama se sert ici de la carte graphique du Mac. Sur le processeur seul, comptez
-  de 5 jetons/s (machine chargée) à 17 jetons/s (machine au repos) : `mesures/vitesse-dial-bowe-quantifs.md`.
+- 1re question : « 6 livres » et « 3 semaines » dans les 5 réponses ;
+- 2e question : les 5 réponses disent que le document ne donne pas l'heure, sans l'inventer ;
+- aucune réflexion.
+
+L'ancien exemple (période d'essai de 3 mois renouvelable une fois, durée maximale ?) a été retiré : le modèle y
+répond le plus souvent « 3 mois » au lieu de 6, même avec la consigne de Localia ou une question plus précise
+(juste dans 2 essais sur 6 à 0,3 avec la question précise). Un calcul, même simple, qui n'est pas écrit dans le
+document reste un point faible.
+
+Vitesse : sur le processeur seul, comptez de 5 jetons/s (machine chargée) à 17 jetons/s (machine au repos) :
+`mesures/vitesse-dial-bowe-quantifs.md`.
 
 ## 5. Utiliser le modèle dans Localia
 
-1. Ouvrir **Bibliothèque de modèles**. `localia-doc-2b` apparaît sous **Installés sur ce Mac**, avec le moteur Ollama.
-2. Dans une conversation, choisir `localia-doc-2b` et joindre le document (PDF). Pour un document long, Localia
+1. Ouvrir **Bibliothèque de modèles**. `dial-bowe-guinee-2b` apparaît sous **Installés sur ce Mac**, avec le moteur Ollama.
+2. Dans une conversation, choisir `dial-bowe-guinee-2b` et joindre le document (PDF). Pour un document long, Localia
    n'envoie que les extraits utiles, dans la limite du contexte.
 3. Réglages du modèle conseillés (Bibliothèque, réglages par modèle) :
    - **réflexion désactivée** ;
@@ -69,7 +78,7 @@ Mesuré sur le cas V001 de dev2, avec la consigne de l'évaluation et une tempé
      mesuré avec elle (`journal.md`, 25 octobre 2026 : 0,851 sur 188 cas de dev et dev2).
 
 **Moteur intégré (sans Ollama ensuite).** Sur la ligne du modèle, le bouton « Utiliser avec le moteur intégré » reprend
-le fichier d'Ollama sans le copier ; le modèle s'appelle alors `integre/localia-doc-2b`. Ollama 0.40.5 range les
+le fichier d'Ollama sans le copier ; le modèle s'appelle alors `integre/dial-bowe-guinee-2b`. Ollama 0.40.5 range les
 modèles récents dans `~/.ollama/models/manifests-v2/ollama.com/`, que Localia ne lisait pas avant le
 2 novembre 2026 (« Modèle Ollama introuvable sur cet ordinateur »). C'est corrigé dans `src/local-engine.cjs`. Le
 lecteur GGUF du moteur intégré lit bien le fichier (architecture `qwen35`, gabarit sans réflexion), et une

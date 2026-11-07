@@ -962,3 +962,9 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[mesuré]** Aucun des 70 gabarits de `llama.cpp/models/templates` n'est reconnu à tort (dont Qwen3, Qwen3.5-4B, QwQ, DeepSeek-R1) ; celui de Dial-bowe l'est. 4 tests ajoutés, 219 tests passent.
 - **[mesuré]** Réessai du vrai moteur sur le Q4_K_M : sans `think`, les réponses ne commencent plus par des sauts de ligne et restent justes (19 à 21 jetons/s) ; cas mixte (`think: false` au 2e tour) : réponse juste, « On peut emprunter 6 livres pendant 3 semaines ».
 
+### 7 novembre 2026, 18 h 30 : nom dans Ollama, exemple du guide remplacé
+
+- Accord de l'auteur. Modèle installé dans Ollama sous `dial-bowe-guinee-2b`, avec le Modelfile du README et le fichier publié Q4_K_M (blob `437607…`). `localia-doc-2b` et `localia-doc-2b-lot4` supprimés.
+- **[mesuré]** L'exemple du guide (période d'essai de 3 mois renouvelable une fois) donnait « 3 mois » au lieu de 6, avec l'ancien fichier comme avec le nouveau (réponses identiques), sans consigne comme avec celle de Localia, à 0. Avec la question précise de V001 à 0,3 : juste 2 fois sur 6. La mention « réponse juste (6 mois) » du guide venait du vrai cas V001 (fiche entière), pas de cette phrase résumée.
+- **[mesuré]** Exemples retenus (sans consigne, 0,3, 5 essais chacun) : extraction « 6 livres, 3 semaines » 5/5 ; heure d'ouverture absente 5/5.
+

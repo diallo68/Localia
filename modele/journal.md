@@ -921,3 +921,21 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - **[supposé]** Le dropout et le GPU ne sont pas déterministes : le résultat sera voisin du lot 4 livré, pas identique. L'équivalence se vérifie sur dev et dev2 et par la KL du témoin.
 - Envoi refusé : le quota GPU hebdomadaire est atteint (30 h, dont le juge de l'étape 3.6). Chaîne automatique `resultats/lot4-fin/chaine-lot4-fin.sh` (nohup + caffeinate) : envoi le samedi 7 novembre à 2 h 15, relance toutes les 3 h en cas de refus, notation sur le Mac. Résultat dans `resultats/lot4-fin/comparaison.txt`.
 - Les GGUF restent sur Kaggle (8,7 Go libres sur le Mac). Ils seront rapatriés un par un pour mesurer la vitesse.
+
+### 7 novembre 2026, 12 h 30 : phase 4, le lot 4 refait vaut le lot 4 livré
+
+- Noyau `localia-lot4-fin-eval`, essai 2 : serveur llama.cpp inchangé, bibliothèques CUDA 12 installées par pip (l'image Kaggle est passée à CUDA 13). Toutes les variantes ont répondu à tous les cas (60/60 sur dev, 138/138 sur dev2). Sorties dans `resultats/lot4-fin/eval/` (hors dépôt).
+- **[mesuré]** S_doc_auto sur GPU, vocabulaire élagué. Écart avec le lot 4 livré (le témoin, réélagué), apparié par cas, IC 95 % par bootstrap sur les documents :
+
+  | Variante | dev | Écart dev | dev2 | Écart dev2 | KL / F16 | Même 1er jeton |
+  |---|---:|---|---:|---|---:|---:|
+  | F16 | 0,922 | +0,038 [+0,002 ; +0,070] | 0,817 | +0,033 [−0,032 ; +0,095] | 0 | 100 % |
+  | Q8_0 | 0,857 | −0,027 [−0,097 ; +0,022] | 0,824 | +0,040 [−0,023 ; +0,102] | 0,0010 | 98,1 % |
+  | Q5_K_M | 0,883 | −0,001 [−0,048 ; +0,045] | 0,773 | −0,012 [−0,087 ; +0,057] | 0,0134 | 93,6 % |
+  | Q4_K_M | 0,874 | −0,010 [−0,048 ; +0,028] | 0,762 | −0,022 [−0,065 ; +0,015] | 0,0428 | 88,7 % |
+  | Q4_0 | 0,770 | −0,114 [−0,216 ; −0,025] | 0,721 | −0,064 [−0,157 ; +0,033] | 0,0708 | 86,3 % |
+  | livré (témoin) | 0,884 | | 0,785 | | 0,0427 | 88,7 % |
+
+- Le Q4_K_M refait et le Q4_K_M livré ont la même divergence KL par rapport au F16 refait (0,0428 contre 0,0427, 88,7 % de premier jeton commun pour les deux). Sur dev et dev2, aucun écart n'est significatif, et 24 réponses sur 60 et 56 sur 138 sont identiques au caractère près. **Conclusion : le modèle refait est équivalent au lot 4 livré**, au bruit du GPU près (le Q8_0 note moins bien que le Q4_K_M sur dev, ce qui montre l'ampleur de ce bruit).
+- Q4_0 est nettement moins bon (−0,11 sur dev, KL 0,071) pour 75 Mo de moins : il n'est pas proposé.
+- Le témoin réélagué sur Kaggle (`4dc91688…`) a 32 octets de plus que le fichier livré (`a4b5f4bc…`) : seul le gabarit diffère, celui du fichier livré étant le gabarit sans réflexion.

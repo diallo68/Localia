@@ -2,6 +2,12 @@
 
 *Notes de version en français plus bas.*
 
+## 0.7.6 — 2026-11-07
+
+- **Long PDF joined in an ongoing conversation: the model reads it.** The excerpts of a long document were placed before the whole conversation, far from the question; after a few exchanges without a document, a small model kept repeating its earlier answers (“paste your document here”) instead of reading it. The excerpts, chosen for each question, are now placed just before it. A short document, sent in full, stays at the top so that it is not read again at each question.
+- **Built-in engine: models trained without reasoning answer as intended.** For a model whose chat template always adds an empty reasoning block, the built-in engine left that block out when reasoning was not set: answers started with blank lines, and one answer contradicted itself. Reasoning not set now means reasoning off for these models only; a setting chosen by the user is kept.
+- **Library and first launch: “… is ready” stays displayed.** A late progress message (“Testing the model…”) could replace the end-of-installation message. A second click during an installation no longer stops its progress display (or hides its Cancel button).
+
 ## 0.7.5 — 2026-11-04
 
 - **Built-in engine: Ollama 0.40 models found again.** Since Ollama 0.40, models created or downloaded are stored in a new folder (`manifests-v2/ollama.com`); the built-in engine only looked in the old one (`manifests/registry.ollama.ai`) and reported these models as missing. Both folders are now searched, the new one first.
@@ -117,6 +123,12 @@ Fixes found by an independent review (Codex) of 0.7.0:
 ---
 
 # Notes de version
+
+## 0.7.6 — 7 novembre 2026
+
+- **Long PDF joint en cours de conversation : le modèle le lit.** Les extraits d’un long document étaient placés avant toute la conversation, loin de la question ; après quelques échanges sans document, un petit modèle répétait ses réponses précédentes (« copiez-collez votre document ici ») au lieu de le lire. Les extraits, choisis pour chaque question, sont maintenant placés juste avant elle. Un document court, envoyé en entier, reste en tête pour ne pas être relu à chaque question.
+- **Moteur intégré : les modèles entraînés sans réflexion répondent comme prévu.** Pour un modèle dont le gabarit de conversation ajoute toujours un bloc de réflexion vide, le moteur intégré omettait ce bloc quand la réflexion n’était pas réglée : les réponses commençaient par des lignes vides, et une réponse s’est contredite. Réflexion non réglée vaut maintenant réflexion désactivée, pour ces modèles seulement ; un réglage choisi par l’utilisateur est gardé.
+- **Bibliothèque et premier lancement : « … est prêt » reste affiché.** Un message de progression arrivé en retard (« Essai du modèle… ») pouvait remplacer le message de fin d’installation. Un second clic pendant une installation n’en coupe plus le suivi (ni le bouton Annuler).
 
 ## 0.7.5 — 4 novembre 2026
 

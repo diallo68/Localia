@@ -114,7 +114,9 @@ Conseils :
   document) a pris de 7 minutes à plus d'une heure selon l'état de la machine (§ Vitesse et mémoire).
 - Le modèle fonctionne dans [Localia](https://github.com/diallo68/Localia), une application de bureau pour modèles
   locaux, par Ollama ou par son moteur intégré (essai du 7 novembre 2026 : conversation de trois tours sur processeur
-  seul, réponses justes, environ 19 jetons/s).
+  seul, réponses justes, environ 19 jetons/s). Jusqu'à Localia 0.7.5 comprise, réglez la réflexion sur « désactivée »
+  pour ce modèle : sinon, avec le moteur intégré, chaque réponse commence par deux sauts de ligne. C'est corrigé pour la
+  version suivante.
 
 ## Usages
 

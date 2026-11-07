@@ -51,3 +51,29 @@ Points corrigés dans la conception :
 4. **Intervalle de confiance** : l'effet de grappe (≈ 6 cas par document, corrélation intra-document de 0,1) multiplie l'erreur type par environ 1,2. Fourchette corrigée : **± 5 à 8 points**.
 5. **Juge ouvert** : Gemma 4 31B et Mistral Small 4 ne tournent pas sur la machine. En phase 2 à 0 €, la notation sera automatique, plus humaine.
 6. **Nombre de fils** : toutes les mesures sont à 8 fils. 6, 12 et 16 fils n'ont pas été testés : à faire avant de conclure sur le 4B.
+
+## Relecture du README de publication par Codex (7 novembre 2026)
+
+Codex a relevé 16 problèmes. Claude les a vérifiés dans les sources. Presque tous sont fondés et ont été corrigés
+dans `publication/Dial-bowe-Guinee-2B/README.md` :
+
+- RAM : mesures faites sur un Mac de 16 Go et pics de llama-bench, présentés par fichier ; « 8 Go » ramené à une
+  indication non vérifiée ;
+- vitesse : pas d'opposition « au repos / en charge » ni de coefficient général, car le processeur était bridé à
+  47-50 % lors des deux séries ; la mesure à 32k date du 3 novembre, pas du 26 octobre ;
+- résultat présenté comme un **échec** au sens des critères, contrôle de régression non tenu inclus ; κ de la note
+  automatique (0,05) ajouté à côté de celui du juge ; résultat du juge donné à titre secondaire ;
+- « ne fait pas mieux » remplacé par « aucune amélioration démontrée » ; écarts par catégorie présentés comme des
+  tendances ;
+- score S_doc défini ; 240 cas (0,765) distingués des 234 du score principal, y compris dans le résumé anglais ;
+- conditions des bancs (moitié sans réponse, 50 questions par matière, IFEval en anglais) et Gemma 4 en QAT Q4_0 ;
+- KL : « très proche » et non « exactement » ; témoin et F16 du second entraînement nommés ; dev et dev2 ont servi
+  au choix du modèle ;
+- contexte long : fonctionnement mesuré à 32k, qualité non évaluée ; Modelfile (FROM, num_ctx, SYSTEM), version
+  d'Ollama ;
+- 1,7 milliard de paramètres après élagage ; langues guinéennes non évaluées (au lieu de « ne parle pas ») ; cas
+  d'évaluation écrits par Claude ; élagage : −0,002 au lieu de « sans perte ».
+
+Point non retenu : « 40 × 512 jetons non corroboré ». Ce chiffre est dans le script du noyau
+(`kaggle/lot4-fin-eval/lot4_fin_eval.py`, `-c 512 --chunks 40`). Il est gardé, précisé en « 40 fenêtres de 512
+jetons ».

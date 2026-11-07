@@ -981,3 +981,8 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Accord de l'auteur. Commit 1b45ca3 sur `main` : pour un long document, les extraits sont placés juste avant la dernière question. **[mesuré]** Même conversation de 8 échanges : le modèle lit le document et le résume. 220 tests passent.
 - Sauvegarde de `qwen36-fr-192.gguf` sur la clé de l'auteur (FAT32 : 3 morceaux, `sauvegarde-localia/qwen36-fr-192/`), empreinte reconstituée identique `cb283451…5462`.
 
+### 7 novembre 2026, 18 h 40 : Localia 0.7.6 publiée
+
+- Accord de l'auteur. Relecture de Codex (aucun bloquant ; 3 points corrigés : double clic d'installation, gabarit à réflexion conditionnelle, historique tronqué commençant par une réponse), commit d8de20a. Tag v0.7.6 sur e93ec30, CI verte du premier coup (4 systèmes), 16 fichiers, publiée en « Latest ».
+- README, guide et rapport : le défaut des sauts de ligne est corrigé dans la 0.7.6.
+

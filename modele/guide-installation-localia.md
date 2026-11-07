@@ -85,8 +85,8 @@ lecteur GGUF du moteur intégré lit bien le fichier (architecture `qwen35`, gab
 conversation de trois tours a été essayée le 7 novembre 2026 avec le moteur de Localia (`src/llama-worker.mjs`,
 node-llama-cpp 3.22.1), sur processeur seul : réponses justes, environ 19 jetons/s, aucune réflexion.
 Jusqu'à la version 0.7.5 comprise, chaque réponse du moteur intégré commence par deux sauts de ligne quand la
-réflexion n'est pas réglée : régler **réflexion désactivée** (étape 3) l'évite. C'est corrigé sur `main` (commit
-57d2133) pour la version suivante.
+réflexion n'est pas réglée : régler **réflexion désactivée** (étape 3) l'évite. C'est corrigé dans Localia
+0.7.6, publiée le 7 novembre 2026.
 
 ## 6. Quel fichier selon la mémoire de l'ordinateur
 

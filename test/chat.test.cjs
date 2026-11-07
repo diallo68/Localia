@@ -58,6 +58,30 @@ test('avec un PDF : consigne système, source puis historique récent limité à
   assert.deepEqual(result.messages.slice(2), messages.slice(1));
 });
 
+test('avec un long PDF : extraits placés juste avant la dernière question, après l’historique', () => {
+  const long = {
+    ...doc,
+    pages: Array.from({ length: 30 }, (_, i) => ({
+      number: i + 1,
+      text: `Page ${i + 1} : essai ${i + 1}, résultat conforme. `.repeat(60),
+    })),
+  };
+  const messages = [
+    { role: 'user', content: 'bonjour' },
+    { role: 'assistant', content: 'Copiez-collez votre document ici.' },
+    { role: 'user', content: 'Quel est le résultat de l’essai 12 ?' },
+  ];
+  const result = documentMessages(long, messages, '', { numCtx: 4096 });
+  assert.equal(result.partial, true);
+  assert.deepEqual(
+    result.messages.map((m) => m.role),
+    ['system', 'user', 'assistant', 'user', 'user'],
+  );
+  assert.deepEqual(result.messages.slice(1, 3), messages.slice(0, 2));
+  assert.match(result.messages[3].content, /^SOURCE DOCUMENTAIRE — début\n/);
+  assert.equal(result.messages[4], messages[2]);
+});
+
 test('avec un PDF : extraits proportionnés au contexte choisi', () => {
   assert.equal(documentBudget(4096, 2048), 10000);
   assert.equal(documentBudget(16384, 2048), 32731);

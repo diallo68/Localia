@@ -74,6 +74,29 @@ function documentMessages(doc, messages, system, { numCtx, numPredict, summary =
     remaining -= message.content.length;
   }
   if (!recent.length) throw new Error('Avec un PDF, limitez votre question à 5 000 caractères.');
+  const source = {
+    role: 'user',
+    content:
+      'SOURCE DOCUMENTAIRE — début\n' +
+      // Page web : sa source, et des sections numérotées à la place des pages.
+      (doc.web
+        ? `Page web : ${doc.source}${doc.fetchedAt ? ` (lue le ${doc.fetchedAt.slice(0, 10)})` : ''} ; « Page n » désigne la section n de la page.\n`
+        : doc.word
+          ? `Document Word : « Page n » désigne la section n du document.\n`
+          : doc.source
+            ? `Document téléchargé depuis : ${doc.source}\n`
+            : '') +
+      context.text +
+      '\nSOURCE DOCUMENTAIRE — fin',
+  };
+  // Extraits (document long) : choisis selon la dernière question, donc placés juste avant elle.
+  // Placés avant tout l'historique, ils étaient trop loin de la question : un petit modèle répétait
+  // alors ses réponses précédentes sans lire le document (Dial-bowe-GN-224-2B, 7 nov. 2026, après
+  // 8 échanges sans document). Texte complet (document court) : il reste en tête, identique d'une
+  // question à l'autre, et n'est pas relu à chaque question (voir llama-worker.mjs).
+  const history = context.partial
+    ? [...recent.slice(0, -1), source, recent.at(-1)]
+    : [source, ...recent];
   return {
     partial: context.partial,
     pages: context.pages,
@@ -84,22 +107,7 @@ function documentMessages(doc, messages, system, { numCtx, numPredict, summary =
           ? DOCUMENT_SYSTEM_PROMPT + '\n\nConsignes de l’utilisateur : ' + system
           : DOCUMENT_SYSTEM_PROMPT,
       },
-      {
-        role: 'user',
-        content:
-          'SOURCE DOCUMENTAIRE — début\n' +
-          // Page web : sa source, et des sections numérotées à la place des pages.
-          (doc.web
-            ? `Page web : ${doc.source}${doc.fetchedAt ? ` (lue le ${doc.fetchedAt.slice(0, 10)})` : ''} ; « Page n » désigne la section n de la page.\n`
-            : doc.word
-              ? `Document Word : « Page n » désigne la section n du document.\n`
-              : doc.source
-                ? `Document téléchargé depuis : ${doc.source}\n`
-                : '') +
-          context.text +
-          '\nSOURCE DOCUMENTAIRE — fin',
-      },
-      ...recent,
+      ...history,
     ],
   };
 }

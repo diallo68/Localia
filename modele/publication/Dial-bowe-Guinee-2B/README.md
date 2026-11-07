@@ -50,16 +50,18 @@ pleine précision. Le Q4_K_M de ce second entraînement s'écarte de la pleine p
 significatif). Le Q5_K_M et le Q8_0 n'ont été vérifiés que sur ces jeux de développement et par la divergence KL
 (§ Quantifications).
 
-Quel fichier choisir selon la mémoire de l'ordinateur (Q4_K_M mesuré, processeur seul ; le reste `À_COMPLÉTER`) :
+Quel fichier choisir selon la mémoire de l'ordinateur (pics de mémoire mesurés, processeur seul) :
 
 | Mémoire de l'ordinateur | Fichier | Contexte conseillé |
 |---|---|---|
-| 8 Go | Q4_K_M | 8 192 jetons (pic 1,8 Go) ; 32 768 possible (pic 2,9 Go) |
-| 16 Go | `À_COMPLÉTER` | 8 192 à 32 768 jetons |
-| 32 Go | `À_COMPLÉTER` | 8 192 à 32 768 jetons |
+| 8 Go | Q4_K_M (le plus rapide, et le seul évalué sur le jeu secret) | 8 192 jetons (pic 2,4 Go) ; 32 768 possible (pic 3,7 Go) |
+| 16 Go ou plus | Q8_0 (le plus proche de la pleine précision) ou Q4_K_M | 8 192 à 32 768 jetons (pic 2,5 Go à 8 192, 3,7 Go à 32 768) |
+
+Le Q5_K_M (pic de 1,9 Go à 8 192 jetons) est un intermédiaire : plus précis que le Q4_K_M, il est plus lent que lui
+sur nos mesures.
 
 La mémoire limite rarement : seules 6 couches sur 24 gardent un cache par jeton (environ 12 Ko par jeton), les autres
-ont un état de taille fixe. C'est le temps qui limite : sur un processeur, un long document se lit lentement
+ont un état de taille fixe. Sur un processeur, c'est plutôt le temps de lecture d'un long document qui limite
 (§ Vitesse et mémoire).
 
 ## Utilisation
@@ -91,7 +93,8 @@ Conseils :
 
 - Toutes les mesures publiées ont été faites à **température 0**. Le Modelfile met 0,3.
 - Contexte conseillé : 8 192 jetons. Pour un document de plus d'une trentaine de pages, envoyez les passages utiles
-  plutôt que le document entier : la première lecture de 100 pages prend plus de 2 h 30 sur un processeur.
+  plutôt que le document entier : sur un processeur, la lecture d'une cinquantaine de pages prend de 7 minutes
+  (machine au repos) à plus d'une heure (machine chargée).
 - Le modèle fonctionne dans [Localia](https://github.com/diallo68/Localia), une application de bureau pour modèles
   locaux, avec Ollama ou son moteur intégré.
 
@@ -157,16 +160,25 @@ l'information n'est pas dans le texte. IFEval et MGSM reculent.
 
 ### Vitesse et mémoire
 
-Q4_K_M, processeur seul (Mac Intel, 8 fils, llama.cpp sans flash attention) :
+Processeur seul : MacBook Pro Intel Core i9-9880H, 16 Go, llama-bench, 8 fils, sans flash attention. Vitesse de
+lecture du document (pp1024) et de génération (tg64), une fois le contexte rempli. Mesures du 7 novembre 2026, logiciels
+habituels ouverts mais pas d'autre calcul en cours ; deux passes alternées à 8 192 jetons, une seule à 32 768 :
 
-| Contexte déjà rempli | Lecture du document | Génération | Pic de mémoire |
-|---:|---:|---:|---:|
-| 8 192 jetons | 21 à 24 jetons/s | 4,9 à 5,4 jetons/s | 1,77 Go |
-| 32 768 jetons | 7,2 jetons/s | 3,0 jetons/s | 2,91 Go |
+| Fichier | Contexte rempli | Lecture | Génération | Pic de mémoire |
+|---|---:|---:|---:|---:|
+| Q4_K_M | 8 192 jetons | 93 à 99 jetons/s | 16,8 à 17,1 jetons/s | 2,39 Go |
+| Q5_K_M | 8 192 jetons | 64 à 70 jetons/s | 13,6 à 14,2 jetons/s | 1,91 Go |
+| Q8_0 | 8 192 jetons | 68 à 73 jetons/s | 11,6 à 12,2 jetons/s | 2,45 Go |
+| Q4_K_M | 32 768 jetons | 61 jetons/s | 12,1 jetons/s | 3,67 Go |
+| Q8_0 | 32 768 jetons | 50 jetons/s | 9,3 jetons/s | 3,73 Go |
 
-La mesure à 32 768 jetons a été faite une seule fois, avec un processeur bridé à 50 % par la température : elle donne
-un ordre de grandeur. Lire un document d'environ 30 000 jetons (une cinquantaine de pages) prend plus d'une heure.
-Les autres quantifications : `À_COMPLÉTER`.
+À 32 768 jetons, le remplissage du contexte et la mesure ont pris 7 minutes avec le Q4_K_M et 10 avec le Q8_0.
+
+**Sur une machine chargée, comptez environ trois fois moins vite.** Le 26 octobre, avec le même fichier Q4_K_M, le
+même programme et beaucoup d'autres logiciels actifs, nous avions mesuré 21 à 24 jetons/s en lecture et 4,9 à
+5,4 jetons/s en génération à 8 192 jetons, et 3,0 jetons/s en génération à 32 768. Le processeur était alors bridé à
+50 % par la température. Le pic de mémoire plus faible de ce jour-là (1,8 Go) laisse penser que la mémoire manquait
+aussi, sans que nous l'ayons vérifié. Les vitesses varient du simple au triple selon l'état de la machine.
 
 ### Quantifications
 
@@ -222,5 +234,6 @@ CPU-only computer. The name honours the author's Guinean origin; the model itsel
 information sheets (Service-Public.fr) and contains no Guinea-specific data. On a held-out secret test set
 (240 cases), it does **not** beat its base model overall (0.766 vs 0.772): it abstains and cites better, but it is
 weaker at flagging inconsistencies and at resisting prompt injection. Public benchmarks: FQuAD 2.0 +19 points and
-SQuAD 2.0 +23 points (mostly correct abstention), IFEval −5.9, MGSM −7.2. Speed: about 5 tokens/s on a laptop CPU,
-1.8 GB of RAM. Serve it **without thinking mode** (the bundled chat template already does this). License: Apache 2.0.
+SQuAD 2.0 +23 points (mostly correct abstention), IFEval −5.9, MGSM −7.2. Speed on a 2019 laptop CPU (Intel i9, 8 threads, Q4_K_M,
+8k context): 17 tokens/s generation on an idle machine, about 5 on a heavily loaded one; peak RAM 2.4 GB. Files:
+Q4_K_M (the one evaluated on the secret set), Q5_K_M, Q8_0. Serve it **without thinking mode** (the bundled chat template already does this). License: Apache 2.0.

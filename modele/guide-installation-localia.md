@@ -53,7 +53,7 @@ Mesuré sur le cas V001 de dev2, avec la consigne de l'évaluation et une tempé
 - réponse directe et juste (6 mois) ;
 - aucune réflexion, même quand `think` est demandé ;
 - 43 jetons, à 16 jetons/s. Ollama se sert ici de la carte graphique du Mac. Sur le processeur seul, comptez
-  environ 5 jetons/s.
+  de 5 jetons/s (machine chargée) à 17 jetons/s (machine au repos) : `mesures/vitesse-dial-bowe-quantifs.md`.
 
 ## 5. Utiliser le modèle dans Localia
 

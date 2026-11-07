@@ -939,3 +939,11 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Le Q4_K_M refait et le Q4_K_M livré ont la même divergence KL par rapport au F16 refait (0,0428 contre 0,0427, 88,7 % de premier jeton commun pour les deux). Sur dev et dev2, aucun écart n'est significatif, et 24 réponses sur 60 et 56 sur 138 sont identiques au caractère près. **Conclusion : le modèle refait est équivalent au lot 4 livré**, au bruit du GPU près (le Q8_0 note moins bien que le Q4_K_M sur dev, ce qui montre l'ampleur de ce bruit).
 - Q4_0 est nettement moins bon (−0,11 sur dev, KL 0,071) pour 75 Mo de moins : il n'est pas proposé.
 - Le témoin réélagué sur Kaggle (`4dc91688…`) a 32 octets de plus que le fichier livré (`a4b5f4bc…`) : seul le gabarit diffère, celui du fichier livré étant le gabarit sans réflexion.
+
+### 7 novembre 2026, 14 h 50 : fichiers publiés préparés, vitesses remesurées
+
+- Choix de l'auteur (« ok ») : publier le Q4_K_M livré (évalué sur le jeu secret), le Q5_K_M et le Q8_0 refaits.
+- `preparer_gguf.py` : nouvelle option `--remplacer-gabarit`, parce que les GGUF refaits portaient le gabarit d'origine de Qwen3.5 (réflexion activable). Les trois copies ont 335 tenseurs identiques à leur source. Empreintes dans `publication/Dial-bowe-Guinee-2B/SHA256SUMS`. Celle du Q4_K_M (`437607848b5a…`) est la même que lors de l'essai du 3 novembre.
+- **[mesuré]** `mesures/vitesse-dial-bowe-quantifs.md` et `mesures/vitesse-dial-bowe-32k.md` (llama-bench, processeur seul, 8 fils, fa=0). À 8 192 jetons, Q4_K_M : lecture 93 à 99 j/s, génération 16,8 à 17,1 j/s ; Q5_K_M : 64-70 et 13,6-14,2 ; Q8_0 : 68-73 et 11,6-12,2. À 32 768 jetons, Q4_K_M : 61 et 12,1 (pic 3,67 Go) ; Q8_0 : 50 et 9,3 (pic 3,73 Go).
+- **[mesuré]** Le fichier exact du 26 octobre, remesuré aujourd'hui avec le même binaire (build du 16 oct., BLAS seul, sans GPU possible), donne 92 j/s en lecture et 14,7 en génération, contre 24 et 5,2 le 26 octobre. L'écart vient donc de l'état de la machine, pas du modèle. **[supposé]** Le 26 octobre, la mémoire manquait (pic RSS plus bas, 1,77 contre 2,39 Go, et nombreux logiciels ouverts), et le processeur était bridé à 50 %.
+- README : il donne les mesures d'aujourd'hui et l'ordre de grandeur sur une machine chargée (environ 3 fois moins vite). Les lignes 16 et 32 Go du tableau de mémoire sont remplies. Il ne reste plus de `À_COMPLÉTER`.

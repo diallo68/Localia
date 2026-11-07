@@ -113,7 +113,8 @@ Conseils :
   utiles. Sur un processeur, remplir un contexte de 32 768 jetons (souvent une cinquantaine de pages, selon le
   document) a pris de 7 minutes à plus d'une heure selon l'état de la machine (§ Vitesse et mémoire).
 - Le modèle fonctionne dans [Localia](https://github.com/diallo68/Localia), une application de bureau pour modèles
-  locaux, avec Ollama ou son moteur intégré.
+  locaux, par Ollama. Son moteur intégré lit le fichier, mais nous n'y avons pas encore essayé de conversation
+  complète.
 
 ## Usages
 

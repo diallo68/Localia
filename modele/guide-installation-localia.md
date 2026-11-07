@@ -77,8 +77,9 @@ conversation complète par ce moteur n'a pas encore été essayée.
 
 ## 6. Quel fichier selon la mémoire de l'ordinateur
 
-*Phase 4* : le tableau 8, 16 et 32 Go sera rempli d'après les quantifications comparées
-(`resultats/lot4-fin/comparaison.txt`). Aujourd'hui, seul le Q4_K_M existe ; il convient dès 8 Go de RAM.
+Trois fichiers sont prêts (Q4_K_M, Q5_K_M, Q8_0). Le Q4_K_M est le choix par défaut : c'est le plus rapide, et le
+seul évalué sur le jeu secret. Les pics de mémoire de chaque fichier sont dans
+`publication/Dial-bowe-Guinee-2B/README.md`, § Fichiers.
 
 ## 7. Dépannage
 

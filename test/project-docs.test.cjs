@@ -151,3 +151,56 @@ test('contexte du projet : passages choisis indiqués, contexte insuffisant sign
   assert.equal(none.insufficient, true);
   assert.match(none.text, /ATTENTION : aucun de ces extraits ne contient les mots de la question/);
 });
+
+test('contexte du projet : clause d’exclusion en tête de page retenue, notes répétées envoyées une fois', () => {
+  const notes =
+    '(1) Les prestations dans le réseau et hors réseau ne sont pas cumulatives. ' +
+    '(2) Dans la limite des frais réellement engagés. '.repeat(6);
+  const grille = {
+    name: 'garanties.pdf',
+    type: 'pdf',
+    pages: [
+      {
+        number: 7,
+        text: 'Analyses et examens de laboratoire : 100 % BR. Consultation : 100 % BR.',
+      },
+      // Pages d'optique et de dentaire : mêmes mots que la question, sans rapport avec elle.
+      ...[8, 9, 10].map((number) => ({
+        number,
+        text: 'Lentilles, prothèses et implants non remboursés par la Sécurité sociale : forfait par an. '.repeat(
+          6,
+        ),
+      })),
+      { number: 11, text: notes },
+      { number: 17, text: notes },
+      { number: 3, text: 'Cotisation du salarié et du conjoint. '.repeat(20) },
+    ],
+  };
+  const exclusions =
+    'Exclusions et limitations de mes garanties. Qu’est-ce que nous ne prenons pas en charge ? ' +
+    'Les actes non remboursés par la Sécurité sociale, sauf mention au tableau des garanties. ';
+  const notice = {
+    name: 'notice.pdf',
+    type: 'pdf',
+    pages: [
+      {
+        number: 18,
+        text:
+          exclusions.padEnd(1400, ' Les soins effectués avant la date d’inscription.') +
+          'Chambre particulière : frais de téléphone non remboursés par la Sécurité sociale, ' +
+          'hors nomenclature, analyses de confort et laboratoire privé exclus.',
+      },
+    ],
+  };
+  const question =
+    'Ma mutuelle rembourse-t-elle les analyses de laboratoire hors nomenclature, non remboursées par la Sécurité sociale ?';
+  const context = projectDocumentsContext({ name: 'Mutuelle' }, [grille, notice], question, 3200);
+  assert.equal(context.partial, true);
+  assert.match(context.text, /Les actes non remboursés par la Sécurité sociale, sauf mention/);
+  assert.match(context.text, /Analyses et examens de laboratoire : 100 % BR/);
+  // Notes identiques des pages 11 et 17 : un seul passage, les deux pages indiquées.
+  assert.equal(context.text.split('(1) Les prestations').length - 1, 1);
+  assert.match(context.text, /\[garanties\.pdf — page 11 ; même texte : page 17\]/);
+  const places = context.used.find((u) => u.name === 'garanties.pdf').places;
+  assert.ok(places.includes(11) && places.includes(17));
+});

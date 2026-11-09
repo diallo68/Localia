@@ -147,3 +147,31 @@ sémantiques demandent le modèle `bge-m3`, désinstallé depuis.
   est nécessaire pour conclure.
 - Un seul modèle (`qwen3:8b`) mesuré ; la justesse des réponses n’est pas notée ici (voir le
   Benchmark pour la notation humaine).
+
+## Changement du 9 novembre 2026 : BM25, doublons, morceau précédent
+
+Cas réel qui a motivé le changement : une notice de mutuelle de 20 pages et une notice de
+32 pages dans un projet, question « les analyses hors nomenclature sont-elles remboursées ? ».
+La réponse tient dans la clause « Exclusions… les actes non remboursés par la Sécurité sociale,
+sauf mention au(x) tableau(x) des garanties » (notice de 32 pages, page 18). Avec la méthode
+`mots` et un contexte de 8 192 jetons, les 8 extraits envoyés venaient tous de la notice de
+20 pages, dont 4 étaient deux copies des mêmes notes de bas de page (pages 11 et 17) ; la clause
+était classée vers le 29e rang sur 97. Les deux modèles essayés (Dial-bowe-GN-224-2B, qwen3:8b)
+ont répondu sans elle (règle inventée pour l'un, « pas d'information » pour l'autre).
+
+Changements dans `projectDocumentsContext` (`src/project-docs.cjs`) :
+
+- méthode par défaut `bm25` au lieu de `mots` : « remboursées » (question) et « remboursés »
+  (clause) ont la même racine ; « elle » (de « rembourse-t-elle ») ne compte plus ;
+- un passage identique à un passage déjà choisi n'est pas renvoyé ; sa page est ajoutée au
+  repère (`[notice.pdf — page 11 ; même texte : page 17]`) et à la liste des pages transmises ;
+- le morceau qui précède un passage choisi sur la même page est ajouté s'il tient dans le budget :
+  le titre d'une section et sa règle générale précèdent souvent le détail qui partage les mots de
+  la question (pages coupées tous les 1 400 caractères).
+
+Mesure sur la banque du Benchmark avant et après : résultats identiques pour chaque méthode et
+chaque budget (tableau ci-dessus ; pages courtes, sans doublons). Le changement ne coûte rien sur
+ce corpus. Le gain n'est démontré que sur le cas réel ci-dessus : avec les mêmes documents et la
+même question, la clause figure dans les extraits envoyés (page 18 de la notice de 32 pages). Un
+test reproduit ce cas avec un faux contrat (`test/project-docs.test.cjs`) : il échoue avec
+l'ancien code.

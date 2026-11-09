@@ -41,12 +41,21 @@ Le dossier `Dial-bowe-GN-224-2B/` est le contenu du dépôt Hugging Face ; ce fi
 
 ## Avant l'envoi
 
-- [ ] Relecture critique du README par Codex (prévue avant le rapport final). Ses désaccords vont dans
-  `desaccords.md`.
-- [ ] Relire le README avec l'auteur, et vérifier qu'aucun chiffre ne dit plus que le journal.
-- [ ] Vérifier qu'aucun fichier du dépôt ne contient le jeu secret, les jeux dev et dev2, les données privées (thèse)
-  ou un jeton.
-- [ ] Mentions : Service-Public.fr (DILA), Licence Ouverte ; « ni produit ni approuvé par l'équipe Qwen ».
+- [x] Relecture critique du README par Codex (7 nov. ; désaccords dans `desaccords.md`).
+- [x] Relire le README avec l'auteur (9 nov.). À sa demande, le mot « échec » est retiré du README et du rapport
+  final : les mesures sont données telles quelles, aux utilisateurs d'en juger. `criteres.md` et `journal.md` restent
+  inchangés.
+- [x] Vérifier qu'aucun fichier publié ne contient le jeu secret, les jeux dev et dev2, les données privées (thèse)
+  ou un jeton (9 nov.).
+- [x] Mentions : Service-Public.fr (DILA), Licence Ouverte ; « ni produit ni approuvé par l'équipe Qwen ».
+
+## Publication faite le 9 novembre 2026
+
+- Dépôt créé en privé par l'auteur depuis le site, puis rendu **public** : https://huggingface.co/madma2022/Dial-bowe-GN-224-2B
+- 8 fichiers : README (collé dans l'éditeur de la fiche), LICENSE, Modelfile, SHA256SUMS, gabarit, et les trois GGUF
+  envoyés par le site (4,18 Go). Les SHA-256 affichés par Hugging Face sont identiques à `SHA256SUMS`.
+- Essai après passage en public : `ollama pull hf.co/madma2022/Dial-bowe-GN-224-2B:Q4_K_M`, empreinte vérifiée par
+  Ollama, deux questions justes (une réponse chiffrée, une abstention).
 
 ## Envoi (le jour J, avec accord)
 

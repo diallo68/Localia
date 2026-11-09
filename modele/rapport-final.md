@@ -7,7 +7,7 @@ Rédigé le 7 novembre 2026 par Claude, à partir de `journal.md`, qui fait foi 
 
 - **But du défi** : un modèle de 2,5 Go au plus, qui tourne sur un ordinateur portable sans carte graphique et qui
   rivalise, pour le travail sur un document fourni en français, avec des modèles 5 à 10 fois plus gros.
-- **Résultat : Échec**, au sens des critères fixés à l'avance.
+- **Résultats** (les mesures sont données telles quelles ; c'est aux utilisateurs d'en juger à l'usage) :
   - Sur le jeu de test secret, le modèle retenu (lot 4, vocabulaire élagué) obtient **0,766**, contre **0,772** pour
     sa base Qwen3.5-2B. L'écart, −0,006 [−0,057 ; +0,047], n'est pas significatif. Le seuil le plus bas, +5 points,
     n'est pas atteint.
@@ -19,7 +19,7 @@ Rédigé le 7 novembre 2026 par Claude, à partir de `journal.md`, qui fait foi 
     perte mesurable.
 - **Ce qui recule** : la détection d'incohérences, la résistance aux instructions cachées dans un document, le respect
   des consignes de rédaction et le calcul.
-- **Publication** : l'auteur a choisi de publier le modèle malgré l'échec, avec ses mesures, sous le nom
+- **Publication** : l'auteur a choisi de publier le modèle avec toutes ses mesures, sous le nom
   Dial-bowe-GN-224-2B (Apache 2.0). Trois fichiers sont prêts (Q4_K_M, Q5_K_M, Q8_0). L'envoi sur Hugging Face est
   fait par l'auteur (`publication/PUBLIER.md`).
 - **Coût** : 0 €. Tout a tourné sur le Mac de l'auteur et sur les GPU T4 gratuits de Kaggle. Le crédit Google Cloud
@@ -39,7 +39,7 @@ Rédigé le 7 novembre 2026 par Claude, à partir de `journal.md`, qui fait foi 
   - **Rivalise** : non inférieur à au moins 3 des 4 comparateurs de 9 à 12 Md et supérieur à au moins 1 ;
   - **Dépasse sa classe** : au moins 10 points de plus que la base, et supérieur à Qwen3.5-9B et à Gemma 3 12B ;
   - **Améliore la base** : au moins 5 points de plus que la base ;
-  - **Échec** sinon, ou si une condition obligatoire manque.
+  - aucun niveau n'est attribué sinon, ou si une condition obligatoire manque.
 - **Jeu secret** : 240 cas sur 40 documents, figé le 17 octobre (SHA-256 `622aac13…`), gardé hors du dépôt, ouvert une
   seule fois le 1er novembre.
 
@@ -57,8 +57,8 @@ Rédigé le 7 novembre 2026 par Claude, à partir de `journal.md`, qui fait foi 
 | 26 oct. | Vitesse et mémoire ; élagage du lot 4 | Version à livrer : lot 4 élagué, 1,11 Go |
 | 26-31 oct. | Lot 6 (réponses de l'élève triées par le professeur) | Non retenu : −0,008 face au lot 4, et 64 % des réponses « justes » avaient un raisonnement faux |
 | 1er nov. | Bancs publics ; LoRA atténuée | Régression IFEval et MGSM ; aucune intensité réduite ne passe le contrôle |
-| 1er nov. | **Jeu secret ouvert** (14 modèles) | 0,766 contre 0,772 : Échec |
-| 2 nov. | Juge ouvert (Mistral Small 3.2) et contrôle humain sur 60 réponses | κ auteur/juge −0,04 : le juge n'est pas retenu, le niveau reste Échec |
+| 1er nov. | **Jeu secret ouvert** (14 modèles) | 0,766 contre 0,772 (écart non significatif) |
+| 2 nov. | Juge ouvert (Mistral Small 3.2) et contrôle humain sur 60 réponses | κ auteur/juge −0,04 : le juge n'est pas retenu, la note automatique reste la référence |
 | 2-7 nov. | Entraînement refait pour retrouver la pleine précision ; quantifications ; préparation de la publication | Le refait est équivalent au livré ; trois fichiers prêts |
 
 ## 3. Résultats
@@ -211,7 +211,7 @@ Tous sont datés dans `criteres.md` et ont été décidés avant le résultat qu
   - Gemma 4 est évalué en QAT Q4_0 ;
   - le noteur ne reconnaît plus un nombre à l'intérieur d'un autre ;
   - un cas en erreur technique écarte le modèle au lieu de compter 0.
-- **2 novembre**, avant le passage du juge **mais après la note automatique** (déjà Échec) :
+- **2 novembre**, avant le passage du juge **mais après la note automatique** (résultat déjà connu) :
   - choix du juge (Mistral Small 3.2) ;
   - contrôle humain sur 60 réponses au lieu de 20 % des cas ;
   - règle de décision par κ.

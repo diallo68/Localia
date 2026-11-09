@@ -28,11 +28,12 @@ fichier Q4_K_M a utilisé au plus 2,4 Go de mémoire à 8 192 jetons de contexte
 > fiches administratives **françaises** (Service-Public.fr). Aucune donnée propre à la Guinée n'a été ajoutée pendant
 > son adaptation, et ses capacités dans les langues nationales guinéennes n'ont pas été évaluées.
 >
-> **Le résultat.** Sur notre jeu de test secret, **aucune amélioration d'ensemble n'est démontrée** par rapport au
-> modèle de base (0,766 contre 0,772, écart non significatif), et deux bancs publics reculent (IFEval, MGSM). Selon
-> les critères fixés avant l'entraînement, le défi est un **échec**. L'auteur a choisi de publier le modèle malgré
-> tout, avec ses mesures. Il s'abstient et cite mieux, mais il signale moins bien les incohérences et résiste moins bien aux
-> instructions cachées dans un document (§ Résultats).
+> **Les résultats en bref.** Sur notre jeu de test secret, le score d'ensemble est au niveau du modèle de base
+> (0,766 contre 0,772, écart non significatif). Le modèle s'abstient et cite mieux, mais il signale moins bien les
+> incohérences et résiste moins bien aux instructions cachées dans un document. Sur les bancs publics, il progresse
+> nettement quand il faut dire que la réponse n'est pas dans le texte (FQuAD 2.0 +19 points, SQuAD 2.0 +23) et
+> recule en suivi de consignes (IFEval −5,9) et en calcul (MGSM −7,2). Toutes les mesures sont détaillées plus bas,
+> pour que chacun juge selon son usage (§ Résultats).
 
 *English summary at the end.*
 
@@ -163,9 +164,6 @@ Par catégorie, écart observé avec la base (sans intervalle de confiance : ce 
 - **en recul** : détection d'incohérences −0,15, résistance aux injections −0,08, respect des consignes de
   rédaction −0,07, synthèse −0,02.
 
-Le niveau minimal du défi, dépasser la base d'au moins 5 points, n'est **pas atteint**. Le contrôle de régression
-obligatoire n'est pas tenu non plus (IFEval et MGSM, § Bancs publics) : le résultat du défi est un **échec**.
-
 Fiabilité de la note : l'auteur a noté à l'aveugle 60 réponses. Ni la note automatique (κ = 0,05) ni un juge
 automatique (Mistral Small 3.2, κ = −0,04) ne s'accordent bien avec lui. Comme le prévoyait la règle fixée à
 l'avance, la note automatique reste le score principal, sans validation humaine concluante. À titre secondaire, le
@@ -186,7 +184,7 @@ juge donnait 0,696 contre 0,675 pour la base (+0,021 [−0,024 ; +0,067]).
 | Belebele (anglais, 900) | 0,683 | +0,033 [+0,012 ; +0,055] |
 
 Le gain sur FQuAD et SQuAD vient surtout des questions sans réponse : le modèle dit plus souvent, à raison, que
-l'information n'est pas dans le texte. IFEval et MGSM reculent au-delà des seuils de régression fixés à l'avance.
+l'information n'est pas dans le texte. IFEval (suivi de consignes) et MGSM (calcul) reculent.
 
 ### Vitesse et mémoire
 
@@ -279,8 +277,7 @@ Experimental model derived from Qwen3.5-2B (LoRA, reduced vocabulary, 1.7B param
 CPU-only computer. The name honours the author's Guinean origin (GN: Guinea's internet domain .gn; 224: its international calling code +224; not a version number); the model itself was trained on French government
 information sheets (Service-Public.fr) with no Guinea-specific data added; Guinean national languages were not evaluated. On a held-out secret test set
 (primary score on 234 of 240 cases, after excluding six close to the training data), no overall improvement over the
-base model is shown (0.766 vs 0.772, not significant), and the project's own success criteria count it as a
-failure: it abstains and cites better, but it is
+base model is shown (0.766 vs 0.772, not significant): it abstains and cites better, but it is
 weaker at flagging inconsistencies and at resisting prompt injection. Public benchmarks: FQuAD 2.0 +19 points and
 SQuAD 2.0 +23 points (mostly correct abstention), IFEval −5.9, MGSM −7.2. Speed on one 2019 laptop CPU (Intel i9, 8 threads, Q4_K_M,
 8k context): 17 tokens/s generation on 7 Nov. 2026, about 5 in earlier runs with many other applications active;

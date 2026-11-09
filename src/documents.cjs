@@ -3,6 +3,7 @@ const path = require('node:path');
 const { Worker } = require('node:worker_threads');
 const { randomUUID } = require('node:crypto');
 const { detectInjection } = require('./verify.js');
+const { scorePassages, selectPassages } = require('./retrieval.js');
 const { docxText } = require('./office.cjs');
 const { splitSections } = require('./web.cjs');
 const MAX_BYTES = 25 * 1024 * 1024;
@@ -172,16 +173,6 @@ function printedPages(doc) {
   return labels;
 }
 
-function terms(text) {
-  return (
-    text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .match(/[a-z0-9]{4,}/g) || []
-  );
-}
-
 // Passages qui résument un document (résumé, introduction, conclusions), pour les demandes de
 // résumé : une question comme « Résume ce document » ne désigne aucun passage par ses mots.
 const SUMMARY_SECTIONS = [
@@ -209,43 +200,41 @@ function summaryBonus(normalized, text) {
 // Extraits les plus pertinents pour la question, dans la limite de « budget » caractères.
 // summary : demande de résumé, les passages de résumé et de conclusion passent en premier.
 function documentContext(doc, question, budget = 10000, { summary = false } = {}) {
-  const words = [...new Set(terms(question))];
   const chunks = [];
   for (const page of doc.pages)
     for (let offset = 0; offset < page.text.length; offset += 1400) {
       const text = page.text.slice(offset, offset + 1400);
-      const normalized = text
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
-      chunks.push({
-        page: page.number,
-        offset,
-        text,
-        score:
-          words.reduce((n, w) => n + (normalized.includes(w) ? 1 : 0), 0) +
-          (summary ? summaryBonus(normalized, text) : 0),
-      });
+      const previous = offset ? chunks.at(-1) : null;
+      chunks.push({ doc, page: page.number, offset, text, previous, twins: [] });
     }
-  const selected = [];
-  let size = 0;
-  for (const chunk of [...chunks].sort(
-    (a, b) => b.score - a.score || a.page - b.page || a.offset - b.offset,
-  )) {
-    const length = chunk.text.length + 40;
-    if (size + length > budget) continue;
-    selected.push(chunk);
-    size += length;
-  }
-  selected.sort((a, b) => a.page - b.page || a.offset - b.offset);
-  const partial = selected.length < chunks.length;
+  // Classement BM25 (racines, mots vides retirés, mots rares pondérés), comme pour les projets.
+  const scores = scorePassages(
+    chunks.map((c) => c.text),
+    question,
+    'bm25',
+  );
+  chunks.forEach((c, i) => {
+    const normalized = c.text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    c.score = scores[i] + (summary ? summaryBonus(normalized, c.text) : 0);
+  });
+  const { partial, chosen: selected } = selectPassages(chunks, budget, 40);
   const printed = doc.web || doc.word ? new Map() : printedPages(doc);
+  const same = (c) =>
+    c.twins.length
+      ? ` ; même texte : page ${[...new Set(c.twins.map((t) => t.page))].join(', ')}`
+      : '';
   const label = (c) =>
     `[Page ${c.page}, extrait ${Math.floor(c.offset / 1400) + 1}` +
-    (printed.has(c.page) ? ` — page imprimée ${printed.get(c.page)}]` : ']');
+    (printed.has(c.page) ? ` — page imprimée ${printed.get(c.page)}` : '') +
+    `${same(c)}]`;
   return {
     partial,
-    pages: [...new Set(selected.map((c) => c.page))],
+    pages: [...new Set(selected.flatMap((c) => [c.page, ...c.twins.map((t) => t.page)]))].sort(
+      (a, b) => a - b,
+    ),
     text:
       `Document : ${doc.name}\nCouverture : ${partial ? 'EXTRAITS SEULEMENT — aucune vérification exhaustive possible' : 'tout le texte extractible'}. ${doc.emptyPages.length ? 'Pages sans texte : ' + doc.emptyPages.join(', ') + '.' : ''}\n` +
       (printed.size

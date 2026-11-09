@@ -119,4 +119,42 @@ function scorePassages(texts, question, method = 'bm25') {
   );
 }
 
-if (typeof module !== 'undefined') module.exports = { stem, stems, scorePassages };
+// Choix des passages dans la limite de « budget » caractères (« extra » : repère ajouté à chaque
+// passage). « chunks » : passages dans l'ordre du texte, avec text, score, previous (morceau qui
+// précède sur la même page, ou null) et twins (tableau vide). Tout est pris si tout tient ;
+// sinon par score décroissant. Un passage identique à un passage déjà choisi n'est pas repris :
+// il est ajouté à ses « twins ». Le morceau qui précède un passage choisi (score positif) est
+// ajouté s'il tient : le titre d'une section et sa règle générale précèdent souvent le détail
+// qui partage les mots de la question. Rend les passages choisis dans l'ordre du texte.
+function selectPassages(chunks, budget, extra = 0) {
+  const total = chunks.reduce((n, c) => n + c.text.length + extra, 0);
+  const partial = total > budget;
+  const rank = new Map(chunks.map((c, i) => [c, i]));
+  const ordered = partial
+    ? [...chunks].sort((a, b) => b.score - a.score || rank.get(a) - rank.get(b))
+    : chunks;
+  const selected = new Set();
+  const byText = new Map();
+  let size = 0;
+  const take = (chunk) => {
+    if (selected.has(chunk)) return;
+    const key = chunk.text.replace(/\s+/g, ' ').trim();
+    const twin = key && byText.get(key);
+    if (twin) {
+      if (twin.doc !== chunk.doc || twin.page !== chunk.page) twin.twins.push(chunk);
+      return;
+    }
+    const length = chunk.text.length + extra;
+    if (size + length > budget) return;
+    selected.add(chunk);
+    byText.set(key, chunk);
+    size += length;
+  };
+  for (const chunk of ordered) {
+    take(chunk);
+    if (partial && chunk.previous && chunk.score > 0 && selected.has(chunk)) take(chunk.previous);
+  }
+  return { partial, chosen: [...selected].sort((a, b) => rank.get(a) - rank.get(b)) };
+}
+
+if (typeof module !== 'undefined') module.exports = { stem, stems, scorePassages, selectPassages };

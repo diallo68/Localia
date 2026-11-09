@@ -132,3 +132,46 @@ test('demande de résumé : résumé et conclusions avant le reste, ni sommaire 
   assert.ok(!plain.pages.includes(9), 'sans le mode résumé, la conclusion n’est pas choisie');
   assert.deepEqual(summary.pages, [2, 9], 'résumé et conclusion, sans sommaire ni bibliographie');
 });
+
+test('PDF joint long : clause d’exclusion en tête de page retenue, notes répétées envoyées une fois', () => {
+  const notes =
+    '(1) Les prestations dans le réseau et hors réseau ne sont pas cumulatives. ' +
+    '(2) Dans la limite des frais réellement engagés. '.repeat(6);
+  const exclusions =
+    'Exclusions et limitations de mes garanties. Qu’est-ce que nous ne prenons pas en charge ? ' +
+    'Les actes non remboursés par la Sécurité sociale, sauf mention au tableau des garanties. ';
+  const doc = {
+    name: 'mutuelle.pdf',
+    emptyPages: [],
+    pages: [
+      {
+        number: 7,
+        text: 'Analyses et examens de laboratoire : 100 % BR. Consultation : 100 % BR.',
+      },
+      ...[8, 9, 10].map((number) => ({
+        number,
+        text: 'Lentilles, prothèses et implants non remboursés par la Sécurité sociale : forfait par an. '.repeat(
+          6,
+        ),
+      })),
+      { number: 11, text: notes },
+      { number: 17, text: notes },
+      {
+        number: 18,
+        text:
+          exclusions.padEnd(1400, ' Les soins effectués avant la date d’inscription.') +
+          'Chambre particulière : frais de téléphone non remboursés par la Sécurité sociale, ' +
+          'hors nomenclature, analyses de confort et laboratoire privé exclus.',
+      },
+    ],
+  };
+  const question =
+    'Ma mutuelle rembourse-t-elle les analyses de laboratoire hors nomenclature, non remboursées par la Sécurité sociale ?';
+  const context = documentContext(doc, question, 3200);
+  assert.equal(context.partial, true);
+  assert.match(context.text, /Les actes non remboursés par la Sécurité sociale, sauf mention/);
+  assert.match(context.text, /Analyses et examens de laboratoire : 100 % BR/);
+  assert.equal(context.text.split('(1) Les prestations').length - 1, 1);
+  assert.match(context.text, /\[Page 11, extrait 1 ; même texte : page 17\]/);
+  assert.ok(context.pages.includes(11) && context.pages.includes(17));
+});

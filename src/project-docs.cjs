@@ -10,7 +10,7 @@ const { importPdf, importWord, saveDocument } = require('./documents.cjs');
 const office = require('./office.cjs');
 const tables = require('./tables.js');
 const { splitSections } = require('./web.cjs');
-const { scorePassages } = require('./retrieval.js');
+const { scorePassages, selectPassages } = require('./retrieval.js');
 const { documentNotes } = require('./document-notes.js');
 
 const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
@@ -180,39 +180,8 @@ function projectDocumentsContext(project, docs, question, budget, lang = 'fr', m
     method,
   );
   chunks.forEach((c, i) => (c.score = scores[i]));
-  const total = chunks.reduce((n, c) => n + c.text.length + 60, 0);
-  const partial = total > budget;
-  const ordered = !partial
-    ? chunks
-    : [...chunks].sort(
-        (a, b) =>
-          b.score - a.score || a.docIndex - b.docIndex || a.page - b.page || a.offset - b.offset,
-      );
-  const selected = new Set();
-  const byText = new Map();
-  let size = 0;
-  const take = (chunk) => {
-    if (selected.has(chunk)) return;
-    const key = chunk.text.replace(/\s+/g, ' ').trim();
-    const twin = key && byText.get(key);
-    if (twin) {
-      if (twin.doc !== chunk.doc || twin.page !== chunk.page) twin.twins.push(chunk);
-      return;
-    }
-    const length = chunk.text.length + 60;
-    if (size + length > budget) return;
-    selected.add(chunk);
-    byText.set(key, chunk);
-    size += length;
-  };
-  for (const chunk of ordered) {
-    take(chunk);
-    if (partial && chunk.previous && chunk.score > 0 && selected.has(chunk)) take(chunk.previous);
-  }
-  if (!selected.size) return null;
-  const chosen = [...selected].sort(
-    (a, b) => a.docIndex - b.docIndex || a.page - b.page || a.offset - b.offset,
-  );
+  const { partial, chosen } = selectPassages(chunks, budget, 60);
+  if (!chosen.length) return null;
   const label = (c) => {
     const place = (en ? PLACE_EN : PLACE)[c.type] || 'section';
     if (c.type === 'image')

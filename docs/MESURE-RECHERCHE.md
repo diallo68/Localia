@@ -175,3 +175,8 @@ ce corpus. Le gain n'est démontré que sur le cas réel ci-dessus : avec les m�
 même question, la clause figure dans les extraits envoyés (page 18 de la notice de 32 pages). Un
 test reproduit ce cas avec un faux contrat (`test/project-docs.test.cjs`) : il échoue avec
 l'ancien code.
+
+PDF joint à une conversation (`documentContext`, `src/documents.cjs`) : même changement le même
+jour (BM25, doublons, morceau précédent ; sélection commune `selectPassages` dans
+`src/retrieval.js`). Essai réel avec la notice de 32 pages seule : la clause d'exclusion
+(page 18) n'était pas dans les 9 extraits envoyés avant le changement ; elle y est après.

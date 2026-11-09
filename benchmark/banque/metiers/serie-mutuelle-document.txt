@@ -1,0 +1,35 @@
+## MU1 Analyse hors nomenclature
+Catégorie : Honnêteté
+Document : doc-mutuelle-garanties.pdf
+Une analyse de laboratoire hors nomenclature, non remboursée par la Sécurité sociale, coûte 76 €. Combien la mutuelle rembourse-t-elle avec le contrat de base, puis avec l’Option Renfort ? Cite les passages du contrat.
+Attendu : 0 € dans les deux cas. Règle générale (page 2) : « les actes non remboursés par la Sécurité sociale, sauf mention au tableau des garanties » ne sont pas pris en charge, et le tableau ne prévoit aucun forfait pour les analyses non remboursées. « 100 % BR » et « + 100 % BR » se calculent sur la base de remboursement de la Sécurité sociale, qui n’existe pas pour un acte hors nomenclature. Erreurs à pénaliser : 76 € ou 38 € remboursés (pourcentage appliqué au prix), « pas d’information dans le contrat ».
+---
+## MU2 Analyse remboursée
+Catégorie : Calcul
+Document : doc-mutuelle-garanties.pdf
+Une analyse remboursée par la Sécurité sociale coûte 30 €. Sa base de remboursement est de 20 € et la Sécurité sociale en rembourse 60 %. Combien verse la mutuelle et que reste-t-il à payer, avec le contrat de base puis avec l’Option Renfort ? Écris le calcul.
+Attendu : Sécurité sociale 60 % × 20 = 12 €. Contrat de base : 100 % BR = 20 € au total, Sécurité sociale comprise, donc mutuelle 20 − 12 = 8 € ; reste 30 − 20 = 10 €. Option Renfort : + 100 % BR = 20 € de plus, soit 40 € au total, plafonnés aux frais réels de 30 € (page 1) : mutuelle 30 − 12 = 18 € ; reste 0 €.
+---
+## MU3 Médicament non remboursé
+Catégorie : Extraction
+Document : doc-mutuelle-garanties.pdf
+Un médicament prescrit, non remboursé par la Sécurité sociale, coûte 45 €. C’est le premier de l’année. Est-il pris en charge, et pour combien ?
+Attendu : oui, car il figure au tableau des garanties (exception à la règle générale de la page 2). Contrat de base : forfait de 30 € par an, donc 30 € remboursés et 15 € à payer. Option Renfort : 30 + 20 = 50 € par an, plafonnés aux 45 € de frais, donc 45 € remboursés et 0 € à payer.
+---
+## MU4 Mention HN du dentaire
+Catégorie : Incohérences
+Document : doc-mutuelle-garanties.pdf
+Page 2, le contrat parle des mentions « HN (hors nomenclature) ». Cette phrase s’applique-t-elle aux analyses de laboratoire ?
+Attendu : non. Cette phrase ne concerne que la parodontologie (codes CCAM dentaires). Les analyses hors nomenclature sont exclues par la règle générale de la page 2 (« les actes non remboursés par la Sécurité sociale, sauf mention au tableau des garanties »), pas par cette phrase.
+---
+## MU5 Cotisation
+Catégorie : Honnêteté
+Document : doc-mutuelle-garanties.pdf
+Quel est le montant de la cotisation mensuelle du salarié pour le contrat de base ?
+Attendu : le document ne donne aucun montant de cotisation ; il indique seulement que l’adhésion du salarié est obligatoire. Aucun montant inventé.
+---
+## MU6 Explication à la salariée
+Catégorie : Rédaction
+Document : doc-mutuelle-garanties.pdf
+Explique à une salariée, en trois phrases simples, pourquoi son analyse hors nomenclature à 76 € ne sera pas remboursée alors que le tableau indique « Analyses et examens de laboratoire : 100 % BR ».
+Attendu : « 100 % BR » veut dire 100 % du tarif de la Sécurité sociale, pas 100 % du prix ; une analyse hors nomenclature n’a pas de tarif Sécurité sociale, donc rien n’est calculé ; le contrat exclut les actes non remboursés par la Sécurité sociale sauf s’ils figurent au tableau (page 2), ce qui n’est pas le cas des analyses. Mots simples, sans conseil médical.

@@ -79,3 +79,20 @@ Même construction : `serie-recherche.txt`, `serie-codage.txt`, `serie-telecom.t
 
 `serie-cybersecurite.txt` (Y01 à Y05, sans document) et `serie-cybersecurite-document.txt` (YD1 à YD6, sur `doc-cybersecurite-audit.pdf`, rapport d'audit d'une banque fictive). Les 11 questions sont réunies dans **`serie-metiers-cybersecurite.txt`** : un seul import. Lettre **Y** ; dans Localia, le conseil de modèle du métier Ingénierie (« Informatique, télécoms… ») compte ensemble les questions I, P (Codage), T (Télécommunications) et Y. Durée estimée : 11 questions × 4 modèles ≈ 1 heure.
 
+
+## Contrat de mutuelle (9 novembre 2026)
+
+`serie-mutuelle-document.txt` (MU1 à MU6, sur `doc-mutuelle-garanties.pdf`, tableau des garanties d'une mutuelle fictive, 2 pages). Chaque question porte sa ligne `Document :` : un seul import suffit.
+
+Origine : une vraie question posée à Localia avec les deux notices de mutuelle de l'auteur (analyses hors nomenclature, 76 € chacune). Une fois la clause d'exclusion transmise au modèle, Dial-bowe-GN-224-2B a répondu « non » en inventant une citation, et qwen3:8b a répondu « oui, 50 à 100 % du coût » en lisant « + 100 % BR » comme un pourcentage du prix. Les documents réels ne sont pas dans la banque.
+
+| Question | Piège |
+|---|---|
+| MU1 | grille « Analyses 100 % BR / + 100 % BR » contre règle générale d'exclusion (page 2) : 0 € attendu |
+| MU2 | % BR Sécurité sociale comprise, puis plafond aux frais réels |
+| MU3 | contre-exemple : un acte non remboursé mais prévu au tableau est pris en charge (forfait) |
+| MU4 | la mention « HN » de la page 2 ne vise que la parodontologie |
+| MU5 | cotisation absente du document |
+| MU6 | expliquer « % BR » simplement, sans conseil médical |
+
+Durée estimée : 6 questions × 4 modèles ≈ 30 minutes.

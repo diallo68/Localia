@@ -466,6 +466,56 @@ const cybersecurite = [
   },
 ];
 
+// Contrat de mutuelle : cas réel du 9 novembre 2026 (analyses hors nomenclature), transposé dans
+// un contrat fictif. Piège : la grille dit « Analyses 100 % BR » et « + 100 % BR », mais une
+// analyse hors nomenclature n'a pas de base de remboursement et la règle générale d'exclusion
+// (page 2) l'écarte ; la mention « HN » de la page 2 ne concerne que la parodontologie.
+const mutuelle = [
+  { titre: 'Mutuelle fictive Santé du Fleuve — Tableau des garanties 2026', taille: 14 },
+  {
+    texte:
+      'Contrat collectif frais de santé de la société fictive Boké Logistique, personnel non-cadre. Adhésion obligatoire du salarié ; conjoint et enfants sur demande.',
+  },
+  {
+    texte:
+      'Les garanties exprimées en pourcentage de la base de remboursement (BR) incluent le remboursement de la Sécurité sociale. Les montants en euros s’ajoutent au remboursement de la Sécurité sociale. Le remboursement total ne peut pas dépasser les frais réellement engagés.',
+  },
+  {
+    tableau: [
+      ['Poste', 'Contrat de base', 'Option Renfort'],
+      ['Consultation de médecin généraliste', '100 % BR', '+ 50 % BR'],
+      ['Analyses et examens de laboratoire', '100 % BR', '+ 100 % BR'],
+      ['Médicaments remboursés par la Sécurité sociale', '100 % BR', '-'],
+      [
+        'Médicaments prescrits non remboursés par la Sécurité sociale',
+        '30 € par an',
+        '+ 20 € par an',
+      ],
+      [
+        'Ostéopathie (non remboursée par la Sécurité sociale)',
+        '25 € par séance, 2 séances par an',
+        '+ 1 séance',
+      ],
+      ['Lunettes : monture et deux verres', '150 €', '+ 50 €'],
+    ],
+  },
+  { saut: true },
+  { titre: 'Exclusions et limitations', taille: 12 },
+  {
+    texte:
+      'Ne sont pas pris en charge : les actes non remboursés par la Sécurité sociale, sauf mention au tableau des garanties ; les soins effectués avant la date d’inscription ou après la fin des garanties ; la participation forfaitaire et les franchises médicales.',
+  },
+  {
+    texte:
+      'Pour la parodontologie, seuls les actes codés à la classification commune des actes médicaux (CCAM) dentaire sont remboursés : les mentions NR (non remboursé) et HN (hors nomenclature) ne sont pas des codes CCAM.',
+  },
+  { titre: 'Lexique', taille: 12 },
+  {
+    texte:
+      'Base de remboursement (BR) : tarif qui sert de base de calcul à la Sécurité sociale pour rembourser les frais médicaux. Ticket modérateur : part de la BR qui n’est pas remboursée par la Sécurité sociale.',
+  },
+];
+
 const documentsMetiers = [
   { fichier: 'doc-enseignement-cours-photosynthese.pdf', blocs: enseignement },
   { fichier: 'doc-sante-compte-rendu.pdf', blocs: sante },
@@ -479,6 +529,7 @@ const documentsMetiers = [
   { fichier: 'doc-codage-ticket.pdf', blocs: codage },
   { fichier: 'doc-telecom-liaison.pdf', blocs: telecom },
   { fichier: 'doc-cybersecurite-audit.pdf', blocs: cybersecurite },
+  { fichier: 'doc-mutuelle-garanties.pdf', blocs: mutuelle },
 ];
 
 module.exports = { MENTION, documentsMetiers };

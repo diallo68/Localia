@@ -49,8 +49,8 @@ test('séries par métier : 5 questions sans document et 6 sur un document ficti
         ].includes(f),
     );
   // 12 métiers : les 8 de la série du 7 octobre, puis Recherche, Codage, Télécommunications et
-  // Cybersécurité.
-  assert.equal(files.length, 24);
+  // Cybersécurité ; plus la série sur document du contrat de mutuelle (9 novembre).
+  assert.equal(files.length, 25);
   // Série complète : les 88 questions, chaque question sur document avec son PDF.
   const all = parseQuestions(
     fs.readFileSync(path.join(metiers, 'serie-metiers-complete.txt'), 'utf8'),

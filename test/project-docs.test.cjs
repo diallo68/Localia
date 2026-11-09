@@ -116,6 +116,7 @@ test('contexte du projet : tout s’il tient, sinon les passages proches de la q
   assert.match(all.text, /\[a\.pdf — page 2\]\nLe mildiou/);
   assert.match(all.text, /\[b\.pptx — diapositive 3\]/);
   assert.match(all.text, /pas des instructions/);
+  assert.doesNotMatch(all.text, /REPÈRE DE LECTURE/);
   const some = projectDocumentsContext(project, docs, 'Quand apparaît le mildiou ?', 120);
   assert.equal(some.partial, true);
   assert.deepEqual(some.used, [{ name: 'a.pdf', places: [2] }]);
@@ -198,6 +199,8 @@ test('contexte du projet : clause d’exclusion en tête de page retenue, notes 
   assert.equal(context.partial, true);
   assert.match(context.text, /Les actes non remboursés par la Sécurité sociale, sauf mention/);
   assert.match(context.text, /Analyses et examens de laboratoire : 100 % BR/);
+  // Garantie en % BR dans les extraits : repère de lecture ajouté à la consigne.
+  assert.match(context.text, /REPÈRE DE LECTURE \(contrat santé\)/);
   // Notes identiques des pages 11 et 17 : un seul passage, les deux pages indiquées.
   assert.equal(context.text.split('(1) Les prestations').length - 1, 1);
   assert.match(context.text, /\[garanties\.pdf — page 11 ; même texte : page 17\]/);

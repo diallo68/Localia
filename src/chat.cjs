@@ -1,4 +1,5 @@
 const { documentContext } = require('./documents.cjs');
+const { documentNotes } = require('./document-notes.js');
 const { KEEP_ALIVE, modelContext } = require('./settings.cjs');
 
 const KINDS = ['chat', 'compare', 'pull', 'files', 'routine'];
@@ -86,6 +87,7 @@ function documentMessages(doc, messages, system, { numCtx, numPredict, summary =
           : doc.source
             ? `Document téléchargé depuis : ${doc.source}\n`
             : '') +
+      documentNotes(context.text) +
       context.text +
       '\nSOURCE DOCUMENTAIRE — fin',
   };

@@ -230,13 +230,15 @@ function documentContext(doc, question, budget = 10000, { summary = false } = {}
     `[Page ${c.page}, extrait ${Math.floor(c.offset / 1400) + 1}` +
     (printed.has(c.page) ? ` — page imprimée ${printed.get(c.page)}` : '') +
     `${same(c)}]`;
+  const pages = [...new Set(selected.flatMap((c) => [c.page, ...c.twins.map((t) => t.page)]))].sort(
+    (a, b) => a - b,
+  );
+  const pagesList = pages.join(', ');
   return {
     partial,
-    pages: [...new Set(selected.flatMap((c) => [c.page, ...c.twins.map((t) => t.page)]))].sort(
-      (a, b) => a - b,
-    ),
+    pages,
     text:
-      `Document : ${doc.name}\nCouverture : ${partial ? 'EXTRAITS SEULEMENT — aucune vérification exhaustive possible' : 'tout le texte extractible'}. ${doc.emptyPages.length ? 'Pages sans texte : ' + doc.emptyPages.join(', ') + '.' : ''}\n` +
+      `Document : ${doc.name}\nCouverture : ${partial ? `extraits des pages ${pagesList} sur ${doc.pages.length}, choisis selon la question ; le reste n’est pas transmis. Réponds avec ces extraits et signale ce qui peut manquer` : 'tout le texte extractible'}. ${doc.emptyPages.length ? 'Pages sans texte : ' + doc.emptyPages.join(', ') + '.' : ''}\n` +
       (printed.size
         ? '« Page N » = position dans le fichier PDF (couverture = page 1) ; « page imprimée » = numéro inscrit sur la page.\n'
         : '') +

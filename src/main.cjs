@@ -32,6 +32,7 @@ const {
   taskKey,
   validateMessages,
   documentMessages,
+  documentContextSize,
   IMAGE_NOTE,
   withSystem,
   contextSize,
@@ -1689,7 +1690,7 @@ handle('run', async (kind, payload) => {
         .join('\n\n');
       const withDocument = Boolean(payload.documentId);
       const withProjectDocuments = Boolean(project?.documents.length);
-      const numCtx = contextSize(
+      let numCtx = contextSize(
         modelSettings,
         info,
         withDocument ||
@@ -1735,6 +1736,11 @@ handle('run', async (kind, payload) => {
       let messages = payload.messages;
       if (withDocument) {
         const doc = await loadDocument(documentsPath(), payload.documentId, documentCodec);
+        numCtx = documentContextSize(
+          numCtx,
+          modelSettings.options?.num_predict,
+          doc.pages.reduce((n, p) => n + p.text.length, 0),
+        );
         const context = documentMessages(doc, messages, system, {
           numCtx,
           numPredict: modelSettings.options?.num_predict,

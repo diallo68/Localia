@@ -8,6 +8,7 @@ const {
   documentBudget,
   withSystem,
   contextSize,
+  documentContextSize,
   exceedsContext,
   chatBody,
   streamStats,
@@ -136,6 +137,22 @@ test('contexte : réglage utilisateur, sinon Modelfile, sinon 4096 ; au moins 81
   assert.equal(contextSize({ options: { num_ctx: 2048 } }, info, false), 2048);
   assert.equal(contextSize({ options: { num_ctx: 2048 } }, info, true), 8192);
   assert.equal(contextSize({}, info, true), 16384);
+});
+
+test('document joint trop long pour 8 192 : contexte porté à 16 384, jamais réduit', () => {
+  // Article de 6 pages, 27 485 caractères : en extraits à 8 192 (10 nov. 2026), en entier à 16 384.
+  assert.equal(documentContextSize(8192, undefined, 27485), 16384);
+  assert.equal(documentContextSize(8192, undefined, 9000), 8192);
+  assert.equal(documentContextSize(16384, undefined, 200000), 16384);
+  assert.equal(documentContextSize(32768, 2048, 27485), 32768);
+  assert.ok(documentBudget(16384) >= 27485);
+});
+
+test('consigne document : jamais « pas accès au fichier », limite signalée', () => {
+  const doc = { name: 'a.pdf', emptyPages: [], pages: [{ number: 1, text: 'Texte court.' }] };
+  const { messages } = documentMessages(doc, [{ role: 'user', content: 'Analyse' }], '', {});
+  assert.match(messages[0].content, /ne dis jamais que tu n’as pas accès au fichier/);
+  assert.match(messages[0].content, /ne prétends jamais avoir vérifié tout le PDF/);
 });
 
 test('corps de requête : options, maintien en mémoire et réflexion selon le modèle', () => {

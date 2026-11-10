@@ -54,7 +54,9 @@ test('document long : extrait pertinent de fin et limite explicite', () => {
   const context = documentContext(doc, 'Quelle pénalité ?', 3000);
   assert.equal(context.partial, true);
   assert.ok(context.pages.includes(40));
-  assert.match(context.text, /EXTRAITS SEULEMENT/);
+  assert.match(context.text, /extraits des pages [\d, ]+ sur 40/);
+  assert.match(context.text, /Réponds avec ces extraits/);
+  assert.doesNotMatch(context.text, /aucune vérification/);
   assert.match(context.text, /400 euros/);
 });
 test('numéros imprimés : décalage majoritaire, chiffres romains, jamais devinés', () => {

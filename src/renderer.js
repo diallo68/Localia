@@ -1,4 +1,7 @@
 const $ = (id) => document.getElementById(id);
+// Au-delà, le texte ne tient pas en entier même avec un contexte de 16 384 jetons (chat.cjs) :
+// seuls des extraits sont transmis. En dessous, le contexte est agrandi si besoin.
+const LONG_DOCUMENT_CHARS = 32000;
 let conversations = [],
   current,
   models = [],
@@ -738,14 +741,14 @@ function renderAttachment() {
     }
     if (doc.word) {
       $('attachment-info').textContent =
-        `Document Word · ${doc.pageCount} section(s) · Texte lu localement. ${doc.characters > 9500 ? 'Document long : seuls des extraits seront transmis selon la question.' : ''} Images et mise en page non analysées.` +
+        `Document Word · ${doc.pageCount} section(s) · Texte lu localement. ${doc.characters > LONG_DOCUMENT_CHARS ? 'Document long : seuls des extraits seront transmis selon la question.' : ''} Images et mise en page non analysées.` +
         (doc.alerts?.length
           ? ` ⚠ Ce document contient une instruction adressée à l’IA (section ${doc.alerts.map((a) => a.page).join(', ')}) : elle ne doit pas être suivie.`
           : '');
       return;
     }
     $('attachment-info').textContent =
-      `${doc.pageCount} page(s) · Texte lu localement. ${doc.characters > 9500 ? 'Document long : seuls des extraits seront transmis selon la question.' : ''} ${doc.emptyPages.length ? 'Pages sans texte non analysées : ' + doc.emptyPages.join(', ') : ''} Images et mise en page non analysées.` +
+      `${doc.pageCount} page(s) · Texte lu localement. ${doc.characters > LONG_DOCUMENT_CHARS ? 'Document long : seuls des extraits seront transmis selon la question.' : ''} ${doc.emptyPages.length ? 'Pages sans texte non analysées : ' + doc.emptyPages.join(', ') : ''} Images et mise en page non analysées.` +
       (doc.alerts?.length
         ? ` ⚠ Ce document contient une instruction adressée à l’IA (page ${doc.alerts.map((a) => a.page).join(', ')}) : elle ne doit pas être suivie.`
         : '');

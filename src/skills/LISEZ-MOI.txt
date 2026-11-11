@@ -14,8 +14,12 @@ famille: Groupe dans le menu
 tache: donnees              (facultatif : donnees, redaction, relecture, synthese, extraction, calcul, code, question)
 etapes: /a, /b, /c          (facultatif : un parcours qui enchaîne d'autres compétences)
 fichiers: modele.md         (facultatif : fichiers de ce dossier joints au modèle)
+nom_en: Displayed name      (facultatif : version anglaise, utilisée quand Localia est en anglais ;
+description_en: …            de même description_en, exemple_en, famille_en)
 ---
 Consignes pour le modèle…
+--- en ---
+Instructions for the model… (facultatif : consignes en anglais, après la ligne « --- en --- »)
 
 Dans une conversation : choisissez la compétence dans le menu Tâche, ou commencez votre message par son appel,
 par exemple « /donnees-manquants Traite les manquants de mon fichier ». « /competences » ouvre la liste.

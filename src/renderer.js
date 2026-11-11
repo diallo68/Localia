@@ -2,6 +2,19 @@ const $ = (id) => document.getElementById(id);
 // Au-delà, le texte ne tient pas en entier même avec un contexte de 16 384 jetons (chat.cjs) :
 // seuls des extraits sont transmis. En dessous, le contexte est agrandi si besoin.
 const LONG_DOCUMENT_CHARS = 32000;
+// Documents joints à une conversation (PDF, Word, page web) : 5 au plus. « document » garde le
+// premier, pour les écrans et les anciennes conversations qui n'en connaissent qu'un.
+const MAX_DOCUMENTS = 5;
+const docsOf = (c) => (c?.documents?.length ? c.documents : c?.document ? [c.document] : []);
+function setDocs(c, docs) {
+  if (docs.length) {
+    c.documents = docs;
+    c.document = docs[0];
+  } else {
+    delete c.documents;
+    delete c.document;
+  }
+}
 let conversations = [],
   current,
   models = [],
@@ -93,6 +106,7 @@ const VIEWS = {
   bibliography: 'Bibliographie',
   files: 'Fichiers',
   skills: 'Compétences',
+  profile: 'Mon profil',
   guide: 'Guide de démarrage',
   performance: 'Performances de votre ordinateur',
 };
@@ -797,10 +811,68 @@ function renderFiles() {
     box.append(chip);
   }
 }
+// Documents joints après le premier : une ligne chacun, avec son retrait.
+function renderMoreDocuments() {
+  const more = docsOf(current).slice(1);
+  const box = $('doc-chips');
+  box.hidden = !more.length;
+  box.replaceChildren();
+  for (const doc of more) {
+    const chip = element('div', 'doc-chip');
+    chip.append(
+      element('strong', '', doc.name),
+      element(
+        'small',
+        'muted',
+        `${doc.pageCount} ${doc.web || doc.word ? 'section(s)' : 'page(s)'} · texte lu localement`,
+      ),
+    );
+    const remove = element('button', '', 'Retirer');
+    remove.type = 'button';
+    remove.setAttribute('aria-label', `Retirer ${doc.name}`);
+    remove.onclick = guard(async () => {
+      setDocs(
+        current,
+        docsOf(current).filter((d) => d !== doc),
+      );
+      await persist();
+      render();
+      await window.localia.deleteDocument(doc.id);
+    });
+    chip.append(remove);
+    box.append(chip);
+  }
+}
+// Message envoyé pour un appel de compétence seul (« /article-resume ») : dans la langue de
+// l'interface, en désignant le texte fourni. « aux fichiers joints » faisait répondre à un petit
+// modèle qu'il n'avait pas accès aux fichiers (Dial-bowe-GN-224-2B, 10 nov. 2026).
+function skillRequest(skill, documents, files) {
+  const name = skill.name;
+  if (isEnglish())
+    return `Apply the skill “${name}”${
+      documents
+        ? documents > 1
+          ? ' to the text of the documents provided above'
+          : ' to the text of the document provided above'
+        : files
+          ? ' to the content of the attached files, provided above'
+          : ''
+    }.`;
+  return `Applique la compétence « ${name} »${
+    documents
+      ? documents > 1
+        ? ' au texte des documents fournis ci-dessus'
+        : ' au texte du document fourni ci-dessus'
+      : files
+        ? ' au contenu des fichiers joints, fourni ci-dessus'
+        : ''
+  }.`;
+}
 function render() {
   stopSpeaking();
   if (typeof syncComposerProject === 'function') syncComposerProject();
   renderAttachment();
+  renderMoreDocuments();
   renderFiles();
   $('delete-conversation').hidden = !current;
   $('rename-conversation').hidden = !current;
@@ -1150,14 +1222,18 @@ async function readWebPage(address) {
         fetched.kind === 'text' ? { title: '', text: fetched.html } : pageText(fetched.html);
       doc = await window.localia.webSave({ url: fetched.url, title, text });
     }
-    const previous = current?.document?.id;
+    if (docsOf(current).length >= MAX_DOCUMENTS) {
+      await window.localia.deleteDocument(doc.id);
+      throw new Error(
+        `${MAX_DOCUMENTS} documents au plus par conversation : retirez-en un d’abord.`,
+      );
+    }
     if (!current) {
       current = { id: crypto.randomUUID(), title: doc.name.slice(0, 120), messages: [] };
       conversations.unshift(current);
     }
-    current.document = doc;
+    setDocs(current, [...docsOf(current), doc]);
     await persist();
-    if (previous) await window.localia.deleteDocument(previous);
     render();
     $('prompt').focus();
   } finally {
@@ -1265,24 +1341,46 @@ async function addAttachment(read) {
   importing = true;
   controls();
   try {
-    const added = await read();
+    const result = await read();
     notice('');
-    if (!added) return;
-    const name = added.kind === 'pdf' ? added.doc.name : added.file.name;
-    if (added.kind === 'file' && (current?.files || []).length >= 5) {
-      await window.localia.deleteDocument(added.file.id);
-      throw new Error('5 fichiers au plus par conversation : retirez-en un d’abord.');
+    if (!result) return;
+    // Un ou plusieurs fichiers (choix multiple) : PDF et Word s'ajoutent aux documents de la
+    // conversation, les autres fichiers aux fichiers joints ; 5 au plus de chaque sorte.
+    const refused = [];
+    const failed = [];
+    for (const added of Array.isArray(result) ? result : [result]) {
+      if (added.kind === 'error') {
+        failed.push(`${added.name} : ${added.message}`);
+        continue;
+      }
+      const name = added.kind === 'pdf' ? added.doc.name : added.file.name;
+      const full =
+        added.kind === 'pdf'
+          ? docsOf(current).length >= MAX_DOCUMENTS
+          : (current?.files || []).length >= 5;
+      if (full) {
+        await window.localia.deleteDocument(added.kind === 'pdf' ? added.doc.id : added.file.id);
+        refused.push(name);
+        continue;
+      }
+      if (!current) {
+        current = { id: crypto.randomUUID(), title: name, messages: [] };
+        conversations.unshift(current);
+      }
+      if (added.kind === 'pdf') setDocs(current, [...docsOf(current), added.doc]);
+      else current.files = [...(current.files || []), added.file];
     }
-    if (!current) {
-      current = { id: crypto.randomUUID(), title: name, messages: [] };
-      conversations.unshift(current);
-    }
-    const previous = added.kind === 'pdf' ? current.document?.id : null;
-    if (added.kind === 'pdf') current.document = added.doc;
-    else current.files = [...(current.files || []), added.file];
     await persist();
-    if (previous) await window.localia.deleteDocument(previous);
     render();
+    const problems = [
+      ...failed,
+      ...(refused.length
+        ? [
+            `5 documents et 5 fichiers au plus par conversation, non ajouté(s) : ${refused.join(', ')}`,
+          ]
+        : []),
+    ];
+    if (problems.length) notice(problems.join(' — ') + '.');
     $('prompt').focus();
   } finally {
     importing = false;
@@ -1326,13 +1424,19 @@ chatView.addEventListener(
     // Photos déposées : jointes au prochain message, comme avec le bouton appareil photo.
     if (all.length && all.every((f) => f.type.startsWith('image/') || /\.heic$/i.test(f.name)))
       return addImages(all);
-    const files = all;
-    if (files.length > 1) notice('Un fichier à la fois : seul le premier est ajouté.');
-    const [file] = files;
-    if (!file) return;
-    if (file.size > 50_000_000) throw new Error('Fichier limité à 50 Mo.');
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    await addAttachment(() => window.localia.attachData(file.name, bytes));
+    if (!all.length) return;
+    if (all.some((file) => file.size > 50_000_000)) throw new Error('Fichier limité à 50 Mo.');
+    // Plusieurs fichiers déposés : lus l'un après l'autre, ajoutés ensemble.
+    await addAttachment(async () => {
+      const added = [];
+      for (const file of all.slice(0, 10))
+        added.push(
+          await window.localia
+            .attachData(file.name, new Uint8Array(await file.arrayBuffer()))
+            .catch((error) => ({ kind: 'error', name: file.name, message: error.message })),
+        );
+      return added;
+    });
   }),
 );
 // Hors de la conversation, un fichier lâché ne doit pas remplacer la page.
@@ -1349,12 +1453,12 @@ async function openDocumentConversation(doc) {
   $('prompt').focus();
 }
 $('remove-pdf').onclick = guard(async () => {
-  const id = current?.document?.id;
-  if (!id) return;
-  delete current.document;
+  const [first, ...rest] = docsOf(current);
+  if (!first) return;
+  setDocs(current, rest);
   await persist();
-  renderAttachment();
-  await window.localia.deleteDocument(id);
+  render();
+  await window.localia.deleteDocument(first.id);
 });
 $('delete-conversation').onclick = guard(() => deleteConversation(current));
 // Supprime une conversation, ses messages et les documents qu'elle seule utilise.
@@ -1377,7 +1481,7 @@ async function deleteConversations(list) {
   render();
   if (wasOpen) view('chat');
   for (const conversation of list) {
-    if (conversation.document) await window.localia.deleteDocument(conversation.document.id);
+    for (const doc of docsOf(conversation)) await window.localia.deleteDocument(doc.id);
     for (const f of conversation.files || []) await window.localia.deleteDocument(f.id);
     for (const m of conversation.messages)
       for (const image of m.images || []) await window.localia.deleteDocument(image.id);
@@ -1482,9 +1586,7 @@ async function sendPrompt({ remoteId } = {}) {
   if (messageSkill)
     content =
       invocation.rest ||
-      `Applique la compétence « ${messageSkill.name} »${
-        current?.document || current?.files?.length ? ' aux fichiers joints' : ''
-      }.`;
+      skillRequest(messageSkill, docsOf(current).length, current?.files?.length || 0);
   if (!current) {
     current = { id: crypto.randomUUID(), title: content.slice(0, 55), messages: [] };
     conversations.unshift(current);
@@ -1531,7 +1633,7 @@ async function sendPrompt({ remoteId } = {}) {
       skill: messageSkill?.id || skillOf(conversation.skill)?.id,
       remoteId,
       projectId: conversation.projectId,
-      documentId: conversation.document?.id,
+      documentIds: docsOf(conversation).map((d) => d.id),
       anonymap: conversation.anonymap,
       fileIds: (conversation.files || []).map((f) => f.id),
       messages: conversation.messages
@@ -1563,7 +1665,7 @@ async function sendPrompt({ remoteId } = {}) {
         .verifyAnswer({
           answer: saved.content,
           question: content,
-          documentId: conversation.document?.id,
+          documentIds: docsOf(conversation).map((d) => d.id),
           projectId: conversation.projectId,
         })
         .catch(() => undefined);
@@ -1663,7 +1765,19 @@ const runNotice = (text) => {
   notice(runNotes.join(' '));
 };
 window.localia.onProgress(({ kind, data }) => {
-  if (kind === 'document') {
+  if (kind === 'document' && data.documents?.length > 1) {
+    runNotice(
+      `${data.documents.length} documents transmis — ` +
+        data.documents
+          .map((d) =>
+            d.partial
+              ? `${d.name} : extraits des pages ${d.pages.join(', ') || 'aucune'} sur ${d.pageCount}`
+              : `${d.name} : en entier`,
+          )
+          .join(' ; ') +
+        '. Les images et la mise en page ne sont pas analysées.',
+    );
+  } else if (kind === 'document') {
     runNotice(
       (data.partial ? 'Analyse partielle — extraits des pages ' : 'Texte transmis — pages ') +
         data.pages.join(', ') +
@@ -1769,7 +1883,9 @@ function showTaskAdvice(choose) {
       ? `E.g. ${taskText(chosenTask, 2)} (Tab to use it)`
       : `Ex. ${chosenTask.example} (Tab pour l’utiliser)`
     : skill
-      ? `Décrivez ce que vous attendez : la compétence « ${skill.name} » s’applique.`
+      ? isEnglish()
+        ? `Describe what you expect: the skill “${skill.name}” applies.`
+        : `Décrivez ce que vous attendez : la compétence « ${skill.name} » s’applique.`
       : typeof composePlaceholder === 'function'
         ? composePlaceholder()
         : tr('Posez votre question, ou collez l’adresse d’une page web…');
@@ -1784,7 +1900,11 @@ function showTaskAdvice(choose) {
         : `Tâche « ${chosenTask.label} » : ${chosenTask.effect}`,
     );
   if (skill) {
-    parts.push(`Compétence ${skill.call} : ${skill.description}`);
+    parts.push(
+      isEnglish()
+        ? `Skill ${skill.call}: ${skill.description}`
+        : `Compétence ${skill.call} : ${skill.description}`,
+    );
     // Compétence prévue pour une autre tâche : les deux consignes risquent de se contredire.
     const planned = skill.task && taskById(skill.task);
     if (chosenTask && planned && planned.id !== chosenTask.id)

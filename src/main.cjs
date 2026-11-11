@@ -371,7 +371,7 @@ async function importAttachment(file) {
 handle('attach', async () => {
   const result = await dialog.showOpenDialog(window, {
     title: 'Ajouter à la conversation',
-    properties: ['openFile'],
+    properties: ['openFile', 'multiSelections'],
     filters: [
       {
         name: 'PDF, Word, Excel, consignes, code et données',
@@ -380,7 +380,19 @@ handle('attach', async () => {
     ],
   });
   if (result.canceled || !result.filePaths.length) return null;
-  return importAttachment(result.filePaths[0]);
+  // Plusieurs fichiers choisis d'un coup : importés l'un après l'autre (5 au plus).
+  if (result.filePaths.length === 1) return importAttachment(result.filePaths[0]);
+  // Un fichier illisible n'empêche pas d'ajouter les autres : son erreur est rendue à la place.
+  const added = [];
+  for (const file of result.filePaths.slice(0, 10))
+    added.push(
+      await importAttachment(file).catch((error) => ({
+        kind: 'error',
+        name: path.basename(file),
+        message: error.message,
+      })),
+    );
+  return added;
 });
 // Fichier déposé dans la fenêtre : la page transmet son nom et son contenu (jamais un chemin, que
 // l'on ne pourrait pas vérifier) ; mêmes formats et mêmes limites que le choix par la boîte de dialogue.
@@ -858,6 +870,28 @@ handle('search-documents', async (query, filter) => {
   }
   return search.searchPages(docs, words);
 });
+// Profil de l'utilisateur, en une phrase pour le modèle : ses domaines et ses sujets orientent
+// le vocabulaire et les exemples, sans rien imposer.
+function profileContext(appSettings) {
+  const p = appSettings.profile;
+  if (!p || (!p.topics && p.domains.length < 2)) return null;
+  const en = appSettings.lang === 'en';
+  const domains = p.domains.map((d) => metierById(d)?.label).filter(Boolean);
+  return en
+    ? `User profile: ${domains.length ? `fields: ${domains.join(', ')}` : ''}${p.topics ? `${domains.length ? '; ' : ''}subjects: ${p.topics}` : ''}. Use it to choose relevant vocabulary and examples, but answer the question asked.`
+    : `Profil de l’utilisateur : ${domains.length ? `domaines : ${domains.join(', ')}` : ''}${p.topics ? `${domains.length ? ' ; ' : ''}sujets : ${p.topics}` : ''}. Sers-t’en pour choisir le vocabulaire et les exemples, mais réponds à la question posée.`;
+}
+// Documents joints à une conversation : liste « documentIds » (5 au plus), ou ancien « documentId ».
+function attachedIds(payload) {
+  const ids = Array.isArray(payload?.documentIds)
+    ? payload.documentIds
+    : payload?.documentId
+      ? [payload.documentId]
+      : [];
+  if (ids.length > 5 || ids.some((id) => typeof id !== 'string'))
+    throw new Error('Documents joints invalides.');
+  return [...new Set(ids)];
+}
 // Une page (section, diapositive) d'un document de projet, pour la lire dans son contexte.
 handle('document-page', async (projectId, docId, number) => {
   const projects = normalizeProjects(await readJson('projects.json', [], 'Projets illisibles.'));
@@ -881,15 +915,20 @@ handle('verify-answer', async (payload) => {
   const answer = payload?.answer;
   const question = typeof payload?.question === 'string' ? payload.question.slice(0, 100000) : '';
   if (typeof answer !== 'string' || answer.length > 200000) throw new Error('Réponse invalide.');
-  const doc = payload.documentId
-    ? await loadDocument(documentsPath(), payload.documentId, documentCodec)
-    : null;
-  let projectDocs = null;
+  const attached = await Promise.all(
+    attachedIds(payload).map((id) => loadDocument(documentsPath(), id, documentCodec)),
+  );
+  // Plusieurs documents joints : vérifiés comme les documents d'un projet (nom et page cités).
+  const doc = attached.length === 1 ? attached[0] : null;
+  let projectDocs = attached.length > 1 ? attached.filter((d) => d.pages?.length) : null;
   if (typeof payload.projectId === 'string') {
     const projects = normalizeProjects(await readJson('projects.json', [], 'Projets illisibles.'));
     const project = projects.find((p) => p.id === payload.projectId);
     if (project?.documents.length)
-      projectDocs = (await loadProjectDocuments(project)).filter((d) => d.pages.length);
+      projectDocs = [
+        ...(projectDocs || []),
+        ...(await loadProjectDocuments(project)).filter((d) => d.pages.length),
+      ];
   }
   const report = verifyAnswer({ answer, question, doc, projectDocs });
   // Question décrivant un dossier (Benchmark « Actions sur fichiers ») : plan vérifié.
@@ -1601,7 +1640,7 @@ handle('run', async (kind, payload) => {
   // Étapes réelles du traitement, affichées pendant l'attente : lecture des documents,
   // chargement du modèle, génération.
   const step = (name) => chatLike && send({ kind: 'step', data: { task: kind, step: name } });
-  if (payload?.projectId || payload?.documentId) step('lecture');
+  if (payload?.projectId || attachedIds(payload).length) step('lecture');
   if (chatLike) validateMessages(payload.messages);
   const controller = new AbortController();
   tasks.set(key, controller);
@@ -1679,6 +1718,7 @@ handle('run', async (kind, payload) => {
           ? 'Answer in English, unless the user writes in another language.'
           : null,
         metier?.instruction,
+        kind === 'chat' ? profileContext(appSettings) : null,
         localiaProjects,
         modelSettings.system,
         task?.instruction,
@@ -1688,7 +1728,8 @@ handle('run', async (kind, payload) => {
       ]
         .filter(Boolean)
         .join('\n\n');
-      const withDocument = Boolean(payload.documentId);
+      const documentIds = attachedIds(payload);
+      const withDocument = documentIds.length > 0;
       const withProjectDocuments = Boolean(project?.documents.length);
       let numCtx = contextSize(
         modelSettings,
@@ -1735,15 +1776,18 @@ handle('run', async (kind, payload) => {
       }
       let messages = payload.messages;
       if (withDocument) {
-        const doc = await loadDocument(documentsPath(), payload.documentId, documentCodec);
+        const docs = await Promise.all(
+          documentIds.map((id) => loadDocument(documentsPath(), id, documentCodec)),
+        );
         numCtx = documentContextSize(
           numCtx,
           modelSettings.options?.num_predict,
-          doc.pages.reduce((n, p) => n + p.text.length, 0),
+          docs.reduce((n, d) => n + d.pages.reduce((m, p) => m + p.text.length, 0), 0),
         );
-        const context = documentMessages(doc, messages, system, {
+        const context = documentMessages(docs, messages, system, {
           numCtx,
           numPredict: modelSettings.options?.num_predict,
+          lang: appSettings.lang === 'en' ? 'en' : 'fr',
           // Demande de résumé : résumé, introduction et conclusions du document en priorité.
           summary:
             task?.id === 'synthese' ||
@@ -1752,7 +1796,10 @@ handle('run', async (kind, payload) => {
         messages = context.messages;
         // Messages exacts envoyés (consigne, extraits, question) : conservés pour la reproductibilité.
         sent = { pages: context.pages, partial: context.partial, messages };
-        send({ kind: 'document', data: { partial: context.partial, pages: context.pages } });
+        send({
+          kind: 'document',
+          data: { partial: context.partial, pages: context.pages, documents: context.documents },
+        });
       } else {
         messages = withSystem(messages, system);
         if (kind === 'chat' && exceedsContext(payload.messages, numCtx))
@@ -2592,18 +2639,30 @@ async function loadSkills() {
     if ((await fs.stat(file)).size > 60_000) continue;
     entries.push({ name, text: await fs.readFile(file, 'utf8') });
   }
-  const catalog = skillsLogic.buildCatalog(entries);
-  // Copie d'une compétence de départ faite avant l'ajout des exemples : exemple d'origine repris.
-  if (catalog.skills.some((s) => !s.example)) {
+  const lang = (await readSettings().catch(() => ({}))).lang === 'en' ? 'en' : 'fr';
+  const raw = skillsLogic.buildCatalog(entries);
+  // Copie d'une compétence de départ faite avant l'ajout des exemples ou de la version anglaise :
+  // exemple et version anglaise d'origine repris (la copie de l'utilisateur n'est pas modifiée).
+  if (raw.skills.some((s) => !s.example || !s.en)) {
     const starters = [];
     for (const name of await fs.readdir(STARTER_SKILLS).catch(() => []))
       if (name.endsWith('.md'))
         starters.push({ name, text: await fs.readFile(path.join(STARTER_SKILLS, name), 'utf8') });
-    const examples = new Map(
-      skillsLogic.buildCatalog(starters).skills.map((s) => [s.call, s.example]),
-    );
-    for (const s of catalog.skills) s.example ||= examples.get(s.call) || '';
+    const origin = new Map(skillsLogic.buildCatalog(starters).skills.map((s) => [s.call, s]));
+    for (const s of raw.skills) {
+      const starter = origin.get(s.call);
+      if (!starter) continue;
+      s.example ||= starter.example;
+      // Version anglaise reprise seulement si les consignes françaises n'ont pas été changées.
+      if (!s.en && starter.en && starter.body === s.body) s.en = starter.en;
+    }
   }
+  const catalog = {
+    skills: raw.skills
+      .map((s) => skillsLogic.localizeSkill(s, lang))
+      .sort((a, b) => a.family.localeCompare(b.family, lang) || a.file.localeCompare(b.file)),
+    errors: raw.errors,
+  };
   return { dir, ...catalog };
 }
 // Fichier du dossier des compétences seulement (ni sous-dossier, ni chemin qui en sort).

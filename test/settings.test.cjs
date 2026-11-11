@@ -104,3 +104,29 @@ test('réglages : profil gardé seulement s’il existe dans le métier choisi',
   assert.equal(normalizeSettings({ metier: 'sante', profil: 'Chercheur' }).profil, undefined);
   assert.equal(normalizeSettings({ profil: 'Chercheur' }).profil, undefined);
 });
+
+test('profil : domaines valides et distincts du métier de la session, attentes et priorité filtrées', () => {
+  const { normalizeSettings } = require('../src/settings.cjs');
+  const s = normalizeSettings({
+    metier: 'ingenierie',
+    profile: {
+      domains: ['enseignement', 'inconnu', 'ingenierie', 'enseignement'],
+      topics: '  mildiou, IA  ',
+      goals: ['resumer', 'pirater', 'verifier'],
+      priority: 'turbo',
+    },
+  });
+  assert.deepEqual(s.profile, {
+    domains: ['enseignement', 'ingenierie'],
+    topics: 'mildiou, IA',
+    goals: ['resumer', 'verifier'],
+    priority: 'equilibre',
+  });
+  assert.equal(s.metier, 'ingenierie');
+  assert.deepEqual(
+    normalizeSettings({ profile: { domains: ['general', 'sante'] } }).profile.domains,
+    ['sante'],
+  );
+  // Profil vide : rien n'est gardé.
+  assert.equal(normalizeSettings({ profile: { domains: [] } }).profile, undefined);
+});

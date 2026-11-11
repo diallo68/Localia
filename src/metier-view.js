@@ -312,6 +312,8 @@ for (const button of document.querySelectorAll('[data-lang]'))
     settings = await window.localia.saveSettings({ ...settings, lang: button.dataset.lang });
     langButtons();
     if (typeof applyLanguage === 'function') applyLanguage();
+    // Compétences dans la nouvelle langue (noms, descriptions, consignes).
+    if (typeof loadSkillCatalog === 'function') await loadSkillCatalog();
   });
 
 // Taille du texte (zoom de toute la fenêtre) : normal, grand ou très grand ; gardée dans les réglages.

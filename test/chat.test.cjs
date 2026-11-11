@@ -220,3 +220,17 @@ test('avec un PDF : pages citées dans une seule numérotation (position, puis p
     /« Page N » de l’extrait[\s\S]*« p\. 65 \(impr\. 46\) »/,
   );
 });
+
+test('documentMessages : liste de documents, en-tête commun', () => {
+  const docs = [
+    { name: 'a.pdf', emptyPages: [], pages: [{ number: 1, text: 'Alpha 12 kg.' }] },
+    { name: 'b.pdf', emptyPages: [], pages: [{ number: 1, text: 'Bêta 30 kg.' }] },
+  ];
+  const result = documentMessages(docs, [{ role: 'user', content: 'Total ?' }], '', {});
+  const text = result.messages.map((m) => m.content).join('\n');
+  assert.match(text, /Documents joints \(2\)/);
+  assert.match(text, /\[a\.pdf — Page 1, extrait 1\]\nAlpha 12 kg/);
+  assert.match(text, /\[b\.pdf — Page 1, extrait 1\]\nBêta 30 kg/);
+  assert.equal(result.partial, false);
+  assert.equal(result.documents.length, 2);
+});

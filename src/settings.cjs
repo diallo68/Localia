@@ -92,6 +92,11 @@ function normalizeSettings(raw) {
       throw new Error('Liste des mots masqués : 300 mots de 100 caractères au plus.');
     if (words.length) settings.maskWords = [...new Set(words)];
   }
+  // Profil : domaines d'activité (le premier est le métier principal), sujets en mots libres,
+  // attentes et priorité. Sert au choix des modèles et donne du contexte au modèle.
+  // Le profil garde ses propres domaines : le métier, lui, change au fil des sessions (accueil).
+  const profile = normalizeProfile(raw.profile);
+  if (profile) settings.profile = profile;
   settings.online.bibliography = raw.online?.bibliography === true;
   if (raw.lastModel) settings.lastModel = modelName(raw.lastModel);
   const entries = Object.entries(raw.models && typeof raw.models === 'object' ? raw.models : {});
@@ -105,10 +110,41 @@ function normalizeSettings(raw) {
   return settings;
 }
 
+const PROFILE_GOALS = [
+  'rediger',
+  'resumer',
+  'verifier',
+  'chercher',
+  'traduire',
+  'calculer',
+  'coder',
+];
+const PROFILE_PRIORITIES = ['rapidite', 'equilibre', 'qualite'];
+function normalizeProfile(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const domains = [
+    ...new Set((Array.isArray(raw.domains) ? raw.domains : []).filter((d) => metierById(d))),
+  ]
+    .filter((d) => d !== 'general')
+    .slice(0, 9);
+  const topics = typeof raw.topics === 'string' ? raw.topics.trim().slice(0, 400) : '';
+  const goals = PROFILE_GOALS.filter((g) => Array.isArray(raw.goals) && raw.goals.includes(g));
+  const priority = PROFILE_PRIORITIES.includes(raw.priority) ? raw.priority : 'equilibre';
+  if (!domains.length && !topics && !goals.length && priority === 'equilibre') return null;
+  return { domains, topics, goals, priority };
+}
+
 // Contexte du modèle lu dans son Modelfile (texte « parameters » de /api/show).
 function modelContext(parameters) {
   const match = /^num_ctx\s+(\d+)\s*$/m.exec(parameters || '');
   return match ? Number(match[1]) : null;
 }
 
-module.exports = { OPTIONS, KEEP_ALIVE, normalizeSettings, modelContext };
+module.exports = {
+  OPTIONS,
+  KEEP_ALIVE,
+  PROFILE_GOALS,
+  PROFILE_PRIORITIES,
+  normalizeSettings,
+  modelContext,
+};

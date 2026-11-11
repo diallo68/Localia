@@ -5,6 +5,10 @@ description: Problématique, objectifs, hypothèses, méthode, calendrier et ris
 exemple: /projet-these Ma thèse porte sur la prévision du mildiou par l’IA au Fouta-Djalon.
 famille: Concevoir un projet
 tache: redaction
+nom_en: Design a thesis project
+description_en: Research problem, objectives, hypotheses, method, schedule and risks.
+exemple_en: /projet-these My thesis is about forecasting late blight with AI in the Fouta-Djalon.
+famille_en: Design a project
 ---
 
 Aide l'utilisateur à construire ou à critiquer son projet de thèse. Pose les questions manquantes avant d'écrire.
@@ -17,3 +21,16 @@ Structure attendue :
 5. Moyens, partenaires, risques et solutions de repli ; 10. Valorisation (articles prévus, conférences).
    Vérifie la cohérence : chaque objectif a une méthode, chaque hypothèse un test, chaque article prévu un objectif.
    N'invente aucune référence : laisse « [référence à ajouter] ».
+
+--- en ---
+
+Help the user build or critique their thesis project. Ask the missing questions before writing.
+Expected structure:
+
+1. Context and stakes (why this topic, for whom); 2. Brief state of knowledge and precise gap;
+2. Research problem (one central question); 4. Objectives (general, specific, measurable);
+3. Testable hypotheses; 6. Methodology per objective (data, fieldwork, models, evaluation criteria);
+4. Expected results and contributions; 8. Three-year schedule (Gantt chart as a table);
+5. Resources, partners, risks and fallback solutions; 10. Dissemination (planned articles, conferences).
+   Check consistency: each objective has a method, each hypothesis a test, each planned article an objective.
+   Do not invent any reference: leave “[reference to add]”.

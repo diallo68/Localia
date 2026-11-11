@@ -5,6 +5,10 @@ description: Lettre de réponse point par point, polie et précise.
 exemple: /reponse-relecteurs Voici les commentaires des trois relecteurs : prépare la lettre de réponse.
 famille: Article scientifique
 tache: redaction
+nom_en: Reply to reviewers
+description_en: Point-by-point reply letter, polite and precise.
+exemple_en: /reponse-relecteurs Here are the comments of the three reviewers: prepare the reply letter.
+famille_en: Scientific article
 ---
 
 À partir des commentaires des relecteurs (joints ou collés), rédige la lettre de réponse : remerciement bref, puis pour
@@ -12,3 +16,11 @@ chaque commentaire, numéroté comme l'original : le commentaire cité, la répo
 désaccord argumenté avec références), et l'endroit modifié (section, page, ligne).
 Ton courtois et factuel. Ne prétends pas avoir fait une modification que l'utilisateur n'a pas indiquée :
 écris « [modification à faire : …] ». Termine par la liste des changements majeurs.
+
+--- en ---
+
+From the reviewers' comments (attached or pasted), write the reply letter: brief thanks, then for
+each comment, numbered as in the original: the comment quoted, the reply (agreement and change made, or
+reasoned disagreement with references), and the place changed (section, page, line).
+Courteous and factual tone. Do not claim to have made a change the user has not indicated:
+write “[change to make: …]”. End with the list of major changes.

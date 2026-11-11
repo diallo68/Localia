@@ -1,13 +1,15 @@
 // Démarrage : réglages, historique et comparaisons, puis connexion à Ollama.
 (async () => {
   settings = await window.localia.loadSettings().catch(() => settings);
-  // Chaque ouverture commence en mode simple, domaine « Général » ; le mode avancé et les autres
-  // domaines restent à un clic. Premier lancement (aucun domaine encore choisi) : inchangé.
-  if (settings.metier && (settings.metier !== 'general' || isAdvanced() || settings.profil)) {
+  // Chaque ouverture commence en mode simple, sur le domaine principal du profil, sinon
+  // « Général » ; le mode avancé et les autres domaines restent à un clic. Premier lancement
+  // (aucun domaine encore choisi) : inchangé.
+  const startMetier = settings.profile?.domains?.[0] || 'general';
+  if (settings.metier && (settings.metier !== startMetier || isAdvanced() || settings.profil)) {
     const { profil, ...rest } = settings;
     settings = await window.localia
-      .saveSettings({ ...rest, metier: 'general', mode: 'simple' })
-      .catch(() => ({ ...rest, metier: 'general', mode: 'simple' }));
+      .saveSettings({ ...rest, metier: startMetier, mode: 'simple' })
+      .catch(() => ({ ...rest, metier: startMetier, mode: 'simple' }));
   }
   textSizeButtons();
   applyContrast();
@@ -40,7 +42,7 @@
       .pruneDocuments([
         ...projects.flatMap((p) => p.documents.map((d) => d.id)),
         ...[...conversations, ...comparisons].flatMap((c) => [
-          ...(c.document ? [c.document.id] : []),
+          ...(c.documents || (c.document ? [c.document] : [])).map((d) => d.id),
           ...(c.questions || []).flatMap((q) => (q.doc ? [q.doc.id] : [])),
           ...(c.files || []).map((f) => f.id),
           ...(c.messages || []).flatMap((m) => (m.images || []).map((i) => i.id)),

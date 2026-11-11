@@ -109,7 +109,9 @@
         ><button id="simple-routines" class="nav" type="button">
           <i data-icon="routine"></i>Automatisations</button
         ><button id="simple-pc" class="nav" type="button">
-          <i data-icon="monitor"></i>Analyser votre PC
+          <i data-icon="monitor"></i>Analyser votre PC</button
+        ><button id="simple-profile" class="nav" type="button">
+          <i data-icon="user"></i>Mon profil
         </button>
       </div>
       <div class="simple-projects">
@@ -158,7 +160,8 @@
           RÉGLAGES<i data-icon="chevron"></i>
         </button>
         <div class="nav-group">
-          <button id="performance-tab" class="nav">
+          <button id="profile-tab" class="nav"><i data-icon="user"></i>Mon profil</button
+          ><button id="performance-tab" class="nav">
             <i data-icon="monitor"></i>Performances de votre PC</button
           ><button id="settings-tab" class="nav">
             <i data-icon="settings"></i>Réglages des modèles</button
@@ -511,6 +514,7 @@
                 Retirer
               </button>
             </div>
+            <div id="doc-chips" hidden></div>
             <div id="file-chips" hidden></div>
             <div id="image-chips" hidden></div>
             <div id="skill-suggest" hidden role="listbox" aria-label="Compétences"></div>
@@ -1287,6 +1291,72 @@
           ><button id="guide-close" type="button">Fermer</button>
         </div>
       </section>
+      <section id="profile-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">VOTRE PROFIL</span>
+          <h2>Mon profil.</h2>
+          <p>
+            Localia s’en sert pour choisir les modèles, les tâches et les compétences, et pour
+            donner un peu de contexte au modèle. Il reste sur cet ordinateur.
+          </p>
+        </div>
+        <div class="profile-layout">
+          <form id="profile-form" class="profile-form">
+            <label class="profile-field"
+              ><span>Prénom affiché</span
+              ><input id="profile-name" type="text" maxlength="40" autocomplete="off"
+            /></label>
+            <fieldset class="profile-field">
+              <legend>Domaines d’activité <small>— plusieurs possibles</small></legend>
+              <div id="profile-domains" class="profile-chips"></div>
+              <label class="profile-inline"
+                ><span>Domaine principal</span
+                ><select id="profile-main"></select
+              ></label>
+            </fieldset>
+            <label class="profile-field"
+              ><span>Sujets de recherche ou de travail <small>— mots libres</small></span
+              ><textarea
+                id="profile-topics"
+                rows="3"
+                maxlength="400"
+                placeholder="Ex. mildiou de la pomme de terre, agriculture guinéenne, apprentissage profond"
+              ></textarea>
+            </label>
+            <fieldset class="profile-field">
+              <legend>Ce que j’attends surtout de Localia</legend>
+              <div id="profile-goals" class="profile-chips"></div>
+            </fieldset>
+            <fieldset class="profile-field">
+              <legend>Priorité</legend>
+              <div id="profile-priority" class="profile-chips"></div>
+            </fieldset>
+            <div class="profile-actions">
+              <span id="profile-dirty" class="muted" hidden>● Modifications non enregistrées</span>
+              <button id="profile-cancel" type="button">Annuler</button
+              ><button id="profile-save" class="primary" type="submit">Enregistrer</button>
+            </div>
+            <p class="profile-note">
+              <strong>Vous gardez le dernier mot.</strong> Localia est un assistant : il rédige,
+              résume, cherche et vérifie, mais chaque réponse doit être relue. Les réponses sur
+              document citent leurs pages pour que vous puissiez vérifier.
+            </p>
+          </form>
+          <aside class="profile-side">
+            <div class="profile-card">
+              <strong>Votre ordinateur</strong>
+              <p id="profile-computer" class="muted">…</p>
+            </div>
+            <div class="profile-card">
+              <strong>Modèles conseillés pour votre profil</strong>
+              <p class="muted">
+                Petits modèles qui tournent sur cet ordinateur, choisis pour chacun de vos domaines.
+              </p>
+              <div id="profile-models"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
       <section id="skills-view" class="page" hidden>
         <div class="library-intro">
           <span class="eyebrow">RECETTES RÉUTILISABLES</span>
@@ -1580,6 +1650,7 @@
     <script src="bibliography-view.js"></script>
     <script src="files-view.js"></script>
     <script src="skills-view.js"></script>
+    <script src="profile-view.js"></script>
     <script src="guide-view.js"></script>
     <script src="metier-view.js"></script>
     <script src="home-view.js"></script>

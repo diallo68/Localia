@@ -25,7 +25,10 @@ function recommendedModel() {
     return { name: bench.model, why: `le mieux noté en ${metier.label} dans vos séries` };
   if (!computer) return null;
   const advice = recommendFor({ ...computer, metier: metier.id });
-  const ids = [advice.best, ...advice.alternatives].map((m) => m.id);
+  // Profil « Rapidité » : le plus léger des modèles qui conviennent passe en premier.
+  const fitting = [advice.best, ...advice.alternatives];
+  if (settings.profile?.priority === 'rapidite') fitting.sort((a, b) => a.size - b.size);
+  const ids = fitting.map((m) => m.id);
   for (const id of [...ids, ...advice.order.filter((x) => !ids.includes(x))]) {
     const name = 'integre/' + id;
     if (installed(name)) return { name, why: advice.reasons.join(' ; ') };

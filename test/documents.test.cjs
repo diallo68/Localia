@@ -177,3 +177,36 @@ test('PDF joint long : clause d’exclusion en tête de page retenue, notes rép
   assert.match(context.text, /\[Page 11, extrait 1 ; même texte : page 17\]/);
   assert.ok(context.pages.includes(11) && context.pages.includes(17));
 });
+
+test('plusieurs documents joints : extraits nommés, couverture par document', () => {
+  const { documentsContext } = require('../src/documents.cjs');
+  const a = {
+    name: 'contrat.pdf',
+    emptyPages: [],
+    pages: Array.from({ length: 6 }, (_, i) => ({
+      number: i + 1,
+      text: i === 4 ? 'Pénalité de retard : 400 euros par jour.' : 'Clause générale '.repeat(90),
+    })),
+  };
+  const b = {
+    name: 'facture.pdf',
+    emptyPages: [],
+    pages: [{ number: 1, text: 'Facture : retard de 3 jours, pénalité facturée 1 500 euros.' }],
+  };
+  const context = documentsContext([a, b], 'Quelle pénalité de retard ?', 3000);
+  assert.equal(context.partial, true);
+  assert.match(context.text, /Documents joints \(2\)/);
+  assert.match(context.text, /\[contrat\.pdf — Page 5, extrait 1\]\nPénalité de retard/);
+  assert.match(context.text, /\[facture\.pdf — Page 1, extrait 1\]/);
+  assert.match(
+    context.text,
+    /- facture\.pdf : tout le texte extractible|- facture\.pdf : extraits/,
+  );
+  assert.deepEqual(
+    context.documents.map((d) => d.name),
+    ['contrat.pdf', 'facture.pdf'],
+  );
+  // Un seul document : même résultat que documentContext.
+  const one = documentsContext([b], 'pénalité', 3000);
+  assert.match(one.text, /^Document : facture\.pdf/);
+});

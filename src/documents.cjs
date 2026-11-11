@@ -245,6 +245,76 @@ function documentContext(doc, question, budget = 10000, { summary = false } = {}
       selected.map((c) => `${label(c)}\n${c.text}`).join('\n\n'),
   };
 }
+// Plusieurs documents joints à la conversation : mêmes extraits que pour un seul document, choisis
+// ensemble selon la question ; chaque extrait porte le nom de son document.
+function documentsContext(docs, question, budget = 10000, { summary = false } = {}) {
+  if (docs.length === 1) return documentContext(docs[0], question, budget, { summary });
+  const chunks = [];
+  for (const doc of docs)
+    for (const page of doc.pages)
+      for (let offset = 0; offset < page.text.length; offset += 1400) {
+        const text = page.text.slice(offset, offset + 1400);
+        const previous = offset ? chunks.at(-1) : null;
+        chunks.push({ doc, page: page.number, offset, text, previous, twins: [] });
+      }
+  const scores = scorePassages(
+    chunks.map((c) => c.text),
+    question,
+    'bm25',
+  );
+  chunks.forEach((c, i) => {
+    const normalized = c.text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    c.score = scores[i] + (summary ? summaryBonus(normalized, c.text) : 0);
+  });
+  const { partial, chosen: selected } = selectPassages(chunks, budget, 40 * docs.length);
+  const printed = new Map(docs.map((d) => [d, d.web || d.word ? new Map() : printedPages(d)]));
+  const label = (c) =>
+    `[${c.doc.name} — Page ${c.page}, extrait ${Math.floor(c.offset / 1400) + 1}` +
+    (printed.get(c.doc).has(c.page) ? ` — page imprimée ${printed.get(c.doc).get(c.page)}` : '') +
+    (c.twins.length
+      ? ` ; même texte : ${[...new Set(c.twins.map((t) => `${t.doc.name} p. ${t.page}`))].join(', ')}`
+      : '') +
+    ']';
+  const covered = docs.map((doc) => {
+    const pages = [
+      ...new Set(
+        selected
+          .flatMap((c) => [c, ...c.twins])
+          .filter((c) => c.doc === doc)
+          .map((c) => c.page),
+      ),
+    ].sort((a, b) => a - b);
+    const all = pages.length === doc.pages.length && !partial;
+    return { name: doc.name, pages, partial: !all, pageCount: doc.pages.length };
+  });
+  const coverage = covered
+    .map(
+      (d) =>
+        `- ${d.name} : ${
+          !d.partial
+            ? 'tout le texte extractible'
+            : d.pages.length
+              ? `extraits des pages ${d.pages.join(', ')} sur ${d.pageCount}`
+              : 'aucun extrait retenu pour cette question'
+        }`,
+    )
+    .join('\n');
+  return {
+    partial,
+    pages: covered.flatMap((d) => d.pages.map((p) => `${d.name} p. ${p}`)),
+    documents: covered,
+    text:
+      `Documents joints (${docs.length}) :\n${coverage}\n` +
+      (partial
+        ? 'Extraits choisis selon la question ; le reste n’est pas transmis. Réponds avec ces extraits et signale ce qui peut manquer.\n'
+        : '') +
+      '« Page N » = position dans le fichier du document nommé.\n' +
+      selected.map((c) => `${label(c)}\n${c.text}`).join('\n\n'),
+  };
+}
 async function deleteDocument(directory, id) {
   checkId(id);
   await fs.rm(path.join(directory, id + '.json'), { force: true });
@@ -278,5 +348,6 @@ module.exports = {
   deleteDocument,
   pruneDocuments,
   documentContext,
+  documentsContext,
   saveDocument,
 };

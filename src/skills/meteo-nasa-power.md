@@ -5,6 +5,10 @@ description: Script complet de préparation des données journalières NASA POWE
 exemple: /meteo-nasa-power Prépare les données NASA POWER journalières de Labé pour 2023 à 2025.
 famille: Données météo
 tache: donnees
+nom_en: NASA POWER weather data (Dalaba)
+description_en: Complete script preparing NASA POWER daily data for late blight forecasting.
+exemple_en: /meteo-nasa-power Prepare the NASA POWER daily data for Labé for 2023 to 2025.
+famille_en: Weather data
 ---
 
 Écris **un seul script Python** (pandas, numpy ; matplotlib pour les figures) que j'exécuterai moi-même dans le dossier du fichier de données. Commente chaque étape en français, en une ligne : ce qu'elle fait et pourquoi.
@@ -103,3 +107,102 @@ Calculer, par jour :
 ### 9. Fin du script
 
 Afficher un résumé court (période, lignes, manquants, nombre d'alertes, fichiers écrits) et la commande pour lancer le script.
+
+--- en ---
+
+Write **a single Python script** (pandas, numpy; matplotlib for the figures) that I will run myself in the folder of the data file. Comment each step in English, in one line: what it does and why.
+
+## Input data
+
+- File: `POWER_Point_Daily_19950101_20241231_010d70N_012d27W_UTC.csv` (NASA POWER, daily data, UTC).
+- Site: Dalaba (Guinea), latitude 10.703, longitude -12.274, mean grid-cell elevation 502.9 m.
+- 15-line header to skip (`skiprows=15`), comma separator.
+- Columns, to be used **exactly** under these names:
+
+| Column      | Meaning                                          | Unit   |
+| ----------- | ------------------------------------------------ | ------ |
+| YEAR        | year                                             | —      |
+| DOY         | day of the year (1 to 366, **not** day of month) | —      |
+| T2M         | mean temperature at 2 m                          | °C     |
+| T2M_MAX     | maximum temperature at 2 m                       | °C     |
+| T2M_MIN     | minimum temperature at 2 m                       | °C     |
+| RH2M        | relative humidity at 2 m                         | %      |
+| PRECTOTCORR | corrected precipitation                          | mm/day |
+| QV2M        | specific humidity at 2 m                         | g/kg   |
+| WS2M        | wind speed at 2 m                                | m/s    |
+
+- NASA POWER missing value: `-999`.
+
+## General rules
+
+- **Never** modify the original file; write the results to an `output/` folder (create it if it does not exist).
+- Do not invent any value or column. When a choice is up to me, apply the value proposed below **and** show it clearly in the report, so that I can change it.
+- Group all thresholds at the top of the script, as named constants.
+
+## Steps
+
+### 1. Reading and structure check
+
+- Read the file with `skiprows=15`.
+- Check that the 9 columns above are present and numeric.
+- Print the number of rows (expected: 10,958, one per day from 1 January 1995 to 31 December 2024).
+
+### 2. Dates
+
+- Create the `date` column: `pd.to_datetime(df['YEAR'] * 1000 + df['DOY'], format='%Y%j')`.
+- Sort by date; report and remove duplicate dates (keep the first).
+- List the missing days between the first and last date (do not invent them: add them as empty rows, missing values).
+
+### 3. Missing values
+
+- Replace `-999` (and any value ≤ -99) with `NaN`.
+- Count missing values per column and per year.
+- Temperatures (T2M, T2M_MAX, T2M_MIN), RH2M, QV2M, WS2M: linear interpolation **only** for gaps of 3 days at most (`limit=3`); beyond that, leave `NaN`.
+- PRECTOTCORR: **no interpolation** (a day without data is not a day without rain); leave `NaN`.
+- Add an `interpolated` column (True/False) to keep track of the filled values.
+
+### 4. Outliers (physical check)
+
+Flag in an `alert` column (text) every row that breaks a rule, without deleting it:
+
+- RH2M outside [0; 100] %.
+- PRECTOTCORR < 0, or > 200 mm/day (threshold `MAX_PLAUSIBLE_RAIN = 200`, to be confirmed).
+- Temperatures outside [5; 45] °C.
+- Inconsistency: T2M_MIN > T2M or T2M > T2M_MAX.
+- WS2M < 0.
+
+Known case to report first: **586.67 mm on 20 August 2022** (the next value is 262.32 mm). Default decision: set rain above `MAX_PLAUSIBLE_RAIN` to `NaN` in the clean file, keep it in the report. I will check against another source (CHIRPS or a local station).
+
+### 5. Variables for late blight risk
+
+Compute, per day:
+
+- `favourable_day`: RH2M ≥ 90 % **and** 10 °C ≤ T2M ≤ 25 °C (thresholds `RH_THRESHOLD = 90`, `T_MIN_FAVOURABLE = 10`, `T_MAX_FAVOURABLE = 25`).
+  State in the report that this is a **daily approximation**: the classic criteria (Smith, Hutton) require hours of high humidity, which daily data do not provide.
+- `rain_3d` and `rain_7d`: precipitation total over the last 3 and 7 days (rolling window, NaN if a value is missing in the window).
+- `T2M_mean_7d` and `RH2M_mean_7d`: 7-day moving averages.
+- `favourable_days_7d`: number of favourable days over the last 7 days.
+
+### 6. Aggregations
+
+- By **year and month** (`date.dt.to_period('M')`), without mixing years: means of T2M, T2M_MAX, T2M_MIN, RH2M; total PRECTOTCORR; number of favourable days; number of missing days.
+- Climatology (30-year mean per calendar month) in a **separate file**, clearly named.
+
+### 7. Preparation for the LSTM
+
+- **Chronological** split (never random): training 1995-2017, validation 2018-2020, test 2021-2024 (constants to change if needed).
+- Normalisation (mean and standard deviation) computed **on the training period only**, then applied to the three periods; save these parameters.
+- Do not build the sequence windows yet: I will do it in the model script.
+
+### 8. Outputs (`output/` folder)
+
+- `dalaba_clean_daily.csv`: cleaned daily data, with `date`, `interpolated`, `alert` and the variables of step 5.
+- `dalaba_monthly.csv`: aggregations by year and month.
+- `dalaba_monthly_climatology.csv`: means per calendar month.
+- `training_normalisation.csv`: mean and standard deviation per variable (training period).
+- `quality_report.md`: number of rows, period, missing days, missing values per column and per year, interpolated values, list of alerts (date, column, value, rule), thresholds used.
+- PNG figures: daily series of T2M and RH2M, monthly rain, number of favourable days per month.
+
+### 9. End of the script
+
+Print a short summary (period, rows, missing values, number of alerts, files written) and the command to run the script.

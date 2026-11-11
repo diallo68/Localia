@@ -8,8 +8,11 @@
 //   tache: donnees            (type de tâche : consigne de base et modèle conseillé)
 //   etapes: /a, /b, /c        (facultatif : un parcours, suite ordonnée de compétences)
 //   fichiers: modele.md       (facultatif : fichiers du dossier joints au modèle)
+//   nom_en, description_en, exemple_en, famille_en   (facultatif : version anglaise)
 //   ---
 //   Consignes…
+//   --- en ---                (facultatif : consignes en anglais, utilisées en mode English)
+//   Instructions…
 //
 // Chargé par le processus principal, l'interface et les tests.
 const CALL = /^\/[a-z0-9][a-z0-9-]{0,39}$/;
@@ -49,7 +52,9 @@ const listOf = (value) =>
 function parseSkill(text, fileName) {
   const parsed = frontMatter(String(text).replace(/\r\n?/g, '\n'));
   if (!parsed) throw new Error('en-tête « --- » absent en haut du fichier');
-  const { fields, body } = parsed;
+  const { fields } = parsed;
+  // Consignes anglaises après une ligne « --- en --- » : utilisées quand l'interface est en anglais.
+  const [body, bodyEn = ''] = parsed.body.split(/^-{3}\s*en\s*-{3}\s*$/im).map((p) => p.trim());
   const call = String(fields.appel || '').toLowerCase();
   if (!CALL.test(call))
     throw new Error('appel invalide : « / » suivi de lettres minuscules, chiffres ou tirets');
@@ -72,11 +77,35 @@ function parseSkill(text, fileName) {
     files: listOf(fields.fichiers),
     file: fileName,
     body,
+    en: fields.nom_en
+      ? {
+          name: String(fields.nom_en).slice(0, 120),
+          description: String(fields.description_en || '').slice(0, 300),
+          example: String(fields.exemple_en || '').slice(0, 300),
+          family: String(fields.famille_en || '').slice(0, 60),
+          body: bodyEn.slice(0, MAX_SKILL),
+        }
+      : null,
+  };
+}
+
+// Compétence dans la langue de l'interface : la version anglaise remplace nom, description,
+// exemple, famille et consignes quand elle existe ; sinon le français reste (« fr » : original).
+function localizeSkill(skill, lang) {
+  if (lang !== 'en' || !skill.en) return { ...skill, lang: 'fr' };
+  return {
+    ...skill,
+    lang: 'en',
+    name: skill.en.name,
+    description: skill.en.description || skill.description,
+    example: skill.en.example || skill.example,
+    family: skill.en.family || skill.family,
+    body: skill.en.body || skill.body,
   };
 }
 
 // Toutes les compétences d'un dossier : doublons d'appel et étapes inconnues signalés.
-function buildCatalog(entries) {
+function buildCatalog(entries, lang = 'fr') {
   const skills = [];
   const errors = [];
   for (const { name, text } of entries) {
@@ -93,8 +122,9 @@ function buildCatalog(entries) {
   for (const s of skills)
     for (const step of s.steps)
       if (!calls.has(step)) errors.push({ file: s.file, error: `étape inconnue : ${step}` });
-  skills.sort((a, b) => a.family.localeCompare(b.family, 'fr') || a.file.localeCompare(b.file));
-  return { skills, errors };
+  const shown = skills.map((s) => localizeSkill(s, lang));
+  shown.sort((a, b) => a.family.localeCompare(b.family, lang) || a.file.localeCompare(b.file));
+  return { skills: shown, errors };
 }
 
 // « /appel suite du message » : compétence appelée et texte restant (null si pas d'appel).
@@ -109,15 +139,20 @@ function parseInvocation(message, skills) {
 
 // Consigne envoyée au modèle pour une compétence (et, pour un parcours, la liste des étapes).
 function skillInstruction(skill, skills) {
-  const parts = [`Compétence « ${skill.name} » (${skill.call}).`];
+  const en = skill.lang === 'en';
+  const parts = [
+    en ? `Skill “${skill.name}” (${skill.call}).` : `Compétence « ${skill.name} » (${skill.call}).`,
+  ];
   if (skill.body) parts.push(skill.body);
   if (skill.steps.length) {
     parts.push(
-      'Étapes de ce parcours, dans l’ordre (l’utilisateur peut appeler chacune séparément) :',
+      en
+        ? 'Steps of this path, in order (the user can call each one separately):'
+        : 'Étapes de ce parcours, dans l’ordre (l’utilisateur peut appeler chacune séparément) :',
       ...skill.steps.map((call, i) => {
         const step = skills.find((s) => s.call === call);
         const name = step ? step.name.replace(/^\d+\.\s*/, '') : null;
-        return `${i + 1}. ${call} — ${step ? `${name} : ${step.description}` : 'étape inconnue'}`;
+        return `${i + 1}. ${call} — ${step ? `${name}${en ? ':' : ' :'} ${step.description}` : en ? 'unknown step' : 'étape inconnue'}`;
       }),
     );
   }
@@ -129,6 +164,7 @@ if (typeof module !== 'undefined')
     CALL,
     RESERVED,
     parseSkill,
+    localizeSkill,
     buildCatalog,
     parseInvocation,
     skillInstruction,

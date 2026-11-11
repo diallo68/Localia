@@ -110,3 +110,57 @@ test('compétences fournies : chacune a un exemple qui commence par son appel', 
   assert.deepEqual(errors, []);
   for (const s of skills) assert.ok(s.example.startsWith(s.call + ' '), s.call);
 });
+
+test('compétence bilingue : version anglaise en mode English, français sinon', () => {
+  const { parseSkill, localizeSkill, buildCatalog, skillInstruction } = require('../src/skills.js');
+  const text = `---
+nom: Résumé
+appel: /resume
+description: Résumé court.
+famille: Article
+nom_en: Summary
+description_en: Short summary.
+famille_en: Article (EN)
+---
+Rédige un résumé de 100 mots.
+--- en ---
+Write a 100-word summary.
+`;
+  const skill = parseSkill(text, 'resume.md');
+  assert.equal(skill.body, 'Rédige un résumé de 100 mots.');
+  const en = localizeSkill(skill, 'en');
+  assert.equal(en.name, 'Summary');
+  assert.equal(en.family, 'Article (EN)');
+  assert.equal(en.body, 'Write a 100-word summary.');
+  assert.match(
+    skillInstruction(en, [en]),
+    /^Skill “Summary” \(\/resume\)\.\n\nWrite a 100-word summary\./,
+  );
+  assert.equal(localizeSkill(skill, 'fr').name, 'Résumé');
+  // Sans version anglaise : le français reste, même en mode English.
+  const fr = parseSkill(
+    text.replace(/nom_en[\s\S]*?---\n/, '---\n').split('--- en ---')[0],
+    'r.md',
+  );
+  assert.equal(localizeSkill(fr, 'en').name, 'Résumé');
+  assert.equal(buildCatalog([{ name: 'resume.md', text }], 'en').skills[0].name, 'Summary');
+});
+
+test('compétences fournies : toutes ont une version anglaise complète', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const { buildCatalog } = require('../src/skills.js');
+  const dir = path.join(__dirname, '..', 'src', 'skills');
+  const entries = fs
+    .readdirSync(dir)
+    .filter((n) => n.endsWith('.md'))
+    .map((name) => ({ name, text: fs.readFileSync(path.join(dir, name), 'utf8') }));
+  const { skills, errors } = buildCatalog(entries, 'en');
+  assert.deepEqual(errors, []);
+  for (const s of skills) {
+    assert.equal(s.lang, 'en', s.file);
+    assert.ok(s.en.description && s.en.family && s.en.example, s.file);
+    assert.ok(s.en.body || s.steps.length, s.file);
+    assert.doesNotMatch(s.en.body, /^(nom|appel|famille)\s*:/m, s.file);
+  }
+});

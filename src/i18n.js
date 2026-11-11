@@ -305,6 +305,9 @@ const EN = {
   'Une compétence donne au modèle des consignes précises pour un type de travail ; elle s’appuie sur une tâche (résumer, extraire, calculer…), la consigne générale fournie par Localia. Un parcours enchaîne plusieurs compétences, étape par étape.':
     'A skill gives the model precise instructions for a kind of work; it builds on a task (summarise, extract, calculate…), the general instruction provided by Localia. A path chains several skills, step by step.',
   OUTILS: 'TOOLS',
+  'PLUS D’OUTILS': 'MORE TOOLS',
+  'Tableau de bord': 'Dashboard',
+  Modèles: 'Models',
   RÉGLAGES: 'SETTINGS',
   'Sauvegarde et restauration': 'Backup and restore',
   'Une sauvegarde réunit dans un seul fichier vos conversations, projets, documents, comparaisons, routines et réglages. Elle est chiffrée par une phrase de passe que vous choisissez : sans elle, personne ne peut la lire, pas même vous. Elle ne dépend pas du trousseau de ce Mac et se restaure aussi sur un autre ordinateur. Les modèles et le dossier Compétences n’en font pas partie.':
@@ -905,6 +908,16 @@ const EN = {
   Anonymisation: 'Anonymisation',
   'Calculs vérifiés': 'Checked calculations',
   'Réécriture avec les résultats exacts…': 'Rewriting with the exact results…',
+  'Entrée pour envoyer · Maj + Entrée pour revenir à la ligne · une adresse https://… collée est lue comme page web · « / » pour une compétence':
+    'Enter to send · Shift + Enter for a new line · a pasted https://… address is read as a web page · “/” for a skill',
+  '← Page précédente': '← Previous page',
+  'Page suivante →': 'Next page →',
+  'Texte lu sur cet ordinateur ; images et mise en page non reprises.':
+    'Text read on this computer; images and layout not included.',
+  'Document long : seuls les passages les plus proches de la question ont été donnés au modèle. Le reste du document n’a pas été lu pour cette réponse.':
+    'Long document: only the passages closest to the question were given to the model. The rest of the document was not read for this answer.',
+  'Tout le texte du document a été donné au modèle.':
+    'All the text of the document was given to the model.',
   'La réponse réécrite n’était pas plus juste : la première version est gardée.':
     'The rewritten answer was not more accurate: the first version is kept.',
   'Bibliographie et Zotero': 'Bibliography and Zotero',
@@ -1510,6 +1523,12 @@ const EN_PATTERNS = [
     'Wrong calculation, already in the document or the question: $1. Exact result: $2.',
   ],
   [/^Calcul faux : (.*)\. Résultat exact : (.*)\.$/, 'Wrong calculation: $1. Exact result: $2.'],
+  [/^Bonjour (.+), que voulez-vous faire \?$/, 'Hello $1, what would you like to do?'],
+  [/^(.*?)extraits seulement, pages (.*) sur (\d+)$/, '$1excerpts only, pages $2 of $3'],
+  [/^(.*?)aucun extrait retenu pour cette question$/, '$1no excerpt kept for this question'],
+  [/^✓ Document lu en entier · (\d+)\/(\d+) pages$/, '✓ Document read in full · $1/$2 pages'],
+  [/^✓ (.*?)lu en entier · (\d+)\/(\d+) pages$/, '✓ $1read in full · $2/$3 pages'],
+  [/^Ouvrir la page (\d+) de (.*)$/, 'Open page $1 of $2'],
   [
     /^Localia a refait les calculs : (\d+) résultat\(s\) faux\. Le modèle réécrit sa réponse avec les résultats exacts…$/,
     'Localia redid the calculations: $1 wrong result(s). The model is rewriting its answer with the exact results…',

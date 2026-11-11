@@ -952,6 +952,23 @@ handle('document-page', async (projectId, docId, number) => {
     text: page.text,
   };
 });
+// Page d'un document joint à une conversation (référence « p. 3 » cliquée dans une réponse).
+handle('attached-page', async (docId, number) => {
+  if (typeof docId !== 'string' || !/^[0-9a-f-]{36}$/.test(docId))
+    throw new Error('Document invalide.');
+  const doc = await loadDocument(documentsPath(), docId, documentCodec);
+  if (!doc.pages?.length) throw new Error('Ce document ne contient pas de texte.');
+  const page = doc.pages.find((p) => p.number === Number(number));
+  if (!page)
+    throw new Error(`Cette page n’existe pas : le document en compte ${doc.pages.length}.`);
+  return {
+    name: doc.name,
+    number: page.number,
+    count: doc.pages.length,
+    section: Boolean(doc.web || doc.word),
+    text: page.text,
+  };
+});
 // Vérifications automatiques d'une réponse (calculs ; avec document : pages, citations, chiffres ;
 // avec projet : chaque source citée comparée au passage du document).
 handle('verify-answer', async (payload) => {

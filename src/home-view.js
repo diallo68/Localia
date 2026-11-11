@@ -54,12 +54,7 @@ function updateComposerAdvice() {
     advice.append(element('span', 'state', 'non activé'));
     text.append(advice);
   }
-  if (active && active !== choice?.name)
-    text.append(
-      element('span', '', choice ? ' · Modèle choisi' : 'Modèle actif'),
-      ' · ',
-      element('span', 'composer-model', active.replace(/^integre\//, '')),
-    );
+  // Modèle actif : affiché par la pastille de la zone de saisie (accueil-view.js), pas ici.
   if (models.length) {
     const change = element('button', 'link-button', 'Changer de modèle');
     change.type = 'button';

@@ -198,10 +198,13 @@ function updateReadyPill() {
 function updateModelPill(choice) {
   const pill = $('model-pill');
   const active = $('model').value;
-  pill.hidden = isAdvanced() || !active;
+  // Un seul sélecteur de modèle, dans la zone de saisie, dans les deux modes.
+  pill.hidden = !active;
   if (pill.hidden) return;
   $('model-pill-name').textContent = shortModel(active);
   const advised = choice && choice.name === active;
+  // Mode avancé : pas de modèle conseillé calculé ici, donc pas d'étiquette.
+  $('model-pill-badge').hidden = isAdvanced();
   $('model-pill-badge').textContent = advised ? 'Conseillé' : 'Votre choix';
   $('model-pill-badge').classList.toggle('mine', !advised);
   pill.title = advised ? choice.why : 'Modèle choisi par vous. Cliquez pour en changer.';

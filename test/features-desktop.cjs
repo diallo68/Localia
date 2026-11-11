@@ -130,7 +130,7 @@ const readJson = async (profile, name) => {
     await page.locator('#update-go').click();
     await page.locator('#update-later').click();
     assert.equal(await page.locator('#update-banner').isVisible(), false);
-    await page.locator('#security-tab').click();
+    await page.locator('#security-tab').dispatchEvent('click');
     await page.waitForFunction(() => document.querySelector('#updates-enabled').checked);
     await page.locator('#updates-enabled').uncheck();
     await page.waitForFunction(async () => (await window.localia.loadSettings()).updates === 'off');
@@ -946,7 +946,7 @@ const readJson = async (profile, name) => {
       },
       [os.homedir(), work],
     );
-    await page.locator('#files-tab').click();
+    await page.locator('#files-tab').dispatchEvent('click');
     await page.waitForFunction(() =>
       document.querySelector('#files-folders').textContent.includes('Aucun dossier autorisé'),
     );
@@ -1048,7 +1048,7 @@ const readJson = async (profile, name) => {
     await fs.rm(work, { recursive: true, force: true });
 
     // Guide de démarrage : Ollama actif et modèles installés (simulés), première question.
-    await page.locator('#guide-tab').click();
+    await page.locator('#guide-tab').dispatchEvent('click');
     await page.waitForFunction(() =>
       document
         .querySelector('#guide-ollama .guide-state')
@@ -1070,7 +1070,7 @@ const readJson = async (profile, name) => {
     assert.equal((await readJson(profile, 'settings.json')).guideDone, true);
 
     // Performances de l'ordinateur : matériel, verdict des modèles installés, mesure de vitesse.
-    await page.locator('#performance-tab').click();
+    await page.locator('#performance-tab').dispatchEvent('click');
     await page.waitForFunction(() => document.querySelectorAll('.pc-card').length === 6);
     assert.match(await page.locator('#pc-cards').textContent(), /Mémoire vive\d+ Go au total/);
     // Carte graphique du moteur intégré : indication, puis réglage enregistré.
@@ -1397,7 +1397,7 @@ const readJson = async (profile, name) => {
     assert.equal((await readJson(profile, 'conversations.json')).length, countBefore - 2);
 
     // Taille du texte : zoom de la fenêtre, gardé dans les réglages.
-    await page.locator('#home-tab').click();
+    await page.locator('#home-tab').dispatchEvent('click');
     await page.locator('[data-text-size="1.3"]').click();
     await page.waitForFunction(
       () =>
@@ -1557,7 +1557,7 @@ const readJson = async (profile, name) => {
 
     // Métier Santé : anonymisation avant l'envoi (repérage + liste personnelle), réponse remise
     // en clair, étiquettes gardées avec la conversation ; consigne de métier envoyée.
-    await page.locator('#security-tab').click();
+    await page.locator('#security-tab').dispatchEvent('click');
     await page.locator('#mask-words').fill('Clinique Pasteur');
     await page.locator('#mask-save').click();
     await page.waitForFunction(() =>
@@ -1821,7 +1821,7 @@ const readJson = async (profile, name) => {
     // Accès depuis un autre appareil : serveur activé, clé exigée, question posée « depuis le
     // téléphone », réponse reçue au fil de l'écriture, conversation visible sur le Mac.
     const base = 'http://127.0.0.1:47899';
-    await page.locator('#security-tab').click();
+    await page.locator('#security-tab').dispatchEvent('click');
     await page.locator('#remote-enabled').check();
     await page.waitForFunction(() =>
       document.querySelector('#remote-status').textContent.includes('47899'),
@@ -1869,7 +1869,7 @@ const readJson = async (profile, name) => {
     for (let i = 0; i < 10; i++)
       await fetch(base + '/api/etat', { headers: { Authorization: 'Bearer faux' } });
     assert.equal((await fetch(base + '/api/etat', { headers: auth })).status, 429, 'trop d’essais');
-    await page.locator('#security-tab').click();
+    await page.locator('#security-tab').dispatchEvent('click');
     await page.locator('#remote-enabled').uncheck();
     await page.waitForFunction(() =>
       document.querySelector('#remote-status').textContent.includes('Désactivé'),

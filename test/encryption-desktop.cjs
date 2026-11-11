@@ -65,7 +65,7 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
         ),
       );
     }
-    await page.locator('#security-tab').click();
+    await page.locator('#security-tab').dispatchEvent('click');
     await page.waitForFunction(() =>
       document.querySelector('#privacy-status').textContent.includes('Chiffrement désactivé'),
     );
@@ -132,7 +132,7 @@ const head = async (file) => (await fs.readFile(file)).subarray(0, MAGIC.length)
     // rouvert Localia en mode simple : retour au mode avancé pour la colonne de gauche.
     await page.waitForFunction(() => document.body.dataset.mode === 'simple');
     await page.locator('#mode-switch').click();
-    await page.locator('#security-tab').click();
+    await page.locator('#security-tab').dispatchEvent('click');
     await page.waitForFunction(() =>
       document.querySelector('#encryption-toggle').textContent.includes('Désactiver'),
     );

@@ -58,6 +58,7 @@ contextBridge.exposeInMainWorld('localia', {
   deleteDocument: (id) => invoke('delete-document', id),
   searchDocuments: (query, filter) => invoke('search-documents', query, filter),
   documentPage: (projectId, docId, number) => invoke('document-page', projectId, docId, number),
+  attachedPage: (docId, number) => invoke('attached-page', docId, number),
   projectDocumentsAdd: () => invoke('project-documents-add'),
   projectDocumentsDrop: (items) => invoke('project-documents-drop', items),
   verifyAnswer: (payload) => invoke('verify-answer', payload),

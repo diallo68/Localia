@@ -202,6 +202,26 @@ function packagedApp() {
     assert.equal(chats.length, 2);
     assert.match(chats[1].messages.at(-1).content, /- 50 \+ 60 = 110 \(et non 120\)/);
     assert.equal(await page.locator('.message.assistant .recalculated').count(), 0);
+    // Couverture du document et références de pages cliquables.
+    await page.locator('.message.assistant .coverage').waitFor();
+    assert.equal(
+      await page.locator('.message.assistant .coverage').textContent(),
+      '✓ Document lu en entier · 2/2 pages',
+    );
+    await page.locator('.message.assistant button.page-ref', { hasText: 'page 2' }).click();
+    await page.locator('#page-dialog').waitFor();
+    assert.match(
+      await page.locator('#page-dialog-title').textContent(),
+      /facture\.pdf — page 2 sur 2/,
+    );
+    assert.match(await page.locator('#page-dialog-text').textContent(), /110 EUR/);
+    assert.equal(await page.locator('#page-next').isDisabled(), true);
+    await page.locator('#page-prev').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#page-dialog-title').textContent.includes('page 1 sur 2'),
+    );
+    await page.locator('#page-dialog button[value=close]').click();
+    await page.waitForFunction(() => !document.querySelector('#page-dialog').open);
     const payload = chats[0];
     assert.equal(payload.options.num_ctx, 8192);
     assert.match(payload.messages[1].content, /Page 2/);
@@ -265,7 +285,7 @@ function packagedApp() {
         'Identification of Plant Diseases, Frontiers in Plant Science, 2019.',
       ]),
     );
-    await page.locator('#bibliography-tab').click();
+    await page.locator('#bibliography-tab').dispatchEvent('click');
     assert.equal(await page.locator('#biblio-online').isChecked(), false, 'désactivée par défaut');
     assert.equal(await page.locator('#biblio-verify').isDisabled(), true);
     await page.locator('#biblio-pdf').click();
@@ -334,7 +354,7 @@ function packagedApp() {
     await app.evaluate((_, href) => {
       global.zoteroPdfUrl = href;
     }, require('node:url').pathToFileURL(zoteroPdf).href);
-    await page.locator('#bibliography-tab').click();
+    await page.locator('#bibliography-tab').dispatchEvent('click');
     await page.waitForFunction(() =>
       document
         .querySelector('#zotero-status')
@@ -443,7 +463,7 @@ function packagedApp() {
     );
 
     // Veille bibliographique : sujet suivi, recherche, nouvel article, ajout à Zotero.
-    await page.locator('#bibliography-tab').click();
+    await page.locator('#bibliography-tab').dispatchEvent('click');
     await page.locator('#watch-query').fill('plant disease deep learning');
     await page.locator('#watch-form button').click();
     await page.waitForFunction(() =>

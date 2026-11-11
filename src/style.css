@@ -4157,7 +4157,8 @@ body[data-mode='simple'] .simple-label {
   font-size: 14px;
 }
 body[data-mode='simple'] #attach,
-body[data-mode='simple'] #dictate {
+body[data-mode='simple'] #dictate,
+body[data-mode='simple'] #web-toggle {
   display: inline-flex;
   width: auto;
   padding: 0 12px;
@@ -5185,4 +5186,85 @@ input:not([type='checkbox']):not([type='radio']) {
   margin-top: 8px;
   opacity: 0.75;
   font-size: 13px;
+}
+
+/* Couverture du document sous la réponse : lu en entier (vert) ou extraits seulement (orange). */
+.coverage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.coverage span {
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.coverage span.partial {
+  background: #fdf0dc;
+  color: #8a4b00;
+}
+/* Références de pages cliquables (« p. 3 ») : ouvrent le texte de la page. */
+button.page-ref {
+  display: inline;
+  min-height: 0;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.9em;
+  font-weight: 600;
+  cursor: pointer;
+}
+button.page-ref:hover {
+  text-decoration: underline;
+}
+.page-dialog {
+  width: min(760px, 92vw);
+}
+.page-dialog .page-text {
+  max-height: 60vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+.page-dialog .input-row {
+  justify-content: flex-end;
+  gap: 8px;
+}
+.page-dialog .input-row .primary {
+  margin-left: 12px;
+}
+
+/* Colonne de gauche : raccourcis clavier à droite des entrées principales. */
+aside .nav kbd {
+  margin-left: auto;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface);
+}
+aside .nav-main {
+  margin-top: 6px;
+}
+/* Zone de saisie : les boutons ronds gardent leur taille ; l'aide clavier cède la place au
+   sélecteur de modèle (elle reste en infobulle sur la zone de texte). */
+#composer .round {
+  flex-shrink: 0;
+}
+#model-pill:not([hidden]) ~ #hint,
+#hint:has(~ #model-pill:not([hidden])) {
+  display: none;
 }

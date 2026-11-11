@@ -127,7 +127,7 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
     const settle = () => page.evaluate(() => window.localia.loadProjects());
 
     // Projets récents : la conversation d'il y a 5 minutes place « Thèse » avant « Bilan ».
-    await page.locator('#home-tab').click();
+    await page.locator('#home-tab').dispatchEvent('click');
     await page.waitForSelector('#home-projects .home-row');
     assert.deepEqual(
       (await page.locator('#home-projects .home-row strong').allTextContents()).slice(0, 2),
@@ -270,7 +270,7 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
     );
 
     // Routine : document ajouté → synthèse sourcée → vérification → résultat à relire.
-    await page.locator('#routines-tab').click();
+    await page.locator('#routines-tab').dispatchEvent('click');
     await page.locator('#routine-project').selectOption('p-these');
     await page.locator('#routine-form button[type=submit]').click();
     await page.waitForSelector('.routine-row');
@@ -285,7 +285,7 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
         ]),
       );
     });
-    await page.locator('#routines-tab').click();
+    await page.locator('#routines-tab').dispatchEvent('click');
     await page.waitForSelector('.run-row.state-a-relire');
     let request = await app.evaluate(() => global.requests.at(-1));
     assert.match(request.messages.at(-1).content, /synthèse sourcée du document « aout\.txt »/);
@@ -296,7 +296,7 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
       'Chiffres retrouvés',
     ]);
     // À traiter sur l'accueil, puis relu.
-    await page.locator('#home-tab').click();
+    await page.locator('#home-tab').dispatchEvent('click');
     assert.match(await page.locator('#home-todo').textContent(), /Synthèse de aout\.txt/);
     await page.locator('#home-todo button', { hasText: 'aout.txt' }).click();
     await page.locator('#run-reviewed').click();
@@ -323,7 +323,7 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
         document.querySelectorAll('.message.assistant').length === 1 &&
         document.querySelector('#stop').hidden,
     );
-    await page.locator('#routines-tab').click();
+    await page.locator('#routines-tab').dispatchEvent('click');
     await page.waitForSelector('.run-row.state-a-relire', { timeout: 20000 });
     assert.match(
       await page.locator('.run-row.state-a-relire').textContent(),
@@ -363,9 +363,9 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
     };
     await fs.writeFile(path.join(profile, 'routines.json'), JSON.stringify(stored));
     await start();
-    await page.locator('#home-tab').click();
+    await page.locator('#home-tab').dispatchEvent('click');
     assert.match(await page.locator('#home-todo').textContent(), /Départ programmé manqué/);
-    await page.locator('#routines-tab').click();
+    await page.locator('#routines-tab').dispatchEvent('click');
     assert.match(
       await page.locator('.run-row.state-en-attente').textContent(),
       /reprise après interruption/,
@@ -378,7 +378,7 @@ const iso = (minutesAgo) => new Date(now - minutesAgo * 60000).toISOString();
 
     // Sauvegarde chiffrée par phrase de passe, puis restauration (chiffrement actif).
     await page.evaluate(() => window.localia.encryptionEnable());
-    await page.locator('#security-tab').click();
+    await page.locator('#security-tab').dispatchEvent('click');
     await page.locator('#backup-passphrase').fill('phrase de passe de test');
     await page.locator('#backup-confirm').fill('autre phrase de passe');
     await page.locator('#backup-create').click();

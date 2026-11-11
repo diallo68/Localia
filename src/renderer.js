@@ -122,6 +122,10 @@ function view(name) {
     $(key + '-view').hidden = key !== name;
     $(key + '-tab').classList.toggle('active', key === name);
   }
+  // Écran d'un groupe replié (« Plus d'outils », « Réglages ») : le groupe se déplie.
+  $(name + '-tab')
+    ?.closest('.nav-section.collapsed')
+    ?.openSection?.();
   $('heading').textContent = VIEWS[name];
   // Benchmark : une entrée dans la colonne, deux étapes (lancer une série, résultats et notation).
   const bench = name === 'compare' || name === 'benchmark';
@@ -139,11 +143,17 @@ for (const section of document.querySelectorAll('.nav-section')) {
     toggle.setAttribute('aria-expanded', String(open));
     section.classList.toggle('collapsed', !open);
   };
-  try {
-    apply(localStorage.getItem(key) !== 'closed');
-  } catch {
-    apply(true);
-  }
+  // État retenu, sinon celui du groupe (« Plus d'outils » et « Réglages » repliés au départ).
+  const initial = () => {
+    try {
+      return localStorage.getItem(key) || section.dataset.default || 'open';
+    } catch {
+      return section.dataset.default || 'open';
+    }
+  };
+  if (!toggle) continue; // groupe principal : toujours visible
+  apply(initial() !== 'closed');
+  section.openSection = () => apply(true);
   toggle.onclick = () => {
     const open = toggle.getAttribute('aria-expanded') !== 'true';
     apply(open);
@@ -154,6 +164,18 @@ for (const section of document.querySelectorAll('.nav-section')) {
     }
   };
 }
+// Raccourcis clavier de la colonne : ⌘N nouvelle conversation, ⌘1 à ⌘4 les écrans principaux
+// (Ctrl hors macOS) ; affichés à côté des entrées.
+const NAV_KEYS = { 1: 'chat-tab', 2: 'projects-tab', 3: 'skills-tab', 4: 'models-tab', n: 'new' };
+for (const kbd of document.querySelectorAll('aside kbd[data-key]'))
+  kbd.textContent = (ON_MAC ? '⌘' : 'Ctrl+') + kbd.dataset.key;
+document.addEventListener('keydown', (event) => {
+  if (!(ON_MAC ? event.metaKey : event.ctrlKey) || event.altKey || event.shiftKey) return;
+  const target = NAV_KEYS[event.key.toLowerCase()];
+  if (!target || $(target).disabled || document.querySelector('dialog[open]')) return;
+  event.preventDefault();
+  $(target).click();
+});
 // Date de la dernière activité d'une conversation, pour l'historique.
 const DAY = 24 * 3600 * 1000;
 function shortDate(iso) {
@@ -672,6 +694,12 @@ function messageNode(message, question) {
     node.append(strip);
   }
   node.append(content);
+  if (message.role === 'assistant' && message.content) {
+    const docs = docsOf(current);
+    if (docs.length) linkPages(content, docs);
+    const coverage = coverageCard(message.coverage);
+    if (coverage) node.append(coverage);
+  }
   if (message.role === 'assistant' && message.web?.length) {
     const web = element('div', 'web-sources');
     web.append(element('strong', '', tr('Sources Internet (à vérifier) :')));
@@ -722,6 +750,82 @@ function messageNode(message, question) {
   $('messages').append(node);
   return content;
 }
+// Ce que le modèle a lu pour cette réponse : chaque document en entier, ou les pages des extraits.
+function coverageCard(coverage) {
+  if (!coverage?.length) return null;
+  const box = element('div', 'coverage');
+  for (const d of coverage) {
+    const name = coverage.length > 1 ? `${d.name} : ` : '';
+    const chip = d.partial
+      ? element(
+          'span',
+          'partial',
+          d.pages.length
+            ? tr(`${name}extraits seulement, pages ${d.pages.join(', ')} sur ${d.pageCount}`)
+            : tr(`${name}aucun extrait retenu pour cette question`),
+        )
+      : element(
+          'span',
+          '',
+          tr(`✓ ${name || 'Document '}lu en entier · ${d.pageCount}/${d.pageCount} pages`),
+        );
+    chip.title = d.partial
+      ? tr(
+          'Document long : seuls les passages les plus proches de la question ont été donnés au modèle. Le reste du document n’a pas été lu pour cette réponse.',
+        )
+      : tr('Tout le texte du document a été donné au modèle.');
+    box.append(chip);
+  }
+  return box;
+}
+// Références de pages dans une réponse (« p. 3 », « page 12 ») : boutons qui ouvrent le texte de la
+// page du document joint. Plusieurs documents : celui dont le nom figure dans le même paragraphe.
+const PAGE_REF = /\b(?:p\.|pages?|Pages?)\s?(\d{1,4})\b/g;
+function linkPages(root, docs) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('code, pre, a, button')) continue;
+    PAGE_REF.lastIndex = 0;
+    if (PAGE_REF.test(n.data)) nodes.push(n);
+  }
+  for (const n of nodes) {
+    const block = n.parentElement.closest('p, li, td, blockquote') || root;
+    const doc = docs.find((d) => block.textContent.includes(d.name)) || docs[0];
+    const parts = [];
+    let last = 0;
+    PAGE_REF.lastIndex = 0;
+    for (const m of n.data.matchAll(PAGE_REF)) {
+      const number = Number(m[1]);
+      if (!number || (doc.pageCount && number > doc.pageCount)) continue;
+      parts.push(document.createTextNode(n.data.slice(last, m.index)));
+      const b = element('button', 'page-ref', m[0]);
+      b.type = 'button';
+      b.title = tr(`Ouvrir la page ${number} de ${doc.name}`);
+      b.onclick = guard(() => openAttachedPage(doc, number));
+      parts.push(b);
+      last = m.index + m[0].length;
+    }
+    if (!parts.length) continue;
+    parts.push(document.createTextNode(n.data.slice(last)));
+    n.replaceWith(...parts);
+  }
+}
+let pageShown = null;
+async function openAttachedPage(doc, number) {
+  const page = await window.localia.attachedPage(doc.id, number);
+  pageShown = { doc, ...page };
+  $('page-dialog-title').textContent =
+    `${page.name} — ${tr(page.section ? 'section' : 'page')} ${page.number} ${tr('sur')} ${page.count}`;
+  $('page-dialog-text').textContent = page.text;
+  $('page-dialog-text').scrollTop = 0;
+  $('page-prev').disabled = page.number <= 1;
+  $('page-next').disabled = page.number >= page.count;
+  if (!$('page-dialog').open) $('page-dialog').showModal();
+}
+$('page-prev').onclick = guard(() => openAttachedPage(pageShown.doc, pageShown.number - 1));
+$('page-next').onclick = guard(() => openAttachedPage(pageShown.doc, pageShown.number + 1));
 // Propositions de notes : décisions ou informations à retenir écrites par l'utilisateur dans une
 // conversation de projet. Enregistrer, corriger (fenêtre de relecture) ou ignorer ; le choix est
 // gardé dans la réponse pour ne plus reproposer.
@@ -1206,6 +1310,8 @@ async function refresh() {
 // charge rien) ; navigation, menus, pieds de page et scripts retirés ; article ou contenu principal.
 // Interrupteur « Internet » de la zone de saisie : coupé par défaut, allumé pour une question.
 let webWanted = false;
+// Réponse en cours d'écriture : reçoit la couverture des documents transmis (lu en entier, extraits).
+let answering = null;
 function setWebWanted(on) {
   webWanted = on;
   $('web-toggle').setAttribute('aria-pressed', String(on));
@@ -1718,6 +1824,7 @@ async function sendPrompt({ remoteId } = {}) {
   setWebWanted(false);
   if (useWeb) answer.web = [];
   reply = messageNode(answer);
+  answering = answer;
   let completed = false;
   let failure = null;
   let webSources = [];
@@ -1761,6 +1868,7 @@ async function sendPrompt({ remoteId } = {}) {
   } catch (error) {
     failure = error.message;
   } finally {
+    answering = null;
     answer.content = answer.content || reply.dataset.answer || '';
     if (answer.content) {
       saved = { ...answer, interrupted: !completed };
@@ -1933,6 +2041,26 @@ const runNotice = (text) => {
   notice(runNotes.join(' '));
 };
 window.localia.onProgress(({ kind, data }) => {
+  if (kind === 'document' && answering) {
+    const first = docsOf(current)[0];
+    answering.coverage = (
+      data.documents?.length
+        ? data.documents
+        : [
+            {
+              name: first?.name,
+              pages: data.pages,
+              partial: data.partial,
+              pageCount: first?.pageCount,
+            },
+          ]
+    ).map(({ name, pages, partial, pageCount }) => ({
+      name: String(name || ''),
+      pages: (pages || []).filter(Number.isInteger),
+      partial: Boolean(partial),
+      pageCount: Number(pageCount) || 0,
+    }));
+  }
   if (kind === 'document' && data.documents?.length > 1) {
     runNotice(
       `${data.documents.length} documents transmis — ` +

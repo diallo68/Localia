@@ -144,7 +144,9 @@ function fillSuggestions(box) {
   const welcomeBox = box.closest('#welcome');
   welcomeBox.querySelector('h2').textContent = metier.simple
     ? 'Une question ?'
-    : 'Que voulez-vous faire aujourd’hui ?';
+    : settings.firstName
+      ? `Bonjour ${settings.firstName}, que voulez-vous faire ?`
+      : 'Que voulez-vous faire aujourd’hui ?';
   welcomeBox.querySelector('h2 + p').textContent = metier.simple
     ? 'Demandez à Localia. Vous pouvez joindre un document ou une photo.'
     : 'Rédigez, analysez un document ou posez une question : tout se passe sur cet ordinateur.';

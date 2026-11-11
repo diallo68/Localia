@@ -86,10 +86,13 @@ function renderSkills() {
       const use = element('button', 'primary', 'Utiliser');
       use.type = 'button';
       use.onclick = () => useSkill(s);
+      const change = element('button', '', 'Modifier');
+      change.type = 'button';
+      change.onclick = () => openSkillForm(s);
       const edit = element('button', '', 'Modifier le fichier');
       edit.type = 'button';
       edit.onclick = guard(() => window.localia.skillsOpen(s.id));
-      row.append(use, edit);
+      row.append(use, change, edit);
       card.append(row);
       grid.append(card);
     }
@@ -103,7 +106,103 @@ $('skills-tab').onclick = guard(async () => {
 });
 $('skills-reload').onclick = guard(loadSkillCatalog);
 $('skills-folder').onclick = guard(() => window.localia.skillsOpenDir());
-$('skills-new').onclick = guard(async () => {
+// Formulaire de compétence : création, ou modification d'une compétence existante.
+let skillEditing = null; // compétence modifiée (null : nouvelle)
+const slug = (text) =>
+  '/' +
+  String(text)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+function openSkillForm(skill = null) {
+  skillEditing = skill;
+  const src = skill?.source || skill || {};
+  $('skill-form-title').textContent = skill
+    ? tr('Modifier la compétence') + ` ${skill.call}`
+    : tr('Nouvelle compétence');
+  $('skill-f-name').value = src.name || '';
+  $('skill-f-call').value = skill?.call || '';
+  $('skill-f-call').dataset.auto = skill ? '' : '1';
+  $('skill-f-family').value = src.family || '';
+  $('skill-f-description').value = src.description || '';
+  $('skill-f-body').value = src.body || '';
+  $('skill-f-example').value = src.example || '';
+  $('skill-families').replaceChildren(
+    ...[...new Set(skills.map((x) => x.source?.family || x.family))].map((f) => new Option(f)),
+  );
+  $('skill-f-task').replaceChildren(
+    new Option(tr('Aucun (consigne générale)'), ''),
+    ...TASKS.filter((t) => !t.files).map((t) => new Option(taskText(t, 0), t.id)),
+  );
+  $('skill-f-task').value = skill?.task || '';
+  const en = skill?.en || {};
+  $('skill-f-name-en').value = en.name || '';
+  $('skill-f-family-en').value = en.family || '';
+  $('skill-f-description-en').value = en.description || '';
+  $('skill-f-body-en').value = en.body || '';
+  $('skill-f-example-en').value = en.example || '';
+  $('skill-f-english').open = Boolean(en.name) || isEnglish();
+  $('skill-f-try').hidden = !skill;
+  $('skill-form').hidden = false;
+  $('skill-form').scrollIntoView({ block: 'start' });
+  $('skill-f-name').focus();
+}
+// Appel proposé à partir du nom, tant que l'utilisateur ne l'a pas changé lui-même.
+$('skill-f-name').oninput = () => {
+  if ($('skill-f-call').dataset.auto) $('skill-f-call').value = slug($('skill-f-name').value);
+};
+$('skill-f-call').oninput = () => {
+  $('skill-f-call').dataset.auto = '';
+};
+$('skill-f-cancel').onclick = () => {
+  $('skill-form').hidden = true;
+  skillEditing = null;
+};
+$('skill-f-try').onclick = () => {
+  const skill = skills.find((x) => x.call === $('skill-f-call').value.trim().toLowerCase());
+  if (skill) useSkill(skill);
+};
+$('skill-form').onsubmit = guard(async (event) => {
+  event.preventDefault();
+  const value = (id) => $(id).value.trim();
+  const fields = {
+    name: value('skill-f-name'),
+    call: value('skill-f-call').toLowerCase(),
+    family: value('skill-f-family'),
+    task: value('skill-f-task'),
+    description: value('skill-f-description'),
+    body: $('skill-f-body').value,
+    example: value('skill-f-example'),
+    steps: skillEditing?.steps || [],
+    files: skillEditing?.files || [],
+    en: value('skill-f-name-en')
+      ? {
+          name: value('skill-f-name-en'),
+          family: value('skill-f-family-en'),
+          description: value('skill-f-description-en'),
+          body: $('skill-f-body-en').value,
+          example: value('skill-f-example-en'),
+        }
+      : null,
+  };
+  if (!fields.call.startsWith('/')) fields.call = '/' + fields.call;
+  const saved = await window.localia.skillsSave({ file: skillEditing?.file || null, fields });
+  await loadSkillCatalog();
+  skillEditing = skills.find((x) => x.file === saved.file) || null;
+  $('skill-form-title').textContent = tr('Modifier la compétence') + ` ${fields.call}`;
+  $('skill-f-try').hidden = !skillEditing;
+  notice(
+    tr('Compétence enregistrée') +
+      ` : ${fields.call} (${saved.file}). ` +
+      tr('Essayez-la dans une conversation, avec un document joint si besoin.'),
+  );
+});
+
+$('skills-new').onclick = () => openSkillForm();
+$('skills-new-file').onclick = guard(async () => {
   const name = await window.localia.skillsNew();
   notice(
     `« ${name} » créé et ouvert dans votre éditeur. Remplissez-le, enregistrez, puis cliquez sur « Recharger ».`,

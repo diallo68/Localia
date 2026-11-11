@@ -5110,3 +5110,38 @@ input:not([type='checkbox']):not([type='radio']) {
     grid-template-columns: 1fr;
   }
 }
+
+/* Formulaire de compétence */
+.skill-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  margin: 16px 0;
+  background: var(--surface);
+}
+.skill-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.skill-form label > span {
+  font-weight: 600;
+  font-size: 13px;
+}
+.skill-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+.skill-form details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.skill-form details[open] > summary {
+  margin-bottom: 10px;
+}

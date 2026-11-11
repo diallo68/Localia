@@ -2686,6 +2686,40 @@ handle('skills-open', async (id) => {
   if (error) throw new Error(error);
 });
 // Nouvelle compétence : modèle prêt à remplir, ouvert dans l'éditeur de texte du système.
+// Formulaire de compétence : fichier écrit à partir des champs, après les mêmes contrôles que
+// pour un fichier écrit à la main. Nouvelle compétence : « appel.md » ; modification : même fichier.
+handle('skills-save', async (payload) => {
+  const fields = payload?.fields;
+  if (!fields || typeof fields !== 'object') throw new Error('Compétence invalide.');
+  const text = skillsLogic.skillText(fields);
+  const skill = skillsLogic.parseSkill(text, 'formulaire');
+  const dir = skillsDir();
+  await fs.mkdir(dir, { recursive: true });
+  const { skills } = await loadSkills();
+  const editing = typeof payload.file === 'string' && payload.file;
+  const twin = skills.find((s) => s.call === skill.call && s.file !== payload.file);
+  if (twin) throw new Error(`L’appel ${skill.call} est déjà utilisé par « ${twin.name} ».`);
+  const name = editing ? payload.file : `${skill.id}.md`;
+  const file = skillFile(name);
+  if (
+    !editing &&
+    (await fs.stat(file).then(
+      () => true,
+      () => false,
+    ))
+  )
+    throw new Error(`Un fichier ${name} existe déjà dans le dossier des compétences.`);
+  if (
+    editing &&
+    !(await fs.stat(file).then(
+      () => true,
+      () => false,
+    ))
+  )
+    throw new Error('Cette compétence n’existe plus : rechargez la liste.');
+  await fs.writeFile(file, text);
+  return { file: name, id: skill.id };
+});
 handle('skills-new', async () => {
   const dir = skillsDir();
   await fs.mkdir(dir, { recursive: true });

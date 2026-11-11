@@ -92,9 +92,18 @@ function parseSkill(text, fileName) {
 // Compétence dans la langue de l'interface : la version anglaise remplace nom, description,
 // exemple, famille et consignes quand elle existe ; sinon le français reste (« fr » : original).
 function localizeSkill(skill, lang) {
-  if (lang !== 'en' || !skill.en) return { ...skill, lang: 'fr' };
+  // « source » : textes français d'origine, pour le formulaire de modification.
+  const source = skill.source || {
+    name: skill.name,
+    description: skill.description,
+    example: skill.example,
+    family: skill.family,
+    body: skill.body,
+  };
+  if (lang !== 'en' || !skill.en) return { ...skill, source, lang: 'fr' };
   return {
     ...skill,
+    source,
     lang: 'en',
     name: skill.en.name,
     description: skill.en.description || skill.description,
@@ -102,6 +111,36 @@ function localizeSkill(skill, lang) {
     family: skill.en.family || skill.family,
     body: skill.en.body || skill.body,
   };
+}
+
+// Texte du fichier d'une compétence remplie dans le formulaire (une ligne par champ d'en-tête).
+const oneLine = (v, max) =>
+  String(v || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+function skillText(f) {
+  const head = [
+    ['nom', oneLine(f.name, 120)],
+    ['appel', oneLine(f.call, 41).toLowerCase()],
+    ['description', oneLine(f.description, 300)],
+    ['exemple', oneLine(f.example, 300)],
+    ['famille', oneLine(f.family, 60) || 'Mes compétences'],
+    ['tache', oneLine(f.task, 20).toLowerCase()],
+    ['etapes', (f.steps || []).join(', ')],
+    ['fichiers', (f.files || []).join(', ')],
+    ['nom_en', oneLine(f.en?.name, 120)],
+    ['description_en', f.en?.name ? oneLine(f.en?.description, 300) : ''],
+    ['exemple_en', f.en?.name ? oneLine(f.en?.example, 300) : ''],
+    ['famille_en', f.en?.name ? oneLine(f.en?.family, 60) : ''],
+  ].filter(([, v]) => v);
+  const body = String(f.body || '').trim();
+  const bodyEn = f.en?.name ? String(f.en.body || '').trim() : '';
+  return (
+    ['---', ...head.map(([k, v]) => `${k}: ${v}`), '---', '', body].join('\n') +
+    (bodyEn ? `\n\n--- en ---\n\n${bodyEn}` : '') +
+    '\n'
+  );
 }
 
 // Toutes les compétences d'un dossier : doublons d'appel et étapes inconnues signalés.
@@ -165,6 +204,7 @@ if (typeof module !== 'undefined')
     RESERVED,
     parseSkill,
     localizeSkill,
+    skillText,
     buildCatalog,
     parseInvocation,
     skillInstruction,

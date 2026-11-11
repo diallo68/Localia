@@ -1185,7 +1185,7 @@ const readJson = async (profile, name) => {
         return '';
       };
     });
-    await page.locator('#skills-new').click();
+    await page.locator('#skills-new-file').click();
     await page.waitForFunction(() => document.querySelectorAll('.skill-card').length === 43);
     assert.match(
       (await app.evaluate(() => global.opened)).at(-1),
@@ -1195,6 +1195,39 @@ const readJson = async (profile, name) => {
       await fs.readFile(path.join(profile, 'Compétences', 'ma-competence.md'), 'utf8'),
       /appel: \/ma-competence/,
     );
+    // Formulaire : nouvelle compétence (appel proposé d'après le nom), version anglaise, puis
+    // modification du même fichier.
+    await page.locator('#skills-new').click();
+    await page.locator('#skill-f-name').fill('Communiqué de presse');
+    assert.equal(await page.locator('#skill-f-call').inputValue(), '/communique-de-presse');
+    await page.locator('#skill-f-body').fill('Rédige un communiqué court, sans rien inventer.');
+    await page.locator('#skill-f-english summary').click();
+    await page.locator('#skill-f-name-en').fill('Press release');
+    await page.locator('#skill-f-body-en').fill('Write a short press release, invent nothing.');
+    await page.locator('#skill-f-save').click();
+    await page.waitForFunction(() => document.querySelectorAll('.skill-card').length === 44);
+    const written = await fs.readFile(
+      path.join(profile, 'Compétences', 'communique-de-presse.md'),
+      'utf8',
+    );
+    assert.match(written, /nom: Communiqué de presse\nappel: \/communique-de-presse/);
+    assert.match(written, /nom_en: Press release/);
+    assert.match(written, /--- en ---\n\nWrite a short press release/);
+    await page
+      .locator('#skill-f-body')
+      .fill('Rédige un communiqué de 150 mots, sans rien inventer.');
+    await page.locator('#skill-f-save').click();
+    for (let i = 0; i < 50; i++) {
+      const text = await fs.readFile(
+        path.join(profile, 'Compétences', 'communique-de-presse.md'),
+        'utf8',
+      );
+      if (/150 mots/.test(text)) break;
+      if (i === 49) throw new Error('compétence modifiée non enregistrée');
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    assert.equal(await page.locator('.skill-card').count(), 44);
+    await page.locator('#skill-f-cancel').click();
 
     // Fichiers joints : consignes (.md) et données météo (CSV NASA POWER) pour un script Python.
     const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'localia-donnees-'));

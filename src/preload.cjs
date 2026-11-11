@@ -36,6 +36,7 @@ contextBridge.exposeInMainWorld('localia', {
   skillsOpenDir: () => invoke('skills-open-dir'),
   skillsOpen: (id) => invoke('skills-open', id),
   skillsNew: () => invoke('skills-new'),
+  skillsSave: (payload) => invoke('skills-save', payload),
   openQuestions: () => invoke('open-questions'),
   exportFile: (name, extension, content) => invoke('export-file', name, extension, content),
   exportPdf: (payload) => invoke('export-pdf', payload),

@@ -1382,9 +1382,85 @@
         </div>
         <div class="input-row">
           <button id="skills-new" class="primary" type="button">Nouvelle compétence</button
+          ><button id="skills-new-file" type="button">Créer un fichier à remplir</button
           ><button id="skills-folder" type="button">Ouvrir le dossier</button
           ><button id="skills-reload" type="button">Recharger</button>
         </div>
+        <form id="skill-form" class="skill-form" hidden>
+          <h3 id="skill-form-title">Nouvelle compétence</h3>
+          <div class="skill-form-grid">
+            <label
+              ><span>Nom</span><input id="skill-f-name" type="text" maxlength="120" required
+            /></label>
+            <label
+              ><span>Appel</span
+              ><input
+                id="skill-f-call"
+                type="text"
+                maxlength="41"
+                required
+                pattern="/[a-z0-9][a-z0-9\-]{0,39}"
+                placeholder="/mon-appel"
+              /><small class="muted">Tapez-le dans une conversation pour l’utiliser.</small></label
+            >
+            <label
+              ><span>Famille</span
+              ><input
+                id="skill-f-family"
+                type="text"
+                maxlength="60"
+                list="skill-families"
+                placeholder="Mes compétences" /><datalist id="skill-families"></datalist
+            ></label>
+            <label
+              ><span>Type de tâche</span
+              ><select id="skill-f-task"></select
+            ></label>
+          </div>
+          <label
+            ><span>Quand l’utiliser ?</span
+            ><input id="skill-f-description" type="text" maxlength="300"
+          /></label>
+          <label
+            ><span>Consignes pour le modèle</span
+            ><textarea id="skill-f-body" rows="7" maxlength="20000" required></textarea
+            ><small class="muted"
+              >Écrivez comme à un collègue : ce qu’il faut faire, dans quel ordre, ce qu’il faut
+              rendre et ce qu’il ne faut pas faire.</small
+            ></label
+          >
+          <label
+            ><span>Exemple d’appel</span
+            ><input id="skill-f-example" type="text" maxlength="300" placeholder="/mon-appel …"
+          /></label>
+          <details id="skill-f-english">
+            <summary>Version anglaise (facultatif, utilisée quand Localia est en anglais)</summary>
+            <div class="skill-form-grid">
+              <label
+                ><span>Name</span><input id="skill-f-name-en" type="text" maxlength="120"
+              /></label>
+              <label
+                ><span>Family</span><input id="skill-f-family-en" type="text" maxlength="60"
+              /></label>
+            </div>
+            <label
+              ><span>When to use it?</span
+              ><input id="skill-f-description-en" type="text" maxlength="300"
+            /></label>
+            <label
+              ><span>Instructions for the model</span
+              ><textarea id="skill-f-body-en" rows="5" maxlength="20000"></textarea>
+            </label>
+            <label
+              ><span>Example call</span><input id="skill-f-example-en" type="text" maxlength="300"
+            /></label>
+          </details>
+          <div class="input-row">
+            <button id="skill-f-save" class="primary" type="submit">Enregistrer</button
+            ><button id="skill-f-try" type="button" hidden>Essayer dans une conversation</button
+            ><button id="skill-f-cancel" type="button">Fermer</button>
+          </div>
+        </form>
         <div id="skills-list"></div>
       </section>
       <section id="security-view" class="page" hidden>

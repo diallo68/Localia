@@ -164,3 +164,31 @@ test('compétences fournies : toutes ont une version anglaise complète', () => 
     assert.doesNotMatch(s.en.body, /^(nom|appel|famille)\s*:/m, s.file);
   }
 });
+
+test('formulaire : texte du fichier relu à l’identique, version anglaise comprise', () => {
+  const { skillText, parseSkill } = require('../src/skills.js');
+  const text = skillText({
+    name: 'Communiqué\nde presse',
+    call: '/communique',
+    description: 'Faits → communiqué.',
+    family: '',
+    task: 'redaction',
+    body: 'Rédige un communiqué.\n\n--- pas une séparation',
+    example: '/communique 150 mots',
+    steps: [],
+    files: [],
+    en: { name: 'Press release', description: 'Facts → release.', body: 'Write a release.' },
+  });
+  const skill = parseSkill(text, 'communique.md');
+  assert.equal(skill.name, 'Communiqué de presse');
+  assert.equal(skill.family, 'Mes compétences');
+  assert.equal(skill.task, 'redaction');
+  assert.equal(skill.body, 'Rédige un communiqué.\n\n--- pas une séparation');
+  assert.equal(skill.en.name, 'Press release');
+  assert.equal(skill.en.body, 'Write a release.');
+  // Sans nom anglais : aucune partie anglaise.
+  assert.doesNotMatch(
+    skillText({ name: 'A', call: '/a', body: 'x', en: { body: 'y' } }),
+    /en ---|_en/,
+  );
+});

@@ -1357,6 +1357,25 @@ const EN = {
   'à installer': 'to install',
   'Ouvrir la Bibliothèque pour les installer': 'Open the Library to install them',
   'Profil enregistré.': 'Profile saved.',
+  // Formulaire de compétence
+  'Créer un fichier à remplir': 'Create a file to fill in',
+  'Modifier la compétence': 'Edit skill',
+  Appel: 'Call',
+  Famille: 'Family',
+  'Type de tâche': 'Task type',
+  'Aucun (consigne générale)': 'None (general instruction)',
+  'Quand l’utiliser ?': 'When to use it?',
+  'Consignes pour le modèle': 'Instructions for the model',
+  'Écrivez comme à un collègue : ce qu’il faut faire, dans quel ordre, ce qu’il faut rendre et ce qu’il ne faut pas faire.':
+    'Write as you would to a colleague: what to do, in which order, what to return and what not to do.',
+  'Exemple d’appel': 'Example call',
+  'Version anglaise (facultatif, utilisée quand Localia est en anglais)':
+    'English version (optional, used when Localia is in English)',
+  'Essayer dans une conversation': 'Try in a conversation',
+  'Tapez-le dans une conversation pour l’utiliser.': 'Type it in a conversation to use it.',
+  'Compétence enregistrée': 'Skill saved',
+  'Essayez-la dans une conversation, avec un document joint si besoin.':
+    'Try it in a conversation, with a document attached if needed.',
 };
 // Libellés des tâches et des métiers ajoutés au dictionnaire.
 if (typeof TASKS !== 'undefined')

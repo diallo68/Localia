@@ -47,6 +47,7 @@ function simplifyMath(line) {
       .replace(/\$+/g, ' ')
       .replace(/\\text\{[^}]*\}/g, ' ')
       .replace(/\\(left|right|,|;|!|quad)/g, ' ')
+      .replace(/\\(?=\s)/g, ' ') // espace LaTeX « \ »
       .replace(/\\times|\\cdot/g, '×')
       .replace(/\\approx/g, '≈')
       .replace(/\^\{([^{}]+)\}/g, '^($1)')
@@ -128,11 +129,23 @@ function evaluateAll(expression) {
 const hasOperator = (expression) => /\d[^\d]*[-+×*·/÷^]\s*[\d(]/.test(expression);
 const MATH_CHARS = '\\d\\s\\u00a0\\u202f.,()+\\-×*·/÷^%';
 
+// Chiffres après la virgule d'une valeur lue (0,56 → 2 ; 9 000 000 → 0).
+function decimals(value) {
+  // Arrondi à 12 chiffres : 66,67 % lu 0,6667000000000001 garde 4 décimales.
+  const [mantissa, exponent] = Number(Math.abs(value).toPrecision(12)).toString().split('e');
+  const digits = (mantissa.split('.')[1] || '').length - Number(exponent || 0);
+  return Math.max(0, digits);
+}
+
+// « = » : le résultat écrit doit être le résultat exact arrondi à sa précision (10 / 3 = 3,33 ;
+// 27 / 48 = 56 %). « 2 600 × 3 450 = 9 000 000 » est faux, même à 0,3 % près. « ≈ » : 2 %.
 function matches(left, right, approximate) {
   for (const a of left)
     for (const b of right) {
-      const scale = Math.max(Math.abs(a), Math.abs(b), 1e-12);
-      if (Math.abs(a - b) / scale <= (approximate ? 0.02 : 0.005)) return true;
+      const gap = Math.abs(a - b);
+      if (approximate) {
+        if (gap / Math.max(Math.abs(a), Math.abs(b), 1e-12) <= 0.02) return true;
+      } else if (gap <= Math.max(0.5 * 10 ** -decimals(b), 1e-9 * Math.abs(b)) + 1e-12) return true;
     }
   return false;
 }
@@ -151,13 +164,21 @@ function checkCalculations(text) {
       // Tiret de liste en début de ligne (« - 45 000 × 0,35 = … ») : ce n'est pas un signe moins.
       if (p === 1 && /^-\s/.test(left) && !before.slice(0, before.lastIndexOf(left)).trim())
         left = left.replace(/^-\s+/, '');
-      const right = (after.match(new RegExp(`^[${MATH_CHARS}]+`)) || [''])[0].trim();
+      // Point ou virgule de fin de phrase (« = 9 170 kg. ») : pas une partie du nombre.
+      const right = (after.match(new RegExp(`^[${MATH_CHARS}]+`)) || [''])[0]
+        .trim()
+        .replace(/(\s[.,]|[.,])$/, '')
+        .trim();
       if (!/\d/.test(left) || !/\d/.test(right)) continue;
       if (!hasOperator(left) && !hasOperator(right)) continue; // conversion d'unités, définition…
       const a = evaluateAll(left);
       const b = evaluateAll(right);
       if (!a.length || !b.length) continue;
-      const expression = `${left} ${parts[p]} ${right}`.replace(/\s+/g, ' ');
+      // Fraction LaTeX lue « ((a)/(b)) » : affichée « a / b ».
+      const expression = `${left} ${parts[p]} ${right}`
+        .replace(/\(\(([^()]+)\)\/\(([^()]+)\)\)/g, '$1 / $2')
+        .replace(/\s+/g, ' ')
+        .trim();
       if (seen.has(expression)) continue;
       seen.add(expression);
       // Changement d'écriture en puissance de 10 (« 312,4 milliards = 312,4 × 10^9 ») : ignoré.
@@ -601,8 +622,25 @@ function checkProjectSources(answer, docs) {
 }
 
 // Rapport complet pour une réponse (doc et documents de projet facultatifs).
+// Calcul faux recopié du document ou de la question (« la facture indique 50 + 60 = 120 ») : signalé,
+// mais le modèle n'a pas à le « corriger » (outil de calcul, calculator.cjs).
+const compact = (expression) => expression.replace(/[\s\u00a0\u202f]/g, '');
+function markQuoted(calculations, sources) {
+  const wrong = calculations.filter((c) => !c.ok);
+  if (!wrong.length) return calculations;
+  const seen = new Set(
+    sources.flatMap((text) => checkCalculations(text).map((c) => compact(c.expression))),
+  );
+  for (const c of wrong) if (seen.has(compact(c.expression))) c.quoted = true;
+  return calculations;
+}
+
 function verifyAnswer({ answer, question = '', doc = null, projectDocs = null }) {
-  const report = { calculations: checkCalculations(answer) };
+  const sources = [
+    question,
+    ...[doc, ...(projectDocs || [])].flatMap((d) => (d?.pages || []).map((p) => p.text)),
+  ];
+  const report = { calculations: markQuoted(checkCalculations(answer), sources) };
   if (doc) {
     report.pages = checkPageReferences(answer, doc);
     report.quotes = checkQuotes(answer, doc, question);

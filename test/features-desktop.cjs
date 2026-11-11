@@ -201,7 +201,13 @@ const readJson = async (profile, name) => {
           global.requests.push(body);
           const lines = [
             { message: { thinking: 'Je réfléchis.' } },
-            { message: { content: global.chatReply ?? `Réponse de **${body.model}**` } },
+            {
+              message: {
+                content: global.chatReplies?.length
+                  ? global.chatReplies.shift()
+                  : (global.chatReply ?? `Réponse de **${body.model}**`),
+              },
+            },
             {
               done: true,
               done_reason: global.chatDoneReason ?? 'stop',
@@ -1870,9 +1876,44 @@ const readJson = async (profile, name) => {
     );
     await assert.rejects(fetch(base + '/'), 'serveur arrêté');
 
+    // Outil de calcul : calcul faux → résultats exacts renvoyés au modèle, réponse réécrite,
+    // première version consultable.
+    await page.locator('#chat-tab').click();
+    await page.locator('#new').click();
+    await app.evaluate(() => {
+      global.chatReplies = [
+        'Remise : 1 250 × 0,18 = 230 €.\nReste : 1 250 - 230 = 1 020 €.',
+        'Remise : 1 250 × 0,18 = 225 €.\nReste : 1 250 - 225 = 1 025 €.',
+      ];
+    });
+    await page.locator('#prompt').fill('Remise de 18 % sur 1 250 € : combien reste-t-il ?');
+    await page.locator('#send').click();
+    await page.locator('.message.assistant .recalculated').waitFor();
+    await page.waitForFunction(() => document.querySelector('#stop').hidden);
+    const calcRequests = await app.evaluate(() => global.requests.slice(-2));
+    assert.equal(calcRequests[0].messages.at(-1).role, 'user', 'première demande : la question');
+    const correction = calcRequests[1].messages.at(-1);
+    assert.equal(correction.role, 'user');
+    assert.match(correction.content, /1 250 × 0,18 = 225 \(et non 230\)/);
+    assert.equal(
+      calcRequests[1].messages.at(-2).content,
+      'Remise : 1 250 × 0,18 = 230 €.\nReste : 1 250 - 230 = 1 020 €.',
+    );
+    assert.equal(await page.locator('.message.assistant').count(), 1, 'une seule réponse affichée');
+    assert.match(await page.locator('.message.assistant .markdown').first().textContent(), /1 025/);
+    assert.match(
+      await page.locator('.recalculated summary').textContent(),
+      /Calculs refaits par Localia : 1 résultat\(s\) corrigé\(s\)/,
+    );
+    assert.match(
+      await page.locator('.message.assistant .checks summary').textContent(),
+      /aucun problème/,
+    );
+    await app.evaluate(() => delete global.chatReplies);
+
     assert.deepEqual(errors, []);
     console.log(
-      'PASS fonctions: modèle mémorisé, contexte du Modelfile, renommage, réglages appliqués, comparaison avec mesures et notes, série de questions, vue d’ensemble, export CSV, ancien format, suppression, benchmark (notation à l’aveugle, import de notes, accord, export SVG, répétitions, conditions), pause et reprise, tâches, mémoire par projet, départ programmé (Mac éveillé, annulation), compétences (menu, appel /nom, suggestions, nouvelle compétence), fichiers joints (consignes, portrait des données, glisser-déposer, effacement), photos (refus sans vision, envoi, effacement), métier Santé (anonymisation, réponse en clair), actions sur fichiers (dossier autorisé, plan vérifié, application, journal, annulation), aucune erreur JS.',
+      'PASS fonctions: modèle mémorisé, contexte du Modelfile, renommage, réglages appliqués, comparaison avec mesures et notes, série de questions, vue d’ensemble, export CSV, ancien format, suppression, benchmark (notation à l’aveugle, import de notes, accord, export SVG, répétitions, conditions), pause et reprise, tâches, mémoire par projet, départ programmé (Mac éveillé, annulation), compétences (menu, appel /nom, suggestions, nouvelle compétence), fichiers joints (consignes, portrait des données, glisser-déposer, effacement), photos (refus sans vision, envoi, effacement), outil de calcul (réponse réécrite avec les résultats exacts), métier Santé (anonymisation, réponse en clair), actions sur fichiers (dossier autorisé, plan vérifié, application, journal, annulation), aucune erreur JS.',
     );
   } finally {
     await app?.close();

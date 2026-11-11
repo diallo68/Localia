@@ -44,6 +44,7 @@ const {
 const projectDocs = require('./project-docs.cjs');
 const { normalizeSettings } = require('./settings.cjs');
 const { verifyAnswer } = require('./verify.js');
+const calculator = require('./calculator.cjs');
 const { metierById } = require('./metiers.js');
 const { createAnonymizer, anonymizedSummary } = require('./anonymize.js');
 // Étiquettes d'une conversation renvoyées par la page : vérifiées avant d'être reprises.
@@ -1903,6 +1904,19 @@ handle('run', async (kind, payload) => {
         if (messages[0]?.role === 'system')
           messages[0] = { ...messages[0], content: messages[0].content + '\n\n' + IMAGE_NOTE };
         else messages.unshift({ role: 'system', content: IMAGE_NOTE });
+      }
+      // Outil de calcul : réponse dont des calculs sont faux. Le modèle reçoit sa réponse et les
+      // résultats exacts refaits par Localia, puis la réécrit (les extraits restent ceux de la question).
+      if (kind === 'chat' && payload.recalc) {
+        const request = calculator.correctionRequest(payload.recalc.calculations, appSettings.lang);
+        const previous = payload.recalc.answer;
+        if (!request || typeof previous !== 'string' || previous.length > 200000)
+          throw new Error('Correction des calculs invalide.');
+        messages = [
+          ...messages,
+          { role: 'assistant', content: previous },
+          { role: 'user', content: request },
+        ];
       }
       // Métier à données sensibles : noms, numéros, adresses… remplacés par des étiquettes avant
       // l'envoi ; les étiquettes de la conversation sont reprises, la réponse est remise en clair.

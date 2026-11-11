@@ -59,6 +59,7 @@ function packagedApp() {
         if (String(url).endsWith('/api/show')) return Response.json({});
         if (String(url).endsWith('/api/chat')) {
           global.pdfChat = JSON.parse(options.body);
+          global.pdfChats = [...(global.pdfChats || []), global.pdfChat];
           return new Response(
             JSON.stringify({
               message: {
@@ -191,7 +192,17 @@ function packagedApp() {
         document.querySelector('.message.assistant p')?.textContent.includes('Écart') &&
         document.querySelector('#stop').hidden,
     );
-    const payload = await app.evaluate(() => global.pdfChat);
+    // Outil de calcul : « 50 + 60 = 120 » est faux ; le modèle simulé réécrit la même réponse,
+    // donc la première version est gardée.
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('la première version est gardée'),
+    );
+    await page.waitForFunction(() => document.querySelector('#stop').hidden);
+    const chats = await app.evaluate(() => global.pdfChats);
+    assert.equal(chats.length, 2);
+    assert.match(chats[1].messages.at(-1).content, /- 50 \+ 60 = 110 \(et non 120\)/);
+    assert.equal(await page.locator('.message.assistant .recalculated').count(), 0);
+    const payload = chats[0];
     assert.equal(payload.options.num_ctx, 8192);
     assert.match(payload.messages[1].content, /Page 2/);
     assert.match(payload.messages[1].content, /110 EUR/);

@@ -904,6 +904,9 @@ const EN = {
   'ou, sans choisir de métier': 'or, without choosing a profession',
   Anonymisation: 'Anonymisation',
   'Calculs vérifiés': 'Checked calculations',
+  'Réécriture avec les résultats exacts…': 'Rewriting with the exact results…',
+  'La réponse réécrite n’était pas plus juste : la première version est gardée.':
+    'The rewritten answer was not more accurate: the first version is kept.',
   'Bibliographie et Zotero': 'Bibliography and Zotero',
   Langue: 'Language',
   // Suggestions de l'accueil
@@ -1502,7 +1505,23 @@ const EN_PATTERNS = [
     'Figure(s) missing from the cited passage: $1.',
   ],
   [/^Vérifications automatiques : (\d+) alerte\(s\)$/, 'Automatic checks: $1 alert(s)'],
+  [
+    /^Calcul faux, déjà présent dans le document ou la question : (.*)\. Résultat exact : (.*)\.$/,
+    'Wrong calculation, already in the document or the question: $1. Exact result: $2.',
+  ],
   [/^Calcul faux : (.*)\. Résultat exact : (.*)\.$/, 'Wrong calculation: $1. Exact result: $2.'],
+  [
+    /^Localia a refait les calculs : (\d+) résultat\(s\) faux\. Le modèle réécrit sa réponse avec les résultats exacts…$/,
+    'Localia redid the calculations: $1 wrong result(s). The model is rewriting its answer with the exact results…',
+  ],
+  [
+    /^Calculs refaits par Localia : (\d+) résultat\(s\) corrigé\(s\), réponse réécrite par le modèle\. Voir la première version$/,
+    'Calculations redone by Localia: $1 result(s) corrected, answer rewritten by the model. See the first version',
+  ],
+  [
+    /^Calculs refaits par Localia : (\d+) résultat\(s\) corrigé\(s\), réponse réécrite par le modèle \((\d+) calcul\(s\) encore faux\)\. Voir la première version$/,
+    'Calculations redone by Localia: $1 result(s) corrected, answer rewritten by the model ($2 calculation(s) still wrong). See the first version',
+  ],
   [
     /^(\d+) calcul\(s\) refait\(s\) par Localia : juste\(s\)\.$/,
     '$1 calculation(s) redone by Localia: correct.',

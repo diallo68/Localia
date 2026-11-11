@@ -322,7 +322,9 @@ function checksPanel(report) {
   for (const c of wrong)
     items.push([
       'warn',
-      `Calcul faux : ${c.expression}. Résultat exact : ${formatNumber(c.expected)}.`,
+      c.quoted
+        ? `Calcul faux, déjà présent dans le document ou la question : ${c.expression}. Résultat exact : ${formatNumber(c.expected)}.`
+        : `Calcul faux : ${c.expression}. Résultat exact : ${formatNumber(c.expected)}.`,
     ]);
   const right = calculations.length - wrong.length;
   if (right) items.push(['ok', `${right} calcul(s) refait(s) par Localia : juste(s).`]);
@@ -681,6 +683,23 @@ function messageNode(message, question) {
       web.append(link);
     });
     node.append(web);
+  }
+  if (message.role === 'assistant' && message.recalculated) {
+    const box = element('details', 'recalculated');
+    const r = message.recalculated;
+    box.append(
+      element(
+        'summary',
+        '',
+        tr(
+          `Calculs refaits par Localia : ${r.wrong} résultat(s) corrigé(s), réponse réécrite par le modèle${r.remaining ? ` (${r.remaining} calcul(s) encore faux)` : ''}. Voir la première version`,
+        ),
+      ),
+    );
+    const first = element('div', 'markdown first-version');
+    showMarkdown(first, message.firstVersion || '');
+    box.append(first);
+    node.append(box);
   }
   if (message.role === 'assistant') {
     const sources = sourcesPanel(message.checks?.sources);
@@ -1702,13 +1721,15 @@ async function sendPrompt({ remoteId } = {}) {
   let completed = false;
   let failure = null;
   let webSources = [];
+  let request = null;
+  let saved = null;
   try {
     await persist();
     if (useWeb) {
       webSources = await gatherWebSources(content);
       answer.web = webSources.map(({ title, url }) => ({ title, url }));
     }
-    const result = await window.localia.run('chat', {
+    request = {
       webSources,
       model: conversation.model,
       // Compétence : celle du message (« /appel »), sinon celle choisie dans le menu Compétence.
@@ -1724,7 +1745,8 @@ async function sendPrompt({ remoteId } = {}) {
         .map(({ role, content, images }) =>
           images?.length ? { role, content, images: images.map((i) => i.id) } : { role, content },
         ),
-    });
+    };
+    const result = await window.localia.run('chat', request);
     answer.content = result.text || '';
     if (result.anonymap) conversation.anonymap = result.anonymap;
     completed = !result.cancelled;
@@ -1741,7 +1763,7 @@ async function sendPrompt({ remoteId } = {}) {
   } finally {
     answer.content = answer.content || reply.dataset.answer || '';
     if (answer.content) {
-      const saved = { ...answer, interrupted: !completed };
+      saved = { ...answer, interrupted: !completed };
       conversation.messages.push(saved);
       // Vérifications automatiques de la réponse (sans modèle).
       saved.checks = await window.localia
@@ -1767,14 +1789,77 @@ async function sendPrompt({ remoteId } = {}) {
     render();
     controls();
     $('prompt').focus();
+    if (!completed || !saved) pumpRoutines();
+  }
+  // Calculs faux : le modèle réécrit sa réponse avec les résultats exacts de Localia.
+  if (completed && saved) {
+    await recalculate(conversation, saved, request).catch((e) => notice(e.message));
     pumpRoutines();
   }
   return {
     ok: completed,
     error: failure || (completed ? null : 'Réponse interrompue.'),
     conversationId: conversation.id,
-    text: answer.content,
+    text: saved?.content || answer.content,
   };
+}
+// Outil de calcul : Localia a refait les calculs écrits dans la réponse ; s'il en trouve de faux,
+// le modèle reçoit les résultats exacts et réécrit sa réponse. La nouvelle version n'est gardée que
+// si elle ne compte pas plus de calculs faux ; la première reste consultable.
+async function recalculate(conversation, saved, request) {
+  const wrong = (saved.checks?.calculations || []).filter((c) => !c.ok && !c.quoted);
+  if (!wrong.length || !request || current !== conversation || chatting) return;
+  chatting = true;
+  render();
+  controls();
+  runNotice(
+    tr(
+      `Localia a refait les calculs : ${wrong.length} résultat(s) faux. Le modèle réécrit sa réponse avec les résultats exacts…`,
+    ),
+  );
+  const answer = { role: 'assistant', content: '', model: saved.model };
+  reply = messageNode(answer);
+  reply.textContent = tr('Réécriture avec les résultats exacts…');
+  let text = '';
+  try {
+    const result = await window.localia.run('chat', {
+      ...request,
+      remoteId: undefined,
+      recalc: {
+        answer: saved.content,
+        calculations: wrong.map(({ expression, expected }) => ({ expression, expected })),
+      },
+    });
+    if (!result.cancelled) text = (result.text || '').trim();
+  } catch (error) {
+    notice(error.message);
+  } finally {
+    if (text) {
+      const checks = await window.localia
+        .verifyAnswer({
+          answer: text,
+          question: conversation.messages.at(-2)?.content || '',
+          documentIds: request.documentIds,
+          projectId: request.projectId,
+        })
+        .catch(() => undefined);
+      const remaining = (checks?.calculations || []).filter((c) => !c.ok && !c.quoted).length;
+      if (checks && remaining < wrong.length) {
+        saved.firstVersion = saved.content;
+        saved.content = text;
+        saved.checks = checks;
+        saved.recalculated = { wrong: wrong.length, remaining };
+      } else
+        runNotice(
+          tr('La réponse réécrite n’était pas plus juste : la première version est gardée.'),
+        );
+    }
+    chatting = false;
+    reply = null;
+    await persist().catch((e) => notice(e.message));
+    render();
+    controls();
+  }
 }
 
 // Question envoyée depuis un autre appareil : traitée comme un message tapé sur le Mac.

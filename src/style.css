@@ -5168,3 +5168,21 @@ input:not([type='checkbox']):not([type='radio']) {
   text-align: left;
   cursor: pointer;
 }
+
+/* Outil de calcul : réponse réécrite avec les résultats exacts ; première version consultable. */
+.recalculated {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  background: var(--surface-2);
+}
+.recalculated summary {
+  cursor: pointer;
+}
+.recalculated .first-version {
+  margin-top: 8px;
+  opacity: 0.75;
+  font-size: 13px;
+}

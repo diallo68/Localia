@@ -395,3 +395,41 @@ test('sources de projet : un chiffre retrouvé avec le sens contraire est signal
     'confirme',
   );
 });
+
+test('calculs : résultat arrondi à sa précision, LaTeX avec espaces et unités, point final', () => {
+  const checks = v.checkCalculations(
+    String.raw`$$12\,672\,500\ \text{GNF} - 10\,545\,000\ \text{GNF} = 2\,127\,500\ \text{GNF}$$
+$2,6 \text{ hectares} \times 3\,450 \text{ kg/ha} = 9\,170 \text{ kg}$.
+2 600 × 3 450 = 9 000 000
+10 / 3 = 3,33
+1 000 / 7 = 142,86
+27 / 48 × 100 = 56 %`,
+  );
+  assert.deepEqual(
+    checks.map((c) => [c.expression, c.ok, c.expected]),
+    [
+      ['12 672 500 - 10 545 000 = 2 127 500', true, null],
+      ['2,6 × 3 450 = 9 170', false, 8970],
+      ['2 600 × 3 450 = 9 000 000', false, 8970000],
+      ['10 / 3 = 3,33', true, null],
+      ['1 000 / 7 = 142,86', true, null],
+      ['27 / 48 × 100 = 56 %', true, null],
+    ],
+  );
+});
+
+test('calcul faux recopié du document ou de la question : marqué, pas à corriger', () => {
+  const doc = { pages: [{ number: 1, text: 'Total facturé : 50 + 60 = 120 EUR.' }] };
+  const report = v.verifyAnswer({
+    answer: 'La facture écrit 50 + 60 = 120, mais 7 × 8 = 54.',
+    question: 'Vérifie la facture',
+    doc,
+  });
+  assert.deepEqual(
+    report.calculations.map((c) => [c.expression, c.ok, Boolean(c.quoted)]),
+    [
+      ['50 + 60 = 120', false, true],
+      ['7 × 8 = 54', false, false],
+    ],
+  );
+});

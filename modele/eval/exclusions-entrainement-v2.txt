@@ -1,0 +1,89 @@
+# Documents des jeux d'évaluation de la v2 (G, G-test, S2), figés le 11 nov. 2026.
+# Aucun de ces documents, ni une autre version ou traduction du même texte, ne doit entrer dans les données
+# d'entraînement (SFT, rappel, paires DPO, modules par domaine). Vérification par 13-grammes ET par identifiant.
+
+## G
+arxiv-2611.13194	https://arxiv.org/abs/2611.13194
+arxiv-2611.14260	https://arxiv.org/abs/2611.14260
+arxiv-2611.14333	https://arxiv.org/abs/2611.14333
+arxiv-2611.14369	https://arxiv.org/abs/2611.14369
+arxiv-2611.14401	https://arxiv.org/abs/2611.14401
+hal-05064554	https://hal.science/hal-05064554
+hal-05636819	https://hal.science/hal-05636819
+hal-05644949	https://hal.science/hal-05644949
+hal-05677162	https://hal.science/hal-05677162
+hal-05680098	https://hal.science/hal-05680098
+hal-05689403	https://hal.science/hal-05689403
+hal-05719218	https://hal.science/hal-05719218
+hal-05738319	https://hal.science/hal-05738319
+hal-05759189	https://hal.science/hal-05759189
+hal-05765316	https://hal.science/hal-05765316
+inv-en-minutes-ngo	document inventé pour l'évaluation (non publié)
+inv-en-proposal-solar	document inventé pour l'évaluation (non publié)
+inv-fr-bilan-cooperative	document inventé pour l'évaluation (non publié)
+inv-fr-communique-eau	document inventé pour l'évaluation (non publié)
+inv-fr-contrat-transport	document inventé pour l'évaluation (non publié)
+inv-fr-cr-conseil-ecole	document inventé pour l'évaluation (non publié)
+inv-fr-lettre-motivation	document inventé pour l'évaluation (non publié)
+inv-fr-note-service-hopital	document inventé pour l'évaluation (non publié)
+inv-fr-rapport-stage	document inventé pour l'évaluation (non publié)
+wiki-en-Cassava	https://en.wikipedia.org/w/index.php?oldid=1384658657
+wiki-en-Desalination	https://en.wikipedia.org/w/index.php?oldid=1384038601
+wiki-fr-Fouta-Djalon	https://fr.wikipedia.org/w/index.php?oldid=240494960
+wiki-fr-Mildiou_de_la_pomme_de_terre	https://fr.wikipedia.org/w/index.php?oldid=236377585
+wiki-fr-Paludisme	https://fr.wikipedia.org/w/index.php?oldid=241064805
+wiki-fr-Énergie_solaire_photovoltaïque	https://fr.wikipedia.org/w/index.php?oldid=241012341
+
+## Gtest
+arxiv-2610.38631	https://arxiv.org/abs/2610.38631
+arxiv-2611.13321	https://arxiv.org/abs/2611.13321
+arxiv-2611.14232	https://arxiv.org/abs/2611.14232
+hal-00613736	https://hal.science/hal-00613736
+hal-05502450	https://hal.science/hal-05502450
+hal-05518142	https://hal.science/hal-05518142
+hal-05555322	https://hal.science/hal-05555322
+hal-05612676	https://hal.science/hal-05612676
+hal-05655666	https://hal.science/hal-05655666
+hal-05657686	https://hal.science/hal-05657686
+inv-en-school-inspection	document inventé pour l'évaluation (non publié)
+inv-en-solar-kit-manual	document inventé pour l'évaluation (non publié)
+inv-fr-pv-reception-travaux	document inventé pour l'évaluation (non publié)
+inv-fr-rapport-centre-sante	document inventé pour l'évaluation (non publié)
+wiki-en-Fonio	https://en.wikipedia.org/w/index.php?oldid=1379276310
+wiki-en-Mangrove	https://en.wikipedia.org/w/index.php?oldid=1377249198
+wiki-fr-Agroforesterie	https://fr.wikipedia.org/w/index.php?oldid=236944749
+wiki-fr-Maladie_à_virus_Ebola	https://fr.wikipedia.org/w/index.php?oldid=241166816
+wiki-fr-Système_éducatif_en_Guinée	https://fr.wikipedia.org/w/index.php?oldid=240430540
+wiki-fr-Énergie_hydroélectrique	https://fr.wikipedia.org/w/index.php?oldid=239027316
+
+## S2
+arxiv-2611.13404	https://arxiv.org/abs/2611.13404
+arxiv-2611.14483	https://arxiv.org/abs/2611.14483
+hal-03029212	https://hal.science/hal-03029212
+hal-05532322	https://hal.science/hal-05532322
+hal-05578769	https://hal.science/hal-05578769
+hal-05582731	https://hal.science/hal-05582731
+hal-05583175	https://hal.science/hal-05583175
+hal-05660552	https://hal.science/hal-05660552
+hal-05729284	https://hal.science/hal-05729284
+hal-05786652	https://hal.science/hal-05786652
+hal-05799121	https://hal.science/hal-05799121
+hal-05855485	https://hal.science/hal-05855485
+inv-en-incident-report	document inventé pour l'évaluation (non publié)
+inv-en-loan	document inventé pour l'évaluation (non publié)
+inv-en-vaccine-stock	document inventé pour l'évaluation (non publié)
+inv-fr-budget-forage	document inventé pour l'évaluation (non publié)
+inv-fr-bulletin	document inventé pour l'évaluation (non publié)
+inv-fr-campagne-riz	document inventé pour l'évaluation (non publié)
+inv-fr-facture-fournitures	document inventé pour l'évaluation (non publié)
+inv-fr-offre-emploi	document inventé pour l'évaluation (non publié)
+inv-fr-pv-assemblee	document inventé pour l'évaluation (non publié)
+inv-fr-reglement-interieur	document inventé pour l'évaluation (non publié)
+wiki-en-Dracunculiasis	https://en.wikipedia.org/w/index.php?oldid=1383908176
+wiki-en-Mobile_payment	https://en.wikipedia.org/w/index.php?oldid=1381815895
+wiki-en-Rainwater_harvesting	https://en.wikipedia.org/w/index.php?oldid=1385024439
+wiki-en-Soil_erosion	https://en.wikipedia.org/w/index.php?oldid=1381896013
+wiki-fr-Conakry	https://fr.wikipedia.org/w/index.php?oldid=241032763
+wiki-fr-Culture_du_riz	https://fr.wikipedia.org/w/index.php?oldid=240997938
+wiki-fr-Microcrédit	https://fr.wikipedia.org/w/index.php?oldid=239753631
+wiki-fr-Télémédecine	https://fr.wikipedia.org/w/index.php?oldid=239945082

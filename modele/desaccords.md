@@ -77,3 +77,15 @@ dans `publication/Dial-bowe-Guinee-2B/README.md` :
 Point non retenu : « 40 × 512 jetons non corroboré ». Ce chiffre est dans le script du noyau
 (`kaggle/lot4-fin-eval/lot4_fin_eval.py`, `-c 512 --chunks 40`). Il est gardé, précisé en « 40 fenêtres de 512
 jetons ».
+
+## Plan de la v2 (relecture de Codex du 11 nov. 2026, `codex/03-relecture-plan-v2.md`)
+
+Points de Codex vérifiés et retenus (plan, §3 bis) : séparation de G en G (développement) et G-test ; précision de S2
+corrigée (±8,5 points et non ±5) ; « base » = base élaguée ; mémoire de 1,77 à 2,39 Go (et non 1,11 Go, qui est la
+taille du fichier) ; rappel à 23,4 % des exemples ; un seul changement à la fois après un échec ; essai de la DPO
+avant la production ; garde-fou de longueur par paire.
+
+Point tranché par l'auteur le 11 nov. : les deux seuils sont gardés (objectif > 50 %, « démontré » à 27 sur 40). Rappel de la question : Codex rappelle qu'avec 40 paires sans
+égalité, il faut environ 27 victoires pour un écart démontré (test binomial bilatéral à 5 %), alors que le plan
+demande « plus de 50 % ». Les deux lectures sont possibles : un seuil descriptif (préférée plus souvent) ou un
+seuil démontré (27 sur 40).

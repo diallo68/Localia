@@ -5145,3 +5145,26 @@ input:not([type='checkbox']):not([type='radio']) {
 .skill-form details[open] > summary {
   margin-bottom: 10px;
 }
+
+/* Internet : interrupteur et sources sous la réponse */
+#web-toggle[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.web-sources {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 8px 0;
+  font-size: 12.5px;
+}
+.web-sources .link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  text-align: left;
+  cursor: pointer;
+}

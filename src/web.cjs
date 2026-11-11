@@ -98,7 +98,54 @@ function splitSections(text) {
   return pages.map((text, i) => ({ number: i + 1, text }));
 }
 
+// Résultats de la page HTML de DuckDuckGo (html.duckduckgo.com) : titre, adresse réelle (paramètre
+// « uddg » du lien de redirection) et extrait. Publicités (y.js, bing.com) et doublons écartés.
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'", '#x27': "'", nbsp: ' ' };
+const plain = (html) =>
+  String(html)
+    .replace(/<[^>]*>/g, '')
+    .replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (m, e) =>
+      ENTITIES[e.toLowerCase()] !== undefined
+        ? ENTITIES[e.toLowerCase()]
+        : e[0] === '#'
+          ? String.fromCodePoint(e[1] === 'x' ? parseInt(e.slice(2), 16) : Number(e.slice(1)))
+          : m,
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
+function parseDuckResults(html, max = 5) {
+  const results = [];
+  const blocks = String(html)
+    .split(/<div class="result[ "]/)
+    .slice(1);
+  for (const block of blocks) {
+    if (/result--ad/.test(block.slice(0, 200))) continue;
+    const link = /class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/.exec(block);
+    if (!link) continue;
+    let url;
+    try {
+      const href = link[1].replace(/&amp;/g, '&');
+      const target = new URL(href, 'https://duckduckgo.com').searchParams.get('uddg') || href;
+      url = new URL(target);
+    } catch {
+      continue;
+    }
+    if (!/^https?:$/.test(url.protocol)) continue;
+    if (/(^|\.)(duckduckgo\.com|bing\.com)$/.test(url.hostname)) continue;
+    if (results.some((r) => r.url === url.href)) continue;
+    const snippet = /class="result__snippet"[^>]*>([\s\S]*?)<\/a>/.exec(block);
+    results.push({
+      title: plain(link[2]).slice(0, 200),
+      url: url.href,
+      snippet: snippet ? plain(snippet[1]).slice(0, 400) : '',
+    });
+    if (results.length >= max) break;
+  }
+  return results;
+}
+
 module.exports = {
+  parseDuckResults,
   MAX_BYTES,
   MAX_REDIRECTS,
   checkUrl,

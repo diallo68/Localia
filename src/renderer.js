@@ -670,6 +670,18 @@ function messageNode(message, question) {
     node.append(strip);
   }
   node.append(content);
+  if (message.role === 'assistant' && message.web?.length) {
+    const web = element('div', 'web-sources');
+    web.append(element('strong', '', tr('Sources Internet (à vérifier) :')));
+    message.web.forEach((source, i) => {
+      const link = element('button', 'link', `[${i + 1}] ${source.title || source.url}`);
+      link.type = 'button';
+      link.title = source.url;
+      link.onclick = guard(() => window.localia.openSource(source.url));
+      web.append(link);
+    });
+    node.append(web);
+  }
   if (message.role === 'assistant') {
     const sources = sourcesPanel(message.checks?.sources);
     if (sources) node.append(sources);
@@ -1173,6 +1185,67 @@ async function refresh() {
 }
 // Texte lisible d'une page HTML : analysée sans être affichée (DOMParser n'exécute rien et ne
 // charge rien) ; navigation, menus, pieds de page et scripts retirés ; article ou contenu principal.
+// Interrupteur « Internet » de la zone de saisie : coupé par défaut, allumé pour une question.
+let webWanted = false;
+function setWebWanted(on) {
+  webWanted = on;
+  $('web-toggle').setAttribute('aria-pressed', String(on));
+}
+$('web-toggle').onclick = () => {
+  // Métiers à données sensibles (Santé) : la question partirait en clair vers le moteur de recherche.
+  if (!webWanted && currentMetier().anonymize) {
+    notice(
+      'Recherche sur Internet désactivée pour ce métier : la question partirait en clair vers le moteur de recherche.',
+    );
+    return;
+  }
+  setWebWanted(!webWanted);
+  if (webWanted)
+    notice(
+      'Internet allumé pour la prochaine question : elle sera envoyée à DuckDuckGo, puis les pages trouvées seront lues ici. Le modèle reste sur cet ordinateur.',
+    );
+  else notice('');
+};
+// Recherche, puis lecture des 3 premières pages lisibles (texte seulement, 6 000 caractères au plus).
+async function gatherWebSources(question) {
+  runNotice('Recherche sur Internet…');
+  let results = [];
+  try {
+    results = await window.localia.webSearch(question);
+  } catch (error) {
+    runNotice(error.message + ' Réponse sans Internet.');
+    return [];
+  }
+  const sources = [];
+  for (const result of results) {
+    if (sources.length >= 3) break;
+    try {
+      const fetched = await window.localia.webFetch(result.url);
+      if (fetched.kind === 'pdf') {
+        await window.localia.deleteDocument(fetched.doc.id).catch(() => {});
+        continue;
+      }
+      const { title, text } =
+        fetched.kind === 'text' ? { title: '', text: fetched.html } : pageText(fetched.html);
+      const clean = text.replace(/\n{3,}/g, '\n\n').trim();
+      if (clean.length < 300) continue;
+      sources.push({
+        // Titre du moteur de recherche d'abord : celui de la page vaut parfois « Chargement… ».
+        title: (result.title || title || '').trim().slice(0, 200),
+        url: fetched.url || result.url,
+        text: clean.slice(0, 6000),
+      });
+    } catch {
+      // Page illisible ou refusée : on passe à la suivante.
+    }
+  }
+  runNotice(
+    sources.length
+      ? `Internet : ${sources.length} page(s) lue(s) — ${sources.map((s) => new URL(s.url).hostname).join(', ')}.`
+      : 'Internet : aucune page lisible trouvée ; réponse sans Internet.',
+  );
+  return sources;
+}
 function pageText(html) {
   const page = new DOMParser().parseFromString(html, 'text/html');
   page
@@ -1621,12 +1694,22 @@ async function sendPrompt({ remoteId } = {}) {
   rememberModel(conversation.model).catch((e) => notice(e.message));
   // Modèle qui a écrit la réponse, affiché à côté de « Localia » (et conservé avec le message).
   answer.model = conversation.model;
+  // Internet allumé pour cette question : recherche et pages lues avant la réponse.
+  const useWeb = webWanted;
+  setWebWanted(false);
+  if (useWeb) answer.web = [];
   reply = messageNode(answer);
   let completed = false;
   let failure = null;
+  let webSources = [];
   try {
     await persist();
+    if (useWeb) {
+      webSources = await gatherWebSources(content);
+      answer.web = webSources.map(({ title, url }) => ({ title, url }));
+    }
     const result = await window.localia.run('chat', {
+      webSources,
       model: conversation.model,
       // Compétence : celle du message (« /appel »), sinon celle choisie dans le menu Compétence.
       task: conversation.task,

@@ -1357,6 +1357,19 @@ const EN = {
   'à installer': 'to install',
   'Ouvrir la Bibliothèque pour les installer': 'Open the Library to install them',
   'Profil enregistré.': 'Profile saved.',
+  // Internet
+  Internet: 'Internet',
+  'Internet pour la prochaine question': 'Internet for the next question',
+  'Internet pour la prochaine question : la question est envoyée à DuckDuckGo, puis les pages trouvées sont lues sur cet ordinateur et données au modèle, qui reste local. Coupé par défaut.':
+    'Internet for the next question: the question is sent to DuckDuckGo, then the pages found are read on this computer and given to the model, which stays local. Off by default.',
+  'Internet allumé pour la prochaine question : elle sera envoyée à DuckDuckGo, puis les pages trouvées seront lues ici. Le modèle reste sur cet ordinateur.':
+    'Internet on for the next question: it will be sent to DuckDuckGo, then the pages found will be read here. The model stays on this computer.',
+  'Recherche sur Internet désactivée pour ce métier : la question partirait en clair vers le moteur de recherche.':
+    'Internet search is disabled for this profession: the question would be sent in clear to the search engine.',
+  'Recherche sur Internet…': 'Searching the Internet…',
+  'Internet : aucune page lisible trouvée ; réponse sans Internet.':
+    'Internet: no readable page found; answer without Internet.',
+  'Sources Internet (à vérifier) :': 'Internet sources (to check):',
   // Formulaire de compétence
   'Créer un fichier à remplir': 'Create a file to fill in',
   'Modifier la compétence': 'Edit skill',

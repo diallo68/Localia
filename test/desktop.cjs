@@ -99,6 +99,28 @@ const path = require('node:path');
           'Bonjour, test local réussi.' && document.querySelector('#stop').hidden,
     );
     assert.equal(await page.locator('.message.assistant .markdown strong').textContent(), 'test');
+    // Formules : dessinées par KaTeX malgré la CSP (styles posés en JavaScript), polices chargées ;
+    // la copie et les exports reçoivent la version texte.
+    const formulas = await page.evaluate(async () => {
+      const box = document.createElement('div');
+      document.body.append(box);
+      showMarkdown(box, '$$h_t = o_t \\odot \\tanh(c_t)$$ et $\\frac{a}{$');
+      await document.fonts.ready;
+      const result = {
+        drawn: box.querySelectorAll('.math-drawn .katex').length,
+        fonts: [...document.fonts].some(
+          (f) => f.family.startsWith('KaTeX') && f.status === 'loaded',
+        ),
+        text: withTextFormulas(box, () => box.innerText),
+      };
+      box.remove();
+      return result;
+    });
+    assert.deepEqual(formulas, {
+      drawn: 1,
+      fonts: true,
+      text: 'hₜ = oₜ ⊙ tanh(cₜ) et $\\frac{a}{$',
+    });
     await page.reload();
     await page.waitForFunction(() => document.querySelector('#history .history-open'));
     // Chaque ouverture repart en mode simple, domaine « Général » ; retour au mode avancé et à

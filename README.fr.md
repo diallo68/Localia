@@ -130,5 +130,5 @@ Une série est un fichier `.txt` ou `.md`. Les questions sont séparées par une
 
 ## Licence et citation
 
-Licence Apache 2.0, voir [LICENSE](LICENSE). Code tiers inclus : [markdown-it](https://github.com/markdown-it/markdown-it) (MIT, `src/vendor/`).
+Licence Apache 2.0, voir [LICENSE](LICENSE). Code tiers inclus : [markdown-it](https://github.com/markdown-it/markdown-it) et [KaTeX](https://katex.org) (MIT, `src/vendor/`).
 Si vous utilisez Localia dans une recherche, citez-le à l'aide de [CITATION.cff](CITATION.cff). Historique des versions : [RELEASE_NOTES.md](RELEASE_NOTES.md).

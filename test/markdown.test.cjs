@@ -29,10 +29,10 @@ test('formules LaTeX converties en texte lisible', () => {
     'Glucose ($\\text{C}_6\\text{H}_{12}\\text{O}_6$) :\n' +
       '$$6\\text{CO}_2 + 6\\text{H}_2\\text{O} \\xrightarrow[\\text{Chlorophylle}]{\\text{Lumière}} \\text{C}_6\\text{H}_{12}\\text{O}_6$$',
   );
-  assert.match(html, /<span class="math">C₆H₁₂O₆<\/span>/);
+  assert.match(html, /<span class="math"[^>]*>C₆H₁₂O₆<\/span>/);
   assert.match(
     html,
-    /<span class="math math-display">6CO₂ \+ 6H₂O →\(Lumière, Chlorophylle\) C₆H₁₂O₆<\/span>/,
+    /<span class="math math-display"[^>]*>6CO₂ \+ 6H₂O →\(Lumière, Chlorophylle\) C₆H₁₂O₆<\/span>/,
   );
   assert.doesNotMatch(html, /<em>|\$/); // plus d'italique parasite ni de $
   assert.equal(latexToText('\\frac{a+b}{c} \\times 100 \\approx 3{,}5\\%'), '(a+b)/c × 100 ≈ 3,5%');
@@ -68,7 +68,7 @@ test('formules : portée des exposants et caractères échappés conservés', ()
   assert.equal(latexToText('\\{1,2\\}'), '{1,2}');
   assert.equal(latexToText('\\text{user\\_name}'), 'user_name');
   assert.equal(latexToText('\\ce{NH4+ + OH- -> NH3 + H2O}'), 'NH₄⁺ + OH⁻ → NH₃ + H₂O');
-  assert.match(render('$a\\$b$'), /<span class="math">a\$b<\/span>/);
+  assert.match(render('$a\\$b$'), /<span class="math"[^>]*>a\$b<\/span>/);
   assert.doesNotMatch(render('$10 + taxe de 2$'), /class="math"/);
   assert.match(render('$5 \\text{ kg} \\times 3$'), /5 kg × 3/);
 });
@@ -77,4 +77,16 @@ test('beaucoup de « \\( » sans fermeture : rendu rapide', () => {
   const start = performance.now();
   render('\\('.repeat(20000));
   assert.ok(performance.now() - start < 2000);
+});
+
+test('formule : LaTeX d’origine gardé dans data-tex, échappé', () => {
+  const html = render('$\\tanh(x) < 1$ et $a"><img src=x onerror=alert(1)>$');
+  assert.match(html, /data-tex="\\tanh\(x\) &lt; 1"/);
+  assert.match(html, /data-tex="a&quot;&gt;&lt;img src=x onerror=alert\(1\)&gt;"/);
+  assert.doesNotMatch(html, /<img/);
+});
+
+test('LaTeX → texte : tanh, produit terme à terme, tilde (formules du LSTM)', () => {
+  assert.equal(latexToText('h_t = o_t \\odot \\tanh(c_t)'), 'hₜ = oₜ ⊙ tanh(cₜ)');
+  assert.equal(latexToText('\\tilde{c}_t'), 'c̃ₜ');
 });

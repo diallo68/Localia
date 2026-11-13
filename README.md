@@ -130,6 +130,6 @@ A series is a `.txt` or `.md` file. Questions are separated by a line containing
 
 ## License and citation
 
-Apache License 2.0, see [LICENSE](LICENSE). Bundled third-party code: [markdown-it](https://github.com/markdown-it/markdown-it) (MIT, `src/vendor/`).
+Apache License 2.0, see [LICENSE](LICENSE). Bundled third-party code: [markdown-it](https://github.com/markdown-it/markdown-it) and [KaTeX](https://katex.org) (MIT, `src/vendor/`).
 If you use Localia in research, please cite it using [CITATION.cff](CITATION.cff). Version history: [RELEASE_NOTES.md](RELEASE_NOTES.md).
 

@@ -4,13 +4,18 @@ function createMarkdown(markdownit) {
   const md = markdownit({ html: false, linkify: false, breaks: true });
   md.disable('image');
   md.inline.ruler.before('escape', 'math', mathRule);
+  // Formule : LaTeX d'origine dans data-tex, dessiné par KaTeX dans l'interface (renderer.js :
+  // drawFormulas) ; à l'intérieur, sa version texte, qui sert à la copie, à la lecture à voix
+  // haute et aux exports, et reste affichée si KaTeX ne sait pas dessiner la formule.
   md.renderer.rules.math = (tokens, i) => {
     const { content, meta } = tokens[i];
     const text = latexToText(content);
-    // Formule trop complexe pour du texte : montrée telle quelle, en code, plutôt que déformée.
-    if (text == null) return `<code>${md.utils.escapeHtml(meta.source)}</code>`;
     const kind = meta.display ? 'math math-display' : 'math';
-    return `<span class="${kind}">${md.utils.escapeHtml(text)}</span>`;
+    const tex = md.utils.escapeHtml(content);
+    // Formule trop complexe pour du texte : version texte en code, telle quelle, plutôt que déformée.
+    const inner =
+      text == null ? `<code>${md.utils.escapeHtml(meta.source)}</code>` : md.utils.escapeHtml(text);
+    return `<span class="${kind}" data-tex="${tex}">${inner}</span>`;
   };
   return (text) => md.render(text);
 }
@@ -118,6 +123,9 @@ const SYMBOLS = {
   mapsto: '↦',
   degree: '°',
   circ: '∘',
+  odot: '⊙',
+  otimes: '⊗',
+  oplus: '⊕',
   ldots: '…',
   dots: '…',
   cdots: '⋯',
@@ -190,6 +198,9 @@ const SYMBOLS = {
   sin: 'sin',
   cos: 'cos',
   tan: 'tan',
+  tanh: 'tanh',
+  sinh: 'sinh',
+  cosh: 'cosh',
   log: 'log',
   ln: 'ln',
   exp: 'exp',
@@ -267,7 +278,8 @@ function latexToText(latex) {
       .replace(/\\sqrt\s*\{([^{}]*)\}/g, (m, x, o, w) => scoped('√' + grouped(x), o, w, m.length))
       .replace(/\\(?:overline|bar)\s*\{([^{}]*)\}/g, (_, x) => x + '̅')
       .replace(/\\(?:vec)\s*\{([^{}]*)\}/g, (_, x) => x + '⃗')
-      .replace(/\\(?:hat)\s*\{([^{}]*)\}/g, (_, x) => x + '̂');
+      .replace(/\\(?:hat)\s*\{([^{}]*)\}/g, (_, x) => x + '̂')
+      .replace(/\\(?:tilde)\s*\{([^{}]*)\}/g, (_, x) => x + '̃');
     if (s === before) break;
   }
   s = s

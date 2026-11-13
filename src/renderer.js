@@ -320,8 +320,46 @@ function history() {
   }
 }
 const toHtml = createMarkdown(window.markdownit);
+// Formules dessinées par KaTeX (vendor/katex, sur cet ordinateur). La version texte écrite par
+// markdown.js est gardée de côté : elle revient le temps d'une copie, d'une lecture à voix haute
+// ou d'un export (withTextFormulas), et reste affichée si KaTeX ne sait pas lire la formule.
+const formulaText = new WeakMap();
+function drawFormulas(element) {
+  if (!window.katex) return;
+  for (const span of element.querySelectorAll('.math[data-tex]')) {
+    const drawn = document.createElement('span');
+    try {
+      // DOM construit par KaTeX (styles posés en JavaScript : permis par la CSP, style-src 'self').
+      window.katex.render(span.dataset.tex, drawn, {
+        displayMode: span.classList.contains('math-display'),
+        throwOnError: true,
+        output: 'htmlAndMathml',
+        trust: false,
+        strict: 'ignore',
+        maxSize: 20,
+        maxExpand: 200,
+      });
+    } catch {
+      continue;
+    }
+    formulaText.set(span, [...span.childNodes]);
+    span.replaceChildren(drawn);
+    span.classList.add('math-drawn');
+  }
+}
+function withTextFormulas(element, read) {
+  const spans = [...element.querySelectorAll('.math-drawn')];
+  const drawn = spans.map((span) => [...span.childNodes]);
+  spans.forEach((span) => span.replaceChildren(...formulaText.get(span)));
+  try {
+    return read();
+  } finally {
+    spans.forEach((span, k) => span.replaceChildren(...drawn[k]));
+  }
+}
 function showMarkdown(element, text) {
   element.innerHTML = toHtml(text);
+  drawFormulas(element);
   for (const link of element.querySelectorAll('a')) {
     link.title = link.getAttribute('href');
     link.onclick = (event) => event.preventDefault();
@@ -604,13 +642,16 @@ function answerActions(message, question, content) {
     return button;
   };
   action('Copier', 'Copier le texte de la réponse', async (button) => {
-    await navigator.clipboard.writeText(content.innerText.trim());
+    await navigator.clipboard.writeText(withTextFormulas(content, () => content.innerText.trim()));
     button.textContent = tr('Copié ✓');
     setTimeout(() => (button.textContent = tr('Copier')), 1500);
   });
   if ('speechSynthesis' in window)
     action('Écouter', 'Lire la réponse à voix haute (voix de l’ordinateur)', (button) =>
-      speak(button, content.innerText),
+      speak(
+        button,
+        withTextFormulas(content, () => content.innerText),
+      ),
     );
   action(
     'Exporter en PDF',
@@ -619,7 +660,7 @@ function answerActions(message, question, content) {
       const saved = await window.localia.exportPdf({
         title: current?.title || 'Réponse de Localia',
         question: question?.role === 'user' ? question.content : '',
-        html: content.innerHTML,
+        html: withTextFormulas(content, () => content.innerHTML),
         model: message.model || current?.model || '',
       });
       if (saved) notice(`${tr('Réponse enregistrée :')} ${saved}`);
@@ -632,7 +673,7 @@ function answerActions(message, question, content) {
       const saved = await window.localia.exportDocx({
         title: current?.title || 'Réponse de Localia',
         question: question?.role === 'user' ? question.content : '',
-        blocks: answerBlocks(content),
+        blocks: withTextFormulas(content, () => answerBlocks(content)),
         model: message.model || current?.model || '',
       });
       if (saved) notice(`${tr('Réponse enregistrée :')} ${saved}`);

@@ -4,7 +4,8 @@
 #   sélectionnés (autre graine, fiches « c-… ») ;
 # - calcul : 4 calculs et 1 reprise (altérée ou saine) sur les 360 documents riches en nombres, avec la phase A plus
 #   stricte et l'indication du professeur en phase B ;
-# - pages Internet : 200 fiches de 3 pages (fiches_web.py), nouveau type.
+# - pages Internet : 240 fiches de 3 pages (fiches_web.py), nouveau type ;
+# - domaines administration et entreprise (ajoutés le 13 nov., accord de l'auteur) : toutes les demandes de l'étape 1.
 # Fiches et jeux de données préparés tout de suite ; noyaux GPU lancés après la remise à zéro du quota Kaggle
 # (sam. 14 nov., 2 h 15). Journal : $W/ETAT. Ne pas relancer si $W/ETAT existe déjà (reprendre à la main).
 # Usage : nohup caffeinate -i zsh chaine_complement.sh > /dev/null 2>&1 &
@@ -61,9 +62,12 @@ EOF
 
 etat "=== début complément"
 # Fiches (sur le Mac, sans GPU)
-python3 -I $ICI/fabriquer_fiches.py $S $W/fiches-doc.jsonl --max 450 --plan globale:1.6,extraction:0.8,contrainte:1.0 --graine 20261114 --prefixe c- >> $W/ETAT || arret "fiches documents"
+python3 -I $ICI/fabriquer_fiches.py $S $W/fiches-doc-anciens.jsonl --max 450 --sauf-domaines administration,entreprise --plan globale:1.6,extraction:0.8,contrainte:1.0 --graine 20261114 --prefixe c- >> $W/ETAT || arret "fiches documents"
+# Domaines ajoutés le 13 nov. (administration, entreprise) : composition complète de l'étape 1
+python3 -I $ICI/fabriquer_fiches.py $S $W/fiches-doc-nouveaux.jsonl --domaines administration,entreprise --graine 20261115 --prefixe c- >> $W/ETAT || arret "fiches nouveaux domaines"
+cat $W/fiches-doc-anciens.jsonl $W/fiches-doc-nouveaux.jsonl > $W/fiches-doc.jsonl
 python3 -I $ICI/fiches_calcul.py $S $W/fiches-calcul.jsonl --calcul 4 --reprise --graine 20261114 --prefixe c- >> $W/ETAT || arret "fiches calcul"
-python3 -I $ICI/fiches_web.py $S $W/fiches-web.jsonl --max 200 --graine 20261114 >> $W/ETAT || arret "fiches web"
+python3 -I $ICI/fiches_web.py $S $W/fiches-web.jsonl --max 240 --graine 20261114 >> $W/ETAT || arret "fiches web"
 cat $W/fiches-doc.jsonl $W/fiches-calcul.jsonl $W/fiches-web.jsonl > $W/fiches-toutes.jsonl
 python3 -I - $W/fiches-toutes.jsonl <<'EOF'
 import random, sys  # mélange : chaque lot reçoit autant de fiches de chaque sorte
@@ -71,11 +75,11 @@ L = [l for l in open(sys.argv[1], encoding="utf-8").read().split("\n") if l.stri
 random.Random(20261114).shuffle(L)
 open(sys.argv[1], "w", encoding="utf-8").write("\n".join(L) + "\n")
 EOF
-for x in a b; do mkdir -p $K/donnees-v2c-$x; done
+for x in a b; do mkdir -p $K/donnees-v2d-$x; done
 partager $W/fiches-toutes.jsonl $W/fiches-lot
-for x in a b; do cp $W/fiches-lot-$x.jsonl $K/donnees-v2c-$x/fiches-v2c-$x.jsonl; done
+for x in a b; do cp $W/fiches-lot-$x.jsonl $K/donnees-v2d-$x/fiches-v2d-$x.jsonl; done
 for x in a b; do
-  donnees $K/donnees-v2c-$x localia-donnees-v2c-$x "Dial-bowe v2, complément, lot $x : fiches de documents sous licence ouverte (HAL, arXiv, Wikipédia, Banque mondiale) pour un professeur ouvert (projet Localia). Privé."
+  donnees $K/donnees-v2d-$x localia-donnees-v2d-$x "Dial-bowe v2, complément, lot $x : fiches de documents sous licence ouverte (HAL, arXiv, Wikipédia, Banque mondiale) pour un professeur ouvert (projet Localia). Privé."
 done
 etat "fiches prêtes : $(wc -l < $W/fiches-toutes.jsonl) ; attente du quota ($DEPART)"
 
@@ -85,11 +89,11 @@ while (( $(date +%s) < CIBLE )); do sleep 300; done
 
 # Phase A
 for x in a b; do
-  noyau localia-professeur-v2c-$x localia-donnees-v2c-$x
+  noyau localia-professeur-v2d-$x localia-donnees-v2d-$x
   etat "phase A lot $x lancée"
 done
-attendre localia-professeur-v2c-a $W/sortie-a &
-attendre localia-professeur-v2c-b $W/sortie-b &
+attendre localia-professeur-v2d-a $W/sortie-a &
+attendre localia-professeur-v2d-b $W/sortie-b &
 wait
 cat $W/sortie-a/phase_a.jsonl $W/sortie-b/phase_a.jsonl > $W/phase_a.jsonl 2>/dev/null
 [[ -s $W/phase_a.jsonl ]] || arret "phase A vide"
@@ -114,18 +118,18 @@ python3 -I $ICI/appliquer_web.py $W/phase_a.jsonl $W/fiches-web.jsonl $W/taches-
 etat "appliquer web : $(python3 -c "import json; d=json.load(open('$W/appliquer-web.json')); print(d['taches'], d['rejets'])")"
 cat $W/taches-doc.jsonl $W/taches-calcul.jsonl $W/taches-web.jsonl | grep -v '^$' > $W/taches-toutes.jsonl
 etat "tâches : $(wc -l < $W/taches-toutes.jsonl)"
-for x in a b; do mkdir -p $K/taches-v2c-$x; done
+for x in a b; do mkdir -p $K/taches-v2d-$x; done
 partager $W/taches-toutes.jsonl $W/taches-lot
-for x in a b; do cp $W/taches-lot-$x.jsonl $K/taches-v2c-$x/taches-v2c-$x.jsonl; done
+for x in a b; do cp $W/taches-lot-$x.jsonl $K/taches-v2d-$x/taches-v2d-$x.jsonl; done
 
 # Phase B
 for x in a b; do
-  donnees $K/taches-v2c-$x localia-taches-v2c-$x "Dial-bowe v2, complément, phase B, lot $x : demandes au format de Localia sur des documents sous licence ouverte (projet Localia). Privé."
-  noyau localia-professeur-v2c-$x-b localia-taches-v2c-$x
+  donnees $K/taches-v2d-$x localia-taches-v2d-$x "Dial-bowe v2, complément, phase B, lot $x : demandes au format de Localia sur des documents sous licence ouverte (projet Localia). Privé."
+  noyau localia-professeur-v2d-$x-b localia-taches-v2d-$x
   etat "phase B lot $x lancée"
 done
-attendre localia-professeur-v2c-a-b $W/sortie-a-b &
-attendre localia-professeur-v2c-b-b $W/sortie-b-b &
+attendre localia-professeur-v2d-a-b $W/sortie-a-b &
+attendre localia-professeur-v2d-b-b $W/sortie-b-b &
 wait
 cat $W/sortie-a-b/phase_b.jsonl $W/sortie-b-b/phase_b.jsonl > $W/phase_b.jsonl 2>/dev/null
 etat "phase B : $(wc -l < $W/phase_b.jsonl) réponses revenues"

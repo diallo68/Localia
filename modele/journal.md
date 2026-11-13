@@ -1051,3 +1051,19 @@ incohérences (236 pour 400), consignes (20 % gardées). Quota Kaggle de la sema
   14 h au total.
 - Testé hors ligne avec des phases A simulées : la chaîne va jusqu'au bout (3 673 tâches), et la vérification
   classe correctement les réponses simulées bonnes et mauvaises.
+
+## 13 novembre 2026, 9 h 45 : domaines administration et entreprise ajoutés (accord de l'auteur)
+
+- **[mesuré]** Écart constaté : Localia propose 8 métiers (`metiers.js` : enseignement, santé, juridique,
+  administration, finance, entreprise et commerce, ingénierie, communication). Les données de la v2 couvraient
+  enseignement, santé, droit, finance, ingénierie et communication, plus recherche et agriculture, mais **ni
+  l'administration ni l'entreprise**. La liste des domaines du plan (§5.1) ne correspondait donc pas à Localia.
+- `telecharger.py --domaines administration,entreprise` (nouvelle source `sp` : fiches Service-Public de la v1,
+  Licence Ouverte), puis `extraire_pages.cjs` et `selectionner.py`. **Sélection** : les 1 067 documents
+  précédents sont gardés à l'identique (copie dans `selection-avant-13nov.jsonl`), plus 114 documents en
+  administration (34 Service-Public, 36 HAL, 36 Wikipédia, 8 Banque mondiale) et 99 en entreprise (63 HAL,
+  35 Wikipédia, 1 Banque mondiale). Aucun 13-gramme commun avec G, G-test ou S2.
+- `chaine_complement.sh` relancée à 9 h 41 (la première, arrêtée, est dans `complement-annule-13nov/`). Jeux de
+  données Kaggle `localia-donnees-v2d-a` et `-b`. Fiches : 450 de documents anciens, 213 de documents nouveaux
+  (composition complète de l'étape 1), 431 de calcul (1 724 calculs, 431 reprises), 240 web (720 demandes).
+- **[supposé]** GPU : environ 5 h pour la phase A et environ 14 h pour la phase B, soit environ 20 h au total.

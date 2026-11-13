@@ -128,6 +128,8 @@ PERSONNES = {
     "ingenierie": "un ingénieur, un technicien de maintenance, un chef de chantier, un étudiant ingénieur, un bureau d'études",
     "sante": "un agent de santé communautaire, un responsable de programme de santé publique, un étudiant en santé publique",
     "droit": "un juriste, un étudiant en droit, un responsable des ressources humaines, un particulier, un élu local",
+    "administration": "un agent administratif, un secrétaire de mairie, un assistant de direction, un usager qui fait une démarche, un responsable des ressources humaines",
+    "entreprise": "un commerçant, un artisan, un créateur d'entreprise, un responsable des ventes, un gérant de PME",
     "finance": "un comptable, un gestionnaire de microfinance, un analyste, un commerçant, un étudiant en économie",
 }
 

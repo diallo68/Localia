@@ -11,6 +11,7 @@ rédaction sous contrainte. Environ 15 % des demandes sont dans l'autre langue q
 
 Usage : python3 -I fabriquer_fiches.py <dossier_sources> <sortie.jsonl> [--max N] [--sauf fiches_deja.jsonl]
          [--plan globale:1.6,extraction:0.8,contrainte:1.0] [--graine N] [--prefixe c-]
+         [--domaines a,b] [--sauf-domaines a,b]
 (--plan, --graine, --prefixe : complément du 14 nov., mêmes documents, autres demandes ; le préfixe distingue les
 identifiants de fiche de ceux de l'étape 1.)
 """
@@ -56,11 +57,14 @@ def main():
     if opt("--graine"):
         rnd.seed(int(opt("--graine")))
     prefixe = opt("--prefixe", "")
+    domaines = set(opt("--domaines").split(",")) if opt("--domaines") else None
+    sauf_domaines = set(opt("--sauf-domaines").split(",")) if opt("--sauf-domaines") else set()
     sauf = set()
     if "--sauf" in sys.argv:  # fiches déjà traitées (essai)
         sauf = {json.loads(l)["fiche"] for l in open(sys.argv[sys.argv.index("--sauf") + 1], encoding="utf-8")}
     docs = [json.loads(l) for l in open(os.path.join(sources, "selection.jsonl"), encoding="utf-8")]
-    docs = [d for d in docs if d["id"] not in sauf]
+    docs = [d for d in docs if d["id"] not in sauf and (domaines is None or d["domaine"] in domaines)
+            and d["domaine"] not in sauf_domaines]
     rnd.shuffle(docs)
     n = 0
     with open(sortie, "w", encoding="utf-8") as f:

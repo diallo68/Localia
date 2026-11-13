@@ -11,7 +11,8 @@ Les documents des jeux d'évaluation (exclusions-entrainement-v2.txt) sont écar
 décontamination par 13-grammes se fait après extraction du texte (decontamination.md).
 
 Reprise automatique : un document déjà présent dans le manifeste n'est pas retéléchargé.
-Usage : python3 -I telecharger.py <dossier_sortie> [source ...]   (sources : hal arxiv wiki bm ; défaut : toutes)
+Usage : python3 -I telecharger.py <dossier_sortie> [source ...] [--domaines a,b]
+(sources : hal arxiv wiki bm sp ; défaut : wiki bm hal arxiv ; sp : fiches Service-Public de la v1, ajouté le 13 nov.)
 """
 import hashlib
 import json
@@ -94,7 +95,24 @@ DOMAINES = {
         "wiki_en": ["financial accounting", "microfinance", "public finance", "inflation"],
         "bm": "finance microfinance", "bm_fr": 10, "bm_en": 5,
     },
+    # 13 nov. : les deux métiers de Localia qui manquaient (metiers.js : administration, entreprise et commerce).
+    "administration": {
+        "hal": ["1.shs.scipo"], "hal_fr": 30, "hal_en": 8,
+        "wiki_fr": ["fonction publique", "collectivité territoriale", "marché public", "procédure administrative",
+                    "état civil", "service public", "décentralisation", "archivistique"],
+        "wiki_en": ["public administration", "civil service", "public procurement", "local government"],
+        "bm": "public sector management administration", "bm_fr": 6, "bm_en": 3,
+        "sp": 70,  # fiches Service-Public de la v1 (démarches), Licence Ouverte
+    },
+    "entreprise": {
+        "hal": ["1.shs.gestion"], "hal_fr": 55, "hal_en": 12,
+        "wiki_fr": ["petite et moyenne entreprise", "plan d'affaires", "devis", "commerce de détail", "gestion des stocks",
+                    "relation client", "entrepreneuriat", "marketing"],
+        "wiki_en": ["small business", "business plan", "retail", "customer service"],
+        "bm": "small and medium enterprises entrepreneurship", "bm_fr": 8, "bm_en": 4,
+    },
 }
+SP_SOURCES = os.path.expanduser("~/localia-labo/modele-compact/donnees-entrainement/sources")
 
 LICENCES_HAL = [
     "https://creativecommons.org/licenses/by/4.0/",
@@ -318,6 +336,28 @@ def wiki(man, sortie):
             print(f"wiki {domaine} : fr {man.compte('wiki', domaine, 'fr')}, en {man.compte('wiki', domaine, 'en')}", flush=True)
 
 
+# ---------- Service-Public (fiches de la v1, déjà décontaminées pour la v1 : preparer_sources.py) ----------
+def sp(man, sortie):
+    for domaine, spec in DOMAINES.items():
+        vise = spec.get("sp", 0)
+        if not vise or man.compte("sp", domaine, "fr") >= vise:
+            continue
+        fiches = sorted(f for f in os.listdir(SP_SOURCES) if f.startswith("sp-F") and f.endswith(".md"))
+        random.shuffle(fiches)
+        for f in fiches:
+            if man.compte("sp", domaine, "fr") >= vise:
+                break
+            doc_id = f[:-3]
+            if man.exclu(doc_id):
+                continue
+            contenu = open(os.path.join(SP_SOURCES, f), "rb").read()
+            titre = contenu.decode("utf-8").split("\n", 1)[0].lstrip("# ").strip()
+            enregistrer(man, sortie, "sp", domaine, "fr", doc_id, contenu, ".md",
+                        {"titre": titre, "licence": "Licence Ouverte / Etalab 2.0",
+                         "url": f"https://www.service-public.fr/particuliers/vosdroits/{doc_id[3:]}"})
+        print(f"sp {domaine} : {man.compte('sp', domaine, 'fr')}/{vise}", flush=True)
+
+
 # ---------- Banque mondiale ----------
 def bm(man, sortie):
     for domaine, spec in DOMAINES.items():
@@ -359,11 +399,19 @@ def bm(man, sortie):
 def main():
     sortie = os.path.abspath(sys.argv[1])
     os.makedirs(sortie, exist_ok=True)
-    sources = sys.argv[2:] or ["wiki", "bm", "hal", "arxiv"]
+    args = sys.argv[2:]
+    if "--domaines" in args:  # 13 nov. : ne traiter que certains domaines (les autres sont complets)
+        k = args.index("--domaines")
+        gardes = args[k + 1].split(",")
+        for d in list(DOMAINES):
+            if d not in gardes:
+                del DOMAINES[d]
+        args = args[:k] + args[k + 2:]
+    sources = args or ["wiki", "bm", "hal", "arxiv"]
     man = Manifeste(sortie)
     for s in sources:
         try:
-            {"hal": hal, "arxiv": arxiv, "wiki": wiki, "bm": bm}[s](man, sortie)
+            {"hal": hal, "arxiv": arxiv, "wiki": wiki, "bm": bm, "sp": sp}[s](man, sortie)
         except Exception as e:  # noqa: BLE001
             print(f"!! source {s} interrompue : {e}", flush=True)
     print("=== fin", time.strftime("%H:%M"), flush=True)

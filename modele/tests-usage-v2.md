@@ -102,3 +102,97 @@ résultats.
 Si la v2 invente encore des résultats, ce sera un cas à ajouter aux données de la v3 (refuser d'inventer des mesures).
 
 **v2 :** à remplir.
+
+## 4. Étude bibliographique rédigée, avec et sans sources (13 nov. 2026)
+
+Réglages : domaine Enseignement / Recherche, mode avancé, profil neuf, Internet coupé ; essai lancé par script dans
+l'interface réelle (Playwright). Même consigne pour les trois essais ; seule la pièce jointe change. Réponses complètes
+gardées hors du dépôt (`~/Documents/essais-dial-bowe-mildiou/articles/`).
+
+> Rédige un article scientifique complet : une étude bibliographique sur les méthodes de détection et de prédiction du
+> mildiou par machine learning (ML) et deep learning (DL).
+>
+> Structure attendue :
+> 1. Titre, résumé (150 à 250 mots) et mots-clés.
+> 2. Introduction : le mildiou (agents, cultures touchées, enjeux) et l'intérêt du ML et du DL.
+> 3. Méthodes de détection à partir d'images : jeux de données, algorithmes (ML classique, CNN, détecteurs
+>    d'objets…), métriques, résultats rapportés.
+> 4. Méthodes de prédiction à partir de données météorologiques et agronomiques : modèles de référence, algorithmes
+>    ML et DL, métriques, résultats rapportés.
+> 5. Tableau comparatif des études citées : référence, culture, tâche, données, algorithmes, meilleur résultat.
+> 6. Discussion : apports, limites, et pistes de recherche.
+> 7. Conclusion.
+> 8. Références numérotées [1], [2]…, citées dans le texte.
+>
+> Règles :
+> - ne cite que des études réelles, et attribue chaque chiffre à la bonne étude ;
+> - n'invente aucun résultat ; si tu n'es pas sûr d'un chiffre ou d'une référence, dis-le.
+
+Pièces jointes :
+- 4a : aucune (connaissances du modèle seules) ;
+- 4b : deux articles en PDF, Chen et al. 2020 (PLOS ONE 15(3) e0230254, prédiction du mildiou de la vigne,
+  Bordeaux) et Zhang et al. 2022 (Frontiers in Plant Science 13:872107, YOLOv5-CA) ;
+- 4c : bibliographie vérifiée en Markdown (18 études vérifiées sur Crossref, tableau de synthèse, références IEEE).
+
+Un premier essai, avec une consigne qui demandait un tableau « à partir uniquement des documents joints », a été
+écarté : la consigne était fausse (rien n'était joint dans le cas sans document) et ne demandait pas d'article.
+
+### 4a. Sans document (91 s)
+
+**v1 : article présentable en apparence, mais fabriqué.**
+1. Les 3 références sont inventées (« Smith & Johnson 2022, Journal of Agricultural Engineering », « Chen & Wang
+   2023 », « Dubois et al. 2021, Plant Disease »), avec des chiffres inventés au tableau (98 %, R² = 0,85, 95 %).
+   Aucun doute exprimé, malgré la règle.
+2. Mildiou appelé « champignon » ; cultures touchées : pomme de terre, **maïs**, tomate. La référence [2] porte sur
+   les pertes de rendement du maïs.
+3. Phrase vide : CNN « couplés à des techniques de réduction de dimensionnalité comme la convolutional neural
+   network (CNN) ».
+4. Aucune citation [n] dans le texte ; résultats généraux affirmés sans source.
+5. Structure suivie (titre, résumé, sections, tableau, références).
+
+### 4b. Avec les deux PDF (199 s)
+
+Localia a transmis des extraits : Chen p. 1, 2, 9, 20 sur 20 ; Zhang p. 1 à 7, 10, 11 sur 12. La page 8 de Chen
+(AUC 0,86, gradient boosting) n'est pas transmise.
+
+**v1 : appuyé sur les documents, avec des erreurs de chiffres et une forme incomplète.**
+- Justes : *Plasmopara viticola* qualifié d'oomycète ; Bordeaux, 10 traitements en moyenne en 2013 (10,1 dans
+  Chen) ; LASSO, forêt aléatoire, gradient boosting comparés aux GLM ; la date d'apparition pèse plus que la météo ;
+  Zhang : précision 85,59 %, 58,82 images/s, mAP 89,55 %, comparaison avec Faster R-CNN, YOLOv4, YOLOv5.
+- Faux : « précision de 88,82 % avec augmentation de données » (chiffre absent de Zhang) ; « précision de 83,70 % »
+  (c'est le rappel) ; F1 donné comme métrique de Chen (Chen utilise l'AUC) ; « GML » ; « maladie des vignerons ».
+- Forme : pas de section Références, aucune citation [n] ; Chen deux fois dans le tableau ; titre « Bibliographie… ».
+- Par rapport au premier essai (consigne écartée) : plus de boucle de répétition ni d'auteurs inventés.
+
+### 4c. Avec la bibliographie vérifiée (190 s)
+
+**v1 : fiable sur les faits, faible comme article.**
+- Justes : oomycète et non champignon ; *P. infestans* (pomme de terre, tomate) et *P. viticola* (vigne) bien
+  distingués ; tableau de 18 lignes identique à la source (contrôle automatique) ; deux constats repris : écart entre
+  laboratoire (≈ 99 %) et champ, absence de comparaison LSTM / ML classique sur séries météo.
+- Défauts : pas de section Références alors que les 18 références complètes étaient dans le fichier ; aucune
+  citation [n] ; chiffres mal regroupés (« F1 < 0,7 à 0,9 » ; « exactitudes équilibrées de 0,8 à 0,87 » mélange
+  [14] et [15] et deux métriques) ; contresens : forêt aléatoire et C5.0 présentés comme « modèles statistiques
+  classiques » qui surpassent « les approches purement statistiques » ; texte qui recopie le tableau sans analyser.
+
+### Bilan v1
+
+| | Faits | Références | Structure |
+|---|---|---|---|
+| 4a. Sans document | inventés | 3 inventées | suivie |
+| 4b. Avec PDF | 2 chiffres faux | absentes | incomplète |
+| 4c. Avec bibliographie | justes | absentes | suivie |
+
+Plus le modèle a de sources, plus il est fiable. Sans source, il fabrique des références avec assurance. Dans aucun
+cas il ne produit de liste de références citées par [n].
+
+**À regarder sur la v2 :**
+- 4a : dit-elle qu'elle ne peut pas citer de références sûres sans document ou Internet, ou en invente-t-elle encore ?
+  Comme pour le test 3, le plan v2 n'entraîne pas ce cas sans document ; s'il persiste, l'ajouter aux données v3
+  (refuser d'inventer des références et des mesures).
+- 4b et 4c : citations [n] et section Références (citation des sources, plan v2) ; chiffre attribué à la bonne étude
+  et à la bonne métrique (extraction, calcul).
+- 4b dépend aussi de Localia : choix des extraits (pages de résultats non transmises). Garder la même version de
+  Localia pour comparer v1 et v2, ou noter le changement.
+
+**v2 :** à remplir.

@@ -10,6 +10,9 @@ atteindre la composition du plan (§5.2) : demandes globales, extraction avec pa
 rédaction sous contrainte. Environ 15 % des demandes sont dans l'autre langue que le document.
 
 Usage : python3 -I fabriquer_fiches.py <dossier_sources> <sortie.jsonl> [--max N] [--sauf fiches_deja.jsonl]
+         [--plan globale:1.6,extraction:0.8,contrainte:1.0] [--graine N] [--prefixe c-]
+(--plan, --graine, --prefixe : complément du 14 nov., mêmes documents, autres demandes ; le préfixe distingue les
+identifiants de fiche de ceux de l'étape 1.)
 """
 import json
 import os
@@ -47,7 +50,12 @@ def nombre(moyenne):
 
 def main():
     sources, sortie = sys.argv[1], sys.argv[2]
-    maxi = int(sys.argv[sys.argv.index("--max") + 1]) if "--max" in sys.argv else None
+    opt = lambda k, d=None: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else d  # noqa: E731
+    maxi = int(opt("--max")) if opt("--max") else None
+    plan = [(k, float(v)) for k, v in (x.split(":") for x in opt("--plan").split(","))] if opt("--plan") else PLAN
+    if opt("--graine"):
+        rnd.seed(int(opt("--graine")))
+    prefixe = opt("--prefixe", "")
     sauf = set()
     if "--sauf" in sys.argv:  # fiches déjà traitées (essai)
         sauf = {json.loads(l)["fiche"] for l in open(sys.argv[sys.argv.index("--sauf") + 1], encoding="utf-8")}
@@ -60,13 +68,13 @@ def main():
             lu = json.load(open(os.path.join(sources, "pages", d["id"] + ".json"), encoding="utf-8"))
             v = vue(lu["pages"])
             demandes = []
-            for t, moy in PLAN:
+            for t, moy in plan:
                 for _ in range(nombre(moy)):
                     autre = rnd.random() < 0.15
                     demandes.append({"type": t, "langue": ({"fr": "en", "en": "fr"}[d["langue"]] if autre else d["langue"])})
             if not demandes:
                 demandes = [{"type": "globale", "langue": d["langue"]}]
-            f.write(json.dumps({"fiche": d["id"], "domaine": d["domaine"], "langue_doc": d["langue"], "titre": d["titre"],
+            f.write(json.dumps({"fiche": prefixe + d["id"], "doc": d["id"], "domaine": d["domaine"], "langue_doc": d["langue"], "titre": d["titre"],
                                 "nb_pages": len(lu["pages"]), "pages_vues": [p["number"] for p in v],
                                 "vue": v, "demandes": demandes}, ensure_ascii=False) + "\n")
             n += 1

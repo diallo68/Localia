@@ -1031,3 +1031,23 @@ incohérences (236 pour 400), consignes (20 % gardées). Quota Kaggle de la sema
     « alteree » : les deux valeurs et leurs pages. Tout vient des données vérifiées par programme. `verifier_v2.py`
     rejette une réponse qui mentionne l'indication. Testé hors ligne : 942 tâches, dont 589 avec indication.
 - Rien n'a été lancé. Le quota Kaggle revient le sam. 14 nov. vers 2 h.
+
+## 13 novembre 2026, 8 h : complément de la v2 préparé (accord de l'auteur : « comble les manques samedi »)
+
+- Nouveau type **pages Internet** : `fiches_web.py` (3 extraits de documents sous licence ouverte, avec leur vraie
+  adresse, dans le format du bloc Internet de Localia : `main.cjs`, `webSourcesBlock`), `appliquer_web.py`
+  (contrôles par programme et tâches) et contrôles dans `verifier_v2.py`. Demandes : réponse dans les pages,
+  réponse absente des pages, sources concordantes ou contradictoires (phrase insérée par programme). Pages de
+  références écartées ; les appels de note « [12] » restants sont écrits « (12) », pour ne pas se confondre avec
+  les numéros de sources.
+- `verifier_v2.py` : « se contredisent » est désormais reconnu comme signal de contradiction (2 réponses de
+  l'étape 2 sur 78 concernées). Formules d'absence propres aux pages web ajoutées.
+- Options `--plan`, `--graine`, `--prefixe` (`fabriquer_fiches.py`) et `--calcul`, `--reprise` (`fiches_calcul.py`).
+  Champ `doc` dans les fiches.
+- Contrôle de séparation : aucun des 80 documents de G, G-test et S2 n'est dans la sélection de 1 067 documents.
+- `chaine_complement.sh`, lancée le 13 nov. à 7 h 47. Elle a produit 450 fiches de documents (1 556 demandes),
+  360 fiches de calcul (1 440 calculs, 360 reprises) et 200 fiches web (600 demandes). GPU lancé le sam. 14 nov. à
+  2 h 15. Estimation [supposé] : environ 4 h de GPU pour la phase A et environ 10 h pour la phase B, soit environ
+  14 h au total.
+- Testé hors ligne avec des phases A simulées : la chaîne va jusqu'au bout (3 673 tâches), et la vérification
+  classe correctement les réponses simulées bonnes et mauvaises.

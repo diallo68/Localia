@@ -13,7 +13,9 @@ Demandes par document :
   - "injection" : le professeur écrit une phrase adressée à une IA, insérée ensuite dans une page par le programme,
     et une question normale sur le document.
 
-Usage : python3 -I fiches_calcul.py <dossier_sources> <sortie.jsonl>
+Usage : python3 -I fiches_calcul.py <dossier_sources> <sortie.jsonl> [--calcul 3] [--reprise] [--graine N] [--prefixe c-]
+(--reprise : complément du 14 nov., une seule demande « reprise » par document, altérée 60 % ou saine 40 %, sans
+injection ; le préfixe distingue les identifiants de fiche.)
 """
 import collections
 import json
@@ -66,6 +68,10 @@ def alterer(tok, toks_doc):
 
 def main():
     sources, sortie = sys.argv[1], sys.argv[2]
+    opt = lambda k, d=None: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else d  # noqa: E731
+    n_calcul, prefixe = int(opt("--calcul", 3)), opt("--prefixe", "")
+    if opt("--graine"):
+        rnd.seed(int(opt("--graine")))
     docs = [json.loads(l) for l in open(os.path.join(sources, "selection.jsonl"), encoding="utf-8")]
     rnd.shuffle(docs)
     n, bilan = 0, collections.Counter()
@@ -79,10 +85,12 @@ def main():
             if sum(1 for t in toks if len(re.sub(r"\D", "", t)) >= 2) < NOMBRES_MIN:
                 continue
             autre = lambda: {"fr": "en", "en": "fr"}[d["langue"]] if rnd.random() < 0.15 else d["langue"]  # noqa: E731
-            demandes = [{"type": "calcul", "langue": autre()} for _ in range(3)]
+            demandes = [{"type": "calcul", "langue": autre()} for _ in range(n_calcul)]
             cycle = ["alteree", "saine", "injection"]
             k = n % 3
-            for t in (cycle[k], cycle[(k + 1) % 3]):
+            choix = ([("alteree" if rnd.random() < 0.6 else "saine")] if "--reprise" in sys.argv
+                     else (cycle[k], cycle[(k + 1) % 3]))
+            for t in choix:
                 x = {"type": t, "langue": autre()}
                 if t != "injection":
                     x["page_insertion"] = rnd.choice([p["number"] for p in pages]) if len(pages) > 1 else None
@@ -91,7 +99,7 @@ def main():
                 demandes.append(x)
             for x in demandes:
                 bilan[x["type"]] += 1
-            f.write(json.dumps({"fiche": d["id"], "domaine": d["domaine"], "langue_doc": d["langue"], "titre": d["titre"],
+            f.write(json.dumps({"fiche": prefixe + d["id"], "doc": d["id"], "domaine": d["domaine"], "langue_doc": d["langue"], "titre": d["titre"],
                                 "nb_pages": len(pages), "pages_vues": [p["number"] for p in pages], "vue": pages,
                                 "demandes": demandes}, ensure_ascii=False) + "\n")
             n += 1

@@ -38,7 +38,7 @@ for (const a of lire(phaseA)) {
     rejet('phase A sans résultat');
     continue;
   }
-  const original = JSON.parse(fs.readFileSync(path.join(sources, 'pages', a.fiche + '.json'), 'utf8'));
+  const original = JSON.parse(fs.readFileSync(path.join(sources, 'pages', (fiche.doc || a.fiche) + '.json'), 'utf8'));
   r.demandes.forEach((d, i) => {
     const modif = pagesModif && path.join(pagesModif, `${a.fiche}#${i}.json`);
     const lu = modif && fs.existsSync(modif) ? JSON.parse(fs.readFileSync(modif, 'utf8')) : original;

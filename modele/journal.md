@@ -986,3 +986,48 @@ Corrections tirées du rapport 2.4 et du pilote 2.5 :
 - Accord de l'auteur. Relecture de Codex (aucun bloquant ; 3 points corrigés : double clic d'installation, gabarit à réflexion conditionnelle, historique tronqué commençant par une réponse), commit d8de20a. Tag v0.7.6 sur e93ec30, CI verte du premier coup (4 systèmes), 16 fichiers, publiée en « Latest ».
 - README, guide et rapport : le défaut des sauts de ligne est corrigé dans la 0.7.6.
 
+
+### 12 novembre 2026, 20 h : Dial-bowe v2, étape 1 (exemples sur documents) terminée
+
+- Accord de l'auteur. Scripts dans `modele/donnees-v2/` (non commités) ; données hors dépôt dans `~/localia-labo/modele-compact/donnees-v2/` (`sources/` : 1 160 documents téléchargés, 1 067 gardés ; `etape1/` : fiches, tâches, réponses, `exemples-documents.jsonl`, `verification.json`, `ETAT`).
+- Sources sous licence ouverte, 8 domaines de Localia : HAL (CC-BY, CC-BY-SA, CC0, Etalab), arXiv (CC-BY, CC-BY-SA), Wikipédia FR/EN (oldid noté), Banque mondiale (CC BY 3.0 IGO [à vérifier]). Décontamination : 13-grammes contre G, G-test et S2.
+- Professeur : Qwen3.6-35B-A3B Q4_K_M sur Kaggle (2×T4). Phase A (demandes) : 1 043 fiches, 4 235 demandes, 4 032 utilisables. Phase B (réponses, sans réflexion) : 4 032 réponses ; 1er essai planté (ligne coupée par `splitlines()` sur U+2028), relancé après correction de `chaine_etape1.sh`.
+- **[mesuré]** Vérification automatique : **2 772 exemples gardés** (69 %) — globale 918/1 354, extraction 506/810, partielle 631/811, abstention 394/486, contrainte 323/571. FR 1 743, EN 1 029 ; 331 à 371 par domaine. Principales causes de rejet : page inventée 298, aucune page citée 213, mots clés absents 205, `mots_max` non tenu 135.
+- **[mesuré]** GPU Kaggle : phase A environ 4,3 h, phase B environ 13,2 h (6,5 h par lot, plus que les 8 h prévues au total), essais et plantage environ 1 h ; environ 18,5 h sur les 27 h du 12 nov.
+- Prochaines étapes (accord de l'auteur à demander) : réponses de rappel jugées (base), exemples de calcul et d'incohérence, type « pages Internet », puis SFT v2.
+
+### 13 novembre 2026, 0 h 30 : Dial-bowe v2, étape 2 (calcul, incohérences, rappel), premier passage
+
+- Accord de l'auteur (« lance les étapes 1 et 2 »). Scripts dans `modele/donnees-v2/` (non commités) : `fiches_calcul.py`, `appliquer_calcul.py`, `calculs.cjs`, `rappel_kaggle.py`, `verifier_rappel.py`, `chaine_etape2.sh`, `chaine_rappel.sh`, `chaine_reprise.sh` ; `taches_v2.cjs`, `verifier_v2.py` et `professeur_v2_kaggle.py` étendus. Données dans `~/localia-labo/modele-compact/donnees-v2/etape2/`.
+- Incohérences : le professeur choisit un fait chiffré page X et écrit une phrase qui le reprend ; le programme l'insère page Y, avec la bonne valeur (« saine ») ou une valeur changée (« alteree »). Les deux documents contiennent une phrase ajoutée ; seul le chiffre diffère. Injections : phrase piégée écrite par le professeur, insérée par programme dans la page de la réponse.
+- **[mesuré]** Calcul et incohérences (360 documents ≤ 30 000 caractères, 1 783 demandes) : 795 tâches après contrôle par programme, **425 exemples gardés** (calcul 199/470, injection 129/171, altérée 42/87, saine 55/67). Le professeur écrit beaucoup de « calculs » sans opération (318) et se trompe souvent de page.
+- **[mesuré]** Rappel : 240 lots, 1 578 demandes lues (654 perdues : clé nommée autrement), deux réponses de la base par demande, notes du professeur : **786 gardés** (calcul 0,84, consignes 0,20, explication 0,32, rédaction 0,64, raisonnement 0,52). La base tient mal les consignes de forme (mots_max, puces, paragraphes) : c'est le défaut IFEval déjà mesuré.
+- **[mesuré]** Défaut de Localia : `verify.js` (`checkCalculations`) ne contrôle pas une égalité suivie d'une citation de page (« 1 250 + 340 = 1 600 (p. 2) » passe). Contourné dans `verifier_v2.py` (citations retirées avant le contrôle) ; Localia non modifiée.
+- Reprise lancée le 13 nov. vers 0 h 30 (sans nouvelle phase A) : 654 demandes de rappel, 264 tâches de calcul et de reprise récupérées par programme. GPU Kaggle estimé : environ 24,5 h sur 27 avant la reprise.
+
+## 13 novembre 2026, 1 h 15 : étape 2, rattrapage terminé
+
+Rappel relancé (demandes perdues à cause des variantes de clé) et 264 tâches de calcul en plus. Exemples gardés :
+calcul et incohérences 588 (calcul 223, injection 129, altérée 82, saine 154) ; rappel 1 085 (calcul 518,
+consignes 139, explication 100, rédaction 173, raisonnement 78, code 77). Avec l'étape 1 (2 769) : 4 442 exemples
+pour environ 6 400 prévus. Manques : calcul sur documents (223 pour 800 ; 222 réponses sans égalité écrite),
+incohérences (236 pour 400), consignes (20 % gardées). Quota Kaggle de la semaine presque épuisé (environ 26 h sur 27).
+
+## 13 novembre 2026, 2 h 30 : causes des rejets du calcul, scripts corrigés (sans GPU)
+
+- **[mesuré]** Les « réponses sans égalité » viennent surtout de la phase A : sur 525 tâches de calcul, 101 n'étaient
+  que des lectures (« 189 », « 40 / 100 * 100 ») et 87 d'entre elles ont été rejetées. Sur les vrais calculs (424),
+  le professeur écrit l'égalité dans 88 % des cas.
+- **[mesuré]** Phase A (1 075 demandes de calcul, 2e passage) : 318 sans opération, 288 opérandes introuvables. Ces
+  opérandes sont souvent recopiés avec leur unité ou en toutes lettres (« 2,1 millions », « $43,792 », « 120h », « dix »).
+- Corrections (non commitées) :
+  - `appliquer_calcul.py` : nombre extrait de l'opérande, avec le multiplicateur s'il est écrit en toutes lettres
+    (millions, milliards, mille ; pas « m » ni « k », ambigus). Rejet des calculs dont le résultat est l'un des
+    opérandes. Page réelle du nombre reportée dans l'opérande. Sur la même phase A, 458 calculs passent au lieu de 411.
+  - `professeur_v2_kaggle.py`, phase A : nombres en chiffres seulement, au moins une opération dans l'expression,
+    pas de question dont la réponse est déjà écrite dans le document.
+  - `taches_v2.cjs` et phase B : **indication vue par le professeur seul**, ajoutée à sa consigne système mais
+    jamais à l'exemple. Pour le calcul : nombres, pages et résultat attendu, avec l'égalité à écrire en entier. Pour
+    « alteree » : les deux valeurs et leurs pages. Tout vient des données vérifiées par programme. `verifier_v2.py`
+    rejette une réponse qui mentionne l'indication. Testé hors ligne : 942 tâches, dont 589 avec indication.
+- Rien n'a été lancé. Le quota Kaggle revient le sam. 14 nov. vers 2 h.

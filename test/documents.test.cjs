@@ -10,7 +10,10 @@ const {
   deleteDocument,
   pruneDocuments,
   documentContext,
+  documentsContext,
+  looksLikeReferences,
   printedPages,
+  wantsOverview,
 } = require('../src/documents.cjs');
 const { pdfFixture } = require('./pdf-fixture.cjs');
 test('PDF réel : extraction de chaque page, persistance et contexte sourcé', async () => {
@@ -209,4 +212,94 @@ test('plusieurs documents joints : extraits nommés, couverture par document', (
   // Un seul document : même résultat que documentContext.
   const one = documentsContext([b], 'pénalité', 3000);
   assert.match(one.text, /^Document : facture\.pdf/);
+});
+
+// Bibliographie au format des revues (PLOS ONE, Frontiers) : ni [n] ni « (2020). ».
+const PLOS_REFERENCES =
+  '13. Viel JF, Challier B. Bladder cancer among French farmers. Occup Environ Med. 1995; 52: 587-592. https://doi.org/10.1136/oem.52.9.587 ' +
+  '14. Chen M, Brun F, Raynal M, Makowski D. Timing of grape downy mildew onset. Plant Dis. 2019; 103: 1-10. https://doi.org/10.1094/PDIS ' +
+  '15. Gessler C, Pertot I, Perazzolli M. Plasmopara viticola: a review. Phytopathol Mediterr. 2011; 50: 3-44. https://doi.org/10.14601/x ' +
+  '16. Rossi V, Caffi T, Gobbin D. Contribution of molecular studies. Eur J Plant Pathol. 2013; 135: 641-654.';
+const FRONTIERS_REFERENCES =
+  'Bochkovskiy, A., Wang, C. Y., and Liao, H. Y. M. (2020). YOLOv4: optimal speed. arXiv. doi: 10.48550/arXiv.2004.10934 ' +
+  'Hu, J., Shen, L., and Sun, G. (2018). Squeeze-and-excitation networks. CVPR. doi: 10.1109/CVPR.2018.00745 ' +
+  'Ren, S., He, K., Girshick, R., and Sun, J. (2017). Faster R-CNN. IEEE TPAMI 39, 1137-1149. doi: 10.1109/TPAMI.2016.2577031';
+
+test('bibliographie au format des revues reconnue ; texte de résultats avec des années, non', () => {
+  assert.ok(looksLikeReferences(PLOS_REFERENCES));
+  assert.ok(looksLikeReferences(FRONTIERS_REFERENCES));
+  assert.ok(
+    !looksLikeReferences(
+      'Results. Between 2010 and 2018, onset varied across years: early in 2012 and 2016, late in 2011 and 2017. ' +
+        'The highest AUC (0.86) is obtained with gradient boosting, as in Chen et al. https://doi.org/10.1371/journal.pone.0230254',
+    ),
+  );
+});
+
+test('demande sur tout le document : détectée (résumé, synthèse, bibliographie, état de l’art)', () => {
+  for (const q of [
+    'Résume ce document',
+    'Fais une synthèse des deux articles',
+    'Rédige une étude bibliographique sur le mildiou',
+    'Rédige un état de l’art',
+    'Write a literature review of these papers',
+  ])
+    assert.ok(wantsOverview(q), q);
+  for (const q of ['Quelle AUC obtient le meilleur modèle ?', 'Combien de parcelles ?', undefined])
+    assert.ok(!wantsOverview(q), String(q));
+});
+
+test('pages de références écartées même si leurs titres partagent les mots de la question', () => {
+  const filler = (k) => `Page ${k}. Le modèle est entraîné sur des parcelles de vigne. `.repeat(20);
+  const doc = {
+    name: 'chen.pdf',
+    emptyPages: [],
+    pages: [
+      {
+        number: 1,
+        text: 'Résumé. Prédiction du mildiou de la vigne par apprentissage automatique.',
+      },
+      ...Array.from({ length: 6 }, (_, i) => ({ number: i + 2, text: filler(i + 2) })),
+      { number: 8, text: 'Results. The highest AUC (0.86) is obtained with gradient boosting.' },
+      { number: 9, text: PLOS_REFERENCES },
+    ],
+  };
+  const question =
+    'Pour chaque étude, donne les auteurs, l’année, le titre, la revue, la culture et le meilleur résultat (mildiou, vigne).';
+  const plain = documentContext(doc, question, 600);
+  assert.ok(!plain.pages.includes(9), 'références non transmises');
+  const overview = documentContext(doc, question + ' Fais une bibliographie.', 600, {
+    summary: true,
+  });
+  assert.ok(
+    overview.pages.includes(8) && !overview.pages.includes(9),
+    'résultats, sans références',
+  );
+  const asked = documentContext(doc, 'Donne la liste des références citées par l’article.', 600);
+  assert.ok(asked.pages.includes(9), 'références transmises quand la question les demande');
+});
+
+test('demande sur plusieurs documents : chacun reçoit sa part', () => {
+  const english = (k) =>
+    `Grape downy mildew detection with deep learning, machine learning, YOLO detection page ${k}. `.repeat(
+      15,
+    );
+  const french = (k) =>
+    `Page ${k}. Observations des parcelles bordelaises et traitements. `.repeat(20);
+  const a = {
+    name: 'a.pdf',
+    emptyPages: [],
+    pages: Array.from({ length: 8 }, (_, i) => ({ number: i + 1, text: english(i + 1) })),
+  };
+  const b = {
+    name: 'b.pdf',
+    emptyPages: [],
+    pages: Array.from({ length: 8 }, (_, i) => ({ number: i + 1, text: french(i + 1) })),
+  };
+  const question = 'Rédige une étude bibliographique : detection, deep learning, machine learning.';
+  const plain = documentsContext([a, b], question, 6000);
+  const fair = documentsContext([a, b], question, 6000, { summary: true });
+  const count = (ctx, name) => (ctx.text.match(new RegExp(`\\[${name} — Page`, 'g')) || []).length;
+  assert.ok(count(plain, 'b.pdf') < count(plain, 'a.pdf'), 'sans équilibre, a.pdf prend la place');
+  assert.ok(Math.abs(count(fair, 'a.pdf') - count(fair, 'b.pdf')) <= 1, 'part égale');
 });

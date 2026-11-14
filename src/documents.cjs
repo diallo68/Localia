@@ -187,14 +187,60 @@ function looksLikeContents(text) {
     lines.length >= 6 && lines.filter((l) => /\s\d{1,3}\s*$/.test(l)).length / lines.length > 0.5
   );
 }
-// Bibliographie : références numérotées ou datées, dont les titres contiennent ces mots.
-const looksLikeReferences = (text) =>
-  (text.match(/\[\d{1,3}\]/g) || []).length >= 3 ||
-  (text.match(/\(\d{4}[a-z]?\)\./g) || []).length >= 3;
+// Bibliographie : références numérotées ou datées, dont les titres contiennent ces mots ; ou
+// beaucoup d'années avec des liens DOI ou des noms suivis d'initiales (« Viel JF, », « Zhang, Z., »),
+// comme dans les revues (PLOS ONE, Frontiers…).
+function looksLikeReferences(text) {
+  const count = (pattern) => (text.match(pattern) || []).length;
+  if (count(/\[\d{1,3}\]/g) >= 3 || count(/\(\d{4}[a-z]?\)\./g) >= 3) return true;
+  const years = count(/\b(?:19|20)\d\d\b/g);
+  const links = count(/\bdoi\b|https?:\/\//gi);
+  const authors = count(/\b[A-Z][a-zà-ÿ'-]+,? (?:[A-Z]{1,3}|(?:[A-Z]\.\s?){1,3})[,.]/g);
+  return years >= 4 && (links >= 3 || authors >= 4);
+}
+// La question porte sur la bibliographie du document lui-même : ses pages de références passent
+// alors en premier (leurs mots, noms et titres, ne ressemblent pas à la question).
+const asksForReferences = (question) =>
+  /\b(liste|section|page)s? (de|des) r[ée]f[ée]rences|r[ée]f[ée]rences (cit[ée]es|bibliographiques) (par|dans|du|de ce)|bibliographie (du|de ce|de l)|\bdoi\b|reference list|works cited|cited (by|in) the/i.test(
+    question,
+  );
+// Demande sur l'ensemble du document (résumé, synthèse, revue de la littérature, état de l'art) :
+// aucun passage n'est désigné par les mots de la question.
+const wantsOverview = (question) =>
+  /\b(r[ée]sum|synth[eè]s|summar|overview|bibliograph|revue (de|des) (la )?litt[ée]rature|literature review)|[ée]tat de l.art/i.test(
+    String(question || ''),
+  );
+// Titre de section de résultats ou de discussion, en début de ligne (« 3. Results », « Résultats »).
+const RESULTS_HEADING =
+  /^\s*(\d+(\.\d+)*\.?\s*)?(results?|resultats|results and discussion|discussion|experiments?|experimental results)\b/m;
 function summaryBonus(normalized, text) {
   if (looksLikeContents(text) || looksLikeReferences(text)) return 0;
   for (const [pattern, bonus] of SUMMARY_SECTIONS) if (pattern.test(normalized)) return bonus;
-  return 0;
+  return RESULTS_HEADING.test(normalized) ? 4 : 0;
+}
+// Score de chaque passage : BM25, plus le bonus des sections de résumé pour une demande sur tout
+// le document. Les pages de références passent en dernier, sauf si la question les demande : leurs
+// titres d'articles partagent les mots de la question (« auteurs », « revue », « année »…).
+const REFERENCES_SCORE = -1e6;
+const REFERENCES_BONUS = 6;
+function scoreChunks(chunks, question, summary) {
+  const scores = scorePassages(
+    chunks.map((c) => c.text),
+    question,
+    'bm25',
+  );
+  const wanted = asksForReferences(question);
+  chunks.forEach((c, i) => {
+    if (looksLikeReferences(c.text)) {
+      c.score = wanted ? scores[i] + REFERENCES_BONUS : REFERENCES_SCORE;
+      return;
+    }
+    const normalized = c.text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    c.score = scores[i] + (summary ? summaryBonus(normalized, c.text) : 0);
+  });
 }
 
 // Extraits les plus pertinents pour la question, dans la limite de « budget » caractères.
@@ -208,18 +254,7 @@ function documentContext(doc, question, budget = 10000, { summary = false } = {}
       chunks.push({ doc, page: page.number, offset, text, previous, twins: [] });
     }
   // Classement BM25 (racines, mots vides retirés, mots rares pondérés), comme pour les projets.
-  const scores = scorePassages(
-    chunks.map((c) => c.text),
-    question,
-    'bm25',
-  );
-  chunks.forEach((c, i) => {
-    const normalized = c.text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-    c.score = scores[i] + (summary ? summaryBonus(normalized, c.text) : 0);
-  });
+  scoreChunks(chunks, question, summary);
   const { partial, chosen: selected } = selectPassages(chunks, budget, 40);
   const printed = doc.web || doc.word ? new Map() : printedPages(doc);
   const same = (c) =>
@@ -257,18 +292,19 @@ function documentsContext(docs, question, budget = 10000, { summary = false } = 
         const previous = offset ? chunks.at(-1) : null;
         chunks.push({ doc, page: page.number, offset, text, previous, twins: [] });
       }
-  const scores = scorePassages(
-    chunks.map((c) => c.text),
-    question,
-    'bm25',
-  );
-  chunks.forEach((c, i) => {
-    const normalized = c.text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-    c.score = scores[i] + (summary ? summaryBonus(normalized, c.text) : 0);
-  });
+  scoreChunks(chunks, question, summary);
+  // Demande sur l'ensemble des documents : chacun reçoit une part égale, ses meilleurs passages
+  // d'abord, en alternant. Sinon un document dont les mots ressemblent davantage à la question
+  // (même langue, mots du domaine) prend toute la place et l'autre n'envoie que son début.
+  if (summary) {
+    const ranks = new Map();
+    for (const doc of docs)
+      chunks
+        .filter((c) => c.doc === doc && c.score > REFERENCES_SCORE)
+        .sort((a, b) => b.score - a.score)
+        .forEach((c, k) => ranks.set(c, k));
+    for (const c of chunks) if (ranks.has(c)) c.score = -ranks.get(c);
+  }
   const { partial, chosen: selected } = selectPassages(chunks, budget, 40 * docs.length);
   const printed = new Map(docs.map((d) => [d, d.web || d.word ? new Map() : printedPages(d)]));
   const label = (c) =>
@@ -349,5 +385,7 @@ module.exports = {
   pruneDocuments,
   documentContext,
   documentsContext,
+  looksLikeReferences,
   saveDocument,
+  wantsOverview,
 };

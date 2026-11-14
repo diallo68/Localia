@@ -26,6 +26,7 @@ const {
   loadDocument,
   deleteDocument,
   pruneDocuments,
+  wantsOverview,
 } = require('./documents.cjs');
 const {
   checkKind,
@@ -1849,10 +1850,9 @@ handle('run', async (kind, payload) => {
           numCtx,
           numPredict: modelSettings.options?.num_predict,
           lang: appSettings.lang === 'en' ? 'en' : 'fr',
-          // Demande de résumé : résumé, introduction et conclusions du document en priorité.
-          summary:
-            task?.id === 'synthese' ||
-            /\b(r[ée]sum|synth[eè]s)/i.test(String(messages.at(-1)?.content || '')),
+          // Demande sur tout le document (résumé, synthèse, bibliographie) : résumé, résultats et
+          // conclusions du document en priorité.
+          summary: task?.id === 'synthese' || wantsOverview(messages.at(-1)?.content),
         });
         messages = context.messages;
         // Messages exacts envoyés (consigne, extraits, question) : conservés pour la reproductibilité.

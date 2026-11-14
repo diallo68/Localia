@@ -16,7 +16,7 @@
     "test:calendar": "node test/calendar-desktop.cjs",
     "format": "prettier --write src test",
     "format:check": "prettier --check src test",
-    "vendor": "cp node_modules/markdown-it/dist/browser/markdown-it.umd.min.js src/vendor/markdown-it.min.js && cp node_modules/markdown-it/LICENSE src/vendor/markdown-it.LICENSE && mkdir -p src/vendor/katex/fonts && cp node_modules/katex/dist/katex.min.js node_modules/katex/dist/katex.min.css node_modules/katex/LICENSE src/vendor/katex/ && cp node_modules/katex/dist/fonts/*.woff2 src/vendor/katex/fonts/",
+    "vendor": "cp node_modules/markdown-it/dist/browser/markdown-it.umd.min.js src/vendor/markdown-it.min.js && cp node_modules/markdown-it/LICENSE src/vendor/markdown-it.LICENSE && mkdir -p src/vendor/katex/fonts && cp node_modules/katex/dist/katex.min.js node_modules/katex/dist/katex.min.css node_modules/katex/LICENSE src/vendor/katex/ && cp node_modules/katex/dist/fonts/*.woff2 src/vendor/katex/fonts/ && mkdir -p src/vendor/mermaid && cp node_modules/mermaid/dist/mermaid.min.js node_modules/mermaid/LICENSE src/vendor/mermaid/",
     "test:features": "node test/features-desktop.cjs",
     "test:workspace": "node test/workspace-desktop.cjs",
     "test:encryption": "node test/encryption-desktop.cjs",
@@ -111,6 +111,7 @@
     "electron-builder": "^26.15.3",
     "katex": "0.16.47",
     "markdown-it": "15.0.2",
+    "mermaid": "11.12.1",
     "prettier": "3.9.9"
   },
   "dependencies": {

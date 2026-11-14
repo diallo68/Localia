@@ -348,19 +348,133 @@ function drawFormulas(element) {
     span.classList.add('math-drawn');
   }
 }
-function withTextFormulas(element, read) {
+// Version texte d'une réponse : formules en texte, schémas remplacés par leur code Mermaid
+// (copie, écoute, Word). diagrams: 'image' garde l'image du schéma (export PDF), sans le code.
+function withTextFormulas(element, read, { diagrams = 'code' } = {}) {
   const spans = [...element.querySelectorAll('.math-drawn')];
   const drawn = spans.map((span) => [...span.childNodes]);
   spans.forEach((span) => span.replaceChildren(...formulaText.get(span)));
+  const figures = [...element.querySelectorAll('figure.diagram')].map((figure) => {
+    const swap =
+      diagrams === 'image'
+        ? Object.assign(document.createElement('img'), {
+            src: figure.querySelector('img').src,
+            alt: figure.querySelector('img').alt,
+          })
+        : diagramSource.get(figure).cloneNode(true);
+    figure.replaceWith(swap);
+    return [figure, swap];
+  });
   try {
     return read();
   } finally {
     spans.forEach((span, k) => span.replaceChildren(...drawn[k]));
+    figures.forEach(([figure, swap]) => swap.replaceWith(figure));
   }
 }
-function showMarkdown(element, text) {
+// Schémas Mermaid (bloc ```mermaid``` de la réponse) : dessinés en SVG par vendor/mermaid, chargé
+// au premier schéma seulement, puis montrés comme image (la CSP interdit les styles en ligne ; une
+// image SVG garde les siens). Le code reste sous l'image (« Voir le code ») et sert de version texte.
+const diagramCache = new Map(); // code → promesse de { url } ou { error }
+const diagramSource = new WeakMap(); // figure → bloc de code d'origine
+let mermaidLoading = null;
+let diagramCount = 0;
+function loadMermaid() {
+  mermaidLoading ||= new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'vendor/mermaid/mermaid.min.js';
+    script.onload = () => {
+      window.mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: 'default',
+        flowchart: { htmlLabels: true },
+        fontFamily: 'Helvetica, Arial, sans-serif',
+      });
+      resolve(window.mermaid);
+    };
+    script.onerror = () => {
+      mermaidLoading = null;
+      reject(new Error('Dessin des schémas indisponible.'));
+    };
+    document.head.append(script);
+  });
+  return mermaidLoading;
+}
+// SVG de Mermaid : largeur « 100% » sans hauteur, que le navigateur ne sait pas dimensionner dans
+// une image (il prend une taille par défaut) ; largeur et hauteur fixées d'après la viewBox.
+function sizedSvg(svg) {
+  const box = svg.match(/viewBox="[\d.-]+ [\d.-]+ ([\d.]+) ([\d.]+)"/);
+  if (!box) return svg;
+  const [w, h] = [Math.ceil(+box[1]), Math.ceil(+box[2])];
+  return svg.replace(/<svg([^>]*?) width="[^"]*"/, `<svg$1 width="${w}" height="${h}"`);
+}
+function diagramImage(code) {
+  if (!diagramCache.has(code)) {
+    if (diagramCache.size >= 60) diagramCache.delete(diagramCache.keys().next().value);
+    diagramCache.set(
+      code,
+      loadMermaid().then(
+        async (mermaid) => {
+          try {
+            const { svg } = await mermaid.render('schema-' + ++diagramCount, repairMermaid(code));
+            return { url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sizedSvg(svg)) };
+          } catch (error) {
+            document.getElementById('dschema-' + diagramCount)?.remove(); // brouillon laissé par Mermaid
+            return { error: String(error?.message || error).split('\n')[0] };
+          }
+        },
+        (error) => ({ error: error.message }),
+      ),
+    );
+  }
+  return diagramCache.get(code);
+}
+function drawDiagrams(root) {
+  for (const code of root.querySelectorAll('pre > code.language-mermaid')) {
+    const pre = code.parentElement;
+    const source = code.textContent;
+    if (!drawable(source)) continue;
+    diagramImage(source).then((result) => {
+      if (!pre.isConnected) return; // réponse redessinée entre-temps
+      if (result.error) {
+        const note = element(
+          'p',
+          'muted diagram-error',
+          tr(
+            'Schéma non dessiné : le code Mermaid écrit par le modèle contient une erreur. Il est affiché tel quel.',
+          ),
+        );
+        note.title = result.error;
+        pre.after(note);
+        return;
+      }
+      const figure = element('figure', 'diagram');
+      const img = document.createElement('img');
+      img.src = result.url;
+      img.alt = tr('Schéma dessiné à partir du code Mermaid de la réponse');
+      const caption = element('figcaption', 'muted');
+      caption.append(
+        element(
+          'span',
+          '',
+          tr('Schéma dessiné par Localia à partir du code écrit par le modèle : vérifiez-le.'),
+        ),
+      );
+      const details = element('details', 'diagram-code');
+      details.append(element('summary', '', tr('Voir le code')));
+      pre.replaceWith(figure);
+      details.append(pre);
+      caption.append(details);
+      figure.append(img, caption);
+      diagramSource.set(figure, pre);
+    });
+  }
+}
+function showMarkdown(element, text, { diagrams = true } = {}) {
   element.innerHTML = toHtml(text);
   drawFormulas(element);
+  if (diagrams) drawDiagrams(element);
   for (const link of element.querySelectorAll('a')) {
     link.title = link.getAttribute('href');
     link.onclick = (event) => event.preventDefault();
@@ -661,7 +775,7 @@ function answerActions(message, question, content) {
       const saved = await window.localia.exportPdf({
         title: current?.title || 'Réponse de Localia',
         question: question?.role === 'user' ? question.content : '',
-        html: withTextFormulas(content, () => content.innerHTML),
+        html: withTextFormulas(content, () => content.innerHTML, { diagrams: 'image' }),
         model: message.model || current?.model || '',
       });
       if (saved) notice(`${tr('Réponse enregistrée :')} ${saved}`);
@@ -2184,7 +2298,8 @@ window.localia.onProgress(({ kind, data }) => {
       const target = reply;
       requestAnimationFrame(() => {
         delete target.dataset.pending;
-        if (target.dataset.answer) showMarkdown(target, target.dataset.answer);
+        // Pendant l'écriture, les schémas restent en code (dessinés à la fin de la réponse).
+        if (target.dataset.answer) showMarkdown(target, target.dataset.answer, { diagrams: false });
         else target.textContent = 'Le modèle réfléchit…';
         $('messages').scrollTop = $('messages').scrollHeight;
       });

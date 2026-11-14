@@ -46,6 +46,7 @@ const projectDocs = require('./project-docs.cjs');
 const { normalizeSettings } = require('./settings.cjs');
 const { verifyAnswer } = require('./verify.js');
 const { loopWatcher } = require('./repetition.cjs');
+const { DIAGRAM_INSTRUCTION } = require('./diagrams.js');
 const calculator = require('./calculator.cjs');
 const { metierById } = require('./metiers.js');
 const { createAnonymizer, anonymizedSummary } = require('./anonymize.js');
@@ -1788,6 +1789,7 @@ handle('run', async (kind, payload) => {
         metier?.instruction,
         kind === 'chat' ? profileContext(appSettings) : null,
         localiaProjects,
+        kind === 'chat' ? DIAGRAM_INSTRUCTION[appSettings.lang === 'en' ? 'en' : 'fr'] : null,
         modelSettings.system,
         task?.instruction,
         skill?.instruction,

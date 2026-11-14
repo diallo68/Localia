@@ -309,7 +309,12 @@ const readJson = async (profile, name) => {
     assert.equal(request.options.temperature, 0.3);
     assert.equal(request.options.num_ctx, 16384);
     assert.equal(request.think, false);
-    assert.deepEqual(request.messages[0], { role: 'system', content: 'Réponds brièvement.' });
+    // Consigne de l'utilisateur, après la consigne des schémas (Mermaid) ajoutée par Localia.
+    assert.equal(request.messages[0].role, 'system');
+    assert.match(
+      request.messages[0].content,
+      /^Si l’utilisateur demande un schéma[^]*\n\nRéponds brièvement\.$/,
+    );
     assert.equal(request.keep_alive, '5m');
 
     // Assistant de recherche : tâche choisie, conseil affiché, consigne de la tâche envoyée.

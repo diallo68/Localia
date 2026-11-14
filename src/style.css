@@ -5508,3 +5508,45 @@ aside .nav-main {
 .accueil-events {
   margin-bottom: 18px;
 }
+/* Schémas Mermaid dessinés dans une réponse : image sur fond clair (lisible en thème sombre). */
+.markdown figure.diagram,
+figure.diagram {
+  margin: 12px 0;
+  padding: 0;
+}
+figure.diagram img {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  height: auto;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #ffffff;
+}
+figure.diagram figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.diagram-code summary {
+  cursor: pointer;
+  width: max-content;
+}
+.diagram-error {
+  margin-top: 4px;
+}
+/* Brouillon de Mermaid pendant le dessin : mêmes police et taille que dans l'image finale (le
+   <style> du SVG est bloqué par la CSP pendant la mesure des textes, pas dans l'image). */
+[id^='dschema-'] svg,
+[id^='dschema-'] text,
+[id^='dschema-'] tspan,
+[id^='dschema-'] foreignObject div,
+[id^='dschema-'] foreignObject span,
+[id^='dschema-'] foreignObject p {
+  margin: 0;
+  line-height: 1.5;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 16px;
+}

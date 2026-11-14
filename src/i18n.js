@@ -1475,6 +1475,15 @@ const EN = {
   'Aucune échéance à venir.': 'No upcoming deadlines.',
   'Le calendrier n’a pas pu être chargé : rien n’est enregistré.':
     'The calendar could not be loaded: nothing is saved.',
+  // Schémas
+  'Schéma dessiné par Localia à partir du code écrit par le modèle : vérifiez-le.':
+    'Diagram drawn by Localia from the code written by the model: check it.',
+  'Voir le code': 'Show the code',
+  'Schéma non dessiné : le code Mermaid écrit par le modèle contient une erreur. Il est affiché tel quel.':
+    'Diagram not drawn: the Mermaid code written by the model contains an error. It is shown as is.',
+  'Schéma dessiné à partir du code Mermaid de la réponse':
+    'Diagram drawn from the Mermaid code of the answer',
+  'Dessin des schémas indisponible.': 'Diagram drawing unavailable.',
 };
 // Libellés des tâches et des métiers ajoutés au dictionnaire.
 if (typeof TASKS !== 'undefined')

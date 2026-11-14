@@ -66,7 +66,8 @@ python3 -I $ICI/fabriquer_fiches.py $S $W/fiches-doc-anciens.jsonl --max 450 --s
 # Domaines ajoutés le 13 nov. (administration, entreprise) : composition complète de l'étape 1
 python3 -I $ICI/fabriquer_fiches.py $S $W/fiches-doc-nouveaux.jsonl --domaines administration,entreprise --graine 20261115 --prefixe c- >> $W/ETAT || arret "fiches nouveaux domaines"
 cat $W/fiches-doc-anciens.jsonl $W/fiches-doc-nouveaux.jsonl > $W/fiches-doc.jsonl
-python3 -I $ICI/fiches_calcul.py $S $W/fiches-calcul.jsonl --calcul 4 --reprise --graine 20261114 --prefixe c- >> $W/ETAT || arret "fiches calcul"
+# Préfixe « k- » (14 nov.) : avec « c- », comme les fiches documents, la phase A était mal partagée (reprise_complement.sh).
+python3 -I $ICI/fiches_calcul.py $S $W/fiches-calcul.jsonl --calcul 4 --reprise --graine 20261114 --prefixe k- >> $W/ETAT || arret "fiches calcul"
 python3 -I $ICI/fiches_web.py $S $W/fiches-web.jsonl --max 240 --graine 20261114 >> $W/ETAT || arret "fiches web"
 cat $W/fiches-doc.jsonl $W/fiches-calcul.jsonl $W/fiches-web.jsonl > $W/fiches-toutes.jsonl
 python3 -I - $W/fiches-toutes.jsonl <<'EOF'

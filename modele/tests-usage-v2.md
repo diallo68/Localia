@@ -214,3 +214,25 @@ cas il ne produit de liste de références citées par [n].
   Localia pour comparer v1 et v2, ou noter le changement.
 
 **v2 :** à remplir.
+
+## 5. Schémas des filtres passe-bas, passe-haut, passe-bande, coupe-bande (14 nov. 2026)
+
+Réglages : sans document, Internet coupé, nouvelle version de Localia (extraits PDF, 14 nov.).
+
+> tu peux me montrer les schémas de ces filtres ?
+
+**v1, défauts relevés :**
+1. **Boucle de répétition** au premier essai : schéma en caractères dont la ligne `|       |` se répète sans fin,
+   arrêté à la main (« Réponse interrompue »). Corrigé côté Localia le 14 nov. (détecteur de boucle et longueur
+   maximale par défaut), pas côté modèle.
+2. Au second essai, refus (« je ne peux pas générer de diagrammes ») puis schéma sans aucun composant :
+   `[Entrée] → [Filtre] → [Sortie]`. Un schéma de circuit en texte était possible (R en série, C vers la masse).
+3. **Erreurs de fond** : la sortie d'un passe-bas serait une onde « plus courte et moins intense », et le filtre
+   « coupe la partie haute de la ligne ». Confusion entre amplitude et fréquence : un passe-bas atténue les
+   composantes de haute fréquence ; une sinusoïde de basse fréquence ressort presque inchangée.
+
+**À regarder sur la v2 :** absence de boucle (point 1, à mettre dans les paires DPO avec les réponses tronquées) ;
+justesse physique (point 3) sans document. Comme au test 1, on n'attend pas de l'entraînement documentaire qu'il
+corrige la physique : la solution est de joindre un cours ou d'allumer Internet.
+
+**v2 :** à remplir.

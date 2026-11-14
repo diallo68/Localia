@@ -29,9 +29,10 @@ GROUPES = {
     "contrainte": "contrainte",
     "injection": "incoherence", "alteree": "incoherence", "saine": "incoherence",
     "web": "web", "web-saine": "web", "web-alteree": "web", "web-absent": "web",
+    "schema": "schema", "schema-circuit": "schema",  # schémas Mermaid (accord de l'auteur du 14 nov.)
 }
 CIBLES = {"globale": 1500, "extraction": 800, "calcul": 800, "abstention": 500, "contrainte": 600,
-          "incoherence": 400, "web": 300, "rappel": 1500}
+          "incoherence": 400, "web": 300, "rappel": 1500, "schema": 250}
 GRAINE = 20261114
 
 

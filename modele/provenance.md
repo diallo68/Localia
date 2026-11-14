@@ -49,6 +49,7 @@ Les jeux publics produits avec GPT, par exemple les jeux de type Alpaca traduits
 | Wikipédia français | CC BY-SA 4.0 | documents source | envisagé ; étudier le partage à l'identique pour les données dérivées |
 | FineWeb-2 (fra_Latn) | ODC-By 1.0 (+ conditions Common Crawl ; étiquette HF lue le 17 oct. 2026) | documents variés, mélange général | **utilisé pour une mesure seulement** : fichier test/000_00000.parquet (67 Mo), statistiques du tokenizer, aucun entraînement |
 | angeluriot/french_instruct | MIT selon la fiche | **à auditer** : part générée par quel modèle ? | envisagé, exclu par défaut |
+| Schémas Mermaid de la v2 (14 nov. 2026) | sans objet (écrits par le professeur Qwen3.6-35B-A3B, Apache 2.0) | demandes, consignes système et réponses écrites par le professeur sur Kaggle (`donnees-v2/mermaid_kaggle.py`) ; le câblage juste des 8 circuits du catalogue est une indication donnée au professeur seul et sert à la vérification (`verifier_mermaid.cjs`), il n'entre pas dans les exemples ; aucune sortie de Claude ni de GPT | envisagé (génération prévue après la reprise du complément) |
 
 ## Benchmarks (évaluation seulement, jamais en entraînement)
 

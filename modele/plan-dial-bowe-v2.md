@@ -161,6 +161,7 @@ donc écrit et figé **avant** de générer la moindre donnée.
 | Rédaction sous contrainte vérifiable (longueur, format, nombre de points, langue), FR et EN | 600 | IFEval | contraintes vérifiées par programme |
 | Incohérences et injections, **avec autant de documents sans problème** | 400 | fausses alertes du lot 5 | position de l'incohérence connue (insérée par programme) |
 | Pages Internet numérotées [1] [2] [3], sources concordantes ou contradictoires | 300 | interrupteur Internet de Localia | citations retrouvées dans les pages |
+| **Schémas en Mermaid** (ajout du 14 nov., accord de l'auteur) : organigramme, étapes, séquence, cycle, schéma-bloc, états, et 8 circuits de base (filtres RC, RL, RLC, réjecteur, diviseur) | ~250 | Localia dessine les blocs ```mermaid``` ; la v1 dessinait en caractères (boucles) et câblait faux les circuits | Mermaid 11 dessine le code tel quel ; câblage comparé au câblage juste (`verifier_mermaid.cjs`) ; calculs refaits ; professeur ≥ 4 |
 | **Rappel** : réponses de la **base elle-même** à des consignes générales (calcul, consignes, explication, code simple), gardées si le professeur les juge bonnes | 1 500 (25 %) | oubli (MGSM, IFEval) | professeur juge |
 
 - **Longueurs** : réponses de 50 à 700 mots selon la demande, et non plus de 120 à 200 mots.

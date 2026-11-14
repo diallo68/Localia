@@ -1,6 +1,6 @@
 # Idée : dessiner les schémas écrits par le modèle (14 nov. 2026)
 
-**Statut** : niveau 1 (Mermaid) construit le 14 nov. 2026 (branche `schemas`) ; niveaux 2 et 3 non commencés.
+**Statut** : niveau 1 (Mermaid), circuits et courbes construits le 14 nov. 2026 (branche `schemas`).
 
 ## Constat
 - Demande réelle de l'auteur dans Localia : « tu peux me montrer les schémas de ces filtres ? » (passe-bas,
@@ -83,3 +83,19 @@ Conclusions :
   (« chaque composant est un nœud relié à ses voisins ») : 3/3 en Mermaid, aucun dessin en caractères. **Mais le
   circuit est faux** chez Dial-bowe (passe-haut dans un passe-bas, R, L, C tous en série) comme chez qwen3-4b :
   ces modèles ne connaissent pas le schéma d'un filtre RC. Le dessin rend l'erreur visible, il ne la corrige pas.
+
+## Circuits et courbes (14 nov. 2026, demande de l'auteur : « pouvoir générer le même PDF que Claude »)
+L'auteur accepte qu'un schéma soit faux (l'utilisateur corrige) ; ce qui compte est d'obtenir de vrais schémas de
+circuits et des courbes, dans la réponse et dans l'export PDF. Mermaid ne dessine ni symboles ni courbes, d'où
+`src/figures.js` (sans bibliothèque) :
+- bloc ```circuit``` : une ligne par élément (« entrée Ve », « série R 1 kΩ », « masse C 100 nF », « masse L + C »,
+  « sortie Vs ») ; Localia dessine le circuit en échelle avec les symboles normalisés (R en rectangle, C, L, masse) ;
+- bloc ```courbe``` : titre, axe x (nom, bornes, log, unité), axe y, constantes (« R = 10000 ») et une à quatre
+  formules ; Localia calcule 400 points avec un petit analyseur (opérateurs, sqrt, log10, ln, exp, sin, cos, atan,
+  pi) : aucun code du modèle n'est exécuté ; la courbe suit donc exactement la formule écrite (une formule fausse
+  donne une courbe visiblement fausse).
+- Écarts des petits modèles absorbés (vus chez Dial-bowe) : « masse GND », composant sans mot clé (mis en série),
+  bornes « 1, 10000 » au lieu de « 1 à 10000 ».
+- Essai réel (consigne de Localia, 3 questions × 2) : Dial-bowe écrit un circuit lisible 3 fois sur 4 et une courbe
+  lisible 3 fois sur 3 après ces corrections ; son circuit RC passe-bas est juste ; sa courbe de passe-haut est
+  fausse (+80 dB), ce qui se voit tout de suite.

@@ -313,7 +313,7 @@ const readJson = async (profile, name) => {
     assert.equal(request.messages[0].role, 'system');
     assert.match(
       request.messages[0].content,
-      /^Si l’utilisateur demande un schéma[^]*\n\nRéponds brièvement\.$/,
+      /^Localia dessine trois sortes de figures[^]*\n\nRéponds brièvement\.$/,
     );
     assert.equal(request.keep_alive, '5m');
 

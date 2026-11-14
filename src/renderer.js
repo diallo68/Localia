@@ -430,46 +430,66 @@ function diagramImage(code) {
   }
   return diagramCache.get(code);
 }
+// Bloc de code de la réponse → figure : schéma Mermaid (asynchrone), circuit ou courbe (figures.js,
+// tout de suite). En cas d'erreur, le code reste affiché, avec un avis.
 function drawDiagrams(root) {
-  for (const code of root.querySelectorAll('pre > code.language-mermaid')) {
+  for (const code of root.querySelectorAll('pre > code[class*="language-"]')) {
     const pre = code.parentElement;
     const source = code.textContent;
-    if (!drawable(source)) continue;
-    diagramImage(source).then((result) => {
-      if (!pre.isConnected) return; // réponse redessinée entre-temps
-      if (result.error) {
-        const note = element(
-          'p',
-          'muted diagram-error',
-          tr(
-            'Schéma non dessiné : le code Mermaid écrit par le modèle contient une erreur. Il est affiché tel quel.',
-          ),
-        );
-        note.title = result.error;
-        pre.after(note);
-        return;
+    const language = (code.className.match(/language-(\S+)/) || [])[1]?.toLowerCase();
+    if (language === 'mermaid') {
+      if (drawable(source))
+        diagramImage(source).then((result) => {
+          if (pre.isConnected) placeFigure(pre, result, 'mermaid'); // réponse redessinée entre-temps
+        });
+    } else if (Object.hasOwn(FIGURE_LANGUAGES, language)) {
+      let result;
+      try {
+        result = {
+          url:
+            'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(figureSvg(language, source)),
+        };
+      } catch (error) {
+        result = { error: error.message };
       }
-      const figure = element('figure', 'diagram');
-      const img = document.createElement('img');
-      img.src = result.url;
-      img.alt = tr('Schéma dessiné à partir du code Mermaid de la réponse');
-      const caption = element('figcaption', 'muted');
-      caption.append(
-        element(
-          'span',
-          '',
-          tr('Schéma dessiné par Localia à partir du code écrit par le modèle : vérifiez-le.'),
-        ),
-      );
-      const details = element('details', 'diagram-code');
-      details.append(element('summary', '', tr('Voir le code')));
-      pre.replaceWith(figure);
-      details.append(pre);
-      caption.append(details);
-      figure.append(img, caption);
-      diagramSource.set(figure, pre);
-    });
+      placeFigure(pre, result, FIGURE_LANGUAGES[language]);
+    }
   }
+}
+const FIGURE_ERRORS = {
+  mermaid:
+    'Schéma non dessiné : le code Mermaid écrit par le modèle contient une erreur. Il est affiché tel quel.',
+  circuit:
+    'Circuit non dessiné : la description écrite par le modèle est illisible. Elle est affichée telle quelle.',
+  courbe:
+    'Courbe non tracée : la description écrite par le modèle est illisible. Elle est affichée telle quelle.',
+};
+const FIGURE_CAPTIONS = {
+  mermaid: 'Schéma dessiné par Localia à partir du code écrit par le modèle : vérifiez-le.',
+  circuit: 'Circuit dessiné par Localia à partir de la description du modèle : vérifiez-le.',
+  courbe:
+    'Courbe tracée par Localia : points calculés à partir de la formule écrite par le modèle. Vérifiez la formule.',
+};
+function placeFigure(pre, result, kind) {
+  if (result.error) {
+    const note = element('p', 'muted diagram-error', tr(FIGURE_ERRORS[kind]));
+    note.title = result.error;
+    pre.after(note);
+    return;
+  }
+  const figure = element('figure', 'diagram');
+  const img = document.createElement('img');
+  img.src = result.url;
+  img.alt = tr('Figure dessinée à partir de la réponse');
+  const caption = element('figcaption', 'muted');
+  caption.append(element('span', '', tr(FIGURE_CAPTIONS[kind])));
+  const details = element('details', 'diagram-code');
+  details.append(element('summary', '', tr('Voir le code')));
+  pre.replaceWith(figure);
+  details.append(pre);
+  caption.append(details);
+  figure.append(img, caption);
+  diagramSource.set(figure, pre);
 }
 function showMarkdown(element, text, { diagrams = true } = {}) {
   element.innerHTML = toHtml(text);

@@ -26,5 +26,6 @@ test('types de schémas reconnus et taille bornée', () => {
   assert.equal(d.drawable('Voici un schéma'), false);
   assert.equal(d.drawable('graph TD\n' + 'A-->B\n'.repeat(5000)), false);
   assert.match(d.DIAGRAM_INSTRUCTION.fr, /```mermaid```/);
+  assert.match(d.DIAGRAM_INSTRUCTION.fr, /```circuit```/);
   assert.match(d.DIAGRAM_INSTRUCTION.en, /ASCII/);
 });

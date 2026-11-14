@@ -1484,6 +1484,15 @@ const EN = {
   'Schéma dessiné à partir du code Mermaid de la réponse':
     'Diagram drawn from the Mermaid code of the answer',
   'Dessin des schémas indisponible.': 'Diagram drawing unavailable.',
+  'Circuit non dessiné : la description écrite par le modèle est illisible. Elle est affichée telle quelle.':
+    'Circuit not drawn: the description written by the model is unreadable. It is shown as is.',
+  'Courbe non tracée : la description écrite par le modèle est illisible. Elle est affichée telle quelle.':
+    'Curve not plotted: the description written by the model is unreadable. It is shown as is.',
+  'Circuit dessiné par Localia à partir de la description du modèle : vérifiez-le.':
+    "Circuit drawn by Localia from the model's description: check it.",
+  'Courbe tracée par Localia : points calculés à partir de la formule écrite par le modèle. Vérifiez la formule.':
+    'Curve plotted by Localia: points computed from the formula written by the model. Check the formula.',
+  'Figure dessinée à partir de la réponse': 'Figure drawn from the answer',
 };
 // Libellés des tâches et des métiers ajoutés au dictionnaire.
 if (typeof TASKS !== 'undefined')

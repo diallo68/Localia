@@ -159,10 +159,28 @@ Localia a transmis des extraits : Chen p. 1, 2, 9, 20 sur 20 ; Zhang p. 1 à 7, 
 - Justes : *Plasmopara viticola* qualifié d'oomycète ; Bordeaux, 10 traitements en moyenne en 2013 (10,1 dans
   Chen) ; LASSO, forêt aléatoire, gradient boosting comparés aux GLM ; la date d'apparition pèse plus que la météo ;
   Zhang : précision 85,59 %, 58,82 images/s, mAP 89,55 %, comparaison avec Faster R-CNN, YOLOv4, YOLOv5.
-- Faux : « précision de 88,82 % avec augmentation de données » (chiffre absent de Zhang) ; « précision de 83,70 % »
-  (c'est le rappel) ; F1 donné comme métrique de Chen (Chen utilise l'AUC) ; « GML » ; « maladie des vignerons ».
+- Juste aussi : « précision de 88,82 % avec augmentation de données » (Zhang p. 10, tableau 3). Une première
+  vérification l'avait jugé inventé à tort (recherche tronquée), corrigé le 13 nov.
+- Faux : « précision de 83,70 % » (c'est le rappel) ; F1 donné comme métrique de Chen (Chen utilise l'AUC) ; « GML » ;
+  « maladie des vignerons ».
 - Forme : pas de section Références, aucune citation [n] ; Chen deux fois dans le tableau ; titre « Bibliographie… ».
 - Par rapport au premier essai (consigne écartée) : plus de boucle de répétition ni d'auteurs inventés.
+
+**4b refait après correction de Localia (329 s).** Le 13 nov., le choix des extraits a été corrigé (branche
+`refonte-interface`, `src/documents.cjs`) : pages de références écartées, sections de résultats favorisées, et part
+égale pour chaque document dans une demande de synthèse ou de bibliographie. Pages transmises : Chen p. 1, 2, 6 à 10,
+12, 13, 14, 16 (dont la p. 8, AUC 0,86) ; Zhang p. 1 à 7, 10, 11. Avec le même modèle v1 :
+- Justes, en plus : AUC 0,86 (gradient boosting, incidence sur feuilles) ; réduction des traitements de 53,3 % à 80,9 %
+  (par rapport à 2010) et de 63,5 % à 85,1 % (par rapport à 2013) ; Faster R-CNN 80,65 % et YOLOv5 87,41 % de mAP ;
+  précision 88,82 % et mAP 90,02 % avec augmentation ; Yangling ; appareil Canon. Section Références présente, avec
+  titres, revues et DOI justes.
+- Faux : auteurs de Zhang (« Zhang, Y., & Zhang, Y. » au lieu de Z. Zhang, Y. Qiao, Y. Guo, D. He) ; « Makowski »
+  en double ; titre de Zhang inexact ; « maladie fongique » puis « oomycète » dans la même phrase ; « croissance des
+  vignerons » ; gradient boosting « combiné à des mécanismes d'attention » ; YOLOv5-CA classé parmi les méthodes de
+  prédiction ; « jeux de données synthétiques » (absent des deux articles).
+- Manque : LASSO et forêt aléatoire de Chen ; citations [n] dans le texte.
+- Conclusion : la moitié des erreurs du premier passage venait des extraits transmis. Pour comparer v1 et v2, utiliser
+  cette version corrigée de Localia et comparer à ce passage-ci.
 
 ### 4c. Avec la bibliographie vérifiée (190 s)
 
@@ -180,7 +198,7 @@ Localia a transmis des extraits : Chen p. 1, 2, 9, 20 sur 20 ; Zhang p. 1 à 7, 
 | | Faits | Références | Structure |
 |---|---|---|---|
 | 4a. Sans document | inventés | 3 inventées | suivie |
-| 4b. Avec PDF | 2 chiffres faux | absentes | incomplète |
+| 4b. Avec PDF | 1 métrique mal nommée, 1 fausse | absentes | incomplète |
 | 4c. Avec bibliographie | justes | absentes | suivie |
 
 Plus le modèle a de sources, plus il est fiable. Sans source, il fabrique des références avec assurance. Dans aucun

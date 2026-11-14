@@ -46,7 +46,8 @@ const projectDocs = require('./project-docs.cjs');
 const { normalizeSettings } = require('./settings.cjs');
 const { verifyAnswer } = require('./verify.js');
 const { loopWatcher } = require('./repetition.cjs');
-const { DIAGRAM_INSTRUCTION } = require('./diagrams.js');
+const { DIAGRAM_INSTRUCTION, figureFixRequest } = require('./diagrams.js');
+const pythonFigures = require('./python-figures.cjs');
 const calculator = require('./calculator.cjs');
 const { metierById } = require('./metiers.js');
 const { createAnonymizer, anonymizedSummary } = require('./anonymize.js');
@@ -1945,6 +1946,18 @@ handle('run', async (kind, payload) => {
           { role: 'user', content: request },
         ];
       }
+      // Figure Python : le code de la réponse a échoué ; le modèle reçoit l'erreur et réécrit.
+      if (kind === 'chat' && payload.figureFix) {
+        const request = figureFixRequest(payload.figureFix.errors, appSettings.lang);
+        const previous = payload.figureFix.answer;
+        if (!request || typeof previous !== 'string' || previous.length > 200000)
+          throw new Error('Correction de la figure invalide.');
+        messages = [
+          ...messages,
+          { role: 'assistant', content: previous },
+          { role: 'user', content: request },
+        ];
+      }
       // Métier à données sensibles : noms, numéros, adresses… remplacés par des étiquettes avant
       // l'envoi ; les étiquettes de la conversation sont reprises, la réponse est remise en clair.
       if (metier?.anonymize) {
@@ -2064,6 +2077,8 @@ handle('run', async (kind, payload) => {
   }
 });
 handle('cancel', (kind) => tasks.get(taskKey(kind))?.abort());
+// Code Python de dessin d'une réponse, exécuté à l'écart (python-figures.cjs).
+handle('run-figure', (code) => pythonFigures.runFigure(code));
 // Fiche du modèle demandée avant chaque réponse. Ollama peut être lent à répondre pendant qu'un
 // gros modèle travaille : délai long et un second essai.
 async function showModel(model) {

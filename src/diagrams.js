@@ -63,22 +63,50 @@ function drawable(code) {
   return typeof code === 'string' && code.length <= DIAGRAM_MAX && Boolean(diagramKind(code));
 }
 
-// Consigne ajoutée aux conversations : schémas en Mermaid, circuits et courbes dans les formats de
-// figures.js, jamais en caractères (ils partaient en boucle chez Dial-bowe v1, test d'usage n° 5).
+// Consigne ajoutée aux conversations : schémas en Mermaid, circuits et courbes en code Python exécuté
+// par Localia (python-figures.cjs), jamais en caractères (ils partaient en boucle chez Dial-bowe v1).
 const DIAGRAM_INSTRUCTION = {
   fr: [
-    'Localia dessine trois sortes de figures écrites dans ta réponse ; utilise-les quand l’utilisateur demande un schéma, un circuit ou une courbe, et n’écris jamais de schéma en caractères (art ASCII).',
-    '1. Organigramme, étapes, séquence, cycle, schéma-bloc : bloc ```mermaid```.',
-    '2. Circuit électrique (filtre, diviseur de tension, montage RC, RL ou RLC), même si l’utilisateur dit « schéma » : bloc ```circuit``` et non mermaid, une ligne par élément de l’entrée vers la sortie, par exemple :\n```circuit\nentrée Ve\nsérie R 1 kΩ\nmasse C 100 nF\nsortie Vs\n```\n(« série » : composant sur la ligne du haut ; « masse » : composant entre ce point et la masse ; plusieurs composants dans une branche : « masse L 10 mH + C 1 µF »).',
-    '3. Courbe : bloc ```courbe``` avec le titre, l’axe x (nom, minimum à maximum, log si besoin, unité), l’axe y et une formule par courbe (opérateurs + - * / ^, fonctions sqrt, log10, ln, exp, sin, cos, atan, constante pi), par exemple :\n```courbe\ntitre : Gain du filtre passe-bas\nx : f, 10 à 100000, log, Hz\ny : G, dB\nG = 20*log10(1/sqrt(1+(f/1000)^2))\n```',
+    'Localia affiche les figures écrites dans ta réponse ; utilise-les quand l’utilisateur demande un schéma, un circuit, une courbe ou un graphique, et n’écris jamais de schéma en caractères (art ASCII).',
+    '- Organigramme, étapes, séquence, cycle : bloc ```mermaid```.',
+    '- Circuit électrique, courbe, graphique, schéma scientifique : programme Python complet dans un bloc ```python```, que Localia exécute sur cet ordinateur pour afficher la figure (matplotlib pour les courbes et graphiques ; schemdraw pour les circuits). Seuls numpy, matplotlib et schemdraw sont disponibles.',
+    '- schemdraw : `import schemdraw`, `import schemdraw.elements as elm`, `with schemdraw.Drawing() as d:`, puis un ajout `d += …` par composant ; éléments elm.Resistor, elm.Capacitor, elm.Inductor, elm.Ground, elm.Line, elm.Dot, elm.SourceV, elm.Opamp ; directions .right(), .left(), .up(), .down(). Dessine les composants que demande la question, pas plus.',
   ].join('\n'),
   en: [
-    'Localia draws three kinds of figures written in your answer; use them when the user asks for a diagram, a circuit or a curve, and never draw diagrams with characters (ASCII art).',
-    '1. Flowchart, steps, sequence, cycle, block diagram: ```mermaid``` block.',
-    '2. Electrical circuit (filter, voltage divider, RC, RL or RLC network), even if the user says “diagram”: ```circuit``` block, not mermaid, one line per element from input to output, for example:\n```circuit\ninput Vin\nseries R 1 kΩ\nground C 100 nF\noutput Vout\n```\n(“series”: component on the top line; “ground”: component between this point and ground; several components in one branch: “ground L 10 mH + C 1 µF”).',
-    '3. Curve: ```courbe``` block with the title, the x axis (name, minimum to maximum, log if needed, unit), the y axis and one formula per curve (operators + - * / ^, functions sqrt, log10, ln, exp, sin, cos, atan, constant pi), for example:\n```courbe\ntitle: Gain of the low-pass filter\nx: f, 10 to 100000, log, Hz\ny: G, dB\nG = 20*log10(1/sqrt(1+(f/1000)^2))\n```',
+    'Localia displays the figures written in your answer; use them when the user asks for a diagram, a circuit, a curve or a chart, and never draw diagrams with characters (ASCII art).',
+    '- Flowchart, steps, sequence, cycle: ```mermaid``` block.',
+    '- Electrical circuit, curve, chart, scientific diagram: complete Python program in a ```python``` block, which Localia runs on this computer to display the figure (matplotlib for curves and charts; schemdraw for circuits). Only numpy, matplotlib and schemdraw are available.',
+    '- schemdraw: `import schemdraw`, `import schemdraw.elements as elm`, `with schemdraw.Drawing() as d:`, then one `d += …` per component; elements elm.Resistor, elm.Capacitor, elm.Inductor, elm.Ground, elm.Line, elm.Dot, elm.SourceV, elm.Opamp; directions .right(), .left(), .up(), .down(). Draw the components the question asks for, no more.',
   ].join('\n'),
 };
 
+// Code Python de dessin d'une réponse (blocs ```python``` qui utilisent matplotlib ou schemdraw ;
+// un bloc resté ouvert en fin de réponse compte aussi).
+function figureCode(text) {
+  const out = [];
+  for (const m of String(text || '').matchAll(/```(?:python|py)[ \t]*\n([\s\S]*?)(?:```|$)/g))
+    if (/\b(matplotlib|schemdraw)\b/.test(m[1])) out.push(m[1]);
+  return out.slice(0, 4);
+}
+// Demande de correction : le code a échoué ; le modèle reçoit l'erreur de Python et réécrit.
+function figureFixRequest(errors, lang) {
+  const list = (Array.isArray(errors) ? errors : [])
+    .filter((e) => typeof e === 'string' && e.trim())
+    .slice(0, 4)
+    .map((e) => e.slice(-1200));
+  if (!list.length) return null;
+  return lang === 'en'
+    ? `Localia ran the Python code of your answer to draw the figure; it failed:\n${list.map((e) => '```\n' + e + '\n```').join('\n')}\n\nRewrite your answer with corrected, complete code (only numpy, matplotlib and schemdraw are available). Keep the explanations. Do not mention this correction.`
+    : `Localia a exécuté le code Python de ta réponse pour dessiner la figure ; il a échoué :\n${list.map((e) => '```\n' + e + '\n```').join('\n')}\n\nRéécris ta réponse avec un code corrigé et complet (seuls numpy, matplotlib et schemdraw sont disponibles). Garde les explications. Ne parle pas de cette correction.`;
+}
+
 if (typeof module !== 'undefined')
-  module.exports = { repairMermaid, diagramKind, drawable, DIAGRAM_MAX, DIAGRAM_INSTRUCTION };
+  module.exports = {
+    figureCode,
+    figureFixRequest,
+    repairMermaid,
+    diagramKind,
+    drawable,
+    DIAGRAM_MAX,
+    DIAGRAM_INSTRUCTION,
+  };

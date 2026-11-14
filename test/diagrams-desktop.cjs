@@ -62,8 +62,8 @@ const REPONSE = [
     const system = await app.evaluate(
       () => global.schemaChat.messages.find((m) => m.role === 'system')?.content,
     );
-    assert.match(system, /bloc ```circuit```/);
-    assert.match(system, /bloc ```courbe```/);
+    assert.match(system, /bloc ```mermaid```/);
+    assert.match(system, /bloc ```python```/);
     // Deux schémas dessinés (dont un réparé), un code faux laissé en code avec un avis.
     const srcs = await page.$$eval('.message.assistant figure.diagram img', (imgs) =>
       imgs.map((i) => i.src.slice(0, 26)),

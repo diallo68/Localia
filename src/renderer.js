@@ -442,6 +442,26 @@ function drawDiagrams(root) {
         diagramImage(source).then((result) => {
           if (pre.isConnected) placeFigure(pre, result, 'mermaid'); // réponse redessinée entre-temps
         });
+    } else if (
+      (language === 'python' || language === 'py') &&
+      /\b(matplotlib|schemdraw)\b/.test(source) &&
+      window.localia.runFigure
+    ) {
+      // Code Python de dessin : exécuté à l'écart (python-figures.cjs), figures en PNG.
+      diagramCache.has('py:' + source) ||
+        diagramCache.set(
+          'py:' + source,
+          window.localia.runFigure(source).then(
+            (r) =>
+              r.images.length
+                ? { urls: r.images, error: null }
+                : { error: r.error || 'aucune figure produite' },
+            (error) => ({ error: error.message }),
+          ),
+        );
+      diagramCache.get('py:' + source).then((result) => {
+        if (pre.isConnected) placeFigure(pre, result, 'python');
+      });
     } else if (Object.hasOwn(FIGURE_LANGUAGES, language)) {
       let result;
       try {
@@ -463,12 +483,16 @@ const FIGURE_ERRORS = {
     'Circuit non dessiné : la description écrite par le modèle est illisible. Elle est affichée telle quelle.',
   courbe:
     'Courbe non tracée : la description écrite par le modèle est illisible. Elle est affichée telle quelle.',
+  python:
+    'Figure non produite : le code Python écrit par le modèle a échoué (voir l’erreur au survol). Il est affiché tel quel.',
 };
 const FIGURE_CAPTIONS = {
   mermaid: 'Schéma dessiné par Localia à partir du code écrit par le modèle : vérifiez-le.',
   circuit: 'Circuit dessiné par Localia à partir de la description du modèle : vérifiez-le.',
   courbe:
     'Courbe tracée par Localia : points calculés à partir de la formule écrite par le modèle. Vérifiez la formule.',
+  python:
+    'Figure produite par le code Python du modèle, exécuté par Localia à l’écart (sans Internet ni accès à vos fichiers) : vérifiez-la.',
 };
 function placeFigure(pre, result, kind) {
   if (result.error) {
@@ -478,9 +502,13 @@ function placeFigure(pre, result, kind) {
     return;
   }
   const figure = element('figure', 'diagram');
-  const img = document.createElement('img');
-  img.src = result.url;
-  img.alt = tr('Figure dessinée à partir de la réponse');
+  const imgs = (result.urls || [result.url]).map((url) => {
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = tr('Figure dessinée à partir de la réponse');
+    return img;
+  });
+  const img = imgs[0];
   const caption = element('figcaption', 'muted');
   caption.append(element('span', '', tr(FIGURE_CAPTIONS[kind])));
   const details = element('details', 'diagram-code');
@@ -488,7 +516,7 @@ function placeFigure(pre, result, kind) {
   pre.replaceWith(figure);
   details.append(pre);
   caption.append(details);
-  figure.append(img, caption);
+  figure.append(...imgs, caption);
   diagramSource.set(figure, pre);
 }
 function showMarkdown(element, text, { diagrams = true } = {}) {
@@ -902,6 +930,23 @@ function messageNode(message, question) {
     );
     const first = element('div', 'markdown first-version');
     showMarkdown(first, message.firstVersion || '');
+    box.append(first);
+    node.append(box);
+  }
+  if (message.role === 'assistant' && message.refigured && !message.recalculated) {
+    const box = element('details', 'recalculated');
+    const r = message.refigured;
+    box.append(
+      element(
+        'summary',
+        '',
+        tr(
+          `Code de la figure corrigé par le modèle après une erreur${r.remaining ? ` (${r.remaining} figure(s) encore en échec)` : ''}. Voir la première version`,
+        ),
+      ),
+    );
+    const first = element('div', 'markdown first-version');
+    showMarkdown(first, message.firstVersion || '', { diagrams: false });
     box.append(first);
     node.append(box);
   }
@@ -2092,6 +2137,7 @@ async function sendPrompt({ remoteId } = {}) {
   // Calculs faux : le modèle réécrit sa réponse avec les résultats exacts de Localia.
   if (completed && saved) {
     await recalculate(conversation, saved, request).catch((e) => notice(e.message));
+    await refigure(conversation, saved, request).catch((e) => notice(e.message));
     pumpRoutines();
   }
   return {
@@ -2151,6 +2197,58 @@ async function recalculate(conversation, saved, request) {
         runNotice(
           tr('La réponse réécrite n’était pas plus juste : la première version est gardée.'),
         );
+    }
+    chatting = false;
+    reply = null;
+    await persist().catch((e) => notice(e.message));
+    render();
+    controls();
+  }
+}
+
+// Figures Python : si le code de dessin de la réponse échoue, le modèle reçoit l'erreur et réécrit
+// sa réponse une fois. La nouvelle version n'est gardée que si son code échoue moins souvent.
+async function figureErrors(text) {
+  const blocks = figureCode(text);
+  const results = await Promise.all(
+    blocks.map((code) =>
+      window.localia.runFigure(code).then(
+        (r) => (r.images.length ? null : r.error || 'aucune figure produite'),
+        (error) => error.message,
+      ),
+    ),
+  );
+  return results.filter(Boolean);
+}
+async function refigure(conversation, saved, request) {
+  if (!request || !window.localia.runFigure || !figureCode(saved.content).length) return;
+  const errors = await figureErrors(saved.content);
+  if (!errors.length || current !== conversation || chatting) return;
+  chatting = true;
+  render();
+  controls();
+  runNotice(tr('Le code de la figure a échoué. Le modèle corrige son code…'));
+  const answer = { role: 'assistant', content: '', model: saved.model };
+  reply = messageNode(answer);
+  reply.textContent = tr('Correction du code de la figure…');
+  let text = '';
+  try {
+    const result = await window.localia.run('chat', {
+      ...request,
+      remoteId: undefined,
+      figureFix: { answer: saved.content, errors },
+    });
+    if (!result.cancelled) text = (result.text || '').trim();
+  } catch (error) {
+    notice(error.message);
+  } finally {
+    if (text && figureCode(text).length) {
+      const remaining = await figureErrors(text);
+      if (remaining.length < errors.length) {
+        saved.firstVersion = saved.content;
+        saved.content = text;
+        saved.refigured = { errors: errors.length, remaining: remaining.length };
+      } else runNotice(tr('Le code corrigé échoue encore : la première version est gardée.'));
     }
     chatting = false;
     reply = null;

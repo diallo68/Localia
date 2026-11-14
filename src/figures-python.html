@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Fenêtre cachée qui exécute le code Python de dessin écrit par le modèle (Pyodide). Aucune
+         requête réseau n'est permise (session à part, voir python-figures.cjs) ; WebAssembly
+         demande 'wasm-unsafe-eval'. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data:; style-src 'self'; object-src 'none'; base-uri 'none'"
+    />
+    <title>Localia — figures Python</title>
+  </head>
+  <body>
+    <script type="module" src="figures-python.mjs"></script>
+  </body>
+</html>

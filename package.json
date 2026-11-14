@@ -14,6 +14,7 @@
     "test:desktop": "node test/desktop.cjs",
     "test:pdf": "node test/pdf-desktop.cjs",
     "test:calendar": "node test/calendar-desktop.cjs",
+    "test:python": "node test/python-figures-desktop.cjs",
     "format": "prettier --write src test",
     "format:check": "prettier --check src test",
     "vendor": "cp node_modules/markdown-it/dist/browser/markdown-it.umd.min.js src/vendor/markdown-it.min.js && cp node_modules/markdown-it/LICENSE src/vendor/markdown-it.LICENSE && mkdir -p src/vendor/katex/fonts && cp node_modules/katex/dist/katex.min.js node_modules/katex/dist/katex.min.css node_modules/katex/LICENSE src/vendor/katex/ && cp node_modules/katex/dist/fonts/*.woff2 src/vendor/katex/fonts/ && mkdir -p src/vendor/mermaid && cp node_modules/mermaid/dist/mermaid.min.js node_modules/mermaid/LICENSE src/vendor/mermaid/",
@@ -88,6 +89,7 @@
       "synopsis": "Assistant de recherche local et banc d’essai de modèles (Ollama)"
     },
     "asarUnpack": [
+      "src/vendor/pyodide/**",
       "node_modules/node-llama-cpp/bins/**",
       "node_modules/@node-llama-cpp/**",
       "node_modules/@napi-rs/**",

@@ -26,6 +26,12 @@ test('types de schémas reconnus et taille bornée', () => {
   assert.equal(d.drawable('Voici un schéma'), false);
   assert.equal(d.drawable('graph TD\n' + 'A-->B\n'.repeat(5000)), false);
   assert.match(d.DIAGRAM_INSTRUCTION.fr, /```mermaid```/);
-  assert.match(d.DIAGRAM_INSTRUCTION.fr, /```circuit```/);
+  assert.match(d.DIAGRAM_INSTRUCTION.fr, /```python```/);
+  assert.equal(
+    d.figureCode('```python\nimport matplotlib\n```\n```python\nprint(1)\n```').length,
+    1,
+  );
+  assert.match(d.figureFixRequest(['NameError: x'], 'fr'), /NameError: x/);
+  assert.equal(d.figureFixRequest([], 'fr'), null);
   assert.match(d.DIAGRAM_INSTRUCTION.en, /ASCII/);
 });

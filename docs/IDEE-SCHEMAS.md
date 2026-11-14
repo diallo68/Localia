@@ -99,3 +99,19 @@ circuits et des courbes, dans la réponse et dans l'export PDF. Mermaid ne dessi
 - Essai réel (consigne de Localia, 3 questions × 2) : Dial-bowe écrit un circuit lisible 3 fois sur 4 et une courbe
   lisible 3 fois sur 3 après ces corrections ; son circuit RC passe-bas est juste ; sa courbe de passe-haut est
   fausse (+80 dB), ce qui se voit tout de suite.
+
+## Code Python exécuté par Localia (14 nov. 2026, branche `python-figures`)
+Objectif de l'auteur : que le modèle fasse « comme Claude » — écrire le programme de dessin — même avec des
+erreurs. Mesure : courbes matplotlib exécutables chez Dial-bowe et qwen3-4b ; circuits schemdraw : fonctions
+inventées (ImportError), Dial-bowe recopie en boucle la ligne d'exemple de la consigne (retirée).
+- Pyodide 314.0.8 (Python 3.14) + numpy, matplotlib 3.10.8 (empreintes du fichier de verrouillage vérifiées) et
+  schemdraw 0.23, embarqués (26 Mo, hors de l'archive asar). Exécution dans une fenêtre cachée, session à part :
+  toute requête refusée sauf les fichiers de Localia (testé : NetworkError), pas de Node, bac à sable ; code limité
+  à 60 s (fenêtre détruite au-delà).
+- Blocs ```python``` qui utilisent matplotlib ou schemdraw : figures PNG dans la réponse et l'export PDF ; lignes
+  inachevées en fin de code retirées (réponse coupée) ; en cas d'erreur, le modèle reçoit la trace Python et
+  réécrit une fois (gardé seulement si moins d'échecs, première version consultable).
+- Temps : première figure ~10-20 s (chargement de Python), ensuite quelques dizaines de ms ; au tout premier
+  lancement d'une application nouvellement installée, plusieurs minutes (vérification par macOS).
+- Consigne : Mermaid pour les organigrammes, Python pour circuits, courbes et graphiques ; les blocs circuit et
+  courbe de figures.js restent dessinés (anciennes conversations) mais ne sont plus demandés.

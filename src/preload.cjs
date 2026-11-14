@@ -112,6 +112,7 @@ contextBridge.exposeInMainWorld('localia', {
   exportIcs: (payload) => invoke('export-ics', payload),
   importIcs: () => invoke('import-ics'),
   verifyDates: (payload) => invoke('verify-dates', payload),
+  runFigure: (code) => invoke('run-figure', code),
   saveProjects: (data) => invoke('save-projects', data),
   saveComparisons: (data) => invoke('save-comparisons', data),
   modelInfo: (name) => invoke('model-info', name),

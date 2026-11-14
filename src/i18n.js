@@ -1493,6 +1493,17 @@ const EN = {
   'Courbe tracée par Localia : points calculés à partir de la formule écrite par le modèle. Vérifiez la formule.':
     'Curve plotted by Localia: points computed from the formula written by the model. Check the formula.',
   'Figure dessinée à partir de la réponse': 'Figure drawn from the answer',
+  'Figure non produite : le code Python écrit par le modèle a échoué (voir l’erreur au survol). Il est affiché tel quel.':
+    'Figure not produced: the Python code written by the model failed (hover to see the error). It is shown as is.',
+  'Figure produite par le code Python du modèle, exécuté par Localia à l’écart (sans Internet ni accès à vos fichiers) : vérifiez-la.':
+    "Figure produced by the model's Python code, run by Localia in isolation (no Internet, no access to your files): check it.",
+  'Le code de la figure a échoué. Le modèle corrige son code…':
+    'The figure code failed. The model is fixing its code…',
+  'Correction du code de la figure…': 'Fixing the figure code…',
+  'Le code corrigé échoue encore : la première version est gardée.':
+    'The fixed code still fails: the first version is kept.',
+  'Code de la figure corrigé par le modèle après une erreur. Voir la première version':
+    'Figure code fixed by the model after an error. See the first version',
 };
 // Libellés des tâches et des métiers ajoutés au dictionnaire.
 if (typeof TASKS !== 'undefined')

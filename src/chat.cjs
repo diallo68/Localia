@@ -158,6 +158,12 @@ function exceedsContext(messages, numCtx = CONTEXT_TOKENS) {
   return messages.reduce((n, m) => n + m.content.length, 0) > numCtx * CHARS_PER_TOKEN;
 }
 
+// Longueur maximale de réponse par défaut (jetons), quand l'utilisateur n'en a pas choisi : sans
+// plafond, Ollama écrit sans fin si le modèle part en boucle. La réflexion compte dans la limite,
+// d'où un plafond plus haut pour un modèle qui réfléchit.
+const DEFAULT_NUM_PREDICT = 4096;
+const DEFAULT_NUM_PREDICT_THINKING = 8192;
+
 function chatBody({ model, messages, numCtx, modelSettings = {}, info, keepAlive }) {
   const body = {
     model,
@@ -166,8 +172,11 @@ function chatBody({ model, messages, numCtx, modelSettings = {}, info, keepAlive
     options: { ...modelSettings.options, num_ctx: numCtx },
     keep_alive: keepAlive ?? KEEP_ALIVE[modelSettings.keepAlive] ?? '5m',
   };
-  if (modelSettings.think && info?.capabilities?.includes('thinking'))
-    body.think = modelSettings.think === 'true';
+  const canThink = Boolean(info?.capabilities?.includes('thinking'));
+  if (modelSettings.think && canThink) body.think = modelSettings.think === 'true';
+  if (!(body.options.num_predict > 0))
+    body.options.num_predict =
+      canThink && body.think !== false ? DEFAULT_NUM_PREDICT_THINKING : DEFAULT_NUM_PREDICT;
   return body;
 }
 
@@ -199,5 +208,7 @@ module.exports = {
   documentContextSize,
   exceedsContext,
   chatBody,
+  DEFAULT_NUM_PREDICT,
+  DEFAULT_NUM_PREDICT_THINKING,
   streamStats,
 };

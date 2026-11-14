@@ -159,7 +159,7 @@ test('corps de requête : options, maintien en mémoire et réflexion selon le m
   const messages = [{ role: 'user', content: 'Bonjour' }];
   const modelSettings = { options: { temperature: 0.3 }, keepAlive: '30m', think: 'false' };
   const body = chatBody({ model: 'm', messages, numCtx: 8192, modelSettings });
-  assert.deepEqual(body.options, { temperature: 0.3, num_ctx: 8192 });
+  assert.deepEqual(body.options, { temperature: 0.3, num_ctx: 8192, num_predict: 4096 });
   assert.equal(body.keep_alive, '30m');
   assert.equal(body.think, undefined, 'modèle sans capacité « thinking »');
   const info = { capabilities: ['completion', 'thinking'] };
@@ -233,4 +233,28 @@ test('documentMessages : liste de documents, en-tête commun', () => {
   assert.match(text, /\[b\.pdf — Page 1, extrait 1\]\nBêta 30 kg/);
   assert.equal(result.partial, false);
   assert.equal(result.documents.length, 2);
+});
+
+test('chatBody : longueur maximale par défaut, sauf réglage de l’utilisateur', () => {
+  const messages = [{ role: 'user', content: 'Bonjour' }];
+  assert.equal(chatBody({ model: 'm', messages, numCtx: 8192 }).options.num_predict, 4096);
+  const pense = { capabilities: ['completion', 'thinking'] };
+  assert.equal(
+    chatBody({ model: 'm', messages, numCtx: 8192, info: pense }).options.num_predict,
+    8192,
+  );
+  assert.equal(
+    chatBody({ model: 'm', messages, numCtx: 8192, info: pense, modelSettings: { think: 'false' } })
+      .options.num_predict,
+    4096,
+  );
+  assert.equal(
+    chatBody({
+      model: 'm',
+      messages,
+      numCtx: 8192,
+      modelSettings: { options: { num_predict: 300 } },
+    }).options.num_predict,
+    300,
+  );
 });

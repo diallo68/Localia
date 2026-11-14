@@ -1868,6 +1868,7 @@ async function sendPrompt({ remoteId } = {}) {
   answering = answer;
   let completed = false;
   let failure = null;
+  let stopNote = null; // réponse gardée mais arrêtée (boucle de répétition, longueur maximale)
   let webSources = [];
   let request = null;
   let saved = null;
@@ -1898,6 +1899,18 @@ async function sendPrompt({ remoteId } = {}) {
     answer.content = result.text || '';
     if (result.anonymap) conversation.anonymap = result.anonymap;
     completed = !result.cancelled;
+    if (result.repetition)
+      stopNote = isEnglish()
+        ? 'Answer stopped by Localia: the model kept repeating the same text. The beginning of the answer is kept. Rephrase the question or try another model.'
+        : 'Réponse arrêtée par Localia : le modèle répétait sans fin le même texte. Le début de la réponse est gardé. Reformulez la question ou essayez un autre modèle.';
+    else if (
+      completed &&
+      /length|maxTokens/i.test(result.stats?.doneReason || '') &&
+      answer.content.trim()
+    )
+      stopNote = isEnglish()
+        ? 'Answer cut: maximum answer length reached (Advanced settings → Model settings).'
+        : 'Réponse coupée : longueur maximale de réponse atteinte (Réglages avancés → Réglages des modèles).';
     // Réponse vide (souvent : toute la longueur permise passée à réfléchir) : expliqué, la
     // question reste dans la zone de saisie.
     if (completed && !answer.content.trim() && !reply.dataset.answer) {
@@ -1940,6 +1953,7 @@ async function sendPrompt({ remoteId } = {}) {
     $('prompt').focus();
     if (!completed || !saved) pumpRoutines();
   }
+  if (stopNote) notice(stopNote);
   // Calculs faux : le modèle réécrit sa réponse avec les résultats exacts de Localia.
   if (completed && saved) {
     await recalculate(conversation, saved, request).catch((e) => notice(e.message));

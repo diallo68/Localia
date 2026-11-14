@@ -45,6 +45,7 @@ const {
 const projectDocs = require('./project-docs.cjs');
 const { normalizeSettings } = require('./settings.cjs');
 const { verifyAnswer } = require('./verify.js');
+const { loopWatcher } = require('./repetition.cjs');
 const calculator = require('./calculator.cjs');
 const { metierById } = require('./metiers.js');
 const { createAnonymizer, anonymizedSummary } = require('./anonymize.js');
@@ -1711,6 +1712,10 @@ handle('run', async (kind, payload) => {
   let used = null;
   let sent = null;
   let anon = null; // anonymisation de cette demande (métiers à données sensibles)
+  // Boucle de répétition (même ligne ou même phrase sans fin) : génération arrêtée, texte coupé.
+  const answerLoop = loopWatcher();
+  const thinkingLoop = loopWatcher();
+  let repetition = null;
   try {
     let body = { model, stream: true };
     if (chatLike) {
@@ -1963,6 +1968,7 @@ handle('run', async (kind, payload) => {
     const remoteEmit = payload?.remoteId ? remoteStreams.get(payload.remoteId) : null;
     let generating = false;
     const onData = (data) => {
+      if (repetition) return; // morceaux déjà en route après l'arrêt pour boucle : ignorés
       if (!generating && (data.message?.content || data.message?.thinking)) {
         generating = true;
         step('generation');
@@ -1972,6 +1978,18 @@ handle('run', async (kind, payload) => {
         responseText += data.message?.content || '';
         thinking += data.message?.thinking || '';
         if (data.done) final = data;
+        if (!repetition && !data.done) {
+          const inAnswer = answerLoop(responseText);
+          const inThinking = inAnswer ? null : thinkingLoop(thinking);
+          if (inAnswer || inThinking) {
+            repetition = { where: inAnswer ? 'answer' : 'thinking', ...(inAnswer || inThinking) };
+            if (inAnswer) responseText = responseText.slice(0, inAnswer.cut);
+            else thinking = thinking.slice(0, inThinking.cut);
+            send({ kind, data });
+            controller.abort();
+            return;
+          }
+        }
       }
       send({ kind, data });
     };
@@ -2006,11 +2024,26 @@ handle('run', async (kind, payload) => {
       text: anon ? anon.unmask(responseText) : responseText,
       thinking: anon ? anon.unmask(thinking) : thinking,
       anonymap: anon?.map,
-      stats: streamStats(final),
+      stats: repetition ? { doneReason: 'repetition' } : streamStats(final),
+      repetition: repetition
+        ? { where: repetition.where, repetitions: repetition.repetitions }
+        : undefined,
       used,
       sent,
     };
   } catch (error) {
+    // Arrêt par Localia (boucle de répétition) : réponse gardée telle quelle, coupée avant la boucle.
+    if (repetition)
+      return {
+        cancelled: false,
+        text: anon ? anon.unmask(responseText) : responseText,
+        thinking: anon ? anon.unmask(thinking) : thinking,
+        anonymap: anon?.map,
+        stats: { doneReason: 'repetition' },
+        repetition: { where: repetition.where, repetitions: repetition.repetitions },
+        used,
+        sent,
+      };
     if (controller.signal.aborted)
       return {
         cancelled: true,

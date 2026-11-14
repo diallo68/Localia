@@ -2,8 +2,9 @@
 
 Recette du plan §6, la même que la v1 : LoRA de rang 16, alpha 32, taux 1e-4, 1 époque, lot effectif de 8
 exemples, perte sur la réponse seulement, régime sans réflexion. Ce qui change :
-- longueur maximale 16 384 jetons (les tâches de la v2 reprennent le contexte de 16 384 jetons de Localia ;
-  à 8 192, 34 % des exemples, dont 64 % des demandes globales, seraient écartés) ;
+- longueur maximale 8 192 jetons : l'essai du 14 nov. a montré qu'une T4 ne tient pas au-delà (14,5 Go à 8 192,
+  mémoire insuffisante à 10 240 ; flash-linear-attention : mémoire insuffisante dès 8 192). Les exemples plus
+  longs sont raccourcis avant (raccourcir_8k.py : extraits retirés, pages citées gardées) ;
 - plusieurs cartes : chacune traite une partie des 8 exemples d'un pas (répartis pour équilibrer les jetons),
   puis les gradients LoRA sont additionnés entre cartes (all_reduce). Le calcul est celui d'une seule carte qui
   ferait les 8 exemples, à l'ordre des additions près ;
@@ -14,7 +15,7 @@ Mode « essai » : mesure, sur chaque carte, la mémoire et le temps d'un pas av
 16k jetons (exemples réels), puis 6 pas d'entraînement réels, un point de reprise et son rechargement. Écrit essai.json.
 
 Usage : torchrun --standalone --nproc_per_node N sft_v2_entrainement.py --base <dossier> --exemples <jsonl>
-        --sortie <dossier> [--mode essai|sft] [--cpu] [--longueur-max 16384] [--heures-max 11]
+        --sortie <dossier> [--mode essai|sft] [--cpu] [--longueur-max 8192] [--heures-max 11]
 """
 import argparse
 import gc
@@ -41,7 +42,7 @@ ap.add_argument("--exemples", required=True)
 ap.add_argument("--sortie", required=True)
 ap.add_argument("--mode", default="sft", choices=["sft", "essai"])
 ap.add_argument("--cpu", action="store_true", help="essai local sur le Mac (gloo, float32)")
-ap.add_argument("--longueur-max", type=int, default=16384)
+ap.add_argument("--longueur-max", type=int, default=8192)
 ap.add_argument("--heures-max", type=float, default=11.0)
 ap.add_argument("--reprise", default="", help="point de reprise d'une session précédente")
 a = ap.parse_args()

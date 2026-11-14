@@ -12,6 +12,7 @@ import subprocess
 import sys
 
 MODE = "essai"
+HEURES_MAX = 11.0  # garde de durée de l'entraînement (réécrite par la chaîne si le quota restant est plus court)
 TRAVAIL = "/kaggle/working"
 TMP = "/kaggle/tmp" if os.path.isdir("/kaggle/tmp") else "/tmp"
 LLAMA_TAG = "v0.7.0"
@@ -40,7 +41,7 @@ cartes = torch.cuda.device_count()
 reprise = entree("reprise.pt") or ""  # sortie d'une session précédente, fournie en entrée
 commande = (f"torchrun --standalone --nproc_per_node {cartes} {entree('sft_v2_entrainement.py')} "
             f"--base {base_dir} --exemples {entree('exemples.jsonl')} --sortie {TRAVAIL} --mode {MODE} "
-            f"--reprise '{reprise}'")
+            f"--reprise '{reprise}' --heures-max {HEURES_MAX}")
 if MODE == "essai":
     # Deux mesures : DeltaNet en PyTorch pur (recette v1), puis avec flash-linear-attention (noyaux Triton), si elle
     # s'installe et tourne sur T4. Pertes et mémoire comparées dans essai-reference.json / essai-fla.json.

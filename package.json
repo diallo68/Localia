@@ -13,6 +13,7 @@
     "logo": "node scripts/logo.cjs",
     "test:desktop": "node test/desktop.cjs",
     "test:pdf": "node test/pdf-desktop.cjs",
+    "test:calendar": "node test/calendar-desktop.cjs",
     "format": "prettier --write src test",
     "format:check": "prettier --check src test",
     "vendor": "cp node_modules/markdown-it/dist/browser/markdown-it.umd.min.js src/vendor/markdown-it.min.js && cp node_modules/markdown-it/LICENSE src/vendor/markdown-it.LICENSE && mkdir -p src/vendor/katex/fonts && cp node_modules/katex/dist/katex.min.js node_modules/katex/dist/katex.min.css node_modules/katex/LICENSE src/vendor/katex/ && cp node_modules/katex/dist/fonts/*.woff2 src/vendor/katex/fonts/",

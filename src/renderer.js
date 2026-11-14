@@ -103,6 +103,7 @@ const VIEWS = {
   benchmark: 'Benchmark',
   projects: 'Projets',
   routines: 'Automatisations',
+  calendar: 'Calendrier',
   bibliography: 'Bibliographie',
   files: 'Fichiers',
   skills: 'Compétences',

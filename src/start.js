@@ -36,6 +36,7 @@
   const comparisonsReady = await loadComparisons();
   await loadProjects();
   await loadRoutines();
+  await loadCalendar();
   // Un fichier illisible pourrait référencer des documents : rien n'est effacé dans ce cas.
   if (historyReady && comparisonsReady && projectsLoaded)
     await window.localia

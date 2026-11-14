@@ -2,7 +2,7 @@ const { documentsContext } = require('./documents.cjs');
 const { documentNotes } = require('./document-notes.js');
 const { KEEP_ALIVE, modelContext } = require('./settings.cjs');
 
-const KINDS = ['chat', 'compare', 'pull', 'files', 'routine'];
+const KINDS = ['chat', 'compare', 'pull', 'files', 'routine', 'dates'];
 const MAX_MESSAGES = 400;
 const MAX_MESSAGE_LENGTH = 100000;
 const MAX_IMAGES = 4;

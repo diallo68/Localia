@@ -269,6 +269,7 @@ function provenanceLine(source) {
 
 // Vue de synthèse du projet : prochaine étape, conversations liées, résultats conservés, documents.
 function renderOverview(project) {
+  if (typeof renderProjectEvents === 'function') renderProjectEvents(project);
   const next = project.nextStep || '';
   $('project-next-text').textContent = next || tr('Aucune étape notée.');
   $('project-next-text').classList.toggle('muted', !next);

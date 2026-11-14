@@ -65,6 +65,7 @@ const { taskById } = require('./tasks.js');
 const { normalizeProjects, buildMemory } = require('./memory.js');
 const search = require('./search.js');
 const routinesModule = require('./routines.js');
+const calendar = require('./calendar.js');
 const backup = require('./backup.cjs');
 const bibliography = require('./bibliography.js');
 const { formatListing, checkPlanAnswer } = require('./actions.js');
@@ -1699,6 +1700,7 @@ handle('run', async (kind, payload) => {
   // Onglet Fichiers : la question est construite ici, avec le contenu réel du dossier autorisé.
   if (kind === 'files') payload = await filesPayload(payload);
   if (kind === 'routine') payload = await routinePayload(payload);
+  if (kind === 'dates') payload = await datesPayload(payload);
   // Étapes réelles du traitement, affichées pendant l'attente : lecture des documents,
   // chargement du modèle, génération.
   const step = (name) => chatLike && send({ kind: 'step', data: { task: kind, step: name } });
@@ -1805,6 +1807,7 @@ handle('run', async (kind, payload) => {
           withProjectDocuments ||
           kind === 'files' ||
           kind === 'routine' ||
+          kind === 'dates' ||
           files.length > 0,
       );
       // Documents du projet : passages les plus proches de la question (moins de place si la
@@ -2193,6 +2196,7 @@ const DATA_FILES = [
   'actions-journal.json',
   'watch.json',
   'routines.json',
+  'calendrier.json',
   'performance.json',
   'distance.json',
   'modeles-integres.json',
@@ -2588,6 +2592,91 @@ async function routinePayload(payload) {
     ],
   };
 }
+// --- Calendrier -----------------------------------------------------------------------------------
+// Échéances chiffrées comme les autres données ; échanges par fichiers .ics choisis par l'utilisateur.
+handle('load-calendar', async () =>
+  calendar.normalizeCalendar(
+    await readJson(
+      'calendrier.json',
+      {},
+      'Calendrier illisible. Le fichier existant a été conservé.',
+    ),
+  ),
+);
+handle('save-calendar', async (data) => {
+  const clean = calendar.normalizeCalendar(data);
+  await writeJson('calendrier.json', clean, 'Calendrier trop volumineux.');
+  return clean;
+});
+handle('export-ics', async (payload) => {
+  const { events } = calendar.normalizeCalendar({ events: payload?.events });
+  const projects = normalizeProjects(await readJson('projects.json', [], 'Projets illisibles.'));
+  const name = String(payload?.name || 'Localia').slice(0, 80);
+  const result = await dialog.showSaveDialog(window, {
+    title: 'Exporter le calendrier (.ics)',
+    defaultPath: path.join(
+      app.getPath('documents'),
+      name.replace(/[^\p{L}\p{N} ._-]+/gu, '_').trim() + '.ics',
+    ),
+    filters: [{ name: 'Calendrier', extensions: ['ics'] }],
+  });
+  if (result.canceled || !result.filePath) return null;
+  await fs.writeFile(result.filePath, calendar.toIcs(events, { projects, name }));
+  return path.basename(result.filePath);
+});
+handle('import-ics', async () => {
+  const result = await dialog.showOpenDialog(window, {
+    title: 'Importer un calendrier (.ics)',
+    properties: ['openFile'],
+    filters: [{ name: 'Calendrier', extensions: ['ics'] }],
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+  const file = result.filePaths[0];
+  if ((await fs.stat(file)).size > calendar.CALENDAR_LIMITS.icsBytes)
+    throw new Error('Fichier .ics trop volumineux (2 Mo au plus).');
+  return { name: path.basename(file), ...calendar.fromIcs(await fs.readFile(file, 'utf8')) };
+});
+// Dates d'un document de projet : le modèle les liste (« AAAA-MM-JJ | intitulé | p. N ») à partir
+// des extraits ; chaque date est ensuite cherchée par Localia dans la page citée (sans modèle).
+async function projectDocument(projectId, docId) {
+  const projects = normalizeProjects(await readJson('projects.json', [], 'Projets illisibles.'));
+  const project = projects.find((p) => p.id === projectId);
+  const card = project?.documents.find((d) => d.id === docId);
+  if (!card) throw new Error('Ce document ne fait plus partie du projet.');
+  const doc = await loadDocument(documentsPath(), card.id, documentCodec);
+  if (!doc.pages?.length) throw new Error('Ce document ne contient pas de texte.');
+  return { project, card, doc };
+}
+const DATE_WORDS =
+  'date dates échéance limite délai soumission réunion calendrier deadline due submission meeting ' +
+  'janvier février mars avril mai juin juillet août septembre octobre novembre décembre ' +
+  'january february march april may june july august september october november december';
+async function datesPayload(payload) {
+  const { project, card, doc } = await projectDocument(payload?.projectId, payload?.docId);
+  send({ kind: 'step', data: { task: 'dates', step: 'lecture' } });
+  const lang = (await readSettings()).lang === 'en' ? 'en' : 'fr';
+  const context = projectDocs.projectDocumentsContext(
+    project,
+    [{ ...doc, id: card.id, name: card.name, type: card.type }],
+    DATE_WORDS,
+    12000,
+    lang,
+  );
+  return {
+    model: payload.model,
+    messages: [{ role: 'user', content: calendar.datesPrompt(lang) + '\n\n' + context.text }],
+  };
+}
+handle('verify-dates', async (payload) => {
+  const { card, doc } = await projectDocument(payload?.projectId, payload?.docId);
+  if (typeof payload?.text !== 'string' || payload.text.length > 100000)
+    throw new Error('Réponse invalide.');
+  const pages = Object.fromEntries(doc.pages.map((p) => [p.number, p.text]));
+  return {
+    documentName: card.name,
+    proposals: calendar.verifyProposals(calendar.parseProposals(payload.text), pages),
+  };
+});
 handle('load-projects', async () =>
   normalizeProjects(
     await readJson('projects.json', [], 'Projets illisibles. Le fichier existant a été conservé.'),

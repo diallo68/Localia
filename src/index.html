@@ -68,6 +68,60 @@
         </div>
       </form>
     </dialog>
+    <dialog id="event-dialog" class="memory-dialog" aria-labelledby="event-dialog-title">
+      <form id="event-form" method="dialog">
+        <h2 id="event-dialog-title">Nouvelle échéance</h2>
+        <p id="event-source" class="muted" hidden></p>
+        <label for="event-title">Intitulé</label>
+        <input id="event-title" maxlength="200" required />
+        <div class="event-fields">
+          <span
+            ><label for="event-date">Date</label><input id="event-date" type="date" required
+          /></span>
+          <span
+            ><label for="event-time">Heure (facultative)</label><input id="event-time" type="time"
+          /></span>
+          <span
+            ><label for="event-kind">Type</label
+            ><select id="event-kind">
+              <option value="echeance">Échéance</option>
+              <option value="reunion">Réunion</option>
+              <option value="rappel">Rappel</option>
+              <option value="autre">Autre</option>
+            </select></span
+          >
+          <span
+            ><label for="event-project">Projet</label
+            ><select id="event-project"></select
+          ></span>
+        </div>
+        <label for="event-notes">Notes</label>
+        <textarea id="event-notes" rows="3" maxlength="2000"></textarea>
+        <label class="event-done"><input id="event-done" type="checkbox" /> Faite</label>
+        <div class="input-row">
+          <button class="primary" type="submit" value="save">Enregistrer</button
+          ><button id="event-delete" class="danger" type="submit" value="delete" formnovalidate>
+            Supprimer</button
+          ><button type="submit" value="cancel" formnovalidate>Annuler</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="dates-dialog" class="memory-dialog" aria-labelledby="dates-dialog-title">
+      <form id="dates-form" method="dialog">
+        <h2 id="dates-dialog-title">Dates trouvées</h2>
+        <p id="dates-intro" class="muted"></p>
+        <div id="dates-list" class="dates-list"></div>
+        <p class="muted">
+          Une date « vérifiée » est écrite dans la page citée ; vérifiez quand même l’intitulé. Une
+          date « à vérifier » n’a pas été retrouvée dans le document : le modèle a pu l’inventer.
+        </p>
+        <div class="input-row">
+          <button id="dates-add" class="primary" type="submit" value="save">
+            Ajouter au calendrier</button
+          ><button type="submit" value="cancel" formnovalidate>Annuler</button>
+        </div>
+      </form>
+    </dialog>
     <dialog id="page-dialog" class="memory-dialog page-dialog" aria-labelledby="page-dialog-title">
       <form method="dialog">
         <h2 id="page-dialog-title"></h2>
@@ -121,6 +175,8 @@
           <i data-icon="search"></i>Rechercher</button
         ><button id="simple-routines" class="nav" type="button">
           <i data-icon="routine"></i>Automatisations</button
+        ><button id="simple-calendar" class="nav" type="button">
+          <i data-icon="calendar"></i>Calendrier</button
         ><button id="simple-pc" class="nav" type="button">
           <i data-icon="monitor"></i>Analyser votre PC</button
         ><button id="simple-profile" class="nav" type="button">
@@ -150,6 +206,7 @@
             <i data-icon="message"></i>Conversations<kbd data-key="1"></kbd></button
           ><button id="projects-tab" class="nav">
             <i data-icon="folder"></i>Projets<kbd data-key="2"></kbd></button
+          ><button id="calendar-tab" class="nav"><i data-icon="calendar"></i>Calendrier</button
           ><button id="skills-tab" class="nav">
             <i data-icon="bulb"></i>Compétences<kbd data-key="3"></kbd></button
           ><button id="models-tab" class="nav">
@@ -609,6 +666,20 @@
           </div>
           <div id="welcome-after" class="welcome-after">
             <div id="welcome-suggestions" class="welcome-suggestions"></div>
+            <section
+              id="accueil-events-section"
+              class="resume-projects accueil-events"
+              aria-labelledby="accueil-events-title"
+              hidden
+            >
+              <div class="resume-head">
+                <h3 id="accueil-events-title">Prochaines échéances</h3>
+                <button id="accueil-events-all" class="link-button" type="button">
+                  Calendrier →
+                </button>
+              </div>
+              <div id="accueil-events" class="overview-list"></div>
+            </section>
             <section class="resume-projects" aria-labelledby="resume-title">
               <div class="resume-head">
                 <h3 id="resume-title">Reprendre un projet</h3>
@@ -930,6 +1001,17 @@
               </form>
               <button id="project-next-edit" class="link-button" type="button"></button>
             </section>
+            <section class="overview-card" aria-labelledby="project-events-title">
+              <h4 id="project-events-title">Échéances</h4>
+              <div id="project-events" class="overview-list"></div>
+              <span class="project-events-actions"
+                ><button id="project-event-add" class="link-button" type="button">
+                  Ajouter une échéance</button
+                ><button id="project-event-dates" class="link-button" type="button">
+                  Chercher les dates d’un document
+                </button></span
+              >
+            </section>
             <section class="overview-card" aria-labelledby="linked-title">
               <h4 id="linked-title">Conversations du projet</h4>
               <div id="project-conversations" class="overview-list"></div>
@@ -997,6 +1079,47 @@
             <p id="project-budget" class="muted"></p>
           </details>
         </section>
+      </section>
+      <section id="calendar-view" class="page" hidden>
+        <div class="library-intro">
+          <span class="eyebrow">ÉCHÉANCES ET PLANNING</span>
+          <h2>Calendrier.</h2>
+          <p>
+            Vos échéances, rattachées ou non à un projet. Tout reste sur cet ordinateur : pour les
+            voir dans Calendrier d’Apple, Outlook ou Google, exportez un fichier .ics ; pour en
+            reprendre, importez-en un. Localia peut aussi chercher les dates d’un document : rien
+            n’entre au calendrier sans votre accord.
+          </p>
+        </div>
+        <div class="calendar-toolbar">
+          <button id="calendar-add" class="primary" type="button">
+            <i data-icon="plus"></i>Nouvelle échéance</button
+          ><button id="calendar-dates" type="button">Chercher les dates d’un document</button
+          ><label class="sr-only" for="calendar-filter">Projet affiché</label
+          ><select id="calendar-filter"></select
+          ><span class="calendar-mode" role="group" aria-label="Affichage"
+            ><button id="calendar-mode-month" type="button" aria-pressed="true">Mois</button
+            ><button id="calendar-mode-list" type="button" aria-pressed="false">Liste</button></span
+          ><button id="calendar-export" type="button">Exporter (.ics)</button
+          ><button id="calendar-import" type="button">Importer (.ics)</button>
+        </div>
+        <form id="calendar-dates-form" class="input-row calendar-dates-form" hidden>
+          <label class="sr-only" for="calendar-dates-doc">Document</label
+          ><select id="calendar-dates-doc" required></select
+          ><button class="primary" type="submit">Chercher les dates</button
+          ><button id="calendar-dates-cancel" type="button">Annuler</button>
+          <p id="calendar-dates-status" class="muted" role="status"></p>
+        </form>
+        <section id="calendar-month" aria-labelledby="calendar-month-title">
+          <div class="calendar-month-head">
+            <button id="calendar-prev" type="button" aria-label="Mois précédent">‹</button>
+            <h3 id="calendar-month-title"></h3>
+            <button id="calendar-next" type="button" aria-label="Mois suivant">›</button>
+            <button id="calendar-today" class="link-button" type="button">Aujourd’hui</button>
+          </div>
+          <div id="calendar-grid" class="calendar-grid" role="grid"></div>
+        </section>
+        <section id="calendar-list" class="calendar-list" hidden></section>
       </section>
       <section id="routines-view" class="page" hidden>
         <div class="library-intro">
@@ -1734,6 +1857,7 @@
     <script src="memory.js"></script>
     <script src="search.js"></script>
     <script src="routines.js"></script>
+    <script src="calendar.js"></script>
     <script src="bibliography.js"></script>
     <script src="actions.js"></script>
     <script src="skills.js"></script>
@@ -1760,6 +1884,7 @@
     <script src="accueil-view.js"></script>
     <script src="search-view.js"></script>
     <script src="routines-view.js"></script>
+    <script src="calendar-view.js"></script>
     <script src="backup-view.js"></script>
     <script src="dictation-view.js"></script>
     <script src="updates-view.js"></script>

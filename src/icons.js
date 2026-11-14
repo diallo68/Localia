@@ -1,6 +1,8 @@
 // Icônes au trait, dessinées pour Localia (grille de 24, couleur du texte). Un élément
 // <i data-icon="nom"></i> est remplacé par l'icône ; aucune ressource extérieure.
 const ICONS = {
+  calendar:
+    '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7.5 14h2M11 14h2M14.5 14h2M7.5 17.5h2M11 17.5h2"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   globe:
     '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',

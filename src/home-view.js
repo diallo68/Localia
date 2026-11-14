@@ -167,6 +167,18 @@ function renderHome() {
   // départ programmé manqué).
   const todo = $('home-todo');
   todo.replaceChildren();
+  // Échéances en retard (calendrier).
+  const late = typeof upcomingEvents === 'function' ? upcomingEvents(calendarData.events).late : [];
+  for (const e of late.slice(0, 3))
+    homeItem(
+      todo,
+      'calendar',
+      e.title,
+      `${tr('En retard')} · ${formatDay(e.date)}` +
+        (e.projectId && projectById(e.projectId) ? ` · ${projectById(e.projectId).name}` : ''),
+      () => openEventDialog(e),
+      'warn',
+    );
   const review = typeof runsToReview === 'function' ? runsToReview() : [];
   for (const run of review.slice(-6).reverse())
     homeItem(

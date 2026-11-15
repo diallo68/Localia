@@ -9,6 +9,8 @@
 # État : ~/localia-labo/modele-compact/resultats/sft-v2/ETAT-sft.
 # Usage : nohup caffeinate -i zsh chaine_sft_v2.sh [heures de la 1re session, 11 par défaut] [session 2 pas avant « AAAA-MM-JJ HH:MM »] > /dev/null 2>&1 &
 # Attente de la session 2 (quota Kaggle épuisé) : levée plus tôt si le fichier resultats/sft-v2/SANS-ATTENTE existe.
+# Reprise après arrêt de la chaîne : DEBUT=2 zsh chaine_sft_v2.sh <heures de cette session> (lot et reprise.pt
+# déjà publiés ; repart de la session DEBUT).
 set -u
 KG=~/localia-labo/modele-compact/env-entrainement/bin/kaggle
 PY=~/localia-labo/modele-compact/env-entrainement/bin/python
@@ -20,8 +22,10 @@ E=$R/ETAT-sft
 mkdir -p $R
 etat() { echo "$(date '+%d/%m %H:%M') $*" >> $E; }
 kg() { $KG "$@" 2>&1 | grep -v "outdated"; }
-[[ -e $E ]] && { echo "déjà lancée ($E)"; exit 1; }
-
+DEBUT=${DEBUT:-1}
+[[ -e $E && $DEBUT == 1 ]] && { echo "déjà lancée ($E)"; exit 1; }
+N=localia-sft-v2
+if [[ $DEBUT == 1 ]]; then
 etat "=== SFT v2 : assemblage"
 entrees=($D/etape1/exemples-documents.jsonl $D/etape2/exemples-calcul.jsonl $D/etape2/exemples-rappel.jsonl
          $D/complement/exemples-complement.jsonl $D/mermaid/exemples-mermaid.jsonl)
@@ -37,16 +41,19 @@ kg datasets version -p $K/sft-v2-donnees -m "lot final 8k (raccourci), schémas 
 sleep 30
 until kg datasets status mohadial/localia-sft-v2-donnees | grep -q ready; do sleep 30; done
 etat "jeu de données publié"
+else
+etat "=== SFT v2 : reprise de la chaîne à la session $DEBUT"
+fi
 
-N=localia-sft-v2
 mkdir -p $K/$N
 sed 's/^MODE = "essai"$/MODE = "sft"/' $ICI/sft_v2_kaggle.py > $K/$N/sft.py
 grep -q '^MODE = "sft"$' $K/$N/sft.py || { etat "ARRÊT : MODE non réécrit"; exit 1; }
 sources='"mohadial/localia-sft-v2-donnees", "mohadial/localia-elagage"'
+(( DEBUT > 1 )) && sources="$sources"', "mohadial/localia-sft-v2-reprise"'
 H1=${1:-11}
-for session in 1 2 3; do
-  h=$([[ $session == 1 ]] && echo $H1 || echo 11)
-  if [[ $session == 2 && -n "${2:-}" ]]; then
+for session in $(seq $DEBUT 3); do
+  h=$([[ $session == $DEBUT ]] && echo $H1 || echo 11)
+  if [[ $session == 2 && $DEBUT == 1 && -n "${2:-}" ]]; then
     etat "session 2 : attente jusqu'au $2 (ou fichier $R/SANS-ATTENTE)"
     cible=$(date -j -f "%Y-%m-%d %H:%M" "$2" +%s)
     until (( $(date +%s) >= cible )) || [[ -e $R/SANS-ATTENTE ]]; do sleep 600; done
@@ -68,7 +75,7 @@ EOF
   if [[ -e $S/fini.json ]]; then
     rm -rf $R/final && mv $S $R/final
     etat "fini : $(cat $R/final/fini.json | head -c 400)"
-    etat "GGUF : $(cd $R/final && ls *.gguf 2>/dev/null | tr '\n' ' ')"
+    etat "GGUF : $(cd $R/final/gguf && ls *.gguf 2>/dev/null | tr "\n" " ")"
     etat "=== fin SFT"
     exit 0
   fi

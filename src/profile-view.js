@@ -30,6 +30,7 @@ function savedProfile() {
     firstName: settings.firstName || '',
     domains: [...domains],
     topics: p.topics || '',
+    country: p.country || '',
     goals: [...(p.goals || [])],
     priority: p.priority || 'equilibre',
   };
@@ -49,6 +50,7 @@ function renderProfile() {
   const d = profileDraft;
   $('profile-name').value = d.firstName;
   $('profile-topics').value = d.topics;
+  $('profile-country').value = d.country;
   $('profile-domains').replaceChildren(
     ...profileDomains().map((m) =>
       chip(m.label, d.domains.includes(m.id), () => {
@@ -173,6 +175,13 @@ $('profile-name').oninput = () => {
   profileDraft.firstName = $('profile-name').value.trim().slice(0, 40);
   renderProfile();
 };
+$('profile-country').oninput = () => {
+  profileDraft.country = $('profile-country').value.slice(0, 60);
+  const dirty = !sameProfile(profileDraft, savedProfile());
+  $('profile-dirty').hidden = !dirty;
+  $('profile-save').disabled = !dirty || !profileDraft.domains.length;
+  $('profile-cancel').disabled = !dirty;
+};
 $('profile-topics').oninput = () => {
   profileDraft.topics = $('profile-topics').value.slice(0, 400);
   const dirty = !sameProfile(profileDraft, savedProfile());
@@ -198,7 +207,13 @@ $('profile-form').onsubmit = guard(async (event) => {
     ...settings,
     firstName: d.firstName,
     metier: d.domains[0],
-    profile: { domains: d.domains, topics: d.topics.trim(), goals: d.goals, priority: d.priority },
+    profile: {
+      domains: d.domains,
+      topics: d.topics.trim(),
+      goals: d.goals,
+      priority: d.priority,
+      country: d.country.trim(),
+    },
   });
   profileDraft = savedProfile();
   renderProfile();

@@ -922,12 +922,26 @@ function webSourcesBlock(sources, lang) {
 // le vocabulaire et les exemples, sans rien imposer.
 function profileContext(appSettings) {
   const p = appSettings.profile;
-  if (!p || (!p.topics && p.domains.length < 2)) return null;
+  if (!p) return null;
   const en = appSettings.lang === 'en';
-  const domains = p.domains.map((d) => metierById(d)?.label).filter(Boolean);
-  return en
-    ? `User profile: ${domains.length ? `fields: ${domains.join(', ')}` : ''}${p.topics ? `${domains.length ? '; ' : ''}subjects: ${p.topics}` : ''}. Use it to choose relevant vocabulary and examples, but answer the question asked.`
-    : `Profil de l’utilisateur : ${domains.length ? `domaines : ${domains.join(', ')}` : ''}${p.topics ? `${domains.length ? ' ; ' : ''}sujets : ${p.topics}` : ''}. Sers-t’en pour choisir le vocabulaire et les exemples, mais réponds à la question posée.`;
+  const parts = [];
+  if (p.topics || p.domains.length >= 2) {
+    const domains = p.domains.map((d) => metierById(d)?.label).filter(Boolean);
+    parts.push(
+      en
+        ? `User profile: ${domains.length ? `fields: ${domains.join(', ')}` : ''}${p.topics ? `${domains.length ? '; ' : ''}subjects: ${p.topics}` : ''}. Use it to choose relevant vocabulary and examples, but answer the question asked.`
+        : `Profil de l’utilisateur : ${domains.length ? `domaines : ${domains.join(', ')}` : ''}${p.topics ? `${domains.length ? ' ; ' : ''}sujets : ${p.topics}` : ''}. Sers-t’en pour choisir le vocabulaire et les exemples, mais réponds à la question posée.`,
+    );
+  }
+  // Pays : un petit modèle place au hasard un lieu qu'il connaît mal (Pita « en Côte d'Ivoire »,
+  // série métiers du 16 nov. 2026) ; il doit plutôt dire qu'il ne le connaît pas.
+  if (p.country)
+    parts.push(
+      en
+        ? `The user lives in ${p.country}. When the question does not name a country (place, law, institution, currency, price, figures), assume it is about ${p.country}. Do not invent laws, figures or institutions you do not know. If you do not know a place, do not put it in another country: say that you do not know it.`
+        : `L’utilisateur vit dans ce pays : ${p.country}. Quand la question ne précise pas le pays (lieu, loi, institution, monnaie, prix, chiffres), situe-la d’abord dans ce pays. N’invente pas pour autant de lois, de chiffres ou d’institutions que tu ne connais pas. Si tu ne connais pas un lieu, ne le place pas dans un autre pays : dis que tu ne le connais pas.`,
+    );
+  return parts.length ? parts.join('\n') : null;
 }
 // Documents joints à une conversation : liste « documentIds » (5 au plus), ou ancien « documentId ».
 function attachedIds(payload) {

@@ -130,8 +130,11 @@ function normalizeProfile(raw) {
   const topics = typeof raw.topics === 'string' ? raw.topics.trim().slice(0, 400) : '';
   const goals = PROFILE_GOALS.filter((g) => Array.isArray(raw.goals) && raw.goals.includes(g));
   const priority = PROFILE_PRIORITIES.includes(raw.priority) ? raw.priority : 'equilibre';
-  if (!domains.length && !topics && !goals.length && priority === 'equilibre') return null;
-  return { domains, topics, goals, priority };
+  // Pays de l'utilisateur (mots libres) : situe les questions sans pays précisé (lieux, lois, monnaie).
+  const country = typeof raw.country === 'string' ? raw.country.trim().slice(0, 60) : '';
+  if (!domains.length && !topics && !goals.length && priority === 'equilibre' && !country)
+    return null;
+  return { domains, topics, goals, priority, ...(country ? { country } : {}) };
 }
 
 // Contexte du modèle lu dans son Modelfile (texte « parameters » de /api/show).

@@ -130,3 +130,19 @@ test('profil : domaines valides et distincts du métier de la session, attentes 
   // Profil vide : rien n'est gardé.
   assert.equal(normalizeSettings({ profile: { domains: [] } }).profile, undefined);
 });
+
+test('profil : pays en mots libres, gardé seul, coupé à 60 caractères', () => {
+  const { normalizeSettings } = require('../src/settings.cjs');
+  assert.deepEqual(normalizeSettings({ profile: { country: '  Guinée ' } }).profile, {
+    domains: [],
+    topics: '',
+    goals: [],
+    priority: 'equilibre',
+    country: 'Guinée',
+  });
+  assert.equal(
+    normalizeSettings({ profile: { country: 'x'.repeat(80) } }).profile.country.length,
+    60,
+  );
+  assert.equal(normalizeSettings({ profile: { country: 42 } }).profile, undefined);
+});

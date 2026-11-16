@@ -1337,6 +1337,9 @@ const EN = {
   'Localia s’en sert pour choisir les modèles, les tâches et les compétences, et pour donner un peu de contexte au modèle. Il reste sur cet ordinateur.':
     'Localia uses it to choose models, tasks and skills, and to give the model a little context. It stays on this computer.',
   'Prénom affiché': 'Displayed first name',
+  Pays: 'Country',
+  '— pour situer les lieux, les lois et la monnaie': '— to place locations, laws and currency',
+  'Ex. Guinée': 'E.g. Guinea',
   'Domaines d’activité': 'Fields of work',
   '— plusieurs possibles': '— several possible',
   'Domaine principal': 'Main field',
